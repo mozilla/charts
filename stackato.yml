@@ -1,0 +1,24 @@
+name: charts
+instances: 1
+framework:
+  type: php
+  runtime: php
+mem: 128
+ignores: [
+  ".svn",
+  ".git",
+  ".idea",
+  "src.iml",
+  "out",
+  "html/es/js/etl/_OrgChart.js",
+  "html/es/lib/jstree/_lib",
+  "html/es/lib/jstree/_docs",
+  "html/es/lib/jstree/_demo"
+]
+url: [
+  "charts.paas.mozilla.org",
+  "charts.mozilla.org",
+  "charts.paas.allizom.org"
+]
+
+services:

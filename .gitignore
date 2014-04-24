@@ -1,7 +1,7 @@
 .svn
 .git
 .idea
-src.iml
+*.iml
 out
 html/es/js/etl/_OrgChart.js
 html/es/lib/jstree/_lib

@@ -71,7 +71,7 @@
 	<style id="vakata-stylesheet" type="text/css"></style>
 	<style id="jstree-stylesheet" type="text/css"></style>
 	<link rel="stylesheet" type="text/css" media="all" href="lib/jstree/themes/default/style.css">
-	
+
 	<script>
   (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
   (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
@@ -127,67 +127,83 @@
 		var __createChart = function*() {
 			yield (ESQuery.loadColumns({"from": "bugs"}));
 
-//			//THESE ARE IMPORTANT BLOCKERS
-//			var a = Log.action("Get Hierarchy", true);
-//			var possibleTree = (yield(ESQuery.run({
-//				"from": "bug_hierarchy",
-//				"select": [
-//					"bug_id",
-//					"descendants"
-//				],
-//				"esfilter": {"term": {"bug_id":984663}}
-//			}))).list[0].descendants;
-//			possibleTree.append(984663);
-//
-//			var allTree;
-//			var allTreeThread=Thread.run(function*(){
-//				allTree = (yield(ESQuery.run({
-//					"from": "bug_dependencies",
-//					"select": [
-//						"bug_id",
-//						"dependson"
-//					],
-//					"esfilter":	{"and": [
-//						{"terms":{"bug_id": possibleTree}},
-//						Mozilla.CurrentRecords.esfilter
-//					]}
-//				}))).list;
-//			});
-//
-//			var allOpen;
-//			var allOpenThread=Thread.run(function*(){
-//				allOpen = (yield(ESQuery.run({
-//					"from": "bugs",
-//					"select": "bug_id",
-//					"esfilter":	{"and": [
-//						{"terms":{"bug_id": possibleTree}},
-//						Mozilla.BugStatus.Open.esfilter,
-//						Mozilla.CurrentRecords.esfilter
-//					]}
-//				}))).list
-//			});
-//
-//			yield (Thread.join(allTreeThread));
-//			yield (Thread.join(allOpenThread));
-//
-//			allTree = allTree.filter(function(v){
-//				return v.bug_id==984663 || allOpen.contains(v.bug_id);
-//			});
-//
-//			yield (Hierarchy.addDescendants({
-//		       "from":allTree,
-//		       "id_field":"bug_id",
-//		       "fk_field":"dependson",
-//		       "descendants_field": "dependencies"
-//		    }));
-//			Log.actionDone(a);
-//
-//			var CABlockers = allTree.map(function(v){
-//				if (v.bug_id==984663)
-//					return v.dependencies;
-//			})[0];
+			//THESE ARE IMPORTANT BLOCKERS
+			var a = Log.action("Get Hierarchy", true);
+			var possibleTree = (yield(ESQuery.run({
+				"from": "bug_hierarchy",
+				"select": [
+					"bug_id",
+					"descendants"
+				],
+				"esfilter": {"term": {"bug_id":984663}}
+			}))).list;
+			if (possibleTree.length==0){
+				possibleTree=[];
+			}else{
+				possibleTree=possibleTree[0].descendants;
+			}//endif
+			possibleTree.append(984663);
 
-			var CABlockers= [0];
+			var allTree;
+			var allTreeThread=Thread.run(function*(){
+				try{
+					allTree = (yield(ESQuery.run({
+						"from": "bug_dependencies",
+						"select": [
+							"bug_id",
+							"dependson"
+						],
+						"esfilter":	{"and": [
+							{"terms":{"bug_id": possibleTree}},
+							Mozilla.CurrentRecords.esfilter
+						]}
+					}))).list;
+					allTree.append(0)
+				}catch(e){
+					//WHEN THE
+					allTree=[0];
+				}
+			});
+
+			var allOpen;
+			var allOpenThread=Thread.run(function*(){
+				allOpen = (yield(ESQuery.run({
+					"from": "bugs",
+					"select": "bug_id",
+					"esfilter":	{"and": [
+						{"terms":{"bug_id": possibleTree}},
+						Mozilla.BugStatus.Open.esfilter,
+						Mozilla.CurrentRecords.esfilter
+					]}
+				}))).list
+			});
+
+			yield (Thread.join(allTreeThread));
+			yield (Thread.join(allOpenThread));
+
+			allTree = allTree.filter(function(v){
+				return v.bug_id==984663 || allOpen.contains(v.bug_id);
+			});
+
+			yield (Hierarchy.addDescendants({
+		       "from":allTree,
+		       "id_field":"bug_id",
+		       "fk_field":"dependson",
+		       "descendants_field": "dependencies"
+		    }));
+			Log.actionDone(a);
+
+			var CABlockers = allTree.map(function(v){
+				if (v.bug_id==984663)
+					return v.dependencies;
+			});
+			if (CABlockers.length==0){
+				CABlockers=[0]
+			}else{
+				CABlockers=CABlockers[0]
+			}//endif
+
+
 
 			a = Log.action("Get Bug Details", true);
 			//PULL THE RAW DATA, AND THEN OPERATE ON IT 112K, 2.17sec time

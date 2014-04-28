@@ -136,7 +136,11 @@ Log.actionDone=function(action){
 };//method
 
 
-ASSERT={};
+ASSERT=function(test, errorMessage){
+	if (!test){
+		Log.error(errorMessage);
+	}//endif
+};
 ASSERT.hasAttributes=function(obj, keyList){
 	A: for(i=0;i<keyList.length;i++){
 		if (keyList[i] instanceof Array){

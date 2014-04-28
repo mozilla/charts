@@ -43,7 +43,10 @@ ESQuery.INDEXES={
 	"tor_public_bugs":{"host":"http://klahnakoski-es.corp.tor1.mozilla.com:9200", "path":"/public_bugs/bug_version"},
 	"tor_private_bugs":{"host":"http://klahnakoski-es.corp.tor1.mozilla.com:9200", "path":"/private_bugs/bug_version"},
 
-	"bug_hierarchy":{"host":"http://localhost:9200", "path":"/bug_hierarchy/bug_hierarchy"},
+	"bug_hierarchy":{"host":"http://elasticsearch-private.bugs.scl3.mozilla.com:9200", "path":"/bug_hierarchy/bug_hierarchy"},
+	"bug_dependencies":{"host":"https://esfrontline.bugzilla.mozilla.org:443", "path":"/bug_hierarchy/bug_version"},
+
+
 	"public_bug_hierarchy":{"host":"https://esfrontline.bugzilla.mozilla.org:443", "path":"/bug_hierarchy/bug_hierarchy"},
 
 	"bug_dependencies":{"host":"http://elasticsearch-private.bugs.scl3.mozilla.com:9200", "path":"/private_bugs/bug_version"},

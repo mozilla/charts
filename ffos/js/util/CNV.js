@@ -815,7 +815,8 @@ CNV.esFilter2Expression=function(esFilter){
 		var pair = esFilter[op];
 		var variableName = Object.keys(pair)[0];
 		var valueList = pair[variableName];
-		if (valueList.length == 0) Log.error("Expecting something in 'terms' array");
+		if (valueList.length == 0)
+			Log.error("Expecting something in 'terms' array");
 		if (valueList.length == 1) return (variableName) + "==" + CNV.Value2Quote(valueList[0]);
 		output += "[" + valueList.map(CNV.String2Quote).join(", ") + "].intersect(Array.newInstance(" + variableName + ")).length > 0";  //ARRAY BASED FOR MULTIVALUED VARIABLES
 		return output;

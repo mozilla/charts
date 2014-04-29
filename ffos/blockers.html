@@ -197,7 +197,7 @@
 				if (v.bug_id==984663)
 					return v.dependencies;
 			});
-			if (CABlockers.length==0){
+			if (CABlockers.length==0 || CABlockers[0].length==0){
 				CABlockers=[0]
 			}else{
 				CABlockers=CABlockers[0]
@@ -237,7 +237,8 @@
 					{"name": "count", "value": "bug_id", "aggregate": "count"},
 					{"name": "bugs", "value": "bug_id", "aggregate": "array"},
 					{"name": "age", "value": "Date.now().subtract(Date.newInstance(modified_ts)).divideBy(Duration.DAY)", "aggregate": "maximum"},
-					{"name": "unassignedCount", "value": '(assigned_to=="nobody@mozilla.org" ? 1 : 0)', "aggregate": "sum"}
+					{"name": "unassignedCount", "value": '(assigned_to=="nobody@mozilla.org" ? 1 : 0)', "aggregate": "sum"},
+					{"name": "unassignedBugs", "value": '(assigned_to=="nobody@mozilla.org" ? bug_id : null)', "aggregate": "array"}
 				],
 				"edges": [
 					"component",

@@ -45,10 +45,10 @@
 	<script type="text/javascript" src="js/threads/thread.js"></script>
 	<script type="text/javascript" src="js/gui/ProgramFilter.js"></script>
 	<script type="text/javascript" src="js/util/aTimer.js"></script>
-	<script type="text/javascript" src="lib/jsonlint/jsl.format.js"></script>
+
 	<script type="text/javascript" src="js/rest/Rest.js"></script>
 	<script type="text/javascript" src="js/aLibrary.js"></script>
-	<script type="text/javascript" src="lib/jsonlint/jsl.parser.js"></script>
+
 	<script type="text/javascript" src="js/rest/ElasticSearch.js"></script>
 	<script type="text/javascript" src="js/Bugzilla.js"></script>
 	<script type="text/javascript" src="js/math/Stats.js"></script>
@@ -160,7 +160,7 @@
 					{"name": "bugs", "value": "bug_id", "aggregate": "array"},
 					{"name": "age", "value": "Date.now().subtract(Date.newInstance(modified_ts)).divideBy(Duration.DAY)", "aggregate": "maximum"},
 					{"name": "unassignedCount", "value": '(assigned_to=="nobody@mozilla.org" ? 1 : 0)', "aggregate": "sum"},
-					{"name": "unassigned_bugs", "value": '(assigned_to=="nobody@mozilla.org" ? bug_id : null)', "aggregate": "array"}
+					{"name": "unassignedBugs", "value": '(assigned_to=="nobody@mozilla.org" ? bug_id : null)', "aggregate": "array"}
 				],
 				"edges": [
 					"component",

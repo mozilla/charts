@@ -8,8 +8,6 @@ importScript([
 		"../../lib/jquery-ui/js/jquery-ui-1.10.2.custom.js",
 		"../../lib/jquery-ui/css/start/jquery-ui-1.10.2.custom.css",
 		"../../lib/jquery.ba-bbq/jquery.ba-bbq.js",
-		"../../lib/jsonlint/jsl.format.js",
-		"../../lib/jsonlint/jsl.parser.js",
 		"../../lib/jquery-linedtextarea/jquery-linedtextarea.css",
 		"../../lib/jquery-linedtextarea/jquery-linedtextarea.js"
 ]);

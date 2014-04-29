@@ -168,6 +168,10 @@
 		return this[this.length-1];
 	};//method
 
+	Array.prototype.first=function(){
+		return this[0];
+	};//method
+
 //	Array.prototype.indexOf=function(value){
 //		for(var i=0;i<this.length;i++){
 //			if (this[i]==value) return i;

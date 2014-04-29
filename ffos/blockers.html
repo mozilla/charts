@@ -197,7 +197,7 @@
 				if (v.bug_id==984663)
 					return v.dependencies;
 			});
-			if (CABlockers.length==0){
+			if (CABlockers.length==0 || CABlockers[0].length==0){
 				CABlockers=[0]
 			}else{
 				CABlockers=CABlockers[0]

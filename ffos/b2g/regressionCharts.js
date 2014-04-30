@@ -14,6 +14,7 @@ function showRegressionAge(args) {
 				"select": [
 					"bug_id",
 					"cf_blocking_b2g",
+					"cf_blocking_loop",
 					"target_milestone",
 					"keywords"
 				],

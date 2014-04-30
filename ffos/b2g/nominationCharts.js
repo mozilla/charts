@@ -50,9 +50,21 @@ function showOpenNomCount(args) {
 
 
 function showNomChurn(args) {
-	var fieldname = "cf_blocking_b2g";
-	var triage = ["1.3?", "1.3t?", "1.4?", "1.5?"];
-	var blocker = ["1.3+", "1.3t+", "1.4+", "1.5+"];
+	var fieldnames = ["cf_blocking_b2g", "cf_blocking_loop"];
+	var projects = [
+		{"name": "1.3", "value": "1.3?", "nom":["1.3?"], "blocker":["1.3+"]},
+		{"name": "1.3T", "value": "1.3t?", "nom":["1.3t?"], "blocker":["1.3t+"]},
+		{"name": "1.4", "value": "1.4?", "nom":["1.4?", "fx30?"], "blocker":["1.4+", "fx30+"]},
+		{"name": "1.5/2.0", "value": "2.0?", "nom":["1.5?", "2.0?", "fx31?", "fx32?"], "blocker":["1.5+", "2.0+", "fx31+", "fx32+"]}
+	];
+	var triage = [];
+	projects.forall(function(n){
+		triage=triage.union(n.nom);
+	});
+	var blocker = [];
+	projects.forall(function(n){
+		blocker=blocker.union(n.blocker);
+	});
 
 	Thread.run(function*() {
 		var a = Log.action("Get Nomination Counts ", true);
@@ -75,7 +87,7 @@ function showNomChurn(args) {
 							"match_all": {}
 						},
 						"filter": {"and": [
-							{"term": {"changes.field_name": fieldname}},
+							{"terms": {"changes.field_name": fieldnames}},
 							{"or": [
 								{"terms": {"changes.new_value": triage.union(blocker)}},
 								{"terms": {"changes.old_value": triage}}
@@ -90,7 +102,7 @@ function showNomChurn(args) {
 		var all = [];
 		changes.list.forall(function (v) {
 			v.changes.forall(function (c) {
-				if (c.field_name != fieldname) return;
+				if (!fieldnames.contains(c.field_name)) return;
 				all.append({
 					"bug_id": v.bug_id,
 					"modified_ts": v.modified_ts,
@@ -101,29 +113,7 @@ function showNomChurn(args) {
 		});
 
 		//IF THE PROJECT IS MARKED AS BLOCKER, OR IF NOMINATION IS MARKED AS NON-BLOCKER
-		var NOM_CHECK_LOGIC = "((new_value==project.name+'+') || (old_value==project.name+'?' && new_value!=project.name+'+'))";
-
-		var bugs = yield(Q({
-			"from": all,
-			"select": [
-				{"name": "count", "value": NOM_CHECK_LOGIC + " ? 1 : 0", "aggregate": "sum"}
-			],
-			"edges": [
-				{"name": "cf_blocking_b2g", "test": "true", "domain": {
-					"name": "project",
-					"type": "set",
-					"key": "value",
-					"partitions": triage.map(function(v){
-						return {"name": v.leftBut(1), "value": v}
-					}),
-					"end": function (p) {
-						return p.value;
-					}
-				}},
-				{"name": "modified_ts", "value": "Date.newInstance(modified_ts)", "domain": {"type": "time", "min": args.timeDomain.min, "max": args.timeDomain.max, "interval": args.timeDomain.interval, "value": "value"}}
-			]
-		}));
-
+		var NOM_CHECK_LOGIC = "(project.blocker.contains(new_value) || (project.nom.contains(old_value) && !project.blocker.contains(new_value)))";
 
 		var title = nvl({
 			"1day": "Daily",
@@ -133,15 +123,22 @@ function showNomChurn(args) {
 
 
 		var summary = yield(Q({
-			"name": title,
-			"from": bugs,
-			"select": {"value": "count", "default": 0, "aggregate": "sum"},
+			"name":title,
+			"from": all,
+			"select": {"name": "count", "value": NOM_CHECK_LOGIC + " ? 1 : 0", "aggregate": "sum", "default":0},
 			"edges": [
-				{"name": "Project", "domain": Mozilla.B2G.Project.getDomain()},
-				{"name": "modified_ts", "value": "modified_ts", "domain": {"type": "time", "min": args.timeDomain.min, "max": args.timeDomain.max, "interval": args.timeDomain.interval, "value": "value"}}
+				{"name": "Project", "test": "true", "domain": {
+					"name": "project",
+					"type": "set",
+					"key": "value",
+					"partitions": projects,
+					"end": function (p) {
+						return p.name;
+					}
+				}},
+				{"name": "modified_ts", "value": "Date.newInstance(modified_ts)", "domain": {"type": "time", "min": args.timeDomain.min, "max": args.timeDomain.max, "interval": args.timeDomain.interval, "value": "value"}}
 			]
 		}));
-
 
 		aChart.show({
 			"id": args.chartID,

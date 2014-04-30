@@ -285,8 +285,6 @@ importScript(['js/main.js', 'js/Dimension-Bugzilla.js', "js/Dimension-B2G.js", "
 
 	var __createChart = function*() {
 		NOW = Date.today();
-		TOO_LATE = NOW.subtract(Duration.newInstance("2day"));
-		REALLY_TOO_LATE = NOW.subtract(Duration.newInstance("1week"));
 
 		var mainFilter = {"and": [
 			Mozilla.BugStatus.Open.esfilter,
@@ -307,7 +305,7 @@ importScript(['js/main.js', 'js/Dimension-Bugzilla.js', "js/Dimension-B2G.js", "
 				"component",
 				"assigned_to",
 				"modified_ts",
-					"keywords"
+				"keywords"
 			],
 			"esfilter":mainFilter
 		}));
@@ -317,7 +315,10 @@ importScript(['js/main.js', 'js/Dimension-Bugzilla.js', "js/Dimension-B2G.js", "
 		var countingThread = Thread.run(function*() {
 			counting = yield(Q({
 				"from": allBugs,
-				"select": {"name": "count", "value": "bug_id", "aggregate": "count"},
+				"select": [
+					{"name": "count", "value": "bug_id", "aggregate": "count"},
+					{"name": "bugs", "value": "bug_id", "aggregate": "array"}
+				],
 				"edges": [
 					{"name": "Team", "domain": Mozilla.B2G.Team.getDomain()},
 					{"name": "Project", "domain": Mozilla.B2G.Project.getDomain()},

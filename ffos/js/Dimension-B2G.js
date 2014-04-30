@@ -12,15 +12,7 @@ if (!Mozilla) var Mozilla = {"name": "Mozilla", "edges": []};
 var webRTCFilter={"or":[
 	{"and":[
 		{"term":{"product":"loop"}},
-		{"term":{"component":"general"}}
-	]},
-	{"and":[
-		{"term":{"product":"loop"}},
-		{"term":{"component":"client"}}
-	]},
-	{"and":[
-		{"term":{"product":"loop"}},
-		{"term":{"component":"server"}}
+		{"terms":{"component":["general", "client", "server"]}}
 	]},
 	{"and":[
 		{"term":{"product":"core"}},
@@ -161,10 +153,7 @@ Dimension.addEdges(true, Mozilla, [
 					{"not": {"term": {"keywords": "perf"}}}, //AN UNFORTUNATE REDUNDANCY
 					{"terms": {"component": [
 						"video/audio: recording",
-						"video/audio",
-						"webrtc",
-						"webrtc: video/audio",
-						"webrtc: audio/video"
+						"video/audio"
 					]}}
 				]}},
 				{"name": "Comms", "esfilter": {"and": [
@@ -198,24 +187,16 @@ Dimension.addEdges(true, Mozilla, [
 						"networking: websockets"
 					]}}
 				]}},
-				{"name":"WebRTC",
-					"esfilter":{"or":[
-						{"and":[
-							{"term":{"product":"loop"}},
-							{"term":{"component":"general"}}
-						]},
-						{"and":[
-							{"term":{"product":"loop"}},
-							{"term":{"component":"client"}}
-						]},
-						{"and":[
-							{"term":{"product":"loop"}},
-							{"term":{"component":"server"}}
-						]},
-						{"and":[
-							{"term":{"product":"core"}},
-							{"prefix":{"component":"webrtc"}}
-						]}
+				{"name": "WebRTC Loop",
+					"esfilter": {"and": [
+						{"term": {"product": "loop"}},
+						{"terms": {"component": ["general", "client", "server"]}}
+					]}
+				},
+				{"name": "WebRTC Platform",
+					"esfilter": {"and": [
+						{"term": {"product": "core"}},
+						{"prefix": {"component": "webrtc"}}
 					]}
 				},
 				{"name": "Layout", "esfilter": {"and": [
@@ -370,7 +351,7 @@ Dimension.addEdges(true, Mozilla, [
 						"style": {"color": "#2ca02c"},
 						"esfilter": {"or":[
 							{"terms": {"cf_blocking_b2g": ["1.4+", "1.4?"]}},
-							{"terms": {"cf_blocking_loop": ["fx30?", "fx30+"]}}
+							{"terms": {"cf_blocking_loop": ["fx30+", "fx30?"]}}
 						]}
 					},
 					{"name": "1.5/2.0",

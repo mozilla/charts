@@ -37,11 +37,13 @@
 <div style="align:left;position:relative;float:left;width:800px;">
 	<h3 id="title"></h3>
 
-
-	<div id="chart" class="chart" style="position: relative;height:300px;"></div>
-	<div id="chart_diff" class="chart" style="position: relative;height:300px;"></div>
-	<div id="info" style="float:left;"></div>
-	<div id="report"></div>
+	<div>
+		<div id="chart" class="chart" style="position: relative;height:300px;"></div>
+		<div id="chart_diff" class="chart" style="position: relative;height:300px;"></div>
+		<div id="buglist" style="position: relative;width:800px"></div>
+		<div id="info" style="position: relative;width:800px"></div>
+		<div id="report"></div>
+	</div>
 </div>
 <script type="application/javascript">
 
@@ -49,7 +51,8 @@ importScript([
 	"js/main.js",
 	'js/Dimension-Bugzilla.js',
 	'js/Dimension-B2G.js',
-	'js/Dimension-Features.js'
+	'js/Dimension-Features.js',
+	"moreJS/burndown.js"
 ], function(){
 
 
@@ -70,22 +73,35 @@ var createChart = function(){
 var __createChart = function*(){
 
 
+	var NOW = Date.now();
+	var TODAY = Date.today();
 	var teamName = GUI.state.team.getSelectedParts().select("name").join(" and ");
-	var features = GUI.state.feature.getSelectedParts();
-	var feature = null;
-	if (features.length==0){
-		$("#title").html("Must select a feature");
+	var milestones = GUI.state.milestone.getSelectedParts();
+	var milestone = null;
+	if (milestones.length==0){
+		$("#title").html("Must select a milestone");
 		yield (null)
 	}else{
-		feature = features[0]
+		milestone = milestones[0]
 	}//endif
 
-	var sampleMin = Date.min(Date.newInstance(feature.start_date), Date.today().subtract(Duration.newInstance("2week")));
-	var sampleMax = Date.newInstance(feature.target_date).add(Duration.DAY);
+	var START_DATE = Date.newInstance(milestone.start_date);
+	var sampleMin = Date.min(START_DATE, TODAY.subtract(Duration.newInstance("2week")));
+	var sampleMax = Date.newInstance(milestone.target_date).add(Duration.DAY);
 	var DUE_DATE = sampleMax;
 	var MAX_CHART_DATE=DUE_DATE.addDay(1);
 
 	var sampleInterval = Duration.DAY;
+
+
+	//ADD PREDICTOR LINE
+
+	//LAST 6 WEEKS
+	var statsMax = Date.min(TODAY, sampleMax.addDay(-1));
+	var numWeek=aMath.min(6, aMath.floor((statsMax.getMilli()-sampleMin.getMilli())/Duration.WEEK.milli));
+	var statsMin = statsMax.addWeek(-numWeek);
+
+	$("#description").html("Preliminary burndown for WebRTC work");
 
 
 	if (title && title.length>0){
@@ -134,100 +150,23 @@ var __createChart = function*(){
 		var details = yield (Qb.calc2List({
 			"from":bugs,
 			"select":[
-				{"name":"ID", "value":"bug_id"},
+				{"name":"bug_id", "value":"bug_id"},
 				{"name":"Summary", "value":"short_desc"},
 				{"name":"Owner", "value":"assigned_to"},
-				{"name":"Status", "value":"bug_status + (resolution ? '::'+resolution : '')"},
-				{"name":"Estimate", "value":"nvl(ScrumBugs.parse(status_whiteboard).points, '')"}
+				{"name":"Status", "value":"bug_status + (resolution ? ' - '+resolution : '')"},
+				{"name":"Estimate", "value":"nvl(ScrumBugs.parse(status_whiteboard).points, 'missing')"}
 			],
-			"sort":["Status", "ID"]
+			"sort":["Status", "bug_id"]
 		}));
 
-		$("#info").html(CNV.List2HTMLTable(details));
+		$("#buglist").html(bugDetails(details.list));
 	});
 
-
-
-	var a = Log.action("Request Bugs", true);
-	try{
-		var chart = yield(ESQuery.run({
-			"from":"bugs",
-			"select":{"name":"num_bug", "value":"bug_id", "aggregate":"count"},
-			"edges":[
-				{"name":"status", "value":'(bug_status=="resolved" || bug_status=="verified" || bug_status=="closed") ? "closed" : "open"',
-					"domain":{"type":"set", "partitions":["open", "closed"]}
-				},
-				{"name":"date",
-					"range":{"min":"modified_ts", "max":"expires_on"},
-					"allowNulls":false,
-					"domain":{"type":"time", "min":sampleMin, "max":sampleMax, "interval":sampleInterval}
-				}
-			],
-			"esfilter":mainFilter
-		}));
-	}catch(e){
-		Log.warning("Thread killed", e);
-		Log.actionDone(a);
-		return;
-	}//try
-
-	Log.actionDone(a);
-
-
-	//CONVERT EDGE TO ATTRIBUTES
-	var flat = yield(Q({
-		"from":chart,
-		"select":[
-			{"name":"open", "value":"status=='open' ? num_bug : null", "aggregate":"sum"},
-			{"name":"closed", "value":"status=='closed' ? num_bug : null", "aggregate":"sum"},
-			{"name":"total", "value":"num_bug", "aggregate":"sum"}
-		],
-		"edges":[
-			{"name":"date", "value":"date",
-				"allowNulls":false,
-				"domain":{"type":"time", "min":sampleMin, "max":sampleMax, "interval":sampleInterval, "value":"value"}
-			}
-		]
-	}));
-	var timeDomain=flat.edges[0].domain;
-
-	//SHOW FUTURE VALUES AS NULLS
-	flat.cube.forall(function(v, i){
-		if (timeDomain.partitions[i].min > Date.today()){
-			flat.cube[i]=Map.zip(mapAllKey(v, function(k, v){
-				return [k, null];
-			}));
-		}//endif
-	});
-
-
-	//ADD PREDICTOR LINE
-
-	//LAST 6 WEEKS
-	var statsMax = Date.min(Date.today(), sampleMax.addDay(-1));
-	var numWeek=aMath.min(6, aMath.floor((statsMax.getMilli()-sampleMin.getMilli())/Duration.WEEK.milli));
-	var statsMin = statsMax.addWeek(-numWeek);
-
-	$("#description").html("Preliminary burndown for WebRTC work");
-
-	var stats = yield(Q({
-		"from":flat,
-		"select":[
-			{"name":"closed", value:"nvl(closed, 0)"},
-			{"name":"total", value:"nvl(total, 0)"}
-		],
-		"edges":[
-			{"name":"date", "value":"date",
-				"allowNulls":false,
-				"domain":{"type":"time", "min":sampleMin, "max":sampleMax, "interval":Duration.DAY, "value":"value"}
-			}
-		]
-	}));
-
-	////////////////////////////////////////////////////////////////////////////
-	// DAILY CHANGE
-	////////////////////////////////////////////////////////////////////////////
-//	Thread.run(function*(){
+	var perDay;
+	var churnThread=Thread.run(function*(){
+		////////////////////////////////////////////////////////////////////////////
+		// DAILY CHANGE
+		////////////////////////////////////////////////////////////////////////////
 		var minMaxBugs=yield(ElasticSearch.getMinMax({"and":[
 				Mozilla.BugStatus.Open.esfilter,
 				{"range":{"modified_ts":{"lt":sampleMax.getMilli()}}},
@@ -239,8 +178,8 @@ var __createChart = function*(){
 		var diff = yield(Q({
 			"from":minMaxBugs,
 			"select":[
-				{"name":"opened", "value":"(time.min.getMilli()<=min && min<time.max.getMilli()) ? 1 : 0", "aggregate":"sum", "default":0, "style":{"color":"blue"}},
-				{"name":"closed", "value":"(time.min.getMilli()<=max && max<time.max.getMilli()) ? -1 : 0", "aggregate":"sum", "default":0, "style":{"color":"red"}}
+				{"name":"opened", "value":"(time.min.getMilli()<=min && min<time.max.getMilli()) ? 1 : 0", "aggregate":"sum", "default":0, "style":{"color":Color.blue.multiply(0.9).hue(10).toHTML()}},
+				{"name":"closed", "value":"(time.min.getMilli()<=max && max<time.max.getMilli()) ? -1 : 0", "aggregate":"sum", "default":0, "style":{"color":Color.red.multiply(0.9).hue(10).toHTML()}}
 			],
 			"edges":[
 				{"name":"date", "test":"(time.min.getMilli()<=min && min<time.max.getMilli()) || (time.min.getMilli()<=max && max<time.max.getMilli())",
@@ -280,7 +219,7 @@ var __createChart = function*(){
 		});
 		Log.actionDone(a);
 
-		var perDay = (yield(Qb.calc2List({
+		perDay = (yield(Qb.calc2List({
 			"from":diff,
 			"select":[
 				{"name":"opened", "value":"opened", "aggregate":"average"},
@@ -296,93 +235,137 @@ var __createChart = function*(){
 			''
 		);
 
-//	});
-
-	var stillOpen = flat.cube[flat.edges[0].domain.getPartByKey(Date.now().floorDay()).dataIndex].open;
-	var requiredNetCloseRatePerDay;
-	{
-		var daysLeft=Date.diffWeekday(DUE_DATE, Date.now().floorDay());
-		//let	daysLeft = DUE_DATE.subtract(sampleMax).divideBy(Duration.DAY);
-		daysLeft = aMath.max(1, daysLeft);
-		requiredNetCloseRatePerDay = stillOpen / daysLeft;
-	}
-
-	$("#stats").append('<span class="parameter_name">Required Closed/Day:</span>' + aMath.round(requiredNetCloseRatePerDay + perDay.opened, 1) + '<br>');
+	});
 
 
-	//
-	var expectedEndDate;
-	{
-		var openAtStartOfEstimate = flat.cube[flat.edges[0].domain.getPartByKey(statsMax).dataIndex-1].open;
-		var netCloseRatePerDay = (perDay.closed-perDay["opened"]);
-		var daysLeft = openAtStartOfEstimate / netCloseRatePerDay;
-		expectedEndDate = statsMax.addWeekday(daysLeft);
-		netCloseRatePerDay = aMath.max(0, netCloseRatePerDay);
-	}
+	var a = Log.action("Request Bugs", true);
+	var statusDomain=Mozilla.BugStatus.getDomain();
+	statusDomain.isFacet=true;
 
-//	$("#stats").append('<span class="parameter_name">DUE Date:</span>' + DUE_DATE.format("dd MMM yyyy") + '<br>');
-	if (netCloseRatePerDay <= 0){
-		$("#stats").append('<span class="parameter_name">Expected End:</span>NEVER<br>');
-	} else{
-		$("#stats").append('<span class="parameter_name">Expected End:</span>' + expectedEndDate.format("dd MMM yyyy") + '<br>');
+	var chart = yield(ESQuery.run({
+		"from":"bugs",
+		"select":{"name":"num_bug", "value":"bug_id", "aggregate":"count"},
+		"edges":[
+			{"name":"status", "domain":statusDomain},
+			{"name":"date",
+				"range":{"min":"modified_ts", "max":"expires_on"},
+				"allowNulls":false,
+				"domain":{"type":"time", "min":sampleMin, "max":sampleMax, "interval":sampleInterval}
+			}
+		],
+		"esfilter":mainFilter
+	}));
+	Log.actionDone(a);
+
+
+	//CONVERT EDGE TO ATTRIBUTES
+	var flat = yield(Q({
+		"from":chart,
+		"select":[
+			{"name":"open", "value":"status.name=='Open' ? num_bug : null", "aggregate":"sum"},
+			{"name":"closed", "value":"status.name=='Closed' ? num_bug : null", "aggregate":"sum"},
+			{"name":"total", "value":"num_bug", "aggregate":"sum"}
+		],
+		"edges":[
+			{"name":"date", "value":"date",
+				"allowNulls":false,
+				"domain":{"type":"time", "min":sampleMin, "max":sampleMax, "interval":sampleInterval, "value":"value"}
+			}
+		]
+	}));
+	var timeDomain=flat.edges[0].domain;
+
+	//SHOW FUTURE VALUES AS NULLS
+	flat.cube.forall(function(v, i){
+		if (timeDomain.partitions[i].min > TODAY){
+			flat.cube[i]=Map.zip(mapAllKey(v, function(k, v){
+				return [k, null];
+			}));
+		}//endif
+	});
+
+	var stats = yield(Q({
+		"from":flat,
+		"select":[
+			{"name":"closed", value:"nvl(closed, 0)"},
+			{"name":"total", value:"nvl(total, 0)"}
+		],
+		"edges":[
+			{"name":"date", "value":"date",
+				"allowNulls":false,
+				"domain":{"type":"time", "min":sampleMin, "max":sampleMax, "interval":Duration.DAY, "value":"value"}
+			}
+		]
+	}));
+
+
+	yield (Thread.join(churnThread));
+	if (DUE_DATE <= TODAY){
+		//DONE, NO STATS REQUIRED
+	}else{
+		var stillOpen = flat.cube[flat.edges[0].domain.getPartByKey(TODAY).dataIndex].open;
+		var requiredNetCloseRatePerDay;
+		{
+			var daysLeft=Date.diffWeekday(DUE_DATE, TODAY);
+			//let	daysLeft = DUE_DATE.subtract(sampleMax).divideBy(Duration.DAY);
+			daysLeft = aMath.max(1, daysLeft);
+			requiredNetCloseRatePerDay = stillOpen / daysLeft;
+		}
+
+		$("#stats").append('<span class="parameter_name">Required Closed/Day:</span>' + aMath.round(requiredNetCloseRatePerDay + perDay.opened, 1) + '<br>');
+
+		var expectedEndDate;
+		{
+			var openAtStartOfEstimate = flat.cube[flat.edges[0].domain.getPartByKey(statsMax).dataIndex-1].open;
+			var netCloseRatePerDay = (perDay.closed-perDay["opened"]);
+			var daysLeft = openAtStartOfEstimate / netCloseRatePerDay;
+			expectedEndDate = statsMax.addWeekday(daysLeft);
+			netCloseRatePerDay = aMath.max(0, netCloseRatePerDay);
+		}
+
+	//	$("#stats").append('<span class="parameter_name">DUE Date:</span>' + DUE_DATE.format("dd MMM yyyy") + '<br>');
+		if (netCloseRatePerDay <= 0){
+			$("#stats").append('<span class="parameter_name">Expected End:</span>NEVER<br>');
+		} else{
+			$("#stats").append('<span class="parameter_name">Expected End:</span>' + expectedEndDate.format("dd MMM yyyy") + '<br>');
+		}//endif
 	}//endif
+
 
 
 
 	//WE WILL CHART A DYNAMIC SET OF COLUMNS, BASED ON IF WE ARE LOOKING AT A FUTURE OR PAST DUE DATE
 	var columnsToChart=[
-		{"value":"total", "style":{"color":"gray", "visibility":"hidden"}},
-		{"value":"open", "style":{"color":"blue"}}
+		{"value":"total", "style":{"color":Color.blue.multiply(0.5).hue(40).toHTML(), "visibility":"hidden"}},
+		{"value":"open", "style":{"color":Color.green.multiply(0.9).hue(100).toHTML()}}
 	];
 
-	if (MAX_CHART_DATE>Date.now().floorDay()){//DO NOT SHOW IF DUE DATE IS IN THE PAST
-		//SINCE flat HAS BEEN USED, IT HAS BEEN FLATTENED TO A LIST
+	var startingTotal = flat.cube[flat.edges[0].domain.getPartByKey(START_DATE).dataIndex].total;
+	var daysLeft=Date.diffWeekday(DUE_DATE, START_DATE);
+	daysLeft = aMath.max(1, daysLeft);
+	var idealRatePerDay = startingTotal / daysLeft;
 
-		//REQUIRED
-		aChart.addPredictionLine({
-			"source":{
-				"name":"open",
-				"domain":{"min":sampleMin, "max":MAX_CHART_DATE},
-				"data":flat.list
-			},
-			"predict":{
-				"name":"required",
-				"domain":{"min":Date.now().floorDay(), "max":MAX_CHART_DATE},
-				"line":function(date){
-					var y=aMath.round(stillOpen + (-requiredNetCloseRatePerDay * (Date.diffWeekday(date, Date.now().floorDay()))));
-					if (y < 0) y = 0;
-					return y;
-				}
+	//IDEAL BURNDOWN
+	aChart.addPredictionLine({
+		"source":{
+			"name":"open",
+			"domain":{"min":sampleMin, "max":MAX_CHART_DATE},
+			"data":flat.list
+		},
+		"predict":{
+			"name":"ideal",
+			"domain":{"min":START_DATE, "max":DUE_DATE},
+			"line":function(date){
+				var y=aMath.round(startingTotal + (-idealRatePerDay * (Date.diffWeekday(date, START_DATE))));
+				if (y < 0) y = 0;
+				return y;
 			}
-		});
+		}
+	});
 
-		columnsToChart.insert(1, {"value":"required", "style":{"color":"brown"}});
-		flat.select.push({"name":"estimate"});
-		flat.columns.push({"name":"required"});
-
-		//ESTIMATE
-		aChart.addPredictionLine({
-			"source":{
-				"name":"open",
-				"domain":{"min":sampleMin, "max":MAX_CHART_DATE},
-				"data":flat.list
-			},
-			"predict":{
-				"name":"estimate",
-				"domain":{"min":statsMax, "max":MAX_CHART_DATE},
-				"line":function(date){
-					var y=aMath.round(openAtStartOfEstimate + (-netCloseRatePerDay * (Date.diffWeekday(date, statsMax))));
-					if (y < 0) y = 0;
-					return y;
-				}
-			}
-		});
-		columnsToChart.insert(2, {"value":"estimate", "style":{"color":"red"}});
-		flat.select.push({"name":"estimate"});
-		flat.columns.push({"name":"estimate"});
-	}else{
-		//MUST STILL ADD MISSING DATES?
-	}//endif
+	columnsToChart.insert(1, {"value":"ideal", "style":{"color":"lightgray"}});
+	flat.select.push({"name":"ideal"});
+	flat.columns.push({"name":"ideal"});
 
 
 	chartP = yield(Q({
@@ -441,14 +424,16 @@ $(document).ready(function(){
 			"name": "All Teams",
 			"dimension": Mozilla.B2G.Team,
 			"onlyOne": true,
-			"expandAll": true
+			"expandAll": true,
+			"treeDepth":1
 		})},
-		{"id": "feature", "name": "Feature", "type": PartitionFilter.newInstance({
-			"id": "features",
-			"name": "All Features",
+		{"id": "milestone", "name": "Milestone", "type": PartitionFilter.newInstance({
+			"id": "milestones",
+			"name": "All Milestones",
 			"dimension": Mozilla.Milestone,
-			"onlyOne": true,
-			"expandAll": true
+			"onlyOne": false,
+			"expandAll": true,
+			"treeDepth":0
 		})}
 		],
 		[],
@@ -462,6 +447,7 @@ $(document).ready(function(){
 
 });
 </script>
+
 
 
 </BODY>

@@ -8,6 +8,14 @@ importScript("qb/ESQuery.js");
 if (!Mozilla) var Mozilla = {"name": "Mozilla", "edges": []};
 
 Dimension.addEdges(true, Mozilla, [
+
+	{"name": "Feature", "index":"bugs", "esfilter":{"match_all":{}}, "edges":[
+		{"name": "UCID Bugs", "esfilter": {"term": {"status_whiteboard.tokenized": "ucid"}}},
+		{"name": "Platform webRTC", "esfilter": {"term": {"bug_id": 970426}}},
+		{"name": "Loop MLP", "esfilter": {"term": {"bug_id": 972866}}},
+		{"name": "Loop Mobile MVP", "esfilter": {"term": {"bug_id": 970426}}}
+	]},
+
 	{"name": "Milestone", "index":"bugs", "edges": [
 		{
 			"name": "Firefox31",
@@ -67,4 +75,4 @@ Dimension.addEdges(true, Mozilla, [
 		}
 
 	]}
-])
+]);

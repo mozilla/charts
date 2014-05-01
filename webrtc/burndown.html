@@ -71,11 +71,16 @@ var createChart = function(){
 };
 
 var __createChart = function*(){
-
-
-	var NOW = Date.now();
 	var TODAY = Date.today();
 	var teamName = GUI.state.team.getSelectedParts().select("name").join(" and ");
+
+	var features = GUI.state.feature.getSelectedParts();
+	var featureFilter=ESQuery.TrueFilter;
+	if (features.length>0){
+		var featureBugs = yield(allOpenDependencies({"and": features.select("esfilter")}));
+		featureFilter = {"terms":{"bug_id":featureBugs}}
+	}//endif
+
 	var milestones = GUI.state.milestone.getSelectedParts();
 	var milestone = null;
 	if (milestones.length==0){
@@ -118,7 +123,7 @@ var __createChart = function*(){
 			{"range":{"expires_on":{"gte":sampleMin.getMilli()}}}
 		]},
 //		{"script":{"script":MVEL.compile.expression("floorInterval(modified_ts-" + sampleMin.getMilli() + ", " + sampleInterval.milli + ")!=floorInterval(expires_on-" + sampleMin.getMilli() + ", " + sampleInterval.milli + ")", {"from":"bugs"})}},
-
+		featureFilter,
 		GUI.getFilters("bugs")
 	]};
 
@@ -142,8 +147,8 @@ var __createChart = function*(){
 			"esfilter":{"and":[
 				{"range":{"modified_ts":{"lte":DUE_DATE.getMilli()}}},
 				{"range":{"expires_on":{"gt":DUE_DATE.getMilli()}}},
+				featureFilter,
 				GUI.getFilters("bugs")
-//				Mozilla.BugStatus.Open.esfilter,
 			]}
 		}));
 
@@ -242,19 +247,50 @@ var __createChart = function*(){
 	var statusDomain=Mozilla.BugStatus.getDomain();
 	statusDomain.isFacet=true;
 
-	var chart = yield(ESQuery.run({
-		"from":"bugs",
-		"select":{"name":"num_bug", "value":"bug_id", "aggregate":"count"},
-		"edges":[
-			{"name":"status", "domain":statusDomain},
-			{"name":"date",
-				"range":{"min":"modified_ts", "max":"expires_on"},
-				"allowNulls":false,
-				"domain":{"type":"time", "min":sampleMin, "max":sampleMax, "interval":sampleInterval}
-			}
-		],
-		"esfilter":mainFilter
-	}));
+	var chart=null;
+	if (true){
+		var effort = yield(ESQuery.run({
+			"from":"bugs",
+			"select": [
+				"bug_id",
+				"bug_status",
+				"modified_ts",
+				"expires_on",
+				"status_whiteboard"
+			],
+			"esfilter":mainFilter
+		}));
+
+		chart = yield(Q({
+			"from": effort,
+			"select":{"name":"num", "value":'nvl(ScrumBugs.parse(status_whiteboard).points, 4)-0', "aggregate":"sum"},
+			"edges":[
+				{"name":"status", "domain":statusDomain},
+				{"name":"date",
+					"range":{"min":"modified_ts", "max":"expires_on"},
+					"allowNulls":false,
+					"domain":{"type":"time", "min":sampleMin, "max":sampleMax, "interval":sampleInterval}
+				}
+			],
+			"esfilter":mainFilter
+		}));
+	}else{
+		chart = yield(ESQuery.run({
+			"from":"bugs",
+			"select":{"name":"num", "value":"bug_id", "aggregate":"count"},
+			"edges":[
+				{"name":"status", "domain":statusDomain},
+				{"name":"date",
+					"range":{"min":"modified_ts", "max":"expires_on"},
+					"allowNulls":false,
+					"domain":{"type":"time", "min":sampleMin, "max":sampleMax, "interval":sampleInterval}
+				}
+			],
+			"esfilter":mainFilter
+		}));
+	}//endif
+
+
 	Log.actionDone(a);
 
 
@@ -262,9 +298,9 @@ var __createChart = function*(){
 	var flat = yield(Q({
 		"from":chart,
 		"select":[
-			{"name":"open", "value":"status.name=='Open' ? num_bug : null", "aggregate":"sum"},
-			{"name":"closed", "value":"status.name=='Closed' ? num_bug : null", "aggregate":"sum"},
-			{"name":"total", "value":"num_bug", "aggregate":"sum"}
+			{"name":"open", "value":"status.name=='Open' ? num : null", "aggregate":"sum", "default":0},
+			{"name":"closed", "value":"status.name=='Closed' ? num : null", "aggregate":"sum", "default":0},
+			{"name":"total", "value":"num", "aggregate":"sum", "default":0}
 		],
 		"edges":[
 			{"name":"date", "value":"date",
@@ -426,6 +462,14 @@ $(document).ready(function(){
 			"onlyOne": true,
 			"expandAll": true,
 			"treeDepth":1
+		})},
+		{"id": "feature", "name": "Feature", "type": PartitionFilter.newInstance({
+			"id": "features",
+			"name": "All Features",
+			"dimension": Mozilla.Feature,
+			"onlyOne": false,
+			"expandAll": true,
+			"treeDepth":0
 		})},
 		{"id": "milestone", "name": "Milestone", "type": PartitionFilter.newInstance({
 			"id": "milestones",

@@ -66,7 +66,7 @@ function showComponent(detail, showTYPE) {
 // SHOW SUMMARY COUNT
 function showSummary(type, team, detail, specialBugs, showTYPE) {
 
-	var TEMPLATE = '<h3 style="padding: 20px 0 0 10px;vertical-align: top; display:inline-block">{{name}} {{type}}</h3><div class="blocker">' +
+	var TEMPLATE = '<h3 style="padding: 20px 0 0 10px;vertical-align: top; display:inline-block;max-width: 350px;">{{name}} {{type}}</h3><div class="blocker">' +
 		'{{projectDetail}}' +
 		'<div style="display:inline-block;width:50px">&nbsp;</div>' +
 		'{{total}}' +

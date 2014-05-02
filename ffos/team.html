@@ -439,7 +439,7 @@ importScript("b2g/chart_lib.js", function () {
 						"id": "teams",
 						"name": "All Teams",
 						"dimension": Mozilla.B2G.Team,
-						"onlyOne": true,
+						"onlyOne": false,
 						"expandAll": true
 					})}
 				],
@@ -488,6 +488,7 @@ importScript("b2g/chart_lib.js", function () {
 					"select": [
 						"bug_id",
 						"cf_blocking_b2g",
+						"cf_blocking_loop",
 						"product",
 						"component",
 						"assigned_to",

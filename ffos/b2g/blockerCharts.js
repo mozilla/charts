@@ -66,6 +66,7 @@ function showChurn(args) {
 					"product",
 					"component",
 					"cf_blocking_b2g",
+					"cf_blocking_loop",
 					"keywords",
 					"target_milestone"
 				],
@@ -168,6 +169,7 @@ function showAges(args) {
 				"select": [
 					"bug_id",
 					"cf_blocking_b2g",
+					"cf_blocking_loop",
 					"target_milestone"
 				],
 				"esfilter": {"and": [

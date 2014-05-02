@@ -1,0 +1,476 @@
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+<!-- This Source Code Form is subject to the terms of the Mozilla Public
+   - License, v. 2.0. If a copy of the MPL was not distributed with this
+   - file, You can obtain one at http://mozilla.org/MPL/2.0/. -->
+<HTML>
+<HEAD>
+	<script type="application/javascript" src="js/imports/import.js"></script>
+</HEAD>
+<BODY>
+
+
+
+<div id="sidebar" style="width:300px;">
+	<br><br>
+	<div style="height: 30px; text-align: center;vertical-align:middle;">
+		<span id="status" style="height:30px">Page Loading...</span><span class="loading"><img src="images/spinner.gif" alt=""></span>
+	</div>
+
+	<hr>
+	<div id="description"></div>
+	<hr>
+	<div id="testMessage"></div>
+	<hr>
+	<div id="stats"></div>
+	<hr>
+	<div id="parameters" class="parameters">
+	</div>
+	<div id="filters" class="menu"></div>
+</div>
+
+
+
+	<div style="float:right;display: inline;">
+		<a href="http://people.mozilla.com/~klahnakoski/" class="button">HOME</a>
+	</div>
+
+<div style="align:left;position:relative;float:left;width:800px;">
+	<h3 id="title"></h3>
+
+	<div>
+		<div id="chart" class="chart" style="position: relative;height:300px;"></div>
+		<div id="chart_diff" class="chart" style="position: relative;height:300px;"></div>
+		<div id="buglist" style="position: relative;width:800px"></div>
+		<div id="info" style="position: relative;width:800px"></div>
+		<div id="report"></div>
+	</div>
+</div>
+<script type="application/javascript">
+
+importScript([
+	"js/main.js",
+	'js/Dimension-Bugzilla.js',
+	'js/Dimension-B2G.js',
+	'js/Dimension-Features.js',
+	"moreJS/burndown.js"
+], function(){
+
+
+var thread;
+var createChart = function(){
+	if (thread !== undefined)
+		thread.kill();
+	thread = Thread.run(function*(){
+		try{
+			yield (__createChart());
+		}catch(e){
+			if (e.contains(Thread.Interrupted)) return;
+			throw e;
+		}//try
+	});
+};
+
+var __createChart = function*(){
+
+
+	var NOW = Date.now();
+	var TODAY = Date.today();
+
+	var teamName = GUI.state.team.getSelectedParts().select("name").join(" and ");
+	var teamFilter = GUI.state.team.makeFilter();
+	if (teamName==""){
+		teamName = "All Teams";
+		teamFilter = Mozilla.B2G.esfilter;
+	}//endif
+
+
+	var milestones = GUI.state.milestone.getSelectedParts();
+	var milestoneName;
+	var START_DATE, sampleMin, sampleMax, DUE_DATE, MAX_CHART_DATE;
+	if (milestones.length==0){
+		$("#title").html("Must select a milestone");
+		yield (null)
+	}else{
+		milestoneName=milestones.map(function(m){return m.name;}).join(" and ");
+		milestones.forall(function(m){
+			START_DATE = aMath.min(START_DATE, Date.newInstance(m.start_date));
+			sampleMin = Date.min(START_DATE, TODAY.subtract(Duration.newInstance("2week")));
+			sampleMax = aMath.max(sampleMax, Date.newInstance(m.target_date).add(Duration.DAY));
+			DUE_DATE = sampleMax;
+			MAX_CHART_DATE=DUE_DATE.addDay(1);
+		});
+	}//endif
+
+	var sampleInterval = Duration.DAY;
+
+
+	//ADD PREDICTOR LINE
+
+	//LAST 6 WEEKS
+	var statsMax = Date.min(TODAY, sampleMax.addDay(-1));
+	var numWeek=aMath.min(6, aMath.floor((statsMax.getMilli()-sampleMin.getMilli())/Duration.WEEK.milli));
+	var statsMin = statsMax.addWeek(-numWeek);
+
+	$("#description").html("Preliminary burndown for WebRTC work");
+
+
+	if (title && title.length>0){
+		$("#title").html(title);
+	}else{
+		$("#title").html(milestoneName+" for "+teamName)
+	}//endif
+
+	yield (ESQuery.loadColumns({"from":"bugs"}));
+
+	var mainFilter = {"and":[
+		{"and":[
+			{"range":{"modified_ts":{"lt":sampleMax.getMilli()}}},
+			{"range":{"expires_on":{"gte":sampleMin.getMilli()}}}
+		]},
+//		{"script":{"script":MVEL.compile.expression("floorInterval(modified_ts-" + sampleMin.getMilli() + ", " + sampleInterval.milli + ")!=floorInterval(expires_on-" + sampleMin.getMilli() + ", " + sampleInterval.milli + ")", {"from":"bugs"})}},
+
+		GUI.getFilters("bugs")
+	]};
+
+
+
+	Thread.run(function*(){
+		////////////////////////////////////////////////////////////////////////////
+		// CURRENT BUGS LIST
+		////////////////////////////////////////////////////////////////////////////
+
+		var bugs = yield (ESQuery.run({
+			"from":"public_bugs",
+			"select":[
+				"bug_id",
+				"short_desc",
+				"assigned_to",
+				"bug_status",
+				"resolution",
+				"status_whiteboard"
+			],
+			"esfilter":{"and":[
+				Mozilla.CurrentRecords.esfilter,
+				GUI.state.milestone.makeFilter()
+			]}
+		}));
+
+		var details = yield (Qb.calc2List({
+			"from":bugs,
+			"select":[
+				{"name":"bug_id", "value":"bug_id"},
+				{"name":"Summary", "value":"short_desc"},
+				{"name":"Owner", "value":"assigned_to"},
+				{"name":"Status", "value":"bug_status + (resolution ? ' - '+resolution : '')"},
+				{"name":"Estimate", "value":"nvl(ScrumBugs.parse(status_whiteboard).points, 'missing')"}
+			],
+			"sort":["Status", "bug_id"]
+		}));
+
+		$("#buglist").html(bugDetails(details.list));
+	});
+
+	var churnTimeDomain={"type":"time", "min":sampleMin, "max":MAX_CHART_DATE, "interval":Duration.DAY, "value":"value"};
+
+	var perDay;
+	var churnThread=Thread.run(function*(){
+		////////////////////////////////////////////////////////////////////////////
+		// DAILY CHANGE
+		////////////////////////////////////////////////////////////////////////////
+		var minMaxBugs=yield(ElasticSearch.getOpenMinMax(teamFilter, churnTimeDomain, ["status_whiteboard", "cf_blocking_loop", "cf_blocking_b2g", "target_milestone", "keywords"]));
+
+		var diff = yield(Q({
+			"from":minMaxBugs,
+			"select":[
+				{"name":"opened", "value":"(time.min.getMilli()<=min && min<time.max.getMilli()) ? 1 : 0", "aggregate":"sum", "default":0, "style":{"color":Color.blue.multiply(0.9).hue(10).toHTML()}},
+				{"name":"closed", "value":"(time.min.getMilli()<=max && max<time.max.getMilli()) ? 1 : 0", "aggregate":"sum", "default":0, "style":{"color":Color.red.multiply(0.9).hue(10).toHTML()}}
+			],
+			"edges":[
+				{"name":"type", "domain":Mozilla.ChurnType.getDomain()},
+				{"name":"date", "test":"(time.min.getMilli()<=min && min<time.max.getMilli()) || (time.min.getMilli()<=max && max<time.max.getMilli())",
+					"allowNulls":false,
+					"domain":{"type":"time", "min":sampleMin, "max":MAX_CHART_DATE, "interval":Duration.DAY, "value":"value"}
+				}
+			]
+		}));
+
+		var chart=yield(Q({
+			"from":diff,
+			"select":[
+				{"name":"Opened", "value":"opened", "aggregate":"sum"},
+				{"name":"Regression", "value":"type.name=='Regression' ? -closed : 0", "aggregate":"sum"},
+				{"name":"Blocker", "value":"type.name=='Blocker' ? -closed : 0", "aggregate":"sum"},
+				{"name":"Targeted", "value":"type.name=='Targeted' ? -closed : 0", "aggregate":"sum"},
+				{"name":"Other", "value":"type.name=='Other' ? -closed : 0", "aggregate":"sum"}
+			],
+			"edges":[
+				{"name":"date", "value":"date", "domain":{"type":"time", "min":sampleMin, "max":MAX_CHART_DATE, "interval":Duration.DAY, "value":"value"}}
+			]
+		}));
+
+		a = Log.action("Make chart", true);
+		aChart.show({
+			"id":"chart_diff",
+			"sheetDiv":"info",
+			"type":"bar",
+			"stacked":true,
+			"cube":chart,
+			"xAxisSize":50,
+			"clickAction":function(series, x, d){
+				Thread.run(function*(){
+					var where = {"and":[]};
+					if (series=="Opened"){
+						where.and.append({"range":{"min":{"gte": x.getMilli()}}});
+						where.and.append({"range":{"min":{"lt": x.addDay().getMilli()}}});
+					}else{
+						where.and.append({"range":{"max":{"gte": x.getMilli()}}});
+						where.and.append({"range":{"max":{"lt": x.addDay().getMilli()}}});
+						where.and.append(Mozilla.ChurnType[series].fullFilter);
+					}//endif
+
+					var buglist=(yield (Qb.calc2List({
+						"from":minMaxBugs,
+						"select":{"value":"bug_id"},
+						"where":where
+					})));
+
+					Bugzilla.showBugs(buglist.list);
+				});
+			}//click
+		});
+		Log.actionDone(a);
+
+		perDay = (yield(Qb.calc2List({
+			"from":diff,
+			"select":[
+				{"name":"opened", "value":"opened", "aggregate":"average"},
+				{"name":"closed", "value":"closed", "aggregate":"average"}
+			],
+			"where":statsMin.getMilli()+"<=date.getMilli() && date.getMilli()<"+statsMax.getMilli()
+		}))).list[0];
+
+
+		$("#stats").html(
+			'<span class="parameter_name">New Bugs Per Day:</span>' + aMath.round(perDay.opened, 1) + '<br>' +
+			'<span class="parameter_name">Closed Per Day:</span>' + aMath.round(perDay.closed, 1) + '<br>' +
+			''
+		);
+
+	});
+
+
+	var a = Log.action("Request Bugs", true);
+	var statusDomain=Mozilla.BugStatus.getDomain();
+	statusDomain.isFacet=true;
+
+	var chart = yield(ESQuery.run({
+		"from":"bugs",
+		"select":{"name":"num_bug", "value":"bug_id", "aggregate":"count"},
+		"edges":[
+			{"name":"status", "domain":statusDomain},
+			{"name":"date",
+				"range":{"min":"modified_ts", "max":"expires_on"},
+				"allowNulls":false,
+				"domain":{"type":"time", "min":sampleMin, "max":sampleMax, "interval":sampleInterval}
+			}
+		],
+		"esfilter":mainFilter
+	}));
+	Log.actionDone(a);
+
+
+	//CONVERT EDGE TO ATTRIBUTES
+	var flat = yield(Q({
+		"from":chart,
+		"select":[
+			{"name":"open", "value":"status.name=='Open' ? num_bug : null", "aggregate":"sum"},
+			{"name":"closed", "value":"status.name=='Closed' ? num_bug : null", "aggregate":"sum"},
+			{"name":"total", "value":"num_bug", "aggregate":"sum"}
+		],
+		"edges":[
+			{"name":"date", "value":"date",
+				"allowNulls":false,
+				"domain":{"type":"time", "min":sampleMin, "max":sampleMax, "interval":sampleInterval, "value":"value"}
+			}
+		]
+	}));
+	var timeDomain=flat.edges[0].domain;
+
+	//SHOW FUTURE VALUES AS NULLS
+	flat.cube.forall(function(v, i){
+		if (timeDomain.partitions[i].min > TODAY){
+			flat.cube[i]=Map.zip(mapAllKey(v, function(k, v){
+				return [k, null];
+			}));
+		}//endif
+	});
+
+	var stats = yield(Q({
+		"from":flat,
+		"select":[
+			{"name":"closed", value:"nvl(closed, 0)"},
+			{"name":"total", value:"nvl(total, 0)"}
+		],
+		"edges":[
+			{"name":"date", "value":"date",
+				"allowNulls":false,
+				"domain":{"type":"time", "min":sampleMin, "max":sampleMax, "interval":Duration.DAY, "value":"value"}
+			}
+		]
+	}));
+
+
+	yield (Thread.join(churnThread));
+	if (DUE_DATE <= TODAY){
+		//DONE, NO STATS REQUIRED
+	}else{
+		var stillOpen = flat.cube[flat.edges[0].domain.getPartByKey(TODAY).dataIndex].open;
+		var requiredNetCloseRatePerDay;
+		{
+			var daysLeft=Date.diffWeekday(DUE_DATE, TODAY);
+			//let	daysLeft = DUE_DATE.subtract(sampleMax).divideBy(Duration.DAY);
+			daysLeft = aMath.max(1, daysLeft);
+			requiredNetCloseRatePerDay = stillOpen / daysLeft;
+		}
+
+		$("#stats").append('<span class="parameter_name">Required Closed/Day:</span>' + aMath.round(requiredNetCloseRatePerDay + perDay.opened, 1) + '<br>');
+
+		var expectedEndDate;
+		{
+			var openAtStartOfEstimate = flat.cube[flat.edges[0].domain.getPartByKey(statsMax).dataIndex-1].open;
+			var netCloseRatePerDay = (perDay.closed-perDay["opened"]);
+			var daysLeft = openAtStartOfEstimate / netCloseRatePerDay;
+			expectedEndDate = statsMax.addWeekday(daysLeft);
+			netCloseRatePerDay = aMath.max(0, netCloseRatePerDay);
+		}
+
+	//	$("#stats").append('<span class="parameter_name">DUE Date:</span>' + DUE_DATE.format("dd MMM yyyy") + '<br>');
+		if (netCloseRatePerDay <= 0){
+			$("#stats").append('<span class="parameter_name">Expected End:</span>NEVER<br>');
+		} else{
+			$("#stats").append('<span class="parameter_name">Expected End:</span>' + expectedEndDate.format("dd MMM yyyy") + '<br>');
+		}//endif
+	}//endif
+
+
+
+
+	//WE WILL CHART A DYNAMIC SET OF COLUMNS, BASED ON IF WE ARE LOOKING AT A FUTURE OR PAST DUE DATE
+	var columnsToChart=[
+		{"value":"total", "style":{"color":Color.blue.multiply(0.5).hue(40).toHTML(), "visibility":"hidden"}},
+		{"value":"open", "style":{"color":Color.green.multiply(0.9).hue(100).toHTML()}}
+	];
+
+	var startingTotal = flat.cube[flat.edges[0].domain.getPartByKey(START_DATE).dataIndex].total;
+	var daysLeft=Date.diffWeekday(DUE_DATE, START_DATE);
+	daysLeft = aMath.max(1, daysLeft);
+	var idealRatePerDay = startingTotal / daysLeft;
+
+	//IDEAL BURNDOWN
+	aChart.addPredictionLine({
+		"source":{
+			"name":"open",
+			"domain":{"min":sampleMin, "max":MAX_CHART_DATE},
+			"data":flat.list
+		},
+		"predict":{
+			"name":"ideal",
+			"domain":{"min":START_DATE, "max":DUE_DATE},
+			"line":function(date){
+				var y=aMath.round(startingTotal + (-idealRatePerDay * (Date.diffWeekday(date, START_DATE))));
+				if (y < 0) y = 0;
+				return y;
+			}
+		}
+	});
+
+	columnsToChart.insert(1, {"value":"ideal", "style":{"color":"lightgray"}});
+	flat.select.push({"name":"ideal"});
+	flat.columns.push({"name":"ideal"});
+
+
+	chartP = yield(Q({
+		"from":flat,
+		"select": columnsToChart,
+		"edges":[
+			{"name":"date", "value":"date",
+				"domain":{"type":"time", "min":sampleMin, "max":MAX_CHART_DATE, "interval":"day", "value":"value"}}
+		]
+	}));
+
+
+	a = Log.action("Make chart", true);
+	aChart.show({
+		"id":"chart",
+		"sheetDiv":"info",
+		"type":"line",
+		"stacked":false,
+		"cube":chartP,
+		"xAxisSize":50,
+		extensionPoints: {
+		    dot_shapeRadius: 3,
+            dot_shape:"circle",
+			line_lineWidth: 3
+		},
+		"clickAction":function(series, x, d){
+			Thread.run(function*(){
+				var buglist=(yield (ESQuery.run({
+					"from":"bugs",
+					"select":{"value":"bug_id", "aggregate":"minimum"},
+					"edges":[
+						{"name":"unique", "value":"bug_id"}
+					],
+					"esfilter":{"and":[
+						mainFilter,
+						{"range":{"modified_ts":{"lte":x.getMilli()}}},
+						{"range":{"expires_on":{"gt":x.getMilli()}}},
+						Mozilla.BugStatus.Open.esfilter,
+						GUI.getFilters("bugs")
+					]}
+				})));
+
+				Bugzilla.showBugs(buglist.cube);
+			});
+		}//click
+	});
+	Log.actionDone(a);
+
+};
+
+
+$(document).ready(function(){
+	GUI.setup(createChart, [
+		{"id": "team", "name": "Team", "type": PartitionFilter.newInstance({
+			"id": "teams",
+			"name": "All Teams",
+			"dimension": Mozilla.B2G.Team,
+			"onlyOne": false,
+			"expandAll": true,
+			"treeDepth":1
+		})},
+		{"id": "milestone", "name": "Milestone", "type": PartitionFilter.newInstance({
+			"id": "milestones",
+			"name": "All Milestones",
+			"dimension": Mozilla.Milestone,
+			"onlyOne": false,
+			"expandAll": true,
+			"treeDepth":0
+		})}
+		],
+		[],
+		"bugs",
+		false
+	);
+
+//	GUI.productFilter = ["B2G 1.0.0 (TEF)"];
+
+});
+
+});
+</script>
+
+
+
+</BODY>
+</HTML>
+

@@ -186,6 +186,10 @@ function* calc2Tree(query){
 			} else{
 				var v = edge.calc(row, null);
 
+				if (row.max!==undefined){
+					Log.debug()
+				}
+
 				//STANDARD 1-1 MATCH VALUE TO DOMAIN
 				var p = edge.domain.getPartByKey(v);
 				if (p === undefined){
@@ -921,7 +925,8 @@ Qb.merge=function(query){
 		if (item.edges.length!=commonEdges.length) Log.error("Expecting all partitions to have same number of (common) edges declared");
 		item.edges.forall(function(edge, i){
 			if (typeof(edge)=="string") Log.error("can not find edge named '"+edge+"'");
-			if (!Qb.domain.equals(commonEdges[i].domain, edge.domain)) Log.error("Edges domains ("+item.from.name+", edge="+edge.name+") and ("+query[0].from.name+", edge="+commonEdges[i].name+") are different");
+			if (!Qb.domain.equals(commonEdges[i].domain, edge.domain))
+				Log.error("Edges domains ("+item.from.name+", edge="+edge.name+") and ("+query[0].from.name+", edge="+commonEdges[i].name+") are different");
 		});
 
 

@@ -668,7 +668,8 @@ CNV.esFilter2function=function(esFilter){
 	if (esFilter === undefined) return TRUE_FILTER;
 
 	var keys = Object.keys(esFilter);
-	if (keys.length != 1) Log.error("Expecting only one filter aggregate");
+	if (keys.length != 1)
+		Log.error("Expecting only one filter aggregate");
 	var op = keys[0];
 	if (op == "and"){
 		var list = esFilter[op];
@@ -782,7 +783,8 @@ CNV.esFilter2Expression=function(esFilter){
 	var output = "";
 
 	var keys = Object.keys(esFilter);
-	if (keys.length != 1) Log.error("Expecting only one filter aggregate");
+	if (keys.length != 1)
+		Log.error("Expecting only one filter aggregate");
 	var op = keys[0];
 	if (op == "and"){
 		var list = esFilter[op];

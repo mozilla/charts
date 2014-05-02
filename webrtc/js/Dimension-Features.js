@@ -91,5 +91,23 @@ Dimension.addEdges(true, Mozilla, [
 			]
 		}
 
+	]},
+	{"name":"ChurnType", "partitions":[
+		{"name": "Regression", "esfilter": {"term": {"keywords": "regression"}}},
+		{"name": "Blocker", "esfilter": {"and": [
+			{"or":[
+				{"terms": {"cf_blocking_b2g": ["1.3+", "1.4+", "1.3t+", "1.5+", "2.0+"]}},
+				{"terms": {"cf_blocking_loop": ["fx30+", "fx31+", "fx32+", "fx33+", "fx30+", "fx34+", "fx35+", "fx36+"]}}
+			]}
+		]}},
+		{"name": "Targeted",
+			"style": {"color": "#9467bd", "visibility":"hidden"},
+			"esfilter": {"and": [
+				{"exists": {"field": "target_milestone"}},
+				{"not": {"term": {"target_milestone": "---"}}}
+			]}
+		},
+		{"name": "Other", "style": {"color": "#dddddd"}, "esfilter": {"match_all": {}}}
 	]}
+
 ]);

@@ -71,8 +71,6 @@ var createChart = function(){
 };
 
 var __createChart = function*(){
-
-
 	var NOW = Date.now();
 	var TODAY = Date.today();
 
@@ -82,8 +80,6 @@ var __createChart = function*(){
 		teamName = "All Teams";
 		teamFilter = Mozilla.B2G.esfilter;
 	}//endif
-	teamFilter={"terms":{"bug_id":[1002814]}};
-
 
 	var milestones = GUI.state.milestone.getSelectedParts();
 	var milestoneName;
@@ -104,8 +100,6 @@ var __createChart = function*(){
 
 	var sampleInterval = Duration.DAY;
 	var timeDomain = {"type":"time", "min":sampleMin, "max":MAX_CHART_DATE, "interval":sampleInterval};
-
-	//ADD PREDICTOR LINE
 
 	//LAST 6 WEEKS
 	var statsMax = Date.min(TODAY, sampleMax.addDay(-1));
@@ -129,7 +123,6 @@ var __createChart = function*(){
 			{"range":{"expires_on":{"gte":sampleMin.getMilli()}}}
 		]},
 //		{"script":{"script":MVEL.compile.expression("floorInterval(modified_ts-" + sampleMin.getMilli() + ", " + sampleInterval.milli + ")!=floorInterval(expires_on-" + sampleMin.getMilli() + ", " + sampleInterval.milli + ")", {"from":"bugs"})}},
-
 		GUI.getFilters("bugs")
 	]};
 
@@ -360,7 +353,7 @@ var __createChart = function*(){
 
 	//SHOW FUTURE VALUES AS NULLS
 	flat.cube.forall(function(v, i){
-		if (tempTimeDomain.partitions[i].min > TODAY){
+		if (tempTimeDomain.partitions[i].min > TODAY.addDay()){
 			flat.cube[i]=Map.zip(mapAllKey(v, function(k, v){
 				return [k, null];
 			}));

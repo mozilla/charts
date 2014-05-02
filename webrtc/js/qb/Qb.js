@@ -206,7 +206,6 @@ function* calc2Tree(query){
 			}//endif
 		}//for
 
-
 		for(var r = results.length; r--;){
 			var pass = where(row, results[r]);
 			if (pass){
@@ -1178,6 +1177,19 @@ Qb.drill=function(query, parts){
 
 	Q=calc2Cube;
 
+
+
+
+	Qb.UNION = function UNION(arrays){
+		var output={};
+		arrays.forall(function(a){
+			for(var i = a.length; i--;){
+				var v = a[i];
+				output[v]=v;
+			}//for
+		});
+		return mapValues(output);
+	};
 
 
 })();

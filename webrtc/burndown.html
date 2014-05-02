@@ -74,32 +74,36 @@ var __createChart = function*(){
 	var TODAY = Date.today();
 	var teamName = GUI.state.team.getSelectedParts().select("name").join(" and ");
 
-	var features = GUI.state.feature.getSelectedParts();
-	var featureFilter=ESQuery.TrueFilter;
-	if (features.length>0){
-		var featureBugs = yield(allOpenDependencies({"and": features.select("esfilter")}));
-		featureFilter = {"terms":{"bug_id":featureBugs}}
-	}//endif
-
 	var milestones = GUI.state.milestone.getSelectedParts();
-	var milestone = null;
+	var START_DATE, sampleMin, sampleMax, DUE_DATE, MAX_CHART_DATE;
 	if (milestones.length==0){
-		$("#title").html("Must select a milestone");
-		yield (null)
+		START_DATE = TODAY.subtract(Duration.newInstance("2week"));
+		sampleMin = Date.min(START_DATE, TODAY.subtract(Duration.newInstance("2week")));
+		sampleMax = TODAY.add(Duration.newInstance("2week"));
+		DUE_DATE = sampleMax;
+		MAX_CHART_DATE=DUE_DATE.addDay(1);
 	}else{
-		milestone = milestones[0]
+		milestones.forall(function(m){
+			START_DATE = aMath.min(START_DATE, Date.newInstance(m.start_date));
+			sampleMin = Date.min(START_DATE, TODAY.subtract(Duration.newInstance("2week")));
+			sampleMax = aMath.max(sampleMax, Date.newInstance(m.target_date).add(Duration.DAY));
+			DUE_DATE = sampleMax;
+			MAX_CHART_DATE=DUE_DATE.addDay(1);
+		});
 	}//endif
-
-	var START_DATE = Date.newInstance(milestone.start_date);
-	var sampleMin = Date.min(START_DATE, TODAY.subtract(Duration.newInstance("2week")));
-	var sampleMax = Date.newInstance(milestone.target_date).add(Duration.DAY);
-	var DUE_DATE = sampleMax;
-	var MAX_CHART_DATE=DUE_DATE.addDay(1);
 
 	var sampleInterval = Duration.DAY;
+	var timeDomain = {"type":"time", "min":sampleMin, "max":MAX_CHART_DATE, "interval":sampleInterval};
 
+	var featureFilter=ESQuery.TrueFilter;
+	var features = GUI.state.feature.getSelectedParts();
+	var raw_data = null;
+	if (features.length>0){
+		raw_data = yield(allOpenDependencies({"or": features.select("esfilter")}, timeDomain, ["status_whiteboard"], false));
+		featureFilter = raw_data.cube.last().filter({"exists":{"field":"counted"}});  //LAST DAY WILL BE CONSIDERED CURRENT FEATURE LIST
+	}else{
 
-	//ADD PREDICTOR LINE
+	}//endif
 
 	//LAST 6 WEEKS
 	var statsMax = Date.min(TODAY, sampleMax.addDay(-1));
@@ -147,7 +151,7 @@ var __createChart = function*(){
 			"esfilter":{"and":[
 				{"range":{"modified_ts":{"lte":DUE_DATE.getMilli()}}},
 				{"range":{"expires_on":{"gt":DUE_DATE.getMilli()}}},
-				featureFilter,
+//				featureFilter,
 				GUI.getFilters("bugs")
 			]}
 		}));
@@ -172,28 +176,43 @@ var __createChart = function*(){
 		////////////////////////////////////////////////////////////////////////////
 		// DAILY CHANGE
 		////////////////////////////////////////////////////////////////////////////
-		var minMaxBugs=yield(ElasticSearch.getMinMax({"and":[
-				Mozilla.BugStatus.Open.esfilter,
-				{"range":{"modified_ts":{"lt":sampleMax.getMilli()}}},
-				{"range":{"expires_on":{"gte":sampleMin.getMilli()}}},
-				GUI.getFilters("bugs")
-			]}));
+		for(var b=0;b<raw_data.cube[0].length;b++){
+		for(var d=0;d<raw_data.cube.length-1;d++){
+			var thisStatus=raw_data.cube[d][b].bug_status;
+			var nextStatus=raw_data.cube[d+1][b].bug_status;
+			if (["new", "assigned", "unconfirmed", "reopened"].contains(thisStatus)){
+				raw_data.cube[d][b].opened=0;
+				if (["new", "assigned", "unconfirmed", "reopened"].contains(nextStatus)){
+					raw_data.cube[d][b].closed=0;
+
+				}else{
+					raw_data.cube[d][b].closed=1;
+				}//endif
+			}else{
+				raw_data.cube[d][b].closed=0;
+				if (["new", "assigned", "unconfirmed", "reopened"].contains(nextStatus)){
+					raw_data.cube[d][b].opened=1;
+				}else{
+					raw_data.cube[d][b].opened=0;
+				}//endif
+
+			}//endif
+		}//for
+		}//for
+		raw_data.columns.append({"name":"opened"});
+		raw_data.columns.append({"name":"closed"});
 
 
 		var diff = yield(Q({
-			"from":minMaxBugs,
+			"from":raw_data,
 			"select":[
-				{"name":"opened", "value":"(time.min.getMilli()<=min && min<time.max.getMilli()) ? 1 : 0", "aggregate":"sum", "default":0, "style":{"color":Color.blue.multiply(0.9).hue(10).toHTML()}},
-				{"name":"closed", "value":"(time.min.getMilli()<=max && max<time.max.getMilli()) ? -1 : 0", "aggregate":"sum", "default":0, "style":{"color":Color.red.multiply(0.9).hue(10).toHTML()}}
+				{"name":"opened", "value":"opened", "aggregate":"sum", "default":0, "style":{"color":Color.blue.multiply(0.9).hue(10).toHTML()}},
+				{"name":"closed", "value":"-closed", "aggregate":"sum", "default":0, "style":{"color":Color.red.multiply(0.9).hue(10).toHTML()}}
 			],
 			"edges":[
-				{"name":"date", "test":"(time.min.getMilli()<=min && min<time.max.getMilli()) || (time.min.getMilli()<=max && max<time.max.getMilli())",
-					"allowNulls":false,
-					"domain":{"type":"time", "min":sampleMin, "max":MAX_CHART_DATE, "interval":Duration.DAY, "value":"value"}
-				}
+				{"name":"date", "value":"date", "domain":{"type":"time", "min":sampleMin, "max":sampleMax, "interval":sampleInterval}}
 			]
 		}));
-
 
 		a = Log.action("Make chart", true);
 		aChart.show({
@@ -205,17 +224,13 @@ var __createChart = function*(){
 			"xAxisSize":50,
 			"clickAction":function(series, x, d){
 				Thread.run(function*(){
-					var where;
-					if (series=="opened"){
-						where="min.floorDay().getMilli()=="+x.getMilli();
-					}else{
-						where="max && max.floorDay().getMilli()=="+x.getMilli();
-					}//endif
-
 					var buglist=(yield (Qb.calc2List({
-						"from":minMaxBugs,
+						"from":raw_data,
 						"select":{"value":"bug_id"},
-						"where":where
+						"where":{"and":[
+							{"term":Map.newInstance(series, 1)},
+							{"term":{"date": x}}
+						]}
 					})));
 
 					Bugzilla.showBugs(buglist.list);
@@ -244,37 +259,28 @@ var __createChart = function*(){
 
 
 	var a = Log.action("Request Bugs", true);
-	var statusDomain=Mozilla.BugStatus.getDomain();
-	statusDomain.isFacet=true;
-
 	var chart=null;
 	if (true){
-		var effort = yield(ESQuery.run({
-			"from":"bugs",
-			"select": [
-				"bug_id",
-				"bug_status",
-				"modified_ts",
-				"expires_on",
-				"status_whiteboard"
-			],
-			"esfilter":mainFilter
-		}));
-
 		chart = yield(Q({
-			"from": effort,
-			"select":{"name":"num", "value":'nvl(ScrumBugs.parse(status_whiteboard).points, 4)-0', "aggregate":"sum"},
+			"from": raw_data,
+			"select":{"name":"num", "value":'nvl(ScrumBugs.parse(status_whiteboard).points, 1)-0', "aggregate":"sum"},
 			"edges":[
-				{"name":"status", "domain":statusDomain},
+				{"name": "status", "value": "counted", "domain": {"type": "set", "key":"value", "partitions": [
+					{"name": "Open", "value": "Open"},
+					{"name": "Closed", "value": "Closed"}
+				]}},
 				{"name":"date",
-					"range":{"min":"modified_ts", "max":"expires_on"},
+					"value":"date",
 					"allowNulls":false,
-					"domain":{"type":"time", "min":sampleMin, "max":sampleMax, "interval":sampleInterval}
+					"domain":timeDomain
 				}
 			],
 			"esfilter":mainFilter
 		}));
 	}else{
+		var statusDomain=Mozilla.BugStatus.getDomain();
+		statusDomain.isFacet=true;
+
 		chart = yield(ESQuery.run({
 			"from":"bugs",
 			"select":{"name":"num", "value":"bug_id", "aggregate":"count"},
@@ -283,16 +289,13 @@ var __createChart = function*(){
 				{"name":"date",
 					"range":{"min":"modified_ts", "max":"expires_on"},
 					"allowNulls":false,
-					"domain":{"type":"time", "min":sampleMin, "max":sampleMax, "interval":sampleInterval}
+					"domain":timeDomain
 				}
 			],
 			"esfilter":mainFilter
 		}));
 	}//endif
-
-
 	Log.actionDone(a);
-
 
 	//CONVERT EDGE TO ATTRIBUTES
 	var flat = yield(Q({
@@ -300,7 +303,7 @@ var __createChart = function*(){
 		"select":[
 			{"name":"open", "value":"status.name=='Open' ? num : null", "aggregate":"sum", "default":0},
 			{"name":"closed", "value":"status.name=='Closed' ? num : null", "aggregate":"sum", "default":0},
-			{"name":"total", "value":"num", "aggregate":"sum", "default":0}
+			{"name":"total", "value":"status.name!='none' ? num : null", "aggregate":"sum", "default":0}
 		],
 		"edges":[
 			{"name":"date", "value":"date",
@@ -309,11 +312,11 @@ var __createChart = function*(){
 			}
 		]
 	}));
-	var timeDomain=flat.edges[0].domain;
+	var tempTimeDomain=flat.edges[0].domain;
 
 	//SHOW FUTURE VALUES AS NULLS
 	flat.cube.forall(function(v, i){
-		if (timeDomain.partitions[i].min > TODAY){
+		if (tempTimeDomain.partitions[i].min > TODAY){
 			flat.cube[i]=Map.zip(mapAllKey(v, function(k, v){
 				return [k, null];
 			}));
@@ -429,18 +432,15 @@ var __createChart = function*(){
 		},
 		"clickAction":function(series, x, d){
 			Thread.run(function*(){
-				var buglist=(yield (ESQuery.run({
-					"from":"bugs",
+				var buglist=(yield (Q({
+					"from":raw_data,
 					"select":{"value":"bug_id", "aggregate":"minimum"},
 					"edges":[
 						{"name":"unique", "value":"bug_id"}
 					],
 					"esfilter":{"and":[
-						mainFilter,
-						{"range":{"modified_ts":{"lte":x.getMilli()}}},
-						{"range":{"expires_on":{"gt":x.getMilli()}}},
-						Mozilla.BugStatus.Open.esfilter,
-						GUI.getFilters("bugs")
+						{"term":{"counted":series}},
+						{"term":{"date":x}}
 					]}
 				})));
 

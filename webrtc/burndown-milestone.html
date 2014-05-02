@@ -82,6 +82,7 @@ var __createChart = function*(){
 		teamName = "All Teams";
 		teamFilter = Mozilla.B2G.esfilter;
 	}//endif
+	teamFilter={"terms":{"bug_id":[1002814]}};
 
 
 	var milestones = GUI.state.milestone.getSelectedParts();
@@ -102,7 +103,7 @@ var __createChart = function*(){
 	}//endif
 
 	var sampleInterval = Duration.DAY;
-
+	var timeDomain = {"type":"time", "min":sampleMin, "max":MAX_CHART_DATE, "interval":sampleInterval};
 
 	//ADD PREDICTOR LINE
 
@@ -151,7 +152,8 @@ var __createChart = function*(){
 			],
 			"esfilter":{"and":[
 				Mozilla.CurrentRecords.esfilter,
-				GUI.state.milestone.makeFilter()
+				GUI.state.milestone.makeFilter(),
+				teamFilter
 			]}
 		}));
 
@@ -228,13 +230,8 @@ var __createChart = function*(){
 						where.and.append(Mozilla.ChurnType[series].fullFilter);
 					}//endif
 
-					var buglist=(yield (Qb.calc2List({
-						"from":minMaxBugs,
-						"select":{"value":"bug_id"},
-						"where":where
-					})));
-
-					Bugzilla.showBugs(buglist.list);
+					var buglist=minMaxBugs.list.filter(where);
+					Bugzilla.showBugs(buglist.select("bug_id"));
 				});
 			}//click
 		});
@@ -263,29 +260,94 @@ var __createChart = function*(){
 	var statusDomain=Mozilla.BugStatus.getDomain();
 	statusDomain.isFacet=true;
 
-	var chart = yield(ESQuery.run({
-		"from":"bugs",
-		"select":{"name":"num_bug", "value":"bug_id", "aggregate":"count"},
-		"edges":[
-			{"name":"status", "domain":statusDomain},
-			{"name":"date",
-				"range":{"min":"modified_ts", "max":"expires_on"},
-				"allowNulls":false,
-				"domain":{"type":"time", "min":sampleMin, "max":sampleMax, "interval":sampleInterval}
-			}
-		],
-		"esfilter":mainFilter
-	}));
+	var currMilestoneThread=Thread.run(function*(){
+		var currMilestone=yield (ESQuery.run({
+			"from":"bugs",
+			"select":[
+				"bug_id",
+				"status_whiteboard",
+				"target_milestone",
+				"cf_blocking_loop"
+			],
+			"esfilter":{"and":[
+				Mozilla.CurrentRecords.esfilter,
+				GUI.state.milestone.makeFilter(),
+				teamFilter
+			]}
+		}));
+
+		var milestoneTotals=yield(Q({
+			"from":currMilestone,
+			"select":{"name":"total", "value":'nvl(ScrumBugs.parse(status_whiteboard).points, 1)-0', "aggregate":"sum"},
+			"edges":[
+				{"name":"Milestone", "domain":Mozilla.Milestone.getDomain()}
+			]
+		}));
+
+		milestoneTotals.edges[0].domain.partitions.forall(function(m, i){
+			var total=milestoneTotals.cube[i];
+			Mozilla.Milestone[m.name].total=nvl(total, Mozilla.Milestone[m.name].total);
+		});
+	});
+
+
+	var chart;
+	if (true){
+		var milestoneBugs=yield(ESQuery.run({
+			"from":"bugs",
+			"select":[
+				"bug_id",
+				"bug_status",
+				"status_whiteboard",
+				"keywords",
+				"modified_ts",
+				"expires_on"
+			],
+			"esfilter":{"and":[
+				GUI.state.milestone.makeFilter(),
+				teamFilter
+			]}
+		}));
+
+		chart = yield(Q({
+			"from": milestoneBugs,
+			"select":{"name":"num", "value":'nvl(ScrumBugs.parse(status_whiteboard).points, 1)-0', "aggregate":"sum", "default":0},
+			"edges":[
+				{"name": "status", "domain":statusDomain},
+				{"name":"date",
+					"range":{"min":"modified_ts", "max":"expires_on"},
+					"allowNulls":false,
+					"domain":timeDomain
+				}
+			],
+			"esfilter":mainFilter
+		}));
+	}else{
+		chart = yield(ESQuery.run({
+			"from":"bugs",
+			"select":{"name":"num", "value":"bug_id", "aggregate":"count"},
+			"edges":[
+				{"name":"status", "domain":statusDomain},
+				{"name":"date",
+					"range":{"min":"modified_ts", "max":"expires_on"},
+					"allowNulls":false,
+					"domain":{"type":"time", "min":sampleMin, "max":sampleMax, "interval":sampleInterval}
+				}
+			],
+			"esfilter":mainFilter
+		}));
+	}//endif
 	Log.actionDone(a);
 
+	yield (currMilestoneThread.join());
 
-	//CONVERT EDGE TO ATTRIBUTES
+	//CONVERT open/closed EDGE TO open/closed/total ATTRIBUTES
 	var flat = yield(Q({
 		"from":chart,
 		"select":[
-			{"name":"open", "value":"status.name=='Open' ? num_bug : null", "aggregate":"sum"},
-			{"name":"closed", "value":"status.name=='Closed' ? num_bug : null", "aggregate":"sum"},
-			{"name":"total", "value":"num_bug", "aggregate":"sum"}
+			{"name":"open", "value":"status.name=='Open' ? num : null", "aggregate":"sum"},
+			{"name":"closed", "value":"status.name=='Closed' ? num : null", "aggregate":"sum"},
+			{"name":"total", "value":"num", "aggregate":"sum"}
 		],
 		"edges":[
 			{"name":"date", "value":"date",
@@ -294,11 +356,11 @@ var __createChart = function*(){
 			}
 		]
 	}));
-	var timeDomain=flat.edges[0].domain;
+	var tempTimeDomain=flat.edges[0].domain;
 
 	//SHOW FUTURE VALUES AS NULLS
 	flat.cube.forall(function(v, i){
-		if (timeDomain.partitions[i].min > TODAY){
+		if (tempTimeDomain.partitions[i].min > TODAY){
 			flat.cube[i]=Map.zip(mapAllKey(v, function(k, v){
 				return [k, null];
 			}));
@@ -361,7 +423,7 @@ var __createChart = function*(){
 		{"value":"open", "style":{"color":Color.green.multiply(0.9).hue(100).toHTML()}}
 	];
 
-	var startingTotal = flat.cube[flat.edges[0].domain.getPartByKey(START_DATE).dataIndex].total;
+	var startingTotal = Mozilla.Milestone.Firefox32.total;
 	var daysLeft=Date.diffWeekday(DUE_DATE, START_DATE);
 	daysLeft = aMath.max(1, daysLeft);
 	var idealRatePerDay = startingTotal / daysLeft;
@@ -375,9 +437,9 @@ var __createChart = function*(){
 		},
 		"predict":{
 			"name":"ideal",
-			"domain":{"min":START_DATE, "max":DUE_DATE},
+			"domain":{"min":sampleMin, "max":DUE_DATE},
 			"line":function(date){
-				var y=aMath.round(startingTotal + (-idealRatePerDay * (Date.diffWeekday(date, START_DATE))));
+				var y=aMath.round(startingTotal + (date<START_DATE ? 0 :(-idealRatePerDay * (Date.diffWeekday(date, START_DATE)))));
 				if (y < 0) y = 0;
 				return y;
 			}

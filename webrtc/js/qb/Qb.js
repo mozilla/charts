@@ -186,10 +186,6 @@ function* calc2Tree(query){
 			} else{
 				var v = edge.calc(row, null);
 
-				if (row.max!==undefined){
-					Log.debug()
-				}
-
 				//STANDARD 1-1 MATCH VALUE TO DOMAIN
 				var p = edge.domain.getPartByKey(v);
 				if (p === undefined){

@@ -185,3 +185,5 @@ function* allOpenDependencies(esfilter, dateRange, selects, allOpen) {
 
 	yield (data);
 }//function
+
+

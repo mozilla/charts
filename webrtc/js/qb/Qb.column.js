@@ -86,7 +86,7 @@ Qb.column.compile = function(resultColumn, sourceColumns, edges, useMVEL){  //us
 		"var output;\n"+
 		"try{ " +
 			"	output=" + resultColumn.value + "; " +
-			"	if (output===undefined || aMath.isNaN(output)) Log.error(\"" + resultColumn.name + " returns \"+CNV.Value2Quote(output));\n"+
+			"	if (output===undefined || (output!=null && aMath.isNaN(output))) Log.error(\"" + resultColumn.name + " returns \"+CNV.Value2Quote(output));\n"+
 			"	return output;\n" +
 			"}catch(e){\n" +
 			"	Log.error("+

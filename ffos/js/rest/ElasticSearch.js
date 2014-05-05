@@ -70,16 +70,7 @@ ElasticSearch.getMinMax=function*(esfilter){
 
 	});
 
-	var maxThread = yield(ESQuery.run({
-		"from":"bugs",
-		"select":{"name":"max", "value":"expires_on", "aggregate":"maximum"},
-		"edges":[
-			"bug_id"
-		],
-		"esfilter":esfilter
-	}));
-
-	var u3 = yield(ESQuery.run({
+	var u2 = yield(ESQuery.run({
 		"from":"bugs",
 		"select":{"name":"max", "value":"expires_on", "aggregate":"maximum"},
 		"edges":[
@@ -95,14 +86,14 @@ ElasticSearch.getMinMax=function*(esfilter){
 		u1.cube[i]=Date.newInstance(v);
 		if (u1.cube[i]==null) u1.cube[i]=undefined;
 	});
-	maxThread.cube.forall(function(v, i){
-		maxThread.cube[i]=Date.newInstance(v);
-		if (maxThread.cube[i]==null) maxThread.cube[i]=undefined;		//NULL MEANS UNKNOWN, WHEREAS undefined MEANS NOT DEFINED
+	u2.cube.forall(function(v, i){
+		u2.cube[i]=Date.newInstance(v);
+		if (u2.cube[i]==null) u2.cube[i]=undefined;		//NULL MEANS UNKNOWN, WHEREAS undefined MEANS NOT DEFINED
 	});
 
 	var u = Qb.merge([
 		{"from":u1, "edges":["bug_id"]},
-		{"from":maxThread, "edges":["bug_id"]}
+		{"from":u2, "edges":["bug_id"]}
 	]);
 	yield u;
 };//method

@@ -87,7 +87,7 @@ var __createChart = function*(){
 	var milestoneName;
 	var START_DATE, sampleMin, sampleMax, DUE_DATE, MAX_CHART_DATE;
 	if (milestones.length==0){
-		$("#title").html("Must select a milestone");
+		$("#title").text("Must select a milestone");
 		yield (null)
 	}else{
 		milestoneName=milestones.map(function(m){return m.name;}).join(" and ");
@@ -112,9 +112,9 @@ var __createChart = function*(){
 
 
 	if (title && title.length>0){
-		$("#title").html(title);
+		$("#title").text(title);
 	}else{
-		$("#title").html("Burndown for "+teamName)
+		$("#title").text("Burndown for "+teamName)
 	}//endif
 
 	yield (ESQuery.loadColumns({"from":"bugs"}));
@@ -251,8 +251,10 @@ var __createChart = function*(){
 	});
 
 
-	var a = Log.action("Request Bugs", true);
 	var currMilestoneThread=Thread.run(function*(){
+		///////////////////////////////////////////////////////////////////////
+		// SUMMARY OF MILESTONE
+		///////////////////////////////////////////////////////////////////////
 		var currMilestone=yield (ESQuery.run({
 			"from":"bugs",
 			"select":[
@@ -281,21 +283,7 @@ var __createChart = function*(){
 			]
 		}));
 
-//		var milestoneTotals=yield (ESQuery.run({
-//			"from":"bugs",
-//			"select":{"name":"num",  "value":"bug_id", "aggregate":"count"},
-//			"edges":[
-//				{"name":"Milestone", "domain":Mozilla.Milestone.getDomain()},
-//				{"name":"type", "domain":Mozilla.CountType.getDomain()}
-//			],
-//			"esfilter":{"and":[
-//				Mozilla.CurrentRecords.esfilter,
-//				GUI.state.milestone.makeFilter(),
-//				teamFilter
-//			]}
-//		}));
-
-
+		//FILL TEMPLATE
 		var summary=$("#milestone-summary");
 		summary.html(
 			milestones.map(function(m){
@@ -323,6 +311,7 @@ var __createChart = function*(){
 			})
 		);
 
+		//ADD BUG CLICKERS
 		milestones.forall(function(m){
 			var i=milestoneTotals.edges[0].domain.getPartByKey(m.name).dataIndex;
 
@@ -370,6 +359,7 @@ var __createChart = function*(){
 	});
 
 
+	var a = Log.action("Request Bugs", true);
 	var chart;
 	if (true){
 		var milestoneBugs=yield(ESQuery.run({

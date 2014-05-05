@@ -169,7 +169,7 @@ var mapAllKey=function(map, func){
 	return output;
 };
 
-var mapValues=function(map, func){
+Map.getValues=function getValues(map){
 	var output=[];
 	var keys=Object.keys(map);
 	for(var i=keys.length;i--;){

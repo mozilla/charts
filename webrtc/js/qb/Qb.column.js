@@ -112,13 +112,13 @@ Qb.where.compile = function(whereClause, sourceColumns, edges){
 	var whereMethod = null;
 
 
-	if (whereClause === undefined){
+	if (whereClause === undefined || whereClause==null){
 		eval("whereMethod=function(a, b){return true;}");
 		return whereMethod;
 	}//endif
 
 	if (!isString(whereClause)){
-		whereClause = CNV.esFilter2Expression(whereClause);
+		return CNV.esFilter2function(whereClause);
 	}//endif
 
 	var f = "whereMethod=function(__source, __result){\n";

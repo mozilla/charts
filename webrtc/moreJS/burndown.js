@@ -69,21 +69,14 @@ function bugDetail(bug) {
 function* allOpenDependencies(esfilter, dateRange, selects, allOpen) {
 
 	var a = Log.action("Get dependencies", true);
-	var topBugs = [];
-	if (esfilter.term && esfilter.term.bug_id) {
-		topBugs = Array.newInstance(esfilter.term.bug_id);
-	} else if (esfilter.terms && esfilter.terms.bug_id) {
-		topBugs = Array.newInstance(esfilter.terms.bug_id);
-	} else {
-		topBugs = (yield(ESQuery.run({
-			"from": "bugs",
-			"select": "bug_id",
-			"esfilter": {"and": [
-				Mozilla.CurrentRecords.esfilter,
-				esfilter
-			]}
-		}))).list;
-	}
+	var topBugs = (yield(ESQuery.run({
+		"from": "bugs",
+		"select": "bug_id",
+		"esfilter": {"and": [
+			esfilter
+		]}
+	}))).list;
+	topBugs = [].union(topBugs);
 
 	var possibleTree = (yield(ESQuery.run({
 		"from": "bug_hierarchy",
@@ -95,10 +88,10 @@ function* allOpenDependencies(esfilter, dateRange, selects, allOpen) {
 	}))).list;
 	possibleTree = possibleTree.select("descendants");
 	possibleTree.append(topBugs);
-	possibleTree = Qb.UNION(possibleTree);
+	possibleTree = Array.union(possibleTree);
 	Log.actionDone(a);
 
-	var allSelects= Qb.UNION([["bug_id","dependson","bug_status","modified_ts","expires_on"], selects]);
+	var allSelects= Array.union([["bug_id","dependson","bug_status","modified_ts","expires_on"], selects]);
 
 	var a = Log.action("Pull dependencies");
 	var raw_data = yield (ESQuery.run({
@@ -133,11 +126,12 @@ function* allOpenDependencies(esfilter, dateRange, selects, allOpen) {
 	for (var day = 0; day < data.cube.length; day++) {
 		var bug = data.cube[day];
 		var day_part = data.edges[0].domain.partitions[day];
-		var top_bug = [];
+		var allTopBugs = [];
 		bug.forall(function (detail, i) {
 			detail.date = day_part.value;
 			detail.bug_id = data.edges[1].domain.partitions[i].value;   //ASSIGN BUG ID TO AGGREGATE RECORD
-			if (topBugs.contains(detail.bug_id)) top_bug.append(detail);
+			if ([detail].filter(esfilter).length>0)
+				allTopBugs.append(detail);
 		});
 
 		yield (Hierarchy.addDescendants({
@@ -147,9 +141,8 @@ function* allOpenDependencies(esfilter, dateRange, selects, allOpen) {
 			"descendants_field": "dependencies"
 		}));
 
-		var allDescendantsForToday = Qb.UNION(top_bug.select("dependencies")).map(function(v){return v-0;});
+		var allDescendantsForToday = Array.union(allTopBugs.select("dependencies")).map(function(v){return v-0;});
 		bug.forall(function(detail, i){
-
 			if (allDescendantsForToday.contains(detail.bug_id)){
 				detail.counted="Closed"
 			}else{
@@ -160,7 +153,8 @@ function* allOpenDependencies(esfilter, dateRange, selects, allOpen) {
 		var openTopBugs = [];
 		var openBugs = bug.map(function (detail, b) {
 			if (["new", "assigned", "unconfirmed", "reopened"].contains(detail.bug_status)){
-				if (topBugs.contains(detail.bug_id)) openTopBugs.append(detail);
+				if ([detail].filter(esfilter).length>0)
+					openTopBugs.append(detail);
 				return detail;
 			}else{
 				return undefined;
@@ -174,9 +168,9 @@ function* allOpenDependencies(esfilter, dateRange, selects, allOpen) {
 			"descendants_field": "dependencies"
 		}));
 
-		var openDescendantsForToday = Qb.UNION(openTopBugs.select("dependencies")).map(function(v){return v-0;});
+		var openDescendantsForToday = Array.union(openTopBugs.select("dependencies")).map(function(v){return v-0;});
 		bug.forall(function(detail, i){
-			if (openDescendantsForToday.contains(detail.bug_id)){
+			if (openDescendantsForToday.contains(detail.bug_id) && ["new", "assigned", "unconfirmed", "reopened"].contains(detail.bug_status)){
 				detail.counted="Open"
 			}//endif
 		});

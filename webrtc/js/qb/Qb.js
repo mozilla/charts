@@ -142,7 +142,7 @@ function* calc2Tree(query){
 	var edges = query.edges;
 	query.columns = Qb.compile(query, sourceColumns);
 	var select = Array.newInstance(query.select);
-	var where = Qb.where.compile(query.where, sourceColumns, edges);
+	var where = Qb.where.compile(nvl(query.where, query.esfilter), sourceColumns, edges);
 	var numWhereFalse=0;
 
 
@@ -1179,18 +1179,6 @@ Qb.drill=function(query, parts){
 	Q=calc2Cube;
 
 
-
-
-	Qb.UNION = function UNION(arrays){
-		var output={};
-		arrays.forall(function(a){
-			for(var i = a.length; i--;){
-				var v = a[i];
-				output[v]=v;
-			}//for
-		});
-		return mapValues(output);
-	};
 
 
 })();

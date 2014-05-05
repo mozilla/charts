@@ -300,6 +300,8 @@ CNV.Value2Quote=function(value){
 
 
 CNV.String2Integer = function(value){
+	if (value===undefined) return undefined;
+	if (value==null) return null;
 	return value - 0;
 };//method
 
@@ -651,7 +653,7 @@ CNV.hex2int = function(value){
 };//method
 
 
-//CONVERT FROM STRING TO SOMETHING THAT CAN BE USED BY %()
+//CONVERT FROM STRING TO SOMETHING THAT CAN BE USED BY $()
 CNV.String2JQuery=function(str){
 	var output=str.replace(/([;&,\.\+\*\~':"\!\^#$%@\[\]\(\)\/=>\|])/g, '\\$1');
 //	output=output.replaceAll(" ", "\\ ");

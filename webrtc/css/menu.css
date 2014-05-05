@@ -201,6 +201,7 @@ h4 {
 
 .hoverable:hover {
 	background-color: #fafaba;
+    cursor: pointer;
 }
 
 

@@ -671,7 +671,7 @@ CNV.hex2int = function(value){
 };//method
 
 
-//CONVERT FROM STRING TO SOMETHING THAT CAN BE USED BY %()
+//CONVERT FROM STRING TO SOMETHING THAT CAN BE USED BY $()
 CNV.String2JQuery=function(str){
 	var output=str.replace(/([;&,\.\+\*\~':"\!\^#$%@\[\]\(\)\/=>\|])/g, '\\$1');
 //	output=output.replaceAll(" ", "\\ ");
@@ -850,7 +850,8 @@ CNV.esFilter2Expression=function(esFilter){
 		var pair = esFilter[op];
 		var variableName = Object.keys(pair)[0];
 		var valueList = pair[variableName];
-		if (valueList.length == 0) Log.error("Expecting something in 'terms' array");
+		if (valueList.length == 0)
+			Log.error("Expecting something in 'terms' array");
 		if (valueList.length == 1) return (variableName) + "==" + CNV.Value2Quote(valueList[0]);
 		output += "[" + valueList.map(CNV.String2Quote).join(", ") + "].intersect(Array.newInstance(" + variableName + ")).length > 0";  //ARRAY BASED FOR MULTIVALUED VARIABLES
 		return output;

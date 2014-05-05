@@ -10,6 +10,7 @@ importScript("Bugzilla.js");
 importScript([
 	"gui/GUI.js",
 	"charts/aChart.js",
+	"charts/aColor.js",
 	"../css/menu.css"
 ]);
 importScript("Hierarchy.js");

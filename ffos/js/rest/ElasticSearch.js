@@ -50,7 +50,6 @@ ElasticSearch.bulkInsert=function*(indexName, typeName, dataArray){
 //	}//try
 };
 
-
 //ONLY BECAUSE I AM TOO LAZY TO ENHANCE THE ESQuery WITH MORE FACETS (A BATTERY OF FACETS PER SELECT COLUMN)
 //RETURN ALL BUGS THAT MATCH FILTER ALONG WITH THE TIME RANGE THEY MATCH
 //EXPECTING esfilter
@@ -98,6 +97,39 @@ ElasticSearch.getMinMax=function*(esfilter){
 	yield u;
 };//method
 
+
+
+
+
+// RETURN min AND max FOR EACH BUG DURING WHICH IT WAS OPEN
+// ALSO GIVE CURRENT VALUES OF selects
+ElasticSearch.getOpenMinMax=function*(esfilter, timeDomain, selects){
+	var details = yield(ESQuery.run({
+		"from":"bugs",
+		"select":selects.union(["bug_id", "modified_ts", "expires_on", "bug_status"]),
+		"esfilter":{"and":[
+			{"range":{"expires_on":{"gte":timeDomain.min.getMilli()}}},
+			esfilter
+		]}
+	}));
+
+	var allSelects = selects.map(function(s){
+		return {"name":s, "value":'expires_on>Date.now().getMilli() ? '+s+' : null', "aggregate":"minimum"};  //aggregate===minimum due to es corruption
+	}).appendArray([
+		{"name":"min", "value":'["new", "assigned", "unconfirmed", "reopened"].contains(bug_status) ? modified_ts : null', "aggregate":"minimum"},
+		{"name":"max", "value":'["new", "assigned", "unconfirmed", "reopened"].contains(bug_status) ? expires_on  : null', "aggregate":"maximum"}
+	]);
+
+	var summary = yield(Q({
+		"from":details,
+		"select": allSelects,
+		"edges":[
+			"bug_id"
+		]
+	}));
+
+	yield summary;
+};//method
 
 
 ////////////////////////////////////////////////////////////////////////////////

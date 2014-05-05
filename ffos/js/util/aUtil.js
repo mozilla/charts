@@ -169,6 +169,20 @@ var mapAllKey=function(map, func){
 	return output;
 };
 
+Map.getValues=function getValues(map){
+	var output=[];
+	var keys=Object.keys(map);
+	for(var i=keys.length;i--;){
+		var key=keys[i];
+		var val=map[key];
+		if (val!==undefined){
+			output.push(val);
+		}//endif
+	}//for
+	return output;
+};
+
+
 //USE THE MAP FOR REVERSE LOOKUP ON codomain VALUES PROVIDED
 //SINCE THE MAP CODOMAIN IS A VALUE, === IS USED FOR COMPARISION
 var reverseMap=function(map, codomain){

@@ -114,7 +114,7 @@ String.prototype.replaceVars = function(values){
 			output=output.replaceAll(output.substring(s, e + 2), map[key]);
 			e = s + map[key].length;
 		}else{
-			Log.debug()
+			//Log.debug()
 		}//endif
 		s=e;
 	}//while

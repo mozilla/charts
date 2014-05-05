@@ -9,10 +9,10 @@ var ScrumBugs={};
 (function(){
 	var noMatch=[undefined, undefined];
 
-	var pointsPattern=/p[=:](\w+)[ ,\]]/g;
-	var componentPattern=/c[=:](\w+)[ ,\]]/g;
-	var featurePattern=/(feature|ft)[=:](\w+)[ ,\]]/g;
-	var userPattern=/u[=:](\w+)[ ,\]]/g;
+	var pointsPattern=/[\[\s,]p[=:]([\d\.]+)[ ,\]]/;
+	var componentPattern=/[\[\s,]c[=:](\w+)[ ,\]]/;
+	var featurePattern=/[\[\s,](feature|ft)[=:](\w+)[ ,\]]/;
+	var userPattern=/[\[\s,]u[=:](\w+)[ ,\]]/;
 
 
 	function getDates(whiteboard){
@@ -29,7 +29,7 @@ var ScrumBugs={};
 			"feature":nvl(featurePattern.exec(whiteboard), noMatch)[1],
 			"component":nvl(componentPattern.exec(whiteboard), noMatch)[1],
 			"user":nvl(userPattern.exec(whiteboard), noMatch)[1],
-			"points":nvl(pointsPattern.exec(whiteboard), noMatch)[1]
+			"points":nvl((pointsPattern.exec(whiteboard)), noMatch)[1]
 		};
 		if (output.feature=="iteration"){
 			//feature=iteration (May 02, 2013 - May 23, 2013)
@@ -42,10 +42,14 @@ var ScrumBugs={};
 		return output;
 	};//method
 
-	var TEST = false;
+	var TEST = true;
 	if (TEST){
 		var white = "[est:4d, p=4][coordination]";
 		ASSERT(ScrumBugs.parse(white).points == 4, "Wrong");
+
+		white="[p=3, est:3d, 1.5:p2, ft:webrtc]";
+		ASSERT(ScrumBugs.parse(white).points == 3, "Wrong");
+
 	}//endif
 
 

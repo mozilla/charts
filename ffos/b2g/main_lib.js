@@ -19,6 +19,7 @@ importScript([
 	'../js/Dimension-Bugzilla.js',
 	"../js/Dimension-B2G.js",
 	"../js/charts/aColor.js",
+	"hierarchy.js",
 	"heat.js"
 ]);
 

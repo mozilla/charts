@@ -86,7 +86,7 @@ Qb.column.compile = function(resultColumn, sourceColumns, edges, useMVEL){  //us
 		"var output;\n"+
 		"try{ " +
 			"	output=" + resultColumn.value + "; " +
-			"	if (output===undefined || aMath.isNaN(output)) Log.error(\"" + resultColumn.name + " returns \"+CNV.Value2Quote(output));\n"+
+			"	if (output===undefined || (output!=null && aMath.isNaN(output))) Log.error(\"" + resultColumn.name + " returns \"+CNV.Value2Quote(output));\n"+
 			"	return output;\n" +
 			"}catch(e){\n" +
 			"	Log.error("+
@@ -112,13 +112,13 @@ Qb.where.compile = function(whereClause, sourceColumns, edges){
 	var whereMethod = null;
 
 
-	if (whereClause === undefined){
+	if (whereClause === undefined || whereClause==null){
 		eval("whereMethod=function(a, b){return true;}");
 		return whereMethod;
 	}//endif
 
 	if (!isString(whereClause)){
-		whereClause = CNV.esFilter2Expression(whereClause);
+		return CNV.esFilter2function(whereClause);
 	}//endif
 
 	var f = "whereMethod=function(__source, __result){\n";

@@ -76,8 +76,8 @@ Hierarchy.addDescendants=function*(args){
 	});
 
 	//FIND DESCENDANTS
-	var a=Log.action("Find Descendants", true);
-	yield (Thread.sleep(100));
+//	var a=Log.action("Find Descendants", true);
+	yield (Thread.yield());
 	var workQueue=new aQueue(Object.keys(allParents.map));
 
 	while(workQueue.length()>0){      //KEEP WORKING WHILE THERE ARE CHANGES
@@ -119,7 +119,7 @@ Hierarchy.addDescendants=function*(args){
 		p[descendants_field]=allDescendants.get(p[id]);
 	});
 
-	Log.actionDone(a);
+//	Log.actionDone(a);
 	yield (null);
 };
 
@@ -239,3 +239,5 @@ Hierarchy.topologicalSort=function(args){
 	if (processed.length!=numberOfNodes) Log.error("broken");
 	return processed;
 };//method
+
+

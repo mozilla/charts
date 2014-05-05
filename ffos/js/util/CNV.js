@@ -209,10 +209,28 @@ CNV.Object2URL=function(value){
 	return $.param(value).replaceAll("%5B%5D=", "=");
 };//method
 
-CNV.String2HTML = function(value){
-	value=value.replaceAll("\n", "<br>").replaceAll("\t", "&nbsp;&nbsp;&nbsp;&nbsp;");
-	return value;
-};//method
+
+
+(function(){
+	var entityMap = {
+		"&": "&amp;",
+		"<": "&lt;",
+		">": "&gt;",
+		'"': '&quot;',
+		"'": '&#39;',
+		"/": '&#x2F;',
+		"\n": "<br>",
+		"\t": "&nbsp;&nbsp;&nbsp;&nbsp;"
+	};
+
+
+	CNV.String2HTML = function String2HTML(value) {
+		return value.replace(/[&<>"'\/\n\t]/g, function (s) {
+			return entityMap[s];
+		});
+	};//method
+})();
+
 
 CNV.String2HTMLTable = function(value){
 	value="<table><tr>"+value.replaceAll("\n", "</tr><tr>").replaceAll("\t", "</td><td>")+"</tr></table>";
@@ -668,7 +686,8 @@ CNV.esFilter2function=function(esFilter){
 	if (esFilter === undefined) return TRUE_FILTER;
 
 	var keys = Object.keys(esFilter);
-	if (keys.length != 1) Log.error("Expecting only one filter aggregate");
+	if (keys.length != 1)
+		Log.error("Expecting only one filter aggregate");
 	var op = keys[0];
 	if (op == "and"){
 		var list = esFilter[op];
@@ -705,7 +724,11 @@ CNV.esFilter2function=function(esFilter){
 			var variables = Object.keys(terms);
 			for(var k = 0; k < variables.length; k++){
 				var variable = variables[k];
-				if (row[variable]!=terms[variable]) return false;
+				if (terms[variable] instanceof Date){
+					if (row[variable].getTime()!=terms[variable].getTime()) return false;
+				}else{
+					if (row[variable]!=terms[variable]) return false;
+				}//endif
 			}//for
 			return true;
 		};
@@ -768,6 +791,17 @@ CNV.esFilter2function=function(esFilter){
 		}
 	}else if (op=="match_all"){
 		return TRUE_FILTER;
+	}else if (op=="regexp"){
+		var pair = esFilter[op];
+		var variableName = Object.keys(pair)[0];
+		var regexp = new RegExp(pair[variableName]);
+		return function(row, i, rows){
+			if (regexp.test(row[variableName])){
+				return true;
+			}else{
+				return false;
+			}//endif
+		}
 	} else{
 		Log.error("'" + op + "' is an unknown operation");
 	}//endif
@@ -782,7 +816,8 @@ CNV.esFilter2Expression=function(esFilter){
 	var output = "";
 
 	var keys = Object.keys(esFilter);
-	if (keys.length != 1) Log.error("Expecting only one filter aggregate");
+	if (keys.length != 1)
+		Log.error("Expecting only one filter aggregate");
 	var op = keys[0];
 	if (op == "and"){
 		var list = esFilter[op];

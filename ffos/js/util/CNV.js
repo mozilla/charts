@@ -724,8 +724,12 @@ CNV.esFilter2function=function(esFilter){
 			var variables = Object.keys(terms);
 			for(var k = 0; k < variables.length; k++){
 				var variable = variables[k];
-				if (terms[variable] instanceof Date){
+				var val=terms[variable];
+				var row_val=row[variable];
+				if (val instanceof Date){
 					if (row[variable].getTime()!=terms[variable].getTime()) return false;
+				}else if (row_val instanceof Array){
+					if (!row_val.contains(variable)) return false;
 				}else{
 					if (row[variable]!=terms[variable]) return false;
 				}//endif

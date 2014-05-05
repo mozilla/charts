@@ -127,9 +127,75 @@
 		var __createChart = function*() {
 			yield (ESQuery.loadColumns({"from": "bugs"}));
 
-			var CABlockers = yield (allOpenDependencies(984663));
+			//THESE ARE IMPORTANT BLOCKERS
+			var a = Log.action("Get Hierarchy", true);
+			var possibleTree = (yield(ESQuery.run({
+				"from": "bug_hierarchy",
+				"select": [
+					"bug_id",
+					"descendants"
+				],
+				"esfilter": {"term": {"bug_id":984663}}
+			}))).list;
+			if (possibleTree.length==0){
+				possibleTree=[];
+			}else{
+				possibleTree=possibleTree[0].descendants;
+			}//endif
+			possibleTree.append(984663);
 
-			var a = Log.action("Get Bug Details", true);
+			var allTree;
+			var allTreeThread=Thread.run(function*(){
+				try{
+					allTree = (yield(ESQuery.run({
+						"from": "bug_dependencies",
+						"select": [
+							"bug_id",
+							"dependson"
+						],
+						"esfilter":	{"and": [
+							{"terms":{"bug_id": possibleTree}},
+							Mozilla.CurrentRecords.esfilter
+						]}
+					}))).list;
+					allTree.append(0)
+				}catch(e){
+					//WHEN THE
+					allTree=[0];
+				}
+			});
+
+			var allOpen;
+			var allOpenThread=Thread.run(function*(){
+				allOpen = (yield(ESQuery.run({
+					"from": "bugs",
+					"select": "bug_id",
+					"esfilter":	{"and": [
+						{"terms":{"bug_id": possibleTree}},
+						Mozilla.BugStatus.Open.esfilter,
+						Mozilla.CurrentRecords.esfilter
+					]}
+				}))).list
+			});
+
+			yield (Thread.join(allTreeThread));
+			yield (Thread.join(allOpenThread));
+
+			allTree = allTree.filter(function(v){
+				return v.bug_id==984663 || allOpen.contains(v.bug_id);
+			});
+
+			yield (Hierarchy.addDescendants({
+		       "from":allTree,
+		       "id_field":"bug_id",
+		       "fk_field":"dependson",
+		       "descendants_field": "dependencies"
+		    }));
+			Log.actionDone(a);
+
+			var CABlockers = Array.union(allTree.filter({"term":{"bug_id":984663}}).select("dependencies")).map(function(v){return v-0;});
+
+			a = Log.action("Get Bug Details", true);
 			//PULL THE RAW DATA, AND THEN OPERATE ON IT 112K, 2.17sec time
 			//THE AGGREGATES ARE SPENDING ABOUT 2/3 THE TIME TRANSMITTING THE QUERY
 			var allDetails = yield(ESQuery.run({

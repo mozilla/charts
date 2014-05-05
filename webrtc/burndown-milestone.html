@@ -295,7 +295,7 @@ var __createChart = function*(){
 				Mozilla.Milestone[m.name].effort=effort;
 
 				var TEMPLATE = "<div>" +
-						"<div style='width:150px;display: inline-block'>Milestone: "+m.name+"</div>" +
+						"<div style='width:150px;display: inline-block;padding:0px 10px 0px 10px'>Milestone: "+m.name+"</div>" +
 						"<div id='"+ m.name+"Total' class='hoverable' style='width:75px;display:inline-block;'>Total: {{total}}</div>"+
 						"<div id='"+ m.name+"Closed' class='hoverable' style='width:125px;display:inline-block;'>Closed: {{closed}} ({{closed_percent}}%)</div>"+
 						"<div id='"+ m.name+"Open' class='hoverable' style='display:inline-block;'>Open Bugs: {{open}}</div>" +
@@ -390,8 +390,7 @@ var __createChart = function*(){
 					"allowNulls":false,
 					"domain":timeDomain
 				}
-			],
-			"esfilter":mainFilter
+			]
 		}));
 	}else{
 		chart = yield(ESQuery.run({

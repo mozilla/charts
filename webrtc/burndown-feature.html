@@ -371,7 +371,7 @@ $(document).ready(function(){
 		{"id":"hierarchyMode", "name":"Dependencies", "type":RadioFilter.newInstance({
 			"id":"hierarchyMode",
 			"name":"Dependencies",
-			"message":"Chart all bug dependencies (default), or only bugs marked with b2g-feature==2.0, or or chart only the bugs matching feature criterion<br><br>",
+			"message":"Chart all bug dependencies (default), or dependnt bugs marked with b2g-feature==2.0, or chart bugs matching feature criterion and exclude dependencies <br><br>",
 			"options":["All", "feature-b2g = 2.0", "None"],
 			"default":"All",
 			"refreshCallback":__reChart
@@ -379,7 +379,7 @@ $(document).ready(function(){
 		{"id":"countMode", "name":"Count", "type":RadioFilter.newInstance({
 			"id":"countMode",
 			"name":"Count",
-			"message":"Chart the estimated work (default), or show the bug count<br>",
+			"message":"Chart the estimated work (default), or chart the bug count<br>",
 			"options":["Work", "Bugs"],
 			"default":"Work",
 			"refreshCallback":__reChart

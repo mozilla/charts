@@ -10,14 +10,16 @@ importScript("../util/aTemplate.js");
 importScript("../util/CNV.js");
 
 
-RadioFilter = function(name, options, default_, refreshCallback){
-	this.name=name;
-	this.options=options;
-	this.selected=default_;
-	this.refreshCallback=refreshOnChange;
-	this.isFilter=true;
-	this.refresh();
+RadioFilter = function(){};
 
+RadioFilter.newInstance=function(param){
+	var self = new RadioFilter();
+	Map.expecting(param, ["id", "name", "options", "default"]);
+	Map.copy(param, self);
+	self.selected=self["default"];
+	self.isFilter=true;
+	self.doneSetup=false;
+	return self;
 };
 
 
@@ -36,15 +38,18 @@ RadioFilter.prototype.setSimpleState=function(value){
 	if (this.options.contains(value)){
 		this.selected=value;
 	}//endif
-	if (this.refreshCallback) this.refresh();
+	var radios=$("input:radio[name='"+this.id+"']");
+	radios.val([self.selected]);
+	this.refresh();
 };
 
 RadioFilter.prototype.makeHTML=function(){
 	var html = new Template([
-		'<div id="{{name}}">',
+		'<div id="{{id}}">',
+		this.message===undefined ? "" : "<div>{{message}}</div>",
 		{
-			"from": options,
-			"template": '<input type="radio" name="{{name}}" value="{{.}}">{{.}}</input>'
+			"from": "options",
+			"template": '<input type="radio" name="{{id}}" value="{{.}}">{{.}}</input><br>'
 		},
 		'</div>'
 	]);
@@ -53,13 +58,23 @@ RadioFilter.prototype.makeHTML=function(){
 };//method
 
 
-RadioFilter.prototype.refresh = function(){
-	$("input[type='radio'][name='"+name+"']").click(function(){
+RadioFilter.prototype.setup=function(){
+	if (this.doneSetup) return;
 
-
+	var self=this;
+	var radios=$("input:radio[name='"+this.id+"']");
+	if (radios.length==0) return; //NOT BEEN CREATED YET
+	radios.val([self.selected]);
+	radios.change(function(){
+		self.selected=$(this).val();
+		self.refreshCallback();
+		GUI.refresh(false);
 	});
+	this.doneSetup=true;
+};//method
 
 
-
+RadioFilter.prototype.refresh = function(){
+	this.setup();
 };
 

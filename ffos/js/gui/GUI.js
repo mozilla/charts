@@ -18,6 +18,7 @@ importScript("ProductFilter.js");
 importScript("ProgramFilter.js");
 importScript("PartitionFilter.js");
 importScript("TeamFilter.js");
+importScript("RadioFilter.js");
 
 importScript("../threads/thread.js");
 importScript("../qb/aCompiler.js");
@@ -328,13 +329,13 @@ GUI = {};
 
 
 			//INSERT HTML
-			var template = '<span class="parameter_name">{{NAME}}</span><input type="{{TYPE}}" id="{{ID}}"><br><br>\n';
+			var template = new Template('<span class="parameter_name">{{NAME}}</span><input type="{{TYPE}}" id="{{ID}}"><br><br>\n');
 			var html = "";
 			GUI.parameters.forEach(function (param) {
 				if ($("#" + param.id).length > 0) return;
 
 				//SIMPLE VARIABLES
-				html += template.replaceVars({
+				html += template.replace({
 					"ID": param.id,
 					"NAME": param.name,
 					"TYPE": {
@@ -577,7 +578,7 @@ GUI = {};
 
 		GUI.refreshRequested = false;	//TRY TO AGGREGATE MULTIPLE refresh() REQUESTS INTO ONE
 
-		GUI.refresh = function () {
+		GUI.refresh = function (refresh) {
 			if (GUI.refreshRequested) return;
 			GUI.refreshRequested = true;
 
@@ -603,7 +604,7 @@ GUI = {};
 				GUI.UpdateSummary();
 
 
-				GUI.refreshChart();
+				if (refresh===undefined || refresh==true) GUI.refreshChart();
 			});
 		};
 

@@ -90,42 +90,6 @@ String.prototype.deformat = function(){
 	return output.join("");
 };//method
 
-
-//CASE INSENSITIVE VARIABLE REPLACEMENT
-String.prototype.replaceVars = function(values){
-	//COPY VALUES, BUT WITH lowerCase KEYS
-	var keys=Object.keys(values);
-	var map={};
-	keys.forall(function(k){
-		map[k.toLowerCase()]=values[k];
-	});
-
-	var output = this;
-	var s=0;
-	while(true){
-		s = output.indexOf('{{', s);
-		if (s < 0) return output;
-		var e = output.indexOf('}}', s);
-		if (e < 0) return output;
-		var key = output.substring(s + 2, e).toLowerCase();
-
-		var val = map[key];
-		if (val!==undefined && (val instanceof String || (typeof map[key])!="object")){
-			output=output.replaceAll(output.substring(s, e + 2), map[key]);
-			e = s + map[key].length;
-		}else{
-			//Log.debug()
-		}//endif
-		s=e;
-	}//while
-};//method
-
-
-
-
-
-
-
 String.prototype.left = function(amount){
 	return this.substring(0, aMath.min(this.length, amount));
 };//method

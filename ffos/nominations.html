@@ -27,6 +27,7 @@
 	<script type="text/javascript" src="js/math/aMath.js"></script>
 	<script type="text/javascript" src="js/MozillaPrograms.js"></script>
 	<script type="text/javascript" src="js/util/CNV.js"></script>
+	<script type="text/javascript" src="js/util/aTemplate.js"></script>
 	<script type="text/javascript" src="lib/jquery.js"></script>
 	<script type="text/javascript" src="js/util/aDate.js"></script>
 	<script type="text/javascript" src="js/collections/aQueue.js"></script>
@@ -240,7 +241,7 @@
 							"id": "Teams",
 							"name": "All Teams",
 							"dimension": Mozilla.B2G.Team,
-							"onlyOne": true,
+							"onlyOne": false,
 							"expandAll": true
 						})},
 						{"id": "component", "name": "Components", "type": PartitionFilter.newInstance({

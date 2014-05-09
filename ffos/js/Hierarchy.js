@@ -239,5 +239,3 @@ Hierarchy.topologicalSort=function(args){
 	if (processed.length!=numberOfNodes) Log.error("broken");
 	return processed;
 };//method
-
-

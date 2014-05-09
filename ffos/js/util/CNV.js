@@ -225,9 +225,17 @@ CNV.Object2URL=function(value){
 
 
 	CNV.String2HTML = function String2HTML(value) {
-		return value.replace(/[&<>"'\/\n\t]/g, function (s) {
-			return entityMap[s];
-		});
+		var output=[];
+		for(var i=0;i<value.length;i++){
+			var c= value[i];
+			var d = entityMap[c];
+			if (d===undefined){
+				output.append(c);
+			}else{
+				output.append(d)
+			}//endif
+		}//for
+		return output.join("");
 	};//method
 })();
 
@@ -727,11 +735,11 @@ CNV.esFilter2function=function(esFilter){
 				var val=terms[variable];
 				var row_val=row[variable];
 				if (val instanceof Date){
-					if (row[variable].getTime()!=terms[variable].getTime()) return false;
+					if (row_val.getTime()!=terms[variable].getTime()) return false;
 				}else if (row_val instanceof Array){
 					if (!row_val.contains(variable)) return false;
 				}else{
-					if (row[variable]!=terms[variable]) return false;
+					if (row_val!=val) return false;
 				}//endif
 			}//for
 			return true;

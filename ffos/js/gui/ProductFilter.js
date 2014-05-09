@@ -95,12 +95,12 @@ ProductFilter.prototype.makeHTML=function(){
 
 ProductFilter.prototype.injectHTML = function(products){
 	var html = '<ul id="productsList" class="menu ui-selectable">';
-	var item = '<li class="{{class}}" id="product_{{name}}">{{name}} ({{count}})</li>';
+	var item = new Template('<li class="{{class}}" id="product_{{name}}">{{name}} ({{count}})</li>');
 
 	//GIVE USER OPTION TO SELECT ALL PRODUCTS
 	var total = 0;
 	for(var i = 0; i < products.length; i++) total += products[i].count;
-	html += item.replaceVars({
+	html += item.replace({
 		"class" : ((this.selected.length == 0) ? "ui-selectee ui-selected" : "ui-selectee"),
 		"name" : "ALL",
 		"count" : total
@@ -108,7 +108,7 @@ ProductFilter.prototype.injectHTML = function(products){
 
 	//LIST SPECIFIC PRODUCTS
 	for(var i = 0; i < products.length; i++){
-		html += item.replaceVars({
+		html += item.replace({
 			"class" : this.selected.contains(products[i].term) ? "ui-selectee ui-selected" : "ui-selectee",
 			"name" : products[i].term,
 			"count" : products[i].count

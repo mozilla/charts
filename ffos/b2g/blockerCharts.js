@@ -109,7 +109,7 @@ function showChurn(args) {
 
 		var churn = yield(Q({
 			"from": allBugs,
-			"name": "Resolved Fixed Bugs",
+			"name": "Activity History",
 			"select": {"name": "count", "value": "bug_id", "aggregate": "count"},
 			"edges": [
 				{"name": "Category", "domain": Mozilla.B2G.FinalState.getDomain()},

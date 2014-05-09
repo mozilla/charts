@@ -110,19 +110,19 @@ ComponentFilter.prototype.makeHTML=function(){
 
 ComponentFilter.prototype.injectHTML = function(components){
 	var html = '<ul id="componentsList" class="menu ui-selectable">';
-	var item = '<li class="{{class}}" id="component_{{name}}">{{name}} ({{count}})</li>';
+	var item = new Template('<li class="{{class}}" id="component_{{name}}">{{name}} ({{count}})</li>');
 
 	//GIVE USER OPTION TO SELECT ALL PRODUCTS
 	var total = 0;
 	for(var i = 0; i < components.length; i++) total += components[i].count;
-	html += item.replaceVars({
+	html += item.replace({
 		"class" : ((this.selected.length == 0) ? "ui-selectee ui-selected" : "ui-selectee"),
 		"name" : "ALL",
 		"count" : total
 	});
 
 	for(var i = 0; i < components.length; i++){
-		html += item.replaceVars({
+		html += item.replace({
 			"class" : (this.selected.contains(components[i].term) ? "ui-selectee ui-selected" : "ui-selectee"),
 			"name" : components[i].term,
 			"count" : components[i].count

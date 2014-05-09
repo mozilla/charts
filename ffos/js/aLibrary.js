@@ -9,6 +9,8 @@ importScript("util/CNV.js");
 importScript("util/aDate.js");
 importScript("util/aDuration.js");
 importScript("util/aTimer.js");
+importScript("util/aTemplate.js");
+
 
 importScript([
 	"debug/aLog.js",

@@ -11,20 +11,28 @@ var Template=function Template(template){
 (function(){
 	Template.prototype.expand = function expand(values){
 		var map={};
-		var keys=Object.keys(values);
-		keys.forall(function(k){
-			map[k.toLowerCase()]=values[k];
-		});
+		if (!(values instanceof Array)){
+			var keys=Object.keys(values);
+			keys.forall(function(k){
+				map[k.toLowerCase()]=values[k];
+			});
+		}//endif
 		//ADD RELATIVE REFERENCES
 		map["."]=values;
 
 		return _expand(this.template, [map]);
 	};
+	Template.prototype.replace=Template.prototype.expand;
+
+	var FUNC={};
+	FUNC.html=CNV.String2HTML;
+
+
 
 	function _expand(template, namespaces){
 		if (template instanceof Array){
 			return _expand_array(template, namespaces);
-		}else if (template instanceof String){
+		}else if (typeof(template)=="string"){
 			return _expand_text(template, namespaces);
 		}else{
 			return _expand_loop(template, namespaces);
@@ -36,15 +44,18 @@ var Template=function Template(template){
 	//AN ARRAY OF TEMPLATES IS SIMPLY CONCATENATED
 		return arr.map(function(t){
 			return _expand(t, namespaces);
-		});
+		}).join("");
 	}
 
 	function _expand_loop(loop, namespaces){
 		Map.expecting(loop, ["from", "template"]);
+		if (typeof(loop.from)!="string"){
+			Log.error("expecting from clause to be string");
+		}//endif
 
-		return loop.from.map(function(m, i, all){
+		return namespaces[0][loop.from].map(function(m, i, all){
 			var map=Map.copy(namespaces[0]);
-			if (m instanceof Object){
+			if (m instanceof Object && !(m instanceof Array)){
 				var keys=Object.keys(m);
 				keys.forall(function(k){
 					map[k.toLowerCase()]=m[k];
@@ -56,8 +67,8 @@ var Template=function Template(template){
 				map[Array(i+3).join(".")]=n;
 			});
 
-			return _expand(m, namespaces.copy().prepend(map));
-		});
+			return _expand(loop.template, namespaces.copy().prepend(map));
+		}).join(loop.separator===undefined ? "" : loop.separator);
 	}
 
 	function _expand_text(template, namespaces){
@@ -74,12 +85,20 @@ var Template=function Template(template){
 			if (s < 0) return output;
 			var e = output.indexOf('}}', s);
 			if (e < 0) return output;
-			var key = output.substring(s + 2, e).toLowerCase();
-
+			var path = output.substring(s + 2, e).toLowerCase().split("|");
+			var key=path[0];
 			var val = map[key];
+			for(var p=1;p<path.length;p++){
+				var func=path[p];
+				if (FUNC[func]===undefined){
+					Log.error(func+" is an unknown string function for template expansion")
+				}//endif
+				val=FUNC[func](val);
+			}//for
+
 			if (val!==undefined && (val instanceof String || (typeof map[key])!="object")){
-				output=output.replaceAll(output.substring(s, e + 2), map[key]);
-				e = s + map[key].length;
+				output=output.replaceAll(output.substring(s, e + 2), val);
+				e = s + val.length;
 			}else{
 				//Log.debug()
 			}//endif

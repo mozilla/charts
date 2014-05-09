@@ -43,12 +43,12 @@ function getComponentDetails(comp) {
 
 // SHOW BLOCKER COUNT FOR ONE COMPONENT
 function showComponent(detail, showTYPE) {
-	var TEMPLATE = '<div class="blocker">' +
+	var TEMPLATE = new Template('<div class="blocker">' +
 		'<div class="component">{{component}}</div>' +
 		'<div class="componentmanager">{{manager}}</div>' +
 		'<div class="componentowner">{{owner}}</div>' +
 		'{{projectDetail}}' +
-		'</div>';
+		'</div>');
 
 	var component = Map.copy(detail[0]);
 	var meta =  getComponentDetails(component.component);
@@ -60,19 +60,20 @@ function showComponent(detail, showTYPE) {
 			return showTYPE(project);
 		}//endif
 	}).join("");
-	return TEMPLATE.replaceVars(component)
+	return TEMPLATE.replace(component)
 }//function
 
 // SHOW SUMMARY COUNT
 function showSummary(type, team, detail, specialBugs, showTYPE) {
 
-	var TEMPLATE = '<h3 style="padding: 20px 0 0 10px;vertical-align: top; display:inline-block">{{name}} {{type}}</h3><div class="blocker">' +
+	var TEMPLATE = new Template(
+		'<h3 style="padding: 20px 0 0 10px;vertical-align: top; display:inline-block">{{name}} {{type}}</h3><div class="blocker">' +
 		'{{projectDetail}}' +
 		'<div style="display:inline-block;width:50px">&nbsp;</div>' +
 		'{{total}}' +
 		'<div style="display:inline-block;width:50px">&nbsp;</div>' +
 		'{{specialDetail}}' +
-		'</div>';
+		'</div>');
 
 	var total = aMath.sum.apply(undefined, detail.cube.select("count"));
 	var component = {};
@@ -112,7 +113,7 @@ function showSummary(type, team, detail, specialBugs, showTYPE) {
 	});
 	component.type=type;
 
-	return TEMPLATE.replaceVars(component)
+	return TEMPLATE.replace(component)
 }//function
 
 // SHOW TRIAGE COUNT FOR ONE COMPONENT, ONE PROJECT
@@ -122,12 +123,13 @@ function showNominations(detail) {
 	detail.unassignedURL = Bugzilla.searchBugsURL(detail.unassignedBugs);
 	detail.color = age2color(detail.age).toHTML();
 
-	var TEMPLATE = '<div class="project {{additionalClass}}"  style="background-color:{{color}}" href="{{bugsURL}}" bugsList="{{bugsList}}">' +
+	var TEMPLATE = new Template(
+		'<div class="project {{additionalClass}}"  style="background-color:{{color}}" href="{{bugsURL}}" bugsList="{{bugsList}}">' +
 		'<div class="release">{{project}}</div>' +
 		'<div class="count">{{count}}</div>' +
-		'</div>';
+		'</div>');
 
-	return TEMPLATE.replaceVars(detail)
+	return TEMPLATE.replace(detail)
 }//function
 
 // SHOW BLOCKER COUNT FOR ONE COMPONENT, ONE PROJECT
@@ -137,13 +139,13 @@ function showBlocker(detail) {
 	detail.unassignedURL = Bugzilla.searchBugsURL(detail.unassignedBugs);
 	detail.color = age2color(detail.age).toHTML();
 
-	var TEMPLATE = '<div class="project {{additionalClass}}"  style="background-color:{{color}}" href="{{bugsURL}}" bugsList="{{bugsList}}">' +
+	var TEMPLATE = new Template('<div class="project {{additionalClass}}"  style="background-color:{{color}}" href="{{bugsURL}}" bugsList="{{bugsList}}">' +
 		'<div class="release">{{project}}</div>' +
 		'<div class="count">{{count}}</div>' +
 		(detail.unassignedCount > 0 ? '<div class="unassigned"><a class="count_unassigned" href="{{unassignedURL}}">{{unassignedCount}}</a></div>' : '') +
-		'</div>';
+		'</div>');
 
-	return TEMPLATE.replaceVars(detail)
+	return TEMPLATE.replace(detail)
 }//function
 
 
@@ -154,13 +156,13 @@ function showRegression(detail) {
 	detail.unassignedURL = Bugzilla.searchBugsURL(detail.unassignedBugs);
 	detail.color = age2color(detail.age).toHTML();
 
-	var TEMPLATE = '<div class="project {{additionalClass}}"  style="background-color:{{color}}" href="{{bugsURL}}" bugsList="{{bugsList}}">' +
+	var TEMPLATE = new Template('<div class="project {{additionalClass}}"  style="background-color:{{color}}" href="{{bugsURL}}" bugsList="{{bugsList}}">' +
 		'<div class="release">{{project}}</div>' +
 		'<div class="count">{{count}}</div>' +
 		(detail.unassignedCount > 0 ? '<div class="unassigned"><a class="count_unassigned" href="{{unassignedURL}}">{{unassignedCount}}</a></div>' : '') +
-		'</div>';
+		'</div>');
 
-	return TEMPLATE.replaceVars(detail)
+	return TEMPLATE.replace(detail)
 }//function
 
 function addProjectClickers(cube) {

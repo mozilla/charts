@@ -57,7 +57,7 @@ importScript([
 ], function(){
 
 
-var raw_data = null;   //KEEP RAW DATA FOR RE-CHARTING
+var raw_data = undefined;   //KEEP RAW DATA FOR RE-CHARTING
 var featureFilter = null;
 
 var thread;
@@ -86,75 +86,46 @@ var __createChart = function*(){
 	var sampleMin = Date.newInstance(GUI.state.sampleMin);
 	var sampleInterval = Duration.newInstance(GUI.state.sampleInterval);
 	var sampleMax = Date.newInstance(GUI.state.sampleMax).addDay();
-	var bug_ids = GUI.state.bugList.trim()=="" ? [] : GUI.state.bugList.split(",").map(function(v){return CNV.String2Integer(v.trim());});
 	var timeDomain = {"type":"time", "min":sampleMin, "max":sampleMax, "interval":sampleInterval};
 
-	var features = GUI.state.feature.getSelectedParts();
-	if (features.length>0){
-		featureFilter = {"or":features.select("esfilter")};
-		if (bug_ids.length>0) filter.or.append({"terms":{"bug_id":bug_ids}});
-
-		raw_data = yield(allOpenDependencies(featureFilter, timeDomain, Array.union(features.select("needed_fields")).union(["cf_feature_b2g", "status_whiteboard"]), false));
-
-		var featureName=features.select("name").join(" and ");
-		$("#title").text("Burndown for "+featureName);
-	}else{
-		if (bug_ids.length==0){
-			$("#title").text("Must select bug number, or predefined feature");
-			yield (null);
-		}//endif
-
-		Thread.run(function*(){
-		///////////////////////////////////////////////////////////////////////
-		// SET TITLE TO THE TOP BUG DESCRIPTION
-		///////////////////////////////////////////////////////////////////////
-			var r = yield(ESQuery.run({
-				"from":"public_bugs",
-				"select":"short_desc",
-				"esfilter":{"and":[
-					{"terms":{"bug_id": bug_ids}},
-					Mozilla.CurrentRecords.esfilter
-				]}
-			}));
-
-			$("#title").html(r.list.map(function(v){return CNV.String2HTML(v);}).join("<br>"));
-		});
-
-		featureFilter = {"terms":{"bug_id":bug_ids}};
-		raw_data = yield(allOpenDependencies(featureFilter, timeDomain, ["status_whiteboard"], false));
-
+	var feature = Mozilla.Feature["UCID 2.0"];
+	featureFilter = feature.esfilter;
+	if (!raw_data){
+		raw_data = yield(allOpenDependencies(featureFilter, timeDomain, Mozilla.Scope["needed_fields"], false));
 	}//endif
 
 
-	var currFeatureFilter={
-		"All": {"match_all":{}},
-		"None": featureFilter,
-		"feature-b2g = 2.0": {"term":{"cf_feature_b2g":"2.0"}}
-	}[GUI.state.hierarchyMode.getSimpleState()];
+	var featureName=feature.name;
+	$("#title").text("Burndown for "+featureName);
 
+	var currScopeFilter;
+	if (GUI.state.scope.getSimpleState()){
+		currScopeFilter=GUI.state.scope.getSelectedParts()[0].esfilter;
+	}else{
+		currScopeFilter={"match_all":{}};
+	}//endif
 	yield (ESQuery.loadColumns({"from":"bugs"}));
 
 	//LAST DAY WILL BE CONSIDERED CURRENT FEATURE LIST
 	var currOpenBugs=raw_data.cube.last().filter({"and":[
 		{"term":{"counted":"Open"}},
-		currFeatureFilter
+		currScopeFilter
 	]}).select("bug_id");
 
 	var currTotalBugs=raw_data.cube.last().filter({"and":[
 		{"not":{"term":{"counted":"none"}}},
-		currFeatureFilter
+		currScopeFilter
 	]}).select("bug_id");
 
 	restOfCharting({
 		"TODAY": TODAY,
 		"countMode": GUI.state.countMode.getSimpleState(),
-		"hierarchyMode":GUI.state.hierarchyMode.getSimpleState(),
 		"timeDomain": timeDomain,
 		"currOpenBugs": currOpenBugs,
 		"currTotalBugs": currTotalBugs,
-		"currFeatureFilter": currFeatureFilter
+		"currScopeFilter": currScopeFilter
 	});
-}
+};
 
 function __reChart(){
 	$("#feature-summary").html("");
@@ -166,32 +137,31 @@ function __reChart(){
 	var sampleInterval = Duration.newInstance(GUI.state.sampleInterval);
 	var sampleMax = Date.newInstance(GUI.state.sampleMax).addDay();
 
-	var currFeatureFilter={
-		"All": {"match_all":{}},
-		"None": featureFilter,
-		"feature-b2g = 2.0": {"term":{"cf_feature_b2g":"2.0"}}
-	}[GUI.state.hierarchyMode.getSimpleState()];
-
+	var currScopeFilter;
+	if (GUI.state.scope.getSimpleState()){
+		currScopeFilter=GUI.state.scope.getSelectedParts()[0].esfilter;
+	}else{
+		currScopeFilter={"match_all":{}};
+	}//endif
 
 	//LAST DAY WILL BE CONSIDERED CURRENT FEATURE LIST
 	var currOpenBugs=raw_data.cube.last().filter({"and":[
 		{"term":{"counted":"Open"}},
-		currFeatureFilter
+		currScopeFilter
 	]}).select("bug_id");
 
 	var currTotalBugs=raw_data.cube.last().filter({"and":[
 		{"not":{"term":{"counted":"none"}}},
-		currFeatureFilter
+		currScopeFilter
 	]}).select("bug_id");
 
 	restOfCharting({
 		"TODAY": Date.today(),
 		"countMode": GUI.state.countMode.getSimpleState(),
-		"hierarchyMode":GUI.state.hierarchyMode.getSimpleState(),
 		"timeDomain": {"type":"time", "min":sampleMin, "max":sampleMax, "interval":sampleInterval},
 		"currOpenBugs": currOpenBugs,
 		"currTotalBugs": currTotalBugs,
-		"currFeatureFilter": currFeatureFilter
+		"currFeatureFilter": currScopeFilter
 	})
 }//function
 
@@ -292,7 +262,7 @@ function restOfCharting(env){
 					"domain":env.timeDomain
 				}
 			],
-			"where": env.currFeatureFilter
+			"where": env.currScopeFilter
 		}));
 
 		//CONVERT EDGE TO ATTRIBUTES
@@ -364,18 +334,9 @@ function restOfCharting(env){
 
 $(document).ready(function(){
 	GUI.setup(createChart, [
-		{"id":"bugList", "name":"Tracking Bug(s)", "type":"text", "default":null},
 		{"id":"sampleMin", "name":"Start Date", "type":"time", "default":Date.eod().add("-6week")},
 		{"id":"sampleMax", "name":"End Date", "type":"time", "default":Date.today().ceilingWeek()},
 		{"id":"sampleInterval", "name":"Interval", "type":"duration", "default":"day"},
-		{"id":"hierarchyMode", "name":"Dependencies", "type":RadioFilter.newInstance({
-			"id":"hierarchyMode",
-			"name":"Dependencies",
-			"message":"Chart all bug dependencies (default), or dependnt bugs marked with b2g-feature==2.0, or chart bugs matching feature criterion and exclude dependencies <br><br>",
-			"options":["All", "feature-b2g = 2.0", "None"],
-			"default":"All",
-			"refreshCallback":__reChart
-		})},
 		{"id":"countMode", "name":"Count", "type":RadioFilter.newInstance({
 			"id":"countMode",
 			"name":"Count",
@@ -384,14 +345,15 @@ $(document).ready(function(){
 			"default":"Work",
 			"refreshCallback":__reChart
 		})},
-		{"id": "feature", "name": "Scope", "type": PartitionFilter.newInstance({
-			"id": "features",
+		{"id": "scope", "name": "Scope", "type": PartitionFilter.newInstance({
+			"id": "scope",
 			"name": "Scope",
-			"dimension": Mozilla.Feature,
-			"onlyOne": false,
+			"dimension": Mozilla.Scope,
+			"onlyOne": true,
+			"showAll": true,
 			"expandAll": true,
 			"treeDepth":0
-		})}
+		}), "default":"UCID 2.0"}
 		],
 			[
 				"sampleMin=Date.newInstance(sampleMin).floor(Duration.newInstance(sampleInterval)).format('yyyy-MM-dd')",

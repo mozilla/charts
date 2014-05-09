@@ -294,14 +294,14 @@ var __createChart = function*(){
 				var effort=aMath.add.apply(undefined, milestoneTotals.cube[i].select("effort"));
 				Mozilla.Milestone[m.name].effort=effort;
 
-				var TEMPLATE = "<div>" +
+				var TEMPLATE = new Template("<div>" +
 						"<div style='width:150px;display: inline-block;padding:0px 10px 0px 10px'>Milestone: "+m.name+"</div>" +
 						"<div id='"+ m.name+"Total' class='hoverable' style='width:75px;display:inline-block;'>Total: {{total}}</div>"+
 						"<div id='"+ m.name+"Closed' class='hoverable' style='width:125px;display:inline-block;'>Closed: {{closed}} ({{closed_percent}}%)</div>"+
 						"<div id='"+ m.name+"Open' class='hoverable' style='display:inline-block;'>Open Bugs: {{open}}</div>" +
 						" (<div id='"+ m.name+"Regressions' class='hoverable' style='display:inline-block;'>{{regressions}} regressions</div>)"+
-						"</div";
-				return TEMPLATE.replaceVars({
+						"</div");
+				return TEMPLATE.replace({
 					"total":total,
 					"open":nvl(milestoneTotals.cube[i][1].count, 0)+nvl(milestoneTotals.cube[i][0].count, 0),
 					"regressions":nvl(milestoneTotals.cube[i][0].count, "0"),

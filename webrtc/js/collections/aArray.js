@@ -162,7 +162,10 @@ importScript("../util/aUtil.js");
 	}//endif
 
 
-	Array.prototype.prepend=Array.prototype.unshift;
+	Array.prototype.prepend=function(v){
+		this.unshift(v);
+		return this;
+	};//method
 
 	Array.prototype.last=function(){
 		return this[this.length-1];
@@ -242,6 +245,7 @@ importScript("../util/aUtil.js");
 	Array.prototype.union = function(b){
 		var output={};
 		for(var i = this.length; i--;) output[this[i]]=this[i];
+		b = Array.newInstance(b);
 		for(var j = b.length; j--;) output[b[j]]=b[j];
 		return Map.getValues(output);
 	};//method
@@ -251,6 +255,7 @@ importScript("../util/aUtil.js");
 	Array.union = function union(arrays){
 		var output={};
 		arrays.forall(function(a){
+			a = Array.newInstance(a);
 			for(var i = a.length; i--;){
 				var v = a[i];
 				output[v]=v;

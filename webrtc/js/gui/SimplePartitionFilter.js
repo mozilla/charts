@@ -45,7 +45,7 @@ SimplePartitionFilter = function () {
 			var partDIV_ID=this.DIV_ID+"_"+CNV.String2HTML(key);
 			self.id2DIV_ID[key]=partDIV_ID;
 
-			var inst = $(self.template.replaceVars(part))
+			var inst = $(self.template.replace(part))
 				.attr("id", partDIV_ID)
 				.click(function(){
 					var self=$(this);

@@ -57,6 +57,9 @@ importScript([
 ], function(){
 
 
+var raw_data = null;   //KEEP RAW DATA FOR RE-CHARTING
+var featureFilter = null;
+
 var thread;
 var createChart = function(){
 	if (thread !== undefined)
@@ -78,23 +81,20 @@ var __createChart = function*(){
 	$("#buglist").html("");
 	$("#info").html("");
 
-
 	var TODAY = Date.today();
 
 	var sampleMin = Date.newInstance(GUI.state.sampleMin);
 	var sampleInterval = Duration.newInstance(GUI.state.sampleInterval);
 	var sampleMax = Date.newInstance(GUI.state.sampleMax).addDay();
-
 	var bug_ids = GUI.state.bugList.trim()=="" ? [] : GUI.state.bugList.split(",").map(function(v){return CNV.String2Integer(v.trim());});
 	var timeDomain = {"type":"time", "min":sampleMin, "max":sampleMax, "interval":sampleInterval};
 
 	var features = GUI.state.feature.getSelectedParts();
-	var raw_data = null;
 	if (features.length>0){
-		var filter = {"or":features.select("esfilter")};
+		featureFilter = {"or":features.select("esfilter")};
 		if (bug_ids.length>0) filter.or.append({"terms":{"bug_id":bug_ids}});
 
-		raw_data = yield(allOpenDependencies(filter, timeDomain, ["status_whiteboard"], false));
+		raw_data = yield(allOpenDependencies(featureFilter, timeDomain, Array.union(features.select("needed_fields")).union(["status_whiteboard"]), false));
 
 		var featureName=features.select("name").join(" and ");
 		$("#title").text("Burndown for "+featureName);
@@ -120,28 +120,91 @@ var __createChart = function*(){
 			$("#title").html(r.list.map(function(v){return CNV.String2HTML(v);}).join("<br>"));
 		});
 
-		raw_data = yield(allOpenDependencies({"terms":{"bug_id":bug_ids}}, timeDomain, ["status_whiteboard"], false));
+		featureFilter = {"terms":{"bug_id":bug_ids}};
+		raw_data = yield(allOpenDependencies(featureFilter, timeDomain, ["status_whiteboard"], false));
+
 	}//endif
-	var currOpenBugsFilter = {"terms":{"bug_id":raw_data.cube.last().filter({"term":{"counted":"Open"}}).select("bug_id")}};  //LAST DAY WILL BE CONSIDERED CURRENT FEATURE LIST
-	var currTotalBugsFilter = {"terms":{"bug_id":raw_data.cube.last().filter({"not":{"term":{"counted":"none"}}}).select("bug_id")}};  //LAST DAY WILL BE CONSIDERED CURRENT FEATURE LIST
+
+	var currFeatureFilter=GUI.state.hierarchyMode.getSimpleState()=="All" ? {"match_all":{}} : featureFilter;
 
 	yield (ESQuery.loadColumns({"from":"bugs"}));
+
+	//LAST DAY WILL BE CONSIDERED CURRENT FEATURE LIST
+	var currOpenBugs=raw_data.cube.last().filter({"and":[
+		{"term":{"counted":"Open"}},
+		currFeatureFilter
+	]}).select("bug_id");
+
+	var currTotalBugs=raw_data.cube.last().filter({"and":[
+		{"not":{"term":{"counted":"none"}}},
+		currFeatureFilter
+	]}).select("bug_id");
+
+	restOfCharting({
+		"TODAY": TODAY,
+		"countMode": GUI.state.countMode.getSimpleState(),
+		"hierarchyMode":GUI.state.hierarchyMode.getSimpleState(),
+		"timeDomain": timeDomain,
+		"currOpenBugs": currOpenBugs,
+		"currTotalBugs": currTotalBugs,
+		"currFeatureFilter": currFeatureFilter
+	});
+}
+
+function __reChart(){
+	$("#feature-summary").html("");
+	$("#chart").html("");
+	$("#buglist").html("");
+	$("#info").html("");
+
+	var sampleMin = Date.newInstance(GUI.state.sampleMin);
+	var sampleInterval = Duration.newInstance(GUI.state.sampleInterval);
+	var sampleMax = Date.newInstance(GUI.state.sampleMax).addDay();
+
+	var currFeatureFilter=GUI.state.hierarchyMode.getSimpleState()=="All" ? {"match_all":{}} : featureFilter;
+
+	//LAST DAY WILL BE CONSIDERED CURRENT FEATURE LIST
+	var currOpenBugs=raw_data.cube.last().filter({"and":[
+		{"term":{"counted":"Open"}},
+		currFeatureFilter
+	]}).select("bug_id");
+
+	var currTotalBugs=raw_data.cube.last().filter({"and":[
+		{"not":{"term":{"counted":"none"}}},
+		currFeatureFilter
+	]}).select("bug_id");
+
+	restOfCharting({
+		"TODAY": Date.today(),
+		"countMode": GUI.state.countMode.getSimpleState(),
+		"hierarchyMode":GUI.state.hierarchyMode.getSimpleState(),
+		"timeDomain": {"type":"time", "min":sampleMin, "max":sampleMax, "interval":sampleInterval},
+		"currOpenBugs": currOpenBugs,
+		"currTotalBugs": currTotalBugs,
+		"currFeatureFilter": currFeatureFilter
+	})
+}//function
+
+
+
+function restOfCharting(env){
+
 
 	Thread.run(function*(){
 		///////////////////////////////////////////////////////////////////////
 		// SUMMARY OF FEATURE
 		///////////////////////////////////////////////////////////////////////
-		var total = currTotalBugsFilter.terms.bug_id;
-		var open = currOpenBugsFilter.terms.bug_id;
+		var total = env.currTotalBugs;
+		var open = env.currOpenBugs;
 		var closed = total.subtract(open);
 		//FILL TEMPLATE
 		var summary=$("#feature-summary");
-		var TEMPLATE = "<div>" +
+		var TEMPLATE = new Template("<div>" +
 				"<div id='featureTotal' class='hoverable' style='display:inline-block;margin:5px 10px 5px 10px;'>Total Bugs: {{total}}</div>"+
 				"<div id='featureClosed' class='hoverable' style='display:inline-block;margin:5px 10px 5px 10px;'>Closed: {{closed}} ({{closed_percent}}%)</div>"+
 				"<div id='featureOpen' class='hoverable' style='display:inline-block;margin:5px 10px 5px 10px;'>Open Bugs: {{open}}</div>" +
-				"</div";
-		summary.html(TEMPLATE.replaceVars({
+				"</div");
+		summary.html(TEMPLATE.replace({
 			"total":total.length,
 			"open":open.length,
 			"closed":closed.length,
@@ -165,7 +228,7 @@ var __createChart = function*(){
 		////////////////////////////////////////////////////////////////////////////
 		// CURRENT BUGS LIST
 		////////////////////////////////////////////////////////////////////////////
-
+		var a = Log.action("Get buglist", true);
 		var bugs = yield (ESQuery.run({
 			"from":"public_bugs",
 			"select":[
@@ -179,9 +242,10 @@ var __createChart = function*(){
 			"esfilter":{"and":[
 				Mozilla.BugStatus.Open.esfilter,
 				Mozilla.CurrentRecords.esfilter,
-				currOpenBugsFilter
+				{"terms":{"bug_id":env.currOpenBugs}}
 			]}
 		}));
+		Log.actionDone(a);
 
 		var details = yield (Qb.calc2List({
 			"from":bugs,
@@ -198,88 +262,94 @@ var __createChart = function*(){
 		$("#buglist").html(bugDetails(details.list));
 	});
 
-	var chart= yield(Q({
-		"from": raw_data,
-		"select":{"name":"num", "value":'nvl(ScrumBugs.parse(status_whiteboard).points, 1)-0', "aggregate":"sum"},
-		"edges":[
-			{"name": "status", "value": "counted", "domain": {"type": "set", "key":"value", "partitions": [
-				{"name": "Open", "value": "Open"},
-				{"name": "Closed", "value": "Closed"},
-				{"name": "none", "value":"none"}
-			]}},
-			{"name":"date",
-				"value":"date",
-				"allowNulls":false,
-				"domain":timeDomain
-			}
-		]
-	}));
+	Thread.run(function*(){
+		///////////////////////////////////////////////////////////////////////
+		// HISTORICAL COUNT
+		///////////////////////////////////////////////////////////////////////
+		var a=Log.action("Adding", true);
+		var chart= yield(Q({
+			"from": raw_data,
+			"select":{"name":"num", "value":env.countMode=="Bugs" ? "1" : 'nvl(ScrumBugs.parse(status_whiteboard).points, 1)-0', "aggregate":"sum"},
+			"edges":[
+				{"name": "status", "value": "counted", "domain": {"type": "set", "key":"value", "partitions": [
+					{"name": "Open", "value": "Open"},
+					{"name": "Closed", "value": "Closed"},
+					{"name": "none", "value":"none"}
+				]}},
+				{"name":"date",
+					"value":"date",
+					"allowNulls":false,
+					"domain":env.timeDomain
+				}
+			],
+			"where": env.currFeatureFilter
+		}));
 
-	//CONVERT EDGE TO ATTRIBUTES
-	var flat = yield(Q({
-		"from":chart,
-		"select":[
-			{"name":"Open", "value":"status.name=='Open' ? num : null", "aggregate":"sum", "default":0},
-			{"name":"Total", "value":"status.name!='none' ? num : null", "aggregate":"sum", "default":0}
-		],
-		"edges":[
-			{"name":"date", "value":"date",
-				"allowNulls":false,
-				"domain":{"type":"time", "min":sampleMin, "max":sampleMax, "interval":sampleInterval, "value":"value"}
-			}
-		]
-	}));
-	var tempTimeDomain=flat.edges[0].domain;
+		//CONVERT EDGE TO ATTRIBUTES
+		var flat = yield(Q({
+			"from":chart,
+			"select":[
+				{"name":"Open", "value":"status.name=='Open' ? num : null", "aggregate":"sum", "default":0},
+				{"name":"Total", "value":"status.name!='none' ? num : null", "aggregate":"sum", "default":0}
+			],
+			"edges":[
+				{"name":"date", "value":"date",
+					"allowNulls": false,
+					"domain": env.timeDomain
+				}
+			]
+		}));
+		var tempTimeDomain=flat.edges[0].domain;
 
-	//SHOW FUTURE VALUES AS NULLS
-	flat.cube.forall(function(v, i){
-		if (tempTimeDomain.partitions[i].min > TODAY){
-			flat.cube[i]=Map.zip(mapAllKey(v, function(k, v){
-				return [k, null];
-			}));
-		}//endif
+		//SHOW FUTURE VALUES AS NULLS
+		flat.cube.forall(function(v, i){
+			if (tempTimeDomain.partitions[i].min > env.TODAY){
+				flat.cube[i]=Map.zip(mapAllKey(v, function(k, v){
+					return [k, null];
+				}));
+			}//endif
+		});
+		Log.actionDone(a);
+
+
+		aChart.show({
+			"id":"chart",
+			"sheetDiv":"info",
+			"type":"line",
+			"stacked":false,
+			"cube":flat,
+			"xAxisSize":50,
+			extensionPoints: {
+			    dot_shapeRadius: 3,
+	            dot_shape:"circle",
+				line_lineWidth: 3
+			},
+			"clickAction":function(series, x, d){
+				var series2filter = {
+					"Open": {"term": {"counted": series}},
+					"Total": {"not": {"term": {"counted": "none"}}}
+				};
+
+				Thread.run(function*(){
+					var buglist=(yield (Q({
+						"from":raw_data,
+						"select":{"value":"bug_id", "aggregate":"minimum"},
+						"edges":[
+							{"name":"unique", "value":"bug_id"}
+						],
+						"esfilter":{"and":[
+							series2filter[series],
+							{"term":{"date":x}}
+						]}
+					})));
+
+					Bugzilla.showBugs([].union(buglist.cube));
+				});
+			}//click
+		});
 	});
 
-
-	a = Log.action("Make chart", true);
-	aChart.show({
-		"id":"chart",
-		"sheetDiv":"info",
-		"type":"line",
-		"stacked":false,
-		"cube":flat,
-		"xAxisSize":50,
-		extensionPoints: {
-		    dot_shapeRadius: 3,
-            dot_shape:"circle",
-			line_lineWidth: 3
-		},
-		"clickAction":function(series, x, d){
-			var series2filter = {
-				"Open": {"term": {"counted": series}},
-				"Total": {"not": {"term": {"counted": "none"}}}
-			};
-
-			Thread.run(function*(){
-				var buglist=(yield (Q({
-					"from":raw_data,
-					"select":{"value":"bug_id", "aggregate":"minimum"},
-					"edges":[
-						{"name":"unique", "value":"bug_id"}
-					],
-					"esfilter":{"and":[
-						series2filter[series],
-						{"term":{"date":x}}
-					]}
-				})));
-
-				Bugzilla.showBugs([].union(buglist.cube));
-			});
-		}//click
-	});
-	Log.actionDone(a);
-
-};
+}
 
 
 $(document).ready(function(){
@@ -288,6 +358,22 @@ $(document).ready(function(){
 		{"id":"sampleMin", "name":"Start Date", "type":"time", "default":Date.eod().add("-6week")},
 		{"id":"sampleMax", "name":"End Date", "type":"time", "default":Date.today().ceilingWeek()},
 		{"id":"sampleInterval", "name":"Interval", "type":"duration", "default":"day"},
+		{"id":"hierarchyMode", "name":"Dependencies", "type":RadioFilter.newInstance({
+			"id":"hierarchyMode",
+			"name":"Dependencies",
+			"message":"Chart all bug dependencies (default), or chart only the bugs matching feature criterion<br><br>",
+			"options":["All", "None"],
+			"default":"All",
+			"refreshCallback":__reChart
+		})},
+		{"id":"countMode", "name":"Count", "type":RadioFilter.newInstance({
+			"id":"countMode",
+			"name":"Count",
+			"message":"Chart the estimated work (default), or show the bug count<br>",
+			"options":["Work", "Bugs"],
+			"default":"Work",
+			"refreshCallback":__reChart
+		})},
 		{"id": "feature", "name": "Feature", "type": PartitionFilter.newInstance({
 			"id": "features",
 			"name": "All Features",

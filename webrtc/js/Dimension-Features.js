@@ -9,14 +9,18 @@ if (!Mozilla) var Mozilla = {"name": "Mozilla", "edges": []};
 
 Dimension.addEdges(true, Mozilla, [
 
-	{"name": "Feature", "index": "bugs", "esfilter": {"match_all": {}}, "edges": [
-		{"name": "UCID Bugs", "esfilter": {"and":[
+	{"name": "Feature", "index": "bugs", "needed_fields":["status_whiteboard"], "esfilter": {"match_all": {}}, "edges": [
+		{"name": "UCID 2.0", "esfilter": {"and":[
 			{"regexp": {"status_whiteboard": ".*ucid.*"}},
 			{"or":[
 				{"regexp": {"status_whiteboard": ".*2\\.0.*"}},
 				{"regexp": {"status_whiteboard": ".*1\\.5.*"}}
 			]}
 		]}},
+		{"name": "feature-b2g = 2.0", "needed_fields":["cf_feature_b2g"], "esfilter": {"and":[
+			{"term":{"cf_feature_b2g":"2.0"}}
+		]}},
+
 		{"name": "Platform webRTC", "esfilter": {"term": {"bug_id": 970426}}},
 		{"name": "Loop MLP", "esfilter": {"term": {"bug_id": 972866}}},
 		{"name": "Loop Mobile MVP", "esfilter": {"term": {"bug_id": 970426}}}

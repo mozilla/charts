@@ -94,7 +94,7 @@ var __createChart = function*(){
 		featureFilter = {"or":features.select("esfilter")};
 		if (bug_ids.length>0) filter.or.append({"terms":{"bug_id":bug_ids}});
 
-		raw_data = yield(allOpenDependencies(featureFilter, timeDomain, Array.union(features.select("needed_fields")).union(["status_whiteboard"]), false));
+		raw_data = yield(allOpenDependencies(featureFilter, timeDomain, Array.union(features.select("needed_fields")).union(["cf_feature_b2g", "status_whiteboard"]), false));
 
 		var featureName=features.select("name").join(" and ");
 		$("#title").text("Burndown for "+featureName);
@@ -125,7 +125,12 @@ var __createChart = function*(){
 
 	}//endif
 
-	var currFeatureFilter=GUI.state.hierarchyMode.getSimpleState()=="All" ? {"match_all":{}} : featureFilter;
+
+	var currFeatureFilter={
+		"All": {"match_all":{}},
+		"None": featureFilter,
+		"feature-b2g = 2.0": {"term":{"cf_feature_b2g":"2.0"}}
+	}[GUI.state.hierarchyMode.getSimpleState()];
 
 	yield (ESQuery.loadColumns({"from":"bugs"}));
 
@@ -161,7 +166,12 @@ function __reChart(){
 	var sampleInterval = Duration.newInstance(GUI.state.sampleInterval);
 	var sampleMax = Date.newInstance(GUI.state.sampleMax).addDay();
 
-	var currFeatureFilter=GUI.state.hierarchyMode.getSimpleState()=="All" ? {"match_all":{}} : featureFilter;
+	var currFeatureFilter={
+		"All": {"match_all":{}},
+		"None": featureFilter,
+		"feature-b2g = 2.0": {"term":{"cf_feature_b2g":"2.0"}}
+	}[GUI.state.hierarchyMode.getSimpleState()];
+
 
 	//LAST DAY WILL BE CONSIDERED CURRENT FEATURE LIST
 	var currOpenBugs=raw_data.cube.last().filter({"and":[
@@ -361,8 +371,8 @@ $(document).ready(function(){
 		{"id":"hierarchyMode", "name":"Dependencies", "type":RadioFilter.newInstance({
 			"id":"hierarchyMode",
 			"name":"Dependencies",
-			"message":"Chart all bug dependencies (default), or chart only the bugs matching feature criterion<br><br>",
-			"options":["All", "None"],
+			"message":"Chart all bug dependencies (default), or only bugs marked with b2g-feature==2.0, or or chart only the bugs matching feature criterion<br><br>",
+			"options":["All", "feature-b2g = 2.0", "None"],
 			"default":"All",
 			"refreshCallback":__reChart
 		})},
@@ -374,9 +384,9 @@ $(document).ready(function(){
 			"default":"Work",
 			"refreshCallback":__reChart
 		})},
-		{"id": "feature", "name": "Feature", "type": PartitionFilter.newInstance({
+		{"id": "feature", "name": "Scope", "type": PartitionFilter.newInstance({
 			"id": "features",
-			"name": "All Features",
+			"name": "Scope",
 			"dimension": Mozilla.Feature,
 			"onlyOne": false,
 			"expandAll": true,

@@ -49,7 +49,7 @@ RadioFilter.prototype.makeHTML=function(){
 		this.message===undefined ? "" : "<div>{{message}}</div>",
 		{
 			"from": "options",
-			"template": '<input type="radio" name="{{id}}" value="{{.}}">{{.}}</input>'
+			"template": '<input type="radio" name="{{id}}" value="{{.}}">{{.}}</input><br>'
 		},
 		'</div>'
 	]);

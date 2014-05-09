@@ -269,7 +269,7 @@ function restOfCharting(env){
 		var a=Log.action("Adding", true);
 		var chart= yield(Q({
 			"from": raw_data,
-			"select":{"name":"num", "value":env.countMode=="Bugs" ? "1" : 'nvl(ScrumBugs.parse(status_whiteboard).points, 1)-0', "aggregate":"sum"},
+			"select":{"name":"num", "value":env.countMode=="Bugs" ? "1" : 'nvl(ScrumBugs.parse(status_whiteboard).points, 1)-0', "aggregate":"sum", "default":0},
 			"edges":[
 				{"name": "status", "value": "counted", "domain": {"type": "set", "key":"value", "partitions": [
 					{"name": "Open", "value": "Open"},
@@ -303,7 +303,7 @@ function restOfCharting(env){
 
 		//SHOW FUTURE VALUES AS NULLS
 		flat.cube.forall(function(v, i){
-			if (tempTimeDomain.partitions[i].min > env.TODAY){
+			if (tempTimeDomain.partitions[i].min > env.TODAY.addDay()){
 				flat.cube[i]=Map.zip(mapAllKey(v, function(k, v){
 					return [k, null];
 				}));

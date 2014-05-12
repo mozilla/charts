@@ -38,7 +38,7 @@ Dimension.addEdges(true, Mozilla, [
 		{"name": "All", "esfilter": {"match_all": {}}}
 	]},
 
-	{"name": "Milestone", "index": "bugs", "esFacet": true, "edges": [
+	{"name": "Milestone", "index": "bugs", "isFacet": true, "edges": [
 		{
 			"name": "Firefox31",
 			"start_date": "18 MAR 2014",
@@ -67,20 +67,38 @@ Dimension.addEdges(true, Mozilla, [
 				]}}
 			]
 		},
+
 		{
-			"name": "1.5/2.0",
-			"start_date": "29 APR 2014",
-			"target_date": "9 JUN 2014",
-			"esfilter": {"match_all": {}},
+			"name": "2.0 S1",
+			"start_date": "28 APR 2014",
+			"target_date":"10 MAY 2014",
+			"esfilter": {"term":{"target_milestone":"2.0 S1 (9may)"}},
 			"partitions": [
 				{"name": "Blocking", "esfilter": {"and": [
 					{"terms": {"cf_blocking_b2g": ["2.0+", "1.5+"]}}
 				]}},
 				{"name": "Targeted", "esfilter": {"and": [
 					{"exists": {"field": "target_milestone"}},
-					{"not": {"term": {"target_milestone": "---"}}},
-					{"not": {"term": {"cf_blocking_loop": "fx32+"}}}  // UNFORTUNATE REDUNDANCY
+					{"not": {"term": {"target_milestone": "---"}}}
 				]}}
+
+			]
+		},
+
+		{
+			"name": "2.0 S2",
+			"start_date": "12 MAY 2014",
+			"target_date":"24 MAY 2014",
+			"esfilter": {"term":{"target_milestone":"2.0 S2 (23may)"}},
+			"partitions": [
+				{"name": "Blocking", "esfilter": {"and": [
+					{"terms": {"cf_blocking_b2g": ["2.0+", "1.5+"]}}
+				]}},
+				{"name": "Targeted", "esfilter": {"and": [
+					{"exists": {"field": "target_milestone"}},
+					{"not": {"term": {"target_milestone": "---"}}}
+				]}}
+
 			]
 		},
 
@@ -116,7 +134,7 @@ Dimension.addEdges(true, Mozilla, [
 	]},
 
 
-	{"name": "CountType", "index": "bugs", "esFacet": true, "partitions": [
+	{"name": "CountType", "index": "bugs", "isFacet": true, "partitions": [
 		{"name": "Regressions", "esfilter": {"and":[
 			{"term": {"keywords": "regression"}},
 			Mozilla.BugStatus.Open.esfilter

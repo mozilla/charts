@@ -681,7 +681,7 @@ CNV.hex2int = function(value){
 
 //CONVERT FROM STRING TO SOMETHING THAT CAN BE USED BY $()
 CNV.String2JQuery=function(str){
-	var output=str.replace(/([;&,\.\+\*\~':"\!\^#$%@\[\]\(\)\/=>\|])/g, '\\$1');
+	var output=str.replace(/([ ;&,\.\+\*\~':"\!\^#$%@\[\]\(\)\/=>\|])/g, '\\$1');
 //	output=output.replaceAll(" ", "\\ ");
 	return output;
 };//method

@@ -292,7 +292,9 @@ var __createChart = function*(){
 				Mozilla.Milestone[m.name].total=total;
 
 				var effort=aMath.add.apply(undefined, milestoneTotals.cube[i].select("effort"));
+				var count=aMath.add.apply(undefined, milestoneTotals.cube[i].select("count"));
 				Mozilla.Milestone[m.name].effort=effort;
+				Mozilla.Milestone[m.name].count=count;
 
 				var TEMPLATE = new Template("<div>" +
 						"<div style='width:150px;display: inline-block;padding:0px 10px 0px 10px'>Milestone: "+m.name+"</div>" +
@@ -315,7 +317,8 @@ var __createChart = function*(){
 		milestones.forall(function(m){
 			var i=milestoneTotals.edges[0].domain.getPartByKey(m.name).dataIndex;
 
-			$("#"+  CNV.String2JQuery(m.name+"Total")).click(function(){
+			var totalButton = $("#"+  CNV.String2JQuery(m.name+"Total"));
+			totalButton.click(function(){
 				Thread.run(function*(){
 					var buglist=(yield (ESQuery.run({
 						"from":"bugs",
@@ -358,10 +361,14 @@ var __createChart = function*(){
 		});
 	});
 
-
+	///////////////////////////////////////////////////////////////////////
+	// BURNDOWN
+	///////////////////////////////////////////////////////////////////////
 	var a = Log.action("Request Bugs", true);
 	var chart;
-	if (true){
+	var chartCountName=GUI.state.countMode.getSimpleState();
+
+	if (chartCountName=="Work"){
 		var milestoneBugs=yield(ESQuery.run({
 			"from":"bugs",
 			"select":[
@@ -374,7 +381,6 @@ var __createChart = function*(){
 			],
 			"esfilter":{"and":[
 				GUI.state.milestone.makeFilter(),
-				teamFilter,
 				{"range":{"modified_ts":{"lt":sampleMax.getMilli()}}},
 				{"range":{"expires_on":{"gte":sampleMin.getMilli()}}}
 			]}
@@ -406,7 +412,6 @@ var __createChart = function*(){
 			],
 			"esfilter":{"and":[
 				GUI.state.milestone.makeFilter(),
-				teamFilter,
 				{"range":{"modified_ts":{"lt":sampleMax.getMilli()}}},
 				{"range":{"expires_on":{"gte":sampleMin.getMilli()}}}
 			]}
@@ -416,12 +421,13 @@ var __createChart = function*(){
 
 	yield (currMilestoneThread.join());
 
+
 	//CONVERT open/closed EDGE TO open/closed/total ATTRIBUTES
 	var flat = yield(Q({
 		"from":chart,
 		"select":[
 			{"name":"Regressions", "value":"status.name=='Regressions' ? num : null", "aggregate":"sum", "default":0},
-			{"name":"Open", "value":"['Open', 'Regressions'].contains(status.name) ? num : null", "aggregate":"sum", "default":0},
+			{"name":chartCountName, "value":"['Open', 'Regressions'].contains(status.name) ? num : null", "aggregate":"sum", "default":0},
 			{"name":"Total", "value":"num", "aggregate":"sum", "default":0}
 		],
 		"edges":[
@@ -445,7 +451,7 @@ var __createChart = function*(){
 	var stats = yield(Q({
 		"from":flat,
 		"select":[
-			{"name":"closed", value:"Total-Open"},
+			{"name":"closed", value:"Total-"+chartCountName},
 			{"name":"total", value:"Total"}
 		],
 		"edges":[
@@ -480,13 +486,6 @@ var __createChart = function*(){
 			expectedEndDate = statsMax.addWeekday(daysLeft);
 			netCloseRatePerDay = aMath.max(0, netCloseRatePerDay);
 		}
-
-	//	$("#stats").append('<span class="parameter_name">DUE Date:</span>' + DUE_DATE.format("dd MMM yyyy") + '<br>');
-		if (netCloseRatePerDay <= 0){
-			$("#stats").append('<span class="parameter_name">Expected End:</span>NEVER<br>');
-		} else{
-			$("#stats").append('<span class="parameter_name">Expected End:</span>' + expectedEndDate.format("dd MMM yyyy") + '<br>');
-		}//endif
 	}//endif
 
 
@@ -495,23 +494,24 @@ var __createChart = function*(){
 	//WE WILL CHART A DYNAMIC SET OF COLUMNS, BASED ON IF WE ARE LOOKING AT A FUTURE OR PAST DUE DATE
 	var columnsToChart=[
 		{"value":"Total", "style":{"color":Color.blue.multiply(0.9).hue(40).toHTML(), "visibility":"hidden"}},
-		{"value":"Open", "style":{"color":Color.green.multiply(0.9).hue(100).toHTML()}},
+		{"value":chartCountName, "style":{"color":Color.green.multiply(0.9).hue(100).toHTML()}},
 		{"value":"Regressions", "style":{"color":Color.red.multiply(0.9).hue(10).toHTML()}}
 	];
 
 	var slopes=[];
 	milestones.forall(function(m, i){
 		var ms = Mozilla.Milestone[m.name];
+		var effort = (chartCountName=="Work") ? ms.effort : ms.count;
 		var start_date=Date.newInstance(ms.start_date);
 		var target_date=Date.newInstance(ms.target_date);
 		var duration = Date.diffWeekday(target_date, start_date);
 		var slope=function(date){
 			if (date <= start_date) {
-				return ms.effort;
+				return effort;
 			} else if (date >= target_date) {
 				return 0;
 			} else {
-				return ms.effort - (ms.effort * Date.diffWeekday(date, start_date) / duration);
+				return effort - (effort * Date.diffWeekday(date, start_date) / duration);
 			}//endif
 		};
 		slopes.append(slope);
@@ -591,6 +591,13 @@ var __createChart = function*(){
 
 $(document).ready(function(){
 	GUI.setup(createChart, [
+		{"id":"countMode", "name":"Count", "type":RadioFilter.newInstance({
+			"id":"countMode",
+			"name":"Count",
+			"message":"Chart the estimated work (default), or chart the bug count<br>",
+			"options":["Work", "Bugs"],
+			"default":"Work"
+		})},
 		{"id": "team", "name": "Team", "type": PartitionFilter.newInstance({
 			"id": "teams",
 			"name": "All Teams",

@@ -579,6 +579,8 @@ GUI = {};
 		GUI.refreshRequested = false;	//TRY TO AGGREGATE MULTIPLE refresh() REQUESTS INTO ONE
 
 		GUI.refresh = function (refresh) {
+			//refresh == false WILL PREVENT CALLING THE refreshChart CALLBACK PROVIDED TO THE CONSTRUCTOR
+
 			if (GUI.refreshRequested) return;
 			GUI.refreshRequested = true;
 
@@ -639,12 +641,13 @@ GUI = {};
 
 
 		GUI.getFilters = function (indexName) {
-			if (GUI.customFilters.length == 0) return ESQuery.TrueFilter;
-
 			var output = {"and": []};
 			GUI.customFilters.forall(function (f, i) {
-				output.and.push(f.makeFilter());
+				if (f.makeFilter){
+					output.and.push(f.makeFilter());
+				}//endif
 			});
+			if (output.and.length==0) return ESQuery.TrueFilter;
 			return output;
 	};
 

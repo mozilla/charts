@@ -207,6 +207,7 @@ var __createChart = function*(){
 
 		a = Log.action("Make chart", true);
 		aChart.show({
+			"name":"Bug Churn",
 			"id":"chart_diff",
 			"sheetDiv":"info",
 			"type":"bar",
@@ -243,7 +244,7 @@ var __createChart = function*(){
 
 
 		$("#stats").html(
-			'<span class="parameter_name">New Bugs Per Day:</span>' + aMath.round(perDay.opened, 1) + '<br>' +
+//			'<span class="parameter_name">New Bugs Per Day:</span>' + aMath.round(perDay.opened, 1) + '<br>' +
 			'<span class="parameter_name">Closed Per Day:</span>' + aMath.round(perDay.closed, 1) + '<br>' +
 			''
 		);
@@ -467,7 +468,7 @@ var __createChart = function*(){
 	if (DUE_DATE <= TODAY){
 		//DONE, NO STATS REQUIRED
 	}else{
-		var stillOpen = flat.cube[flat.edges[0].domain.getPartByKey(TODAY).dataIndex].open;
+		var stillOpen = flat.cube[flat.edges[0].domain.getPartByKey(TODAY).dataIndex][chartCountName];
 		var requiredNetCloseRatePerDay;
 		{
 			var daysLeft=Date.diffWeekday(DUE_DATE, TODAY);
@@ -476,7 +477,7 @@ var __createChart = function*(){
 			requiredNetCloseRatePerDay = stillOpen / daysLeft;
 		}
 
-		$("#stats").append('<span class="parameter_name">Required Closed/Day:</span>' + aMath.round(requiredNetCloseRatePerDay + perDay.opened, 1) + '<br>');
+		$("#stats").append('<span class="parameter_name">Required Closed/Day:</span>' + aMath.round(requiredNetCloseRatePerDay, 1) + '<br>');
 
 		var expectedEndDate;
 		{
@@ -564,6 +565,9 @@ var __createChart = function*(){
 			line_lineWidth: 3
 		},
 		"clickAction":function(series, x, d){
+			//MAP FROM HUMANE NAMES BACK TO ORIGINAL DIMENSION DEFINITION NAME
+			series = {"Bugs": "Open", "Work": "Open", "Total": "Total", "Regressions": "Regressions"}[series];
+
 			Thread.run(function*(){
 				var buglist=(yield (ESQuery.run({
 					"from":"bugs",

@@ -26,7 +26,7 @@ Dimension.addEdges(true, Mozilla, [
 		{"name": "Loop Mobile MVP", "esfilter": {"term": {"bug_id": 970426}}}
 	]},
 
-	{"name": "Milestone", "index": "bugs", "esFacet": true, "edges": [
+	{"name": "Milestone", "index": "bugs", "isFacet": true, "edges": [
 		{
 			"name": "Firefox31",
 			"start_date": "18 MAR 2014",
@@ -104,7 +104,7 @@ Dimension.addEdges(true, Mozilla, [
 	]},
 
 
-	{"name": "CountType", "index": "bugs", "esFacet": true, "partitions": [
+	{"name": "CountType", "index": "bugs", "isFacet": true, "partitions": [
 		{"name": "Regressions", "esfilter": {"and":[
 			{"term": {"keywords": "regression"}},
 			Mozilla.BugStatus.Open.esfilter

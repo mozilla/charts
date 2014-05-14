@@ -174,7 +174,7 @@ var __createChart = function*(){
 		////////////////////////////////////////////////////////////////////////////
 		// DAILY CHANGE
 		////////////////////////////////////////////////////////////////////////////
-		var minMaxBugs=yield(ElasticSearch.getOpenMinMax(teamFilter, churnTimeDomain, ["status_whiteboard", "cf_blocking_loop", "cf_blocking_b2g", "target_milestone", "keywords"]));
+		var minMaxBugs=yield(ElasticSearch.getOpenMinMax(teamFilter, churnTimeDomain, ["status_whiteboard", "cf_blocking_loop", "cf_blocking_b2g", "target_milestone", "keywords", "resolution"]));
 
 		var diff = yield(Q({
 			"from":minMaxBugs,
@@ -198,6 +198,7 @@ var __createChart = function*(){
 				{"name":"Regression", "value":"type.name=='Regression' ? -closed : 0", "aggregate":"sum"},
 				{"name":"Blocker", "value":"type.name=='Blocker' ? -closed : 0", "aggregate":"sum"},
 				{"name":"Targeted", "value":"type.name=='Targeted' ? -closed : 0", "aggregate":"sum"},
+				{"name":"Dups", "value":"type.name=='Dups' ? -closed : 0", "aggregate":"sum"},
 				{"name":"Other", "value":"type.name=='Other' ? -closed : 0", "aggregate":"sum"}
 			],
 			"edges":[

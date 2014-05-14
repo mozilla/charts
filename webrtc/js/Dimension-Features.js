@@ -157,6 +157,7 @@ Dimension.addEdges(true, Mozilla, [
 				{"not": {"term": {"target_milestone": "---"}}}
 			]}
 		},
+		{"name": "Dups", "style": {"color": "#dddddd"}, "esfilter": {"terms":{"resolution":["duplicate", "worksforme"]}}},
 		{"name": "Other", "style": {"color": "#dddddd"}, "esfilter": {"match_all": {}}}
 	]}
 

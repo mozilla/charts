@@ -241,7 +241,7 @@ importScript("../util/aUtil.js");
 
 
 	//RETURN UNION OF UNIQUE VALUES
-	//ASSUMES THAT THE COORCED STRING VALUE IS UNIQUE
+	//ASSUMES THAT THE COERCED STRING VALUE IS UNIQUE
 	Array.prototype.union = function(b){
 		var output={};
 		for(var i = this.length; i--;) output[this[i]]=this[i];

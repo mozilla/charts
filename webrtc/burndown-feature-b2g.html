@@ -1,0 +1,380 @@
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+<!-- This Source Code Form is subject to the terms of the Mozilla Public
+   - License, v. 2.0. If a copy of the MPL was not distributed with this
+   - file, You can obtain one at http://mozilla.org/MPL/2.0/. -->
+<HTML>
+<HEAD>
+	<script type="application/javascript" src="js/imports/import.js"></script>
+</HEAD>
+<BODY>
+
+
+
+<div id="sidebar" style="width:300px;">
+	<br><br>
+	<div style="height: 30px; text-align: center;vertical-align:middle;">
+		<span id="status" style="height:30px">Page Loading...</span><span class="loading"><img src="images/spinner.gif" alt=""></span>
+	</div>
+
+	<hr>
+	<div id="description">Counting all dependent bugs over time</div>
+	<hr>
+	<div id="testMessage"></div>
+	<hr>
+	<div id="stats"></div>
+	<hr>
+	<div id="parameters" class="parameters">
+	</div>
+	<div id="filters" class="menu"></div>
+</div>
+
+
+
+	<div style="float:right;display: inline;">
+		<a href="http://people.mozilla.com/~klahnakoski/" class="button">HOME</a>
+	</div>
+
+<div style="align:left;position:relative;float:left;width:800px;">
+	<h3 id="title"></h3>
+
+	<div>
+
+		<div id="feature-summary" style="position: relative;min-height:30px;"></div>
+		<div id="chart" class="chart" style="position: relative;height:300px;"></div>
+		<!--<div id="chart_diff" class="chart" style="position: relative;height:300px;"></div>-->
+		<div id="buglist" style="position: relative;width:800px"></div>
+		<div id="info" style="position: relative;width:800px"></div>
+	</div>
+</div>
+<script type="application/javascript">
+
+importScript([
+	"js/main.js",
+	'js/Dimension-Bugzilla.js',
+	'js/Dimension-B2G.js',
+	'js/Dimension-Features.js',
+	"moreJS/burndown.js"
+], function(){
+
+
+var raw_data = undefined;   //KEEP RAW DATA FOR RE-CHARTING
+var ucid_data = undefined;   //KEEP RAW DATA FOR RE-CHARTING
+var featureFilter = null;
+var diffFilter = undefined;
+
+var thread;
+var createChart = function(){
+	if (thread !== undefined)
+		thread.kill();
+	thread = Thread.run(function*(){
+		try{
+			yield (__createChart());
+		}catch(e){
+			if (e.contains(Thread.Interrupted)) return;
+			throw e;
+		}//try
+	});
+};
+
+var __createChart = function*(){
+	$("#feature-summary").html("");
+	$("#chart").html("");
+	$("#chart_diff").html("");
+	$("#buglist").html("");
+	$("#info").html("");
+
+	var TODAY = Date.today();
+
+	var sampleMin = Date.newInstance(GUI.state.sampleMin);
+	var sampleInterval = Duration.newInstance(GUI.state.sampleInterval);
+	var sampleMax = Date.newInstance(GUI.state.sampleMax).addDay();
+	var timeDomain = {"type":"time", "min":sampleMin, "max":sampleMax, "interval":sampleInterval};
+
+	var feature = Mozilla.Feature["Feature-B2G = 2.0"];
+	featureFilter = feature.esfilter;  //INCLUDE UCID
+	if (!raw_data){
+		raw_data = yield(allOpenDependencies(featureFilter, timeDomain, Mozilla.Scope["needed_fields"], false));
+		ucid_data = yield(allOpenDependencies(Mozilla.Feature["UCID 2.0"].esfilter, timeDomain, Mozilla.Scope["needed_fields"], false));
+	}//endif
+	diffFilter = {"terms":{"bug_id":raw_data.cube.last().select("bug_id").subtract(ucid_data.cube.last().select("bug_id"))}};
+
+	$("#title").text("Burndown for Feature-B2G = 2.0, (not including UCID dependencies)");
+
+	var currScopeFilter;
+	if (GUI.state.scope.getSimpleState()){
+		currScopeFilter={"and":[
+			GUI.state.scope.getSelectedParts()[0].esfilter,
+			diffFilter
+		]};
+	}else{
+		currScopeFilter=diffFilter;
+	}//endif
+	yield (ESQuery.loadColumns({"from":"bugs"}));
+
+	//LAST DAY WILL BE CONSIDERED CURRENT FEATURE LIST
+	var currOpenBugs=raw_data.cube.last().filter({"and":[
+		{"term":{"counted":"Open"}},
+		currScopeFilter
+	]}).select("bug_id");
+
+	var currTotalBugs=raw_data.cube.last().filter({"and":[
+		{"not":{"term":{"counted":"none"}}},
+		currScopeFilter
+	]}).select("bug_id");
+
+	restOfCharting({
+		"TODAY": TODAY,
+		"countMode": GUI.state.countMode.getSimpleState(),
+		"timeDomain": timeDomain,
+		"currOpenBugs": currOpenBugs,
+		"currTotalBugs": currTotalBugs,
+		"currScopeFilter": currScopeFilter
+	});
+};
+
+function __reChart(){
+	$("#feature-summary").html("");
+	$("#chart").html("");
+	$("#buglist").html("");
+	$("#info").html("");
+
+	var sampleMin = Date.newInstance(GUI.state.sampleMin);
+	var sampleInterval = Duration.newInstance(GUI.state.sampleInterval);
+	var sampleMax = Date.newInstance(GUI.state.sampleMax).addDay();
+
+	var currScopeFilter;
+	if (GUI.state.scope.getSimpleState()){
+		currScopeFilter=GUI.state.scope.getSelectedParts()[0].esfilter;
+	}else{
+		currScopeFilter={"match_all":{}};
+	}//endif
+
+	//LAST DAY WILL BE CONSIDERED CURRENT FEATURE LIST
+	var currOpenBugs=raw_data.cube.last().filter({"and":[
+		{"term":{"counted":"Open"}},
+		currScopeFilter
+	]}).select("bug_id");
+
+	var currTotalBugs=raw_data.cube.last().filter({"and":[
+		{"not":{"term":{"counted":"none"}}},
+		currScopeFilter
+	]}).select("bug_id");
+
+	restOfCharting({
+		"TODAY": Date.today(),
+		"countMode": GUI.state.countMode.getSimpleState(),
+		"timeDomain": {"type":"time", "min":sampleMin, "max":sampleMax, "interval":sampleInterval},
+		"currOpenBugs": currOpenBugs,
+		"currTotalBugs": currTotalBugs,
+		"currFeatureFilter": currScopeFilter
+	})
+}//function
+
+
+
+function restOfCharting(env){
+	Thread.run(function*(){
+		///////////////////////////////////////////////////////////////////////
+		// SUMMARY OF FEATURE
+		///////////////////////////////////////////////////////////////////////
+		var total = env.currTotalBugs;
+		var open = env.currOpenBugs;
+		var closed = total.subtract(open);
+		//FILL TEMPLATE
+		var summary=$("#feature-summary");
+		var TEMPLATE = new Template("<div>" +
+				"<div id='featureTotal' class='hoverable' style='display:inline-block;margin:5px 10px 5px 10px;'>Total Bugs: {{total}}</div>"+
+				"<div id='featureClosed' class='hoverable' style='display:inline-block;margin:5px 10px 5px 10px;'>Closed: {{closed}} ({{closed_percent}}%)</div>"+
+				"<div id='featureOpen' class='hoverable' style='display:inline-block;margin:5px 10px 5px 10px;'>Open Bugs: {{open}}</div>" +
+				"</div");
+		summary.html(TEMPLATE.replace({
+			"total":total.length,
+			"open":open.length,
+			"closed":closed.length,
+			"closed_percent":aMath.round((closed.length)/total.length*100)
+		}));
+
+		//ADD BUG CLICKERS
+		$("#featureTotal").click(function(){
+			Bugzilla.showBugs(total);
+		});
+		$("#featureClosed").click(function(){
+			Bugzilla.showBugs(closed);
+		});
+		$("#featureOpen").click(function(){
+			Bugzilla.showBugs(open);
+		});
+
+	});
+
+	Thread.run(function*(){
+		////////////////////////////////////////////////////////////////////////////
+		// CURRENT BUGS LIST
+		////////////////////////////////////////////////////////////////////////////
+		var a = Log.action("Get buglist", true);
+		var bugs = yield (ESQuery.run({
+			"from":"public_bugs",
+			"select":[
+				"bug_id",
+				"short_desc",
+				"assigned_to",
+				"bug_status",
+				"resolution",
+				"status_whiteboard"
+			],
+			"esfilter":{"and":[
+				Mozilla.BugStatus.Open.esfilter,
+				Mozilla.CurrentRecords.esfilter,
+				{"terms":{"bug_id":env.currOpenBugs}}
+			]}
+		}));
+		Log.actionDone(a);
+
+		var details = yield (Qb.calc2List({
+			"from":bugs,
+			"select":[
+				{"name":"bug_id", "value":"bug_id"},
+				{"name":"Summary", "value":"short_desc"},
+				{"name":"Owner", "value":"assigned_to"},
+				{"name":"Status", "value":"bug_status + (resolution ? ' - '+resolution : '')"},
+				{"name":"Estimate", "value":"nvl(ScrumBugs.parse(status_whiteboard).points, 'missing')"}
+			],
+			"sort":["Status", "bug_id"]
+		}));
+
+		$("#buglist").html(bugDetails(details.list));
+	});
+
+	Thread.run(function*(){
+		///////////////////////////////////////////////////////////////////////
+		// HISTORICAL COUNT
+		///////////////////////////////////////////////////////////////////////
+		var a=Log.action("Adding", true);
+		var chart= yield(Q({
+			"from": raw_data,
+			"select":{"name":"num", "value":env.countMode=="Bugs" ? "1" : 'nvl(ScrumBugs.parse(status_whiteboard).points, 1)-0', "aggregate":"sum", "default":0},
+			"edges":[
+				{"name": "status", "value": "counted", "domain": {"type": "set", "key":"value", "partitions": [
+					{"name": "Open", "value": "Open"},
+					{"name": "Closed", "value": "Closed"},
+					{"name": "none", "value":"none"}
+				]}},
+				{"name":"date",
+					"value":"date",
+					"allowNulls":false,
+					"domain":env.timeDomain
+				}
+			],
+			"where": env.currScopeFilter
+		}));
+
+		//CONVERT EDGE TO ATTRIBUTES
+		var flat = yield(Q({
+			"from":chart,
+			"select":[
+				{"name":"Open", "value":"status.name=='Open' ? num : null", "aggregate":"sum", "default":0},
+				{"name":"Total", "value":"status.name!='none' ? num : null", "aggregate":"sum", "default":0}
+			],
+			"edges":[
+				{"name":"date", "value":"date",
+					"allowNulls": false,
+					"domain": env.timeDomain
+				}
+			]
+		}));
+		var tempTimeDomain=flat.edges[0].domain;
+
+		//SHOW FUTURE VALUES AS NULLS
+		flat.cube.forall(function(v, i){
+			if (tempTimeDomain.partitions[i].min > env.TODAY.addDay()){
+				flat.cube[i]=Map.zip(mapAllKey(v, function(k, v){
+					return [k, null];
+				}));
+			}//endif
+		});
+		Log.actionDone(a);
+
+
+		aChart.show({
+			"id":"chart",
+			"sheetDiv":"info",
+			"type":"line",
+			"stacked":false,
+			"cube":flat,
+			"xAxisSize":50,
+			extensionPoints: {
+			    dot_shapeRadius: 3,
+	            dot_shape:"circle",
+				line_lineWidth: 3
+			},
+			"clickAction":function(series, x, d){
+				var series2filter = {
+					"Open": {"term": {"counted": series}},
+					"Total": {"not": {"term": {"counted": "none"}}}
+				};
+
+				Thread.run(function*(){
+					var buglist=(yield (Q({
+						"from":raw_data,
+						"select":{"value":"bug_id", "aggregate":"minimum"},
+						"edges":[
+							{"name":"unique", "value":"bug_id"}
+						],
+						"esfilter":{"and":[
+							series2filter[series],
+							{"term":{"date":x}}
+						]}
+					})));
+
+					Bugzilla.showBugs([].union(buglist.cube));
+				});
+			}//click
+		});
+	});
+
+}
+
+
+$(document).ready(function(){
+	GUI.setup(createChart, [
+		{"id":"sampleMin", "name":"Start Date", "type":"time", "default":Date.eod().add("-6week")},
+		{"id":"sampleMax", "name":"End Date", "type":"time", "default":Date.today().ceilingWeek()},
+		{"id":"sampleInterval", "name":"Interval", "type":"duration", "default":"day"},
+		{"id":"countMode", "name":"Count", "type":RadioFilter.newInstance({
+			"id":"countMode",
+			"name":"Count",
+			"message":"Chart the estimated work (default), or chart the bug count<br>",
+			"options":["Work", "Bugs"],
+			"default":"Work",
+			"refreshCallback":__reChart
+		})},
+		{"id": "scope", "name": "Scope", "type": PartitionFilter.newInstance({
+			"id": "scope",
+			"name": "Scope",
+			"dimension": Mozilla.Scope,
+			"onlyOne": true,
+			"showAll": true,
+			"expandAll": true,
+			"treeDepth":0
+		}), "default":"UCID 2.0"}
+		],
+			[
+				"sampleMin=Date.newInstance(sampleMin).floor(Duration.newInstance(sampleInterval)).format('yyyy-MM-dd')",
+				"sampleMax=Date.newInstance(sampleMax).addDay(1).floor(Duration.newInstance(sampleInterval)).addDay(-1).format('yyyy-MM-dd')"
+			],
+		"bugs",
+		false
+	);
+
+//	GUI.productFilter = ["B2G 1.0.0 (TEF)"];
+
+});
+
+});
+</script>
+
+
+
+</BODY>
+</HTML>
+

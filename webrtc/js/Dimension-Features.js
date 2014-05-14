@@ -17,7 +17,7 @@ Dimension.addEdges(true, Mozilla, [
 				{"regexp": {"status_whiteboard": ".*1\\.5.*"}}
 			]}
 		]}},
-		{"name": "feature-b2g = 2.0", "needed_fields":["cf_feature_b2g"], "esfilter": {"and":[
+		{"name": "Feature-B2G = 2.0", "needed_fields":["cf_feature_b2g"], "esfilter": {"and":[
 			{"term":{"cf_feature_b2g":"2.0"}}
 		]}},
 

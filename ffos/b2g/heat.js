@@ -79,7 +79,7 @@ function showSummary(type, team, detail, specialBugs, showTYPE) {
 	var component = {};
 
 	if (team.length==0){
-		component.name = "FFOS"
+		component.name = "FxOS"
 	}else{
 		component.name = team.map(function(t){return t.name;}).join(", ")
 	}//endif

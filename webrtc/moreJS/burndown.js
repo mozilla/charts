@@ -113,7 +113,7 @@ function* allOpenDependencies(esfilter, dateRange, selects, allOpen) {
 			"descendants_field": "dependencies"
 		}));
 
-		var allDescendantsForToday = Array.union(allTopBugs.select("dependencies")).map(function(v){return v-0;});
+		var allDescendantsForToday = Array.union(allTopBugs.select("dependencies")).union(allTopBugs.select("bug_id")).map(function(v){return v-0;});
 		bug.forall(function(detail, i){
 			if (allDescendantsForToday.contains(detail.bug_id)){
 				detail.counted="Closed"
@@ -140,7 +140,7 @@ function* allOpenDependencies(esfilter, dateRange, selects, allOpen) {
 			"descendants_field": "dependencies"
 		}));
 
-		var openDescendantsForToday = Array.union(openTopBugs.select("dependencies")).map(function(v){return v-0;});
+		var openDescendantsForToday = Array.union(openTopBugs.select("dependencies")).union(openTopBugs.select("bug_id")).map(function(v){return v-0;});
 		bug.forall(function(detail, i){
 			if (openDescendantsForToday.contains(detail.bug_id) && ["new", "assigned", "unconfirmed", "reopened"].contains(detail.bug_status)){
 				detail.counted="Open"

@@ -805,15 +805,12 @@ CNV.esFilter2function=function(esFilter){
 		return TRUE_FILTER;
 	}else if (op=="regexp"){
 		var pair = esFilter[op];
-		var variableName = Object.keys(pair)[0];
-		var regexp = new RegExp(pair[variableName]);
+		var vari = Object.keys(pair)[0];
+		var regexp = new RegExp(pair[vari]);
 		return function(row, i, rows){
-			if (regexp.test(row[variableName])){
-				return true;
-			}else{
-				return false;
-			}//endif
-		}
+			var val = nvl(row[vari], "");
+			return regexp.test(val);
+		}//function
 	} else{
 		Log.error("'" + op + "' is an unknown operation");
 	}//endif

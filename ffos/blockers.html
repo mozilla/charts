@@ -276,7 +276,7 @@
 			var specialBlockers = (yield(Q({
 				"from": allDetails,
 				"select": [
-					{"name": "project", "value": '"CA"', "aggregate": "one"},
+					{"name": "project", "value": '"CAF"', "aggregate": "one"},
 					{"name": "additionalClass", "value":'"project-summary"', "aggregate":"one"},
 					{"name": "count", "value": "bug_id", "aggregate": "count"},
 					{"name": "bugs", "value": "bug_id", "aggregate": "array"},
@@ -287,7 +287,7 @@
 				"where": {"terms":{"bug_id":CABlockers}}
 			}))).cube;
 
-			if (specialBlockers.count==0) specialBlockers.project="CA";
+			if (specialBlockers.count==0) specialBlockers.project="CAF";
 
 			var blockerHTML = showSummary("Blockers", GUI.state.team.getSelectedParts(), totals, specialBlockers, showBlocker);
 			$("#totals").html(blockerHTML);

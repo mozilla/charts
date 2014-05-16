@@ -4,6 +4,7 @@
    - file, You can obtain one at http://mozilla.org/MPL/2.0/. -->
 <HTML>
 <HEAD>
+<title>FFOS Teams</title>
 <script type="text/javascript">function importScript(dep, func) {
 	if (func !== undefined) func();
 }</script>
@@ -349,7 +350,8 @@ importScript("b2g/chart_lib.js", function () {
 				"name": "Open Blocker Count"
 			},
 			"esfilter": {"and": [
-				GUI.getFilters("bugs")
+				GUI.getFilters("bugs"),
+				Mozilla.B2G.esfilter
 			]},
 			"timeDomain": timeDomain
 		});
@@ -357,7 +359,7 @@ importScript("b2g/chart_lib.js", function () {
 		showChurn({
 			"chart": {
 				"id": "chartBlockerChurn",
-				"name": "Resolved Fixed Blockers"
+				"name": "Resolved Fixed Bugs"
 			},
 			"esfilter": mainFilter,
 			"timeDomain": timeDomain
@@ -399,7 +401,8 @@ importScript("b2g/chart_lib.js", function () {
 			},
 			"esfilter": {"and": [
 				GUI.getFilters("bugs"),
-				Mozilla.B2G.Regressions.esfilter
+				Mozilla.B2G.Regressions.esfilter,
+				Mozilla.B2G.esfilter
 			]},
 			"timeDomain": timeDomain
 		});

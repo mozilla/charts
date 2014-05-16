@@ -491,14 +491,14 @@ var __createChart = function*(){
 
 		$("#stats").append('<span class="parameter_name">Required Closed/Day:</span>' + aMath.round(requiredNetCloseRatePerDay, 1) + '<br>');
 
-		var expectedEndDate;
-		{
-			var openAtStartOfEstimate = flat.cube[flat.edges[0].domain.getPartByKey(statsMax).dataIndex-1].open;
-			var netCloseRatePerDay = (perDay.closed-perDay["opened"]);
-			var daysLeft = openAtStartOfEstimate / netCloseRatePerDay;
-			expectedEndDate = statsMax.addWeekday(daysLeft);
-			netCloseRatePerDay = aMath.max(0, netCloseRatePerDay);
-		}
+//		var expectedEndDate;
+//		{
+//			var openAtStartOfEstimate = flat.cube[flat.edges[0].domain.getPartByKey(statsMax).dataIndex-1].open;
+//			var netCloseRatePerDay = (perDay.closed-perDay["opened"]);
+//			var daysLeft = openAtStartOfEstimate / netCloseRatePerDay;
+//			expectedEndDate = statsMax.addWeekday(daysLeft);
+//			netCloseRatePerDay = aMath.max(0, netCloseRatePerDay);
+//		}
 	}//endif
 
 

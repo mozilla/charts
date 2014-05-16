@@ -90,15 +90,6 @@ String.prototype.deformat = function(){
 	return output.join("");
 };//method
 
-
-
-
-
-
-
-
-
-
 String.prototype.left = function(amount){
 	return this.substring(0, aMath.min(this.length, amount));
 };//method

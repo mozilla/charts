@@ -681,7 +681,7 @@ CNV.hex2int = function(value){
 
 //CONVERT FROM STRING TO SOMETHING THAT CAN BE USED BY $()
 CNV.String2JQuery=function(str){
-	var output=str.replace(/([ ;&,\.\+\*\~':"\!\^#$%@\[\]\(\)\/=>\|])/g, '\\$1');
+	var output=str.replace(/([;&,\.\+\*\~':"\!\^#$%@\[\]\(\)\/=>\|])/g, '\\$1');
 //	output=output.replaceAll(" ", "\\ ");
 	return output;
 };//method
@@ -805,12 +805,15 @@ CNV.esFilter2function=function(esFilter){
 		return TRUE_FILTER;
 	}else if (op=="regexp"){
 		var pair = esFilter[op];
-		var vari = Object.keys(pair)[0];
-		var regexp = new RegExp(pair[vari]);
+		var variableName = Object.keys(pair)[0];
+		var regexp = new RegExp(pair[variableName]);
 		return function(row, i, rows){
-			var val = nvl(row[vari], "");
-			return regexp.test(val);
-		}//function
+			if (regexp.test(row[variableName])){
+				return true;
+			}else{
+				return false;
+			}//endif
+		}
 	} else{
 		Log.error("'" + op + "' is an unknown operation");
 	}//endif

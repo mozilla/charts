@@ -152,7 +152,7 @@ PartitionFilter.prototype.getSelectedParts=function(){
 
 //RETURN SOMETHING SIMPLE ENOUGH TO BE USED IN A URL
 PartitionFilter.prototype.getSimpleState=function(){
-	var selected=this.selectedIDs.filter(function(v){ return v!="__all__";});
+	var selected=this.selectedIDs.filter(function(v){ return v!="__all__";})
 	if (selected.length==0) return undefined;
 	return selected.join(",");
 };

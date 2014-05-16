@@ -26,18 +26,18 @@ Dimension.addEdges(true, Mozilla, [
 	{"name": "B2G",
 //				{"term": {"target_milestone": "mozilla31"}},
 		"esfilter": {"or": [
-			{"terms": {"cf_blocking_b2g": ["1.3+", "1.4+", "1.3t+", "1.5+", "1.3?", "1.4?", "1.3t?", "1.5?", "2.0+", "2.0?"]}},
+			{"terms": {"cf_blocking_b2g": ["1.3+", "1.4+", "1.3t+", "1.3?", "1.4?", "1.3t?", "2.0+", "2.0?"]}},
 			{"terms": {"cf_blocking_loop": ["fx30+", "fx31+", "fx32+", "fx33+", "fx30+", "fx34+", "fx35+", "fx36+", "fx30?", "fx31?", "fx32?", "fx33?", "fx30?", "fx34?", "fx35?", "fx36?"]}},
 			{"term": {"product": "firefox os"}},
 			webRTCFilter
 		]},
 		"edges": [
 			{"name": "Nominations", "index": "bugs", "esfilter": {"or":[
-				{"terms": {"cf_blocking_b2g": ["1.3?", "1.4?", "1.3t?", "1.5?", "2.0?"]}},
+				{"terms": {"cf_blocking_b2g": ["1.3?", "1.4?", "1.3t?", "2.0?"]}},
 				{"terms": {"cf_blocking_loop": ["fx30?", "fx31?", "fx32?", "fx33?", "fx30?", "fx34?", "fx35?", "fx36?"]}}
 			]}},
 			{"name": "Blockers", "index": "bugs", "esfilter": {"or":[
-				{"terms": {"cf_blocking_b2g": ["1.3+", "1.4+", "1.3t+", "1.5+", "2.0+"]}},
+				{"terms": {"cf_blocking_b2g": ["1.3+", "1.4+", "1.3t+", "2.0+"]}},
 				{"terms": {"cf_blocking_loop": ["fx30+", "fx31+", "fx32+", "fx33+", "fx30+", "fx34+", "fx35+", "fx36+"]}}
 			]}},
 			{"name": "Regressions", "index": "bugs", "esfilter": {"term": {"keywords": "regression"}}},
@@ -55,14 +55,14 @@ Dimension.addEdges(true, Mozilla, [
 				"partitions": [
 					{"name": "Nominated", "esfilter": {"and": [
 						{"or":[
-							{"terms": {"cf_blocking_b2g": ["1.3?", "1.4?", "1.3t?", "1.5?", "2.0?"]}},
+							{"terms": {"cf_blocking_b2g": ["1.3?", "1.4?", "1.3t?", "2.0?"]}},
 							{"terms": {"cf_blocking_loop": ["fx30?", "fx31?", "fx32?", "fx33?", "fx30?", "fx34?", "fx35?", "fx36?"]}}
 						]},
 						{"not": {"term": {"keywords": "regression"}}}
 					]}},
 					{"name": "Blocker", "esfilter": {"and": [
 						{"or":[
-							{"terms": {"cf_blocking_b2g": ["1.3+", "1.4+", "1.3t+", "1.5+", "2.0+"]}},
+							{"terms": {"cf_blocking_b2g": ["1.3+", "1.4+", "1.3t+", "2.0+"]}},
 							{"terms": {"cf_blocking_loop": ["fx30+", "fx31+", "fx32+", "fx33+", "fx30+", "fx34+", "fx35+", "fx36+"]}}
 						]},
 						{"not": {"term": {"keywords": "regression"}}}
@@ -354,7 +354,7 @@ Dimension.addEdges(true, Mozilla, [
 							{"terms": {"cf_blocking_loop": ["fx30+", "fx30?"]}}
 						]}
 					},
-					{"name": "1.5/2.0",
+					{"name": "2.0",
 						"dateMarks":[
 							{"FC":"Jun 9, 2014"},
 							{"SC":"Jul 21, 2014"},
@@ -362,12 +362,12 @@ Dimension.addEdges(true, Mozilla, [
 						],
 						"style": {"color": "#1f77b4"},
 						"esfilter": {"or":[
-							{"terms": {"cf_blocking_b2g": ["1.5+", "1.5?", "2.0+", "2.0?"]}},
+							{"terms": {"cf_blocking_b2g": ["2.0+", "2.0?"]}},
 							{"terms": {"cf_blocking_loop": ["fx31?", "fx32?", "fx31+", "fx32+"]}}
 						]}
 					},
 					{"name": "Other", "style": {"color": "#9467bd"}, "esfilter": {"and": [
-						{"not": {"terms": {"cf_blocking_b2g": ["1.3+", "1.4+", "1.3t+", "1.5+", "1.3?", "1.4?", "1.3t?", "1.5?", "2.0+", "2.0?"]}}},
+						{"not": {"terms": {"cf_blocking_b2g": ["1.3+", "1.4+", "1.3t+", "1.3?", "1.4?", "1.3t?", "2.0+", "2.0?"]}}},
 						{"not": {"terms": {"cf_blocking_loop": ["fx30+", "fx31+", "fx32+", "fx33+", "fx30+", "fx34+", "fx35+", "fx36+", "fx30?", "fx31?", "fx32?", "fx33?", "fx30?", "fx34?", "fx35?", "fx36?"]}}}
 
 					]}}
@@ -400,14 +400,14 @@ Dimension.addEdges(true, Mozilla, [
 							{"name":"CF", "date":"Jun 9, 2014", "style":{strokeStyle:"black", verticalOffset: 30}}
 						]
 					},
-					{"name": "1.5/2.0",
+					{"name": "2.0",
 						"dateMarks":[
 							{"FC":"Jun 9, 2014"},
 							{"SC":"Jul 21, 2014"},
 							{"CF":"Sep 01, 2014"}
 						],
 						"style": {"color": "#1f77b4"},
-						"esfilter": {"terms": {"cf_blocking_b2g": ["1.5+", "2.0+"]}}
+						"esfilter": {"terms": {"cf_blocking_b2g": ["2.0+"]}}
 					},
 					{"name": "Targeted",
 						"style": {"color": "#9467bd", "visibility":"hidden"},

@@ -68,7 +68,8 @@ function showChurn(args) {
 					"cf_blocking_b2g",
 					"cf_blocking_loop",
 					"keywords",
-					"target_milestone"
+					"target_milestone",
+					"resolution"
 				],
 				"esfilter": {"and": [
 					args.esfilter,
@@ -119,9 +120,9 @@ function showChurn(args) {
 
 		//DIRTY REVERSE OF THE TYPES
 		churn.edges[0].domain.partitions.reverse();
-		churn.cube.reverse();
-		churn.edges[0].domain.partitions[0].style.visibility = "visible";
-		churn.edges[0].domain.partitions[1].style.visibility = "visible";
+		churn.cube.reverse();		churn.edges[0].domain.partitions[0].style.visibility = "visible";
+				churn.edges[0].domain.partitions[1].style.visibility = "visible";
+
 
 		aChart.show({
 			"id": args.chart.id,

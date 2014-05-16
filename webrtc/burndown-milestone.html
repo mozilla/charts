@@ -85,28 +85,25 @@ var __createChart = function*(){
 
 	var milestones = GUI.state.milestone.getSelectedParts();
 	var milestoneName;
-	var START_DATE, sampleMin, sampleMax, DUE_DATE, MAX_CHART_DATE;
 	if (milestones.length==0){
 		$("#title").text("Must select a milestone");
 		yield (null)
-	}else{
-		milestoneName=milestones.map(function(m){return m.name;}).join(" and ");
-		milestones.forall(function(m){
-			START_DATE = aMath.min(START_DATE, Date.newInstance(m.start_date));
-			sampleMin = Date.min(START_DATE, TODAY.subtract(Duration.newInstance("2week")));
-			sampleMax = aMath.max(sampleMax, Date.newInstance(m.target_date).add(Duration.DAY));
-			DUE_DATE = sampleMax;
-			MAX_CHART_DATE=DUE_DATE.addDay(1);
-		});
 	}//endif
 
-	var sampleInterval = Duration.DAY;
-	var timeDomain = {"type":"time", "min":sampleMin, "max":MAX_CHART_DATE, "interval":sampleInterval};
+	milestoneName=milestones.map(function(m){return m.name;}).join(" and ");
+	var START_DATE=null;
+	var DUE_DATE=null;
+	milestones.forall(function(m){
+		START_DATE = Date.min(START_DATE, Date.newInstance(m.start_date));
+		DUE_DATE = Date.max(DUE_DATE, Date.newInstance(m.targetDate).add(Duration.DAY));
+		MIN_CHART_DATE = Date.min(START_DATE, TODAY.subtract(Duration.newInstance("2week")));
+		MAX_CHART_DATE=DUE_DATE.addDay(1);
+	});
+	var MIN_CHART_DATE = Date.min(START_DATE, TODAY.subtract(Duration.newInstance("2week")));
+	var MAX_CHART_DATE=DUE_DATE.addDay(1);
 
-	//LAST 6 WEEKS
-	var statsMax = Date.min(TODAY, sampleMax.addDay(-1));
-	var numWeek=aMath.min(6, aMath.floor((statsMax.getMilli()-sampleMin.getMilli())/Duration.WEEK.milli));
-	var statsMin = statsMax.addWeek(-numWeek);
+	var sampleInterval = Duration.DAY;
+	var timeDomain = {"type":"time", "min":MIN_CHART_DATE, "max":MAX_CHART_DATE, "interval":sampleInterval};
 
 	$("#description").html("Preliminary burndown for WebRTC work");
 
@@ -121,8 +118,8 @@ var __createChart = function*(){
 
 	var mainFilter = {"and":[
 		{"and":[
-			{"range":{"modified_ts":{"lt":sampleMax.getMilli()}}},
-			{"range":{"expires_on":{"gte":sampleMin.getMilli()}}}
+			{"range":{"modified_ts":{"lt":MAX_CHART_DATE.getMilli()}}},
+			{"range":{"expires_on":{"gte":MIN_CHART_DATE.getMilli()}}}
 		]},
 //		{"script":{"script":MVEL.compile.expression("floorInterval(modified_ts-" + sampleMin.getMilli() + ", " + sampleInterval.milli + ")!=floorInterval(expires_on-" + sampleMin.getMilli() + ", " + sampleInterval.milli + ")", {"from":"bugs"})}},
 		GUI.getFilters("bugs")
@@ -167,7 +164,7 @@ var __createChart = function*(){
 		$("#buglist").html(bugDetails(details.list));
 	});
 
-	var churnTimeDomain={"type":"time", "min":sampleMin, "max":MAX_CHART_DATE, "interval":Duration.DAY, "value":"value"};
+	var churnTimeDomain={"type":"time", "min":MIN_CHART_DATE, "max":MAX_CHART_DATE, "interval":Duration.DAY, "value":"value"};
 
 	var perDay;
 	var churnThread=Thread.run(function*(){
@@ -186,7 +183,7 @@ var __createChart = function*(){
 				{"name":"type", "domain":Mozilla.ChurnType.getDomain()},
 				{"name":"date", "test":"(time.min.getMilli()<=min && min<time.max.getMilli()) || (time.min.getMilli()<=max && max<time.max.getMilli())",
 					"allowNulls":false,
-					"domain":{"type":"time", "min":sampleMin, "max":MAX_CHART_DATE, "interval":Duration.DAY, "value":"value"}
+					"domain":{"type":"time", "min":MIN_CHART_DATE, "max":MAX_CHART_DATE, "interval":Duration.DAY, "value":"value"}
 				}
 			]
 		}));
@@ -202,7 +199,7 @@ var __createChart = function*(){
 				{"name":"Other", "value":"type.name=='Other' ? -closed : 0", "aggregate":"sum"}
 			],
 			"edges":[
-				{"name":"date", "value":"date", "domain":{"type":"time", "min":sampleMin, "max":MAX_CHART_DATE, "interval":Duration.DAY, "value":"value"}}
+				{"name":"date", "value":"date", "domain":{"type":"time", "min":MIN_CHART_DATE, "max":MAX_CHART_DATE, "interval":Duration.DAY, "value":"value"}}
 			]
 		}));
 
@@ -237,16 +234,19 @@ var __createChart = function*(){
 		perDay = (yield(Qb.calc2List({
 			"from":diff,
 			"select":[
-				{"name":"opened", "value":"opened", "aggregate":"average"},
-				{"name":"closed", "value":"closed", "aggregate":"average"}
+				{"name":"opened", "value":"opened", "aggregate":"sum"},
+				{"name":"closed", "value":"closed", "aggregate":"sum"}
 			],
-			"where":statsMin.getMilli()+"<=date.getMilli() && date.getMilli()<"+statsMax.getMilli()
+			"where":START_DATE.getMilli()+"<=date.getMilli() && date.getMilli()<"+Date.min(DUE_DATE, TODAY).getMilli()
 		}))).list[0];
+
+		var daysInSprint=Date.diffWeekday(Date.min(DUE_DATE, TODAY), START_DATE);
 
 
 		$("#stats").html(
-//			'<span class="parameter_name">New Bugs Per Day:</span>' + aMath.round(perDay.opened, 1) + '<br>' +
-			'<span class="parameter_name">Closed Per Day:</span>' + aMath.round(perDay.closed, 1) + '<br>' +
+			'<span class="parameter_name">Workdays in milestone:</span>' + daysInSprint + '<br>' +
+			'<span class="parameter_name">New bugs per day:</span>' + aMath.round(perDay.opened/daysInSprint, 1) + '<br>' +
+			'<span class="parameter_name">Closed per day:</span>' + aMath.round(perDay.closed/daysInSprint, 1) + '<br>' +
 			''
 		);
 
@@ -265,11 +265,19 @@ var __createChart = function*(){
 				"status_whiteboard",
 				"target_milestone",
 				"cf_blocking_loop",
-				"keywords"
+				"keywords",
+				"modified_ts",
+				"expires_on"
 			],
 			"esfilter":{"and":[
-				Mozilla.CurrentRecords.esfilter,
-				GUI.getFilters("bugs")
+				{"or":milestones.map(function(m){ //ONLY RECORDS FOR THE TARGET DATES
+					var due = Date.newInstance(m.targetDate).floorDay().addDay().getMilli();
+					return {"and":[
+						{"range":{"modified_ts":{"lte":due}}},
+						{"range":{"expires_on":{"gt":due}}}
+					]};
+				})},
+				GUI.state.milestone.makeFilter()
 			]}
 		}));
 
@@ -282,7 +290,8 @@ var __createChart = function*(){
 			"edges":[
 				{"name":"Milestone", "domain":Mozilla.Milestone.getDomain()},
 				{"name":"type", "domain":Mozilla.CountType.getDomain()}
-			]
+			],
+			"where":"modified_ts <= Date.newInstance(Milestone.targetDate).floorDay().addDay().getMilli() && Date.newInstance(Milestone.targetDate).floorDay().addDay().getMilli() < expires_on"
 		}));
 
 		//FILL TEMPLATE
@@ -299,18 +308,20 @@ var __createChart = function*(){
 				Mozilla.Milestone[m.name].count=count;
 
 				var TEMPLATE = new Template("<div>" +
-						"<div style='width:150px;display: inline-block;padding:0px 10px 0px 10px'>Milestone: "+m.name+"</div>" +
-						"<div id='"+ m.name+"Total' class='hoverable' style='width:75px;display:inline-block;'>Total: {{total}}</div>"+
-						"<div id='"+ m.name+"Closed' class='hoverable' style='width:125px;display:inline-block;'>Closed: {{closed}} ({{closed_percent}}%)</div>"+
-						"<div id='"+ m.name+"Open' class='hoverable' style='display:inline-block;'>Open Bugs: {{open}}</div>" +
-						" (<div id='"+ m.name+"Regressions' class='hoverable' style='display:inline-block;'>{{regressions}} regressions</div>)"+
+						"<div style='width:230px;display: inline-block;padding:0px 10px 0px 10px'>Milestone {{milestone}} (end of {{date}}):</div>" +
+						"<div id='{{milestone}}Total' class='hoverable' style='width:75px;display:inline-block;'>Total: {{total}}</div>"+
+						"<div id='{{milestone}}Closed' class='hoverable' style='width:125px;display:inline-block;'>Closed: {{closed}} ({{closed_percent}}%)</div>"+
+						"<div id='{{milestone}}Open' class='hoverable' style='display:inline-block;'>Open Bugs: {{open}}</div>" +
+						" (<div id='{{milestone}}Regressions' class='hoverable' style='display:inline-block;'>{{regressions}} regressions</div>)"+
 						"</div");
 				return TEMPLATE.replace({
-					"total":total,
-					"open":nvl(milestoneTotals.cube[i][1].count, 0)+nvl(milestoneTotals.cube[i][0].count, 0),
-					"regressions":nvl(milestoneTotals.cube[i][0].count, "0"),
-					"closed":milestoneTotals.cube[i][2].count,
-					"closed_percent":aMath.round(milestoneTotals.cube[i][2].count/total*100)
+					"milestone": m.name,
+					"date": DUE_DATE < TODAY ? DUE_DATE.subtract(Duration.DAY).format("NNN dd") : "today",
+					"total": total,
+					"open": nvl(milestoneTotals.cube[i][1].count, 0) + nvl(milestoneTotals.cube[i][0].count, 0),
+					"regressions": nvl(milestoneTotals.cube[i][0].count, "0"),
+					"closed": milestoneTotals.cube[i][2].count,
+					"closed_percent": aMath.round(milestoneTotals.cube[i][2].count / total * 100)
 				});
 			})
 		);
@@ -383,8 +394,8 @@ var __createChart = function*(){
 			],
 			"esfilter":{"and":[
 				GUI.state.milestone.makeFilter(),
-				{"range":{"modified_ts":{"lt":sampleMax.getMilli()}}},
-				{"range":{"expires_on":{"gte":sampleMin.getMilli()}}}
+				{"range":{"modified_ts":{"lt":MAX_CHART_DATE.getMilli()}}},
+				{"range":{"expires_on":{"gte":MIN_CHART_DATE.getMilli()}}}
 			]}
 		}));
 
@@ -414,8 +425,8 @@ var __createChart = function*(){
 			],
 			"esfilter":{"and":[
 				GUI.state.milestone.makeFilter(),
-				{"range":{"modified_ts":{"lt":sampleMax.getMilli()}}},
-				{"range":{"expires_on":{"gte":sampleMin.getMilli()}}}
+				{"range":{"modified_ts":{"lt":MAX_CHART_DATE.getMilli()}}},
+				{"range":{"expires_on":{"gte":MIN_CHART_DATE.getMilli()}}}
 			]}
 		}));
 	}//endif
@@ -429,8 +440,8 @@ var __createChart = function*(){
 		"from":chart,
 		"select":[
 			{"name":"Regressions", "value":"status.name=='Regressions' ? num : null", "aggregate":"sum", "default":0},
-			{"name":chartCountName, "value":"['Open', 'Regressions'].contains(status.name) ? num : null", "aggregate":"sum", "default":0},
-			{"name":"Total", "value":"num", "aggregate":"sum", "default":0}
+			{"name":"Open_Bugs", "value":"['Open', 'Regressions'].contains(status.name) ? num : null", "aggregate":"sum", "default":0},
+			{"name":chartCountName, "value":"num", "aggregate":"sum", "default":0}
 		],
 		"edges":[
 			{"name":"date", "value":"date",
@@ -453,8 +464,8 @@ var __createChart = function*(){
 	var stats = yield(Q({
 		"from":flat,
 		"select":[
-			{"name":"closed", value:"Total-"+chartCountName},
-			{"name":"total", value:"Total"}
+			{"name":"closed", value:chartCountName+"-Open_Bugs"},
+			{"name":"total", value:chartCountName}
 		],
 		"edges":[
 			{"name":"date", "value":"date",
@@ -495,8 +506,8 @@ var __createChart = function*(){
 
 	//WE WILL CHART A DYNAMIC SET OF COLUMNS, BASED ON IF WE ARE LOOKING AT A FUTURE OR PAST DUE DATE
 	var columnsToChart=[
-		{"value":"Total", "style":{"color":Color.blue.multiply(0.9).hue(40).toHTML(), "visibility":"hidden"}},
-		{"value":chartCountName, "style":{"color":Color.green.multiply(0.9).hue(100).toHTML()}},
+		{"value":chartCountName, "style":{"color":Color.blue.multiply(0.9).hue(40).toHTML(), "visibility":"hidden"}},
+		{"value":"Open_Bugs", "style":{"color":Color.green.multiply(0.9).hue(100).toHTML()}},
 		{"value":"Regressions", "style":{"color":Color.red.multiply(0.9).hue(10).toHTML()}}
 	];
 
@@ -505,12 +516,12 @@ var __createChart = function*(){
 		var ms = Mozilla.Milestone[m.name];
 		var effort = (chartCountName=="Work") ? ms.effort : ms.count;
 		var start_date=Date.newInstance(ms.start_date);
-		var target_date=Date.newInstance(ms.target_date);
-		var duration = Date.diffWeekday(target_date, start_date);
+		var targetDate=Date.newInstance(ms.targetDate);
+		var duration = Date.diffWeekday(targetDate, start_date);
 		var slope=function(date){
 			if (date <= start_date) {
 				return effort;
-			} else if (date >= target_date) {
+			} else if (date >= targetDate) {
 				return 0;
 			} else {
 				return effort - (effort * Date.diffWeekday(date, start_date) / duration);
@@ -528,12 +539,12 @@ var __createChart = function*(){
 	aChart.addPredictionLine({
 		"source":{
 			"name":"open",
-			"domain":{"min":sampleMin, "max":MAX_CHART_DATE},
+			"domain":{"min":MIN_CHART_DATE, "max":MAX_CHART_DATE},
 			"data":flat.list
 		},
 		"predict":{
 			"name":"ideal",
-			"domain":{"min":sampleMin, "max":MAX_CHART_DATE},
+			"domain":{"min":MIN_CHART_DATE, "max":MAX_CHART_DATE},
 			"line": ideal
 		}
 	});
@@ -567,7 +578,7 @@ var __createChart = function*(){
 		},
 		"clickAction":function(series, x, d){
 			//MAP FROM HUMANE NAMES BACK TO ORIGINAL DIMENSION DEFINITION NAME
-			series = {"Bugs": "Open", "Work": "Open", "Total": "Total", "Regressions": "Regressions"}[series];
+			series = {"Bugs": "Total", "Work": "Total", "Open_Bugs": "Open_Bugs", "Regressions": "Regressions"}[series];
 
 			Thread.run(function*(){
 				var buglist=(yield (ESQuery.run({

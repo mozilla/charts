@@ -30,7 +30,7 @@ Dimension.addEdges(true, Mozilla, [
 		{
 			"name": "Firefox31",
 			"start_date": "18 MAR 2014",
-			"target_date": "28 APR 2014",
+			"targetDate": "28 APR 2014",
 			"partitions": [
 				{"name": "Blocking", "esfilter": {"and": [
 					{"term": {"cf_blocking_loop": "fx31+"}}
@@ -44,7 +44,7 @@ Dimension.addEdges(true, Mozilla, [
 		{
 			"name": "Firefox32",
 			"start_date": "29 APR 2014",
-			"target_date": "9 JUN 2014",
+			"targetDate": "9 JUN 2014",
 			"partitions": [
 				{"name": "Blocking", "esfilter": {"and": [
 					{"term": {"cf_blocking_loop": "fx32+"}}
@@ -58,7 +58,7 @@ Dimension.addEdges(true, Mozilla, [
 		{
 			"name": "1.5/2.0",
 			"start_date": "29 APR 2014",
-			"target_date": "9 JUN 2014",
+			"targetDate": "9 JUN 2014",
 			"esfilter": {"match_all": {}},
 			"partitions": [
 				{"name": "Blocking", "esfilter": {"and": [
@@ -75,7 +75,7 @@ Dimension.addEdges(true, Mozilla, [
 		{
 			"name": "Firefox33",
 			"start_date": "10 JUN 2014",
-			"target_date": "21 JUL 2014",
+			"targetDate": "21 JUL 2014",
 			"partitions": [
 				{"name": "Blocking", "esfilter": {"and": [
 					{"term": {"cf_blocking_loop": "fx33+"}}
@@ -89,7 +89,7 @@ Dimension.addEdges(true, Mozilla, [
 		{
 			"name": "Firefox34",
 			"start_date": "22 JUL 2014",
-			"target_date": "1 SEP 2014",
+			"targetDate": "1 SEP 2014",
 			"partitions": [
 				{"name": "Blocking", "esfilter": {"and": [
 					{"term": {"cf_blocking_loop": "fx34+"}}

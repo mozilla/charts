@@ -133,37 +133,46 @@
 			var allDetails=[];
 			var allDetailsThread=Thread.run(function*(){
 				var a = Log.action("Get Bug Details", true);
-				allDetails = yield(ESQuery.run({
-					"from": "bugs",
-					"select": [
-						"bug_id",
-						"modified_ts",
-						"keywords",
-						"assigned_to",
-						"component",
-						"product",
-						"cf_blocking_b2g",
-						"cf_blocking_loop"
-					],
-					"esfilter": {"and": [
-						Mozilla.B2G.Nominations.esfilter,
-						Mozilla.BugStatus.Open.esfilter,
-						Mozilla.CurrentRecords.esfilter,
-						GUI.getFilters("bugs")
-					]}
-				}));
+				try{
+					allDetails = yield(ESQuery.run({
+						"from": "bugs",
+						"select": [
+							"bug_id",
+							"modified_ts",
+							"keywords",
+							"assigned_to",
+							"component",
+							"product",
+							"cf_blocking_b2g",
+							"cf_blocking_loop"
+						],
+						"esfilter": {"and": [
+							Mozilla.B2G.Nominations.esfilter,
+							Mozilla.BugStatus.Open.esfilter,
+							Mozilla.CurrentRecords.esfilter,
+							GUI.getFilters("bugs")
+						]}
+					}));
+				}catch(e){
+					allDetails=undefined;  //CRASH THE REST OF THE PROCESSING
+				}//try
 				Log.actionDone(a);
 			});
 
-			var ages=yield(ESQuery.run({
-				"from":"bugs",
-				"select":{"value":"modified_ts", "aggregate":"minimum"},
-				"edges":["bug_id"],
-				"esfilter": {"and": [
-					Mozilla.B2G.Nominations.esfilter,
-					Mozilla.BugStatus.Open.esfilter
-				]}
-			}));
+			var ages=undefined;
+			try{
+				ages=yield(ESQuery.run({
+					"from":"bugs",
+					"select":{"value":"modified_ts", "aggregate":"minimum"},
+					"edges":["bug_id"],
+					"esfilter": {"and": [
+						Mozilla.B2G.Nominations.esfilter,
+						Mozilla.BugStatus.Open.esfilter
+					]}
+				}));
+			}catch(e){
+				yield(null);  //EXIT EARLY
+			}//try
 
 			yield (Thread.join(allDetailsThread));
 

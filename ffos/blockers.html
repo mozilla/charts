@@ -130,20 +130,25 @@
 
 			//THESE ARE IMPORTANT BLOCKERS
 			var a = Log.action("Get Hierarchy", true);
-			var possibleTree = (yield(ESQuery.run({
-				"from": "bug_hierarchy",
-				"select": [
-					"bug_id",
-					"descendants"
-				],
-				"esfilter": {"term": {"bug_id":984663}}
-			}))).list;
-			if (possibleTree.length==0){
-				possibleTree=[];
-			}else{
-				possibleTree=possibleTree[0].descendants;
-			}//endif
-			possibleTree.append(984663);
+			var possibleTree = undefined;
+			try{
+				possibleTree = (yield(ESQuery.run({
+					"from": "bug_hierarchy",
+					"select": [
+						"bug_id",
+						"descendants"
+					],
+					"esfilter": {"term": {"bug_id":984663}}
+				}))).list;
+				if (possibleTree.length==0){
+					possibleTree=[];
+				}else{
+					possibleTree=possibleTree[0].descendants;
+				}//endif
+				possibleTree.append(984663);
+			}catch(e){
+				yield(null);
+			}//try
 
 			var allTree;
 			var allTreeThread=Thread.run(function*(){
@@ -163,20 +168,24 @@
 				}catch(e){
 					//WHEN THE
 					allTree=[0];
-				}
+				}//try
 			});
 
 			var allOpen;
 			var allOpenThread=Thread.run(function*(){
-				allOpen = (yield(ESQuery.run({
-					"from": "bugs",
-					"select": "bug_id",
-					"esfilter":	{"and": [
-						{"terms":{"bug_id": possibleTree}},
-						Mozilla.BugStatus.Open.esfilter,
-						Mozilla.CurrentRecords.esfilter
-					]}
-				}))).list
+				try{
+					allOpen = (yield(ESQuery.run({
+						"from": "bugs",
+						"select": "bug_id",
+						"esfilter":	{"and": [
+							{"terms":{"bug_id": possibleTree}},
+							Mozilla.BugStatus.Open.esfilter,
+							Mozilla.CurrentRecords.esfilter
+						]}
+					}))).list
+				}catch(e){
+					allOpen=undefined;  //CRASH THE REST OF THE PROCESSING
+				}//try
 			});
 
 			yield (Thread.join(allTreeThread));

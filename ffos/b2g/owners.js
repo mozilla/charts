@@ -72,7 +72,7 @@ var OWNERS = {
   "Networking": "Jason Duell", // Core
   "NFC": "Ken Chang", // Firefox OS
   "Panning and Zooming": "Milan Sreckovic (Kartikaya Gupta, Botond Ballo)", // Core
-  "Performance": "Mike Lee (Ben Kelly, Mason Chang)", // Firefox OS
+  "Performance": "Mike Lee (Mason Chang)", // Firefox OS
   "Runtime": "Gregor Wagner (Fabrice Desré)", // Firefox OS
   // "Simulator": "?", // Firefox OS
   "RIL": "Ken Chang", // Firefox OS

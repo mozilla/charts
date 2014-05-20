@@ -1000,13 +1000,10 @@ aChart.addPredictionLine = function(param){
 		var data=param.source.data;
 
 		var num = param.source.domain.max.subtract(param.source.domain.min).divideBy(Duration.DAY);
-		var minDomain = param.predict.domain.min.subtract(param.source.domain.min).divideBy(Duration.DAY);
-		var startIndex = param.predict.domain.min.subtract(param.source.domain.min).divideBy(Duration.DAY);
-//			var startValue;
+		var minDomain = param.predict.domain.min.subtract(param.source.domain.min).divideBy(Duration.DAY)+1;
+
 		//COPY UP TO THE POINT OF PREDICTION (BECAUSE CHARTING LIB SUCKS)
 		for(var i = 0; i < minDomain; i++){
-//			param.data[i][param.predict.name] = null;
-//			if (i==0)
 			data[i]["date"] = param.source.domain.min.addDay(i);
 			data[i][param.predict.name] = data[i][param.source.name];
 		}//for
@@ -1016,7 +1013,6 @@ aChart.addPredictionLine = function(param){
 			var date=param.source.domain.min.addDay(i);
 			if (data[i] === undefined) data[i] = {"open":null, "closed":null, "total":null};
 			data[i]["date"] = date;
-//			data[i][param.predict.name] = Date.diffWeekday(date, param.predict.domain.min);
 			data[i][param.predict.name] = param.predict.line(date);
 			if (data[i][param.predict.name] < 0) data[i][param.predict.name] = 0;
 		}//for

@@ -102,7 +102,7 @@ Dimension.addEdges(true, Mozilla, [
 		{
 			"name": "2.0 S1",
 			"start_date": "28 APR 2014",
-			"targetDate":"9 MAY 2014",
+			"targetDate":"9 MAY 2014",   //END OF DAY
 			"esfilter": {"term":{"target_milestone":"2.0 S1 (9may)"}},
 			"partitions": [
 				{"name": "Blocking", "esfilter": {"and": [

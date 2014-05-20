@@ -265,13 +265,18 @@ function restOfCharting(env){
 		// HISTORICAL COUNT
 		///////////////////////////////////////////////////////////////////////
 		var a=Log.action("Adding", true);
-		var flat= yield(Q({
+		var chart= yield(Q({
 			"from": raw_data,
 			"select":[
-				{"name":"Remaining Work", "value":'nvl(ScrumBugs.parse(status_whiteboard).points, 1)-0', "aggregate":"sum", "default":0, "style":{"visibility":"hidden"}},
-				{"name":"Open Bug Count", "value":"bug_id", "aggregate":"count", "default":0}
+				{"name":"count", "value":"1", "aggregate":"sum", "default":0},
+				{"name":"work", "value":"nvl(ScrumBugs.parse(status_whiteboard).points, 1)-0", "aggregate":"sum", "default":0}
 			],
 			"edges":[
+				{"name": "status", "value": "counted", "domain": {"type": "set", "key":"value", "partitions": [
+					{"name": "Open", "value": "Open"},
+					{"name": "Closed", "value": "Closed"},
+					{"name": "none", "value":"none"}
+				]}},
 				{"name":"date",
 					"value":"date",
 					"allowNulls":false,
@@ -279,6 +284,23 @@ function restOfCharting(env){
 				}
 			],
 			"where": env.currFeatureFilter
+		}));
+
+		//CONVERT EDGE TO ATTRIBUTES
+		var flat = yield(Q({
+			"from":chart,
+			"select":[
+				{"name":"Open_Bugs", "value":"status.name=='Open' ? count : null", "aggregate":"sum", "default":0},
+				{"name":"Remaining_Work", "value":"status.name=='Open' ? work : null", "aggregate":"sum", "default":0},
+//				{"name":"Total_Bugs", "value":"status.name!='none' ? count : null", "aggregate":"sum", "default":0}
+			],
+			"edges":[
+				{"name":"date",
+					"value":"date",
+					"allowNulls":false,
+					"domain":env.timeDomain
+				}
+			]
 		}));
 
 		var tempTimeDomain=flat.edges[0].domain;

@@ -474,28 +474,31 @@ var __createChart = function*(){
 
 
 	yield (Thread.join(churnThread));
+
+
+	var stillOpen = 0;
+	var stillWork = 0;
+	var daysRemaining = 1;
+
 	if (DUE_DATE <= TODAY){
 		//DONE, NO STATS REQUIRED
 	}else{
-		var stillOpen = flat.cube[flat.edges[0].domain.getPartByKey(TODAY).dataIndex].Bug_Count;
-		var requiredNetCloseRatePerDay;
-		{
-			var daysLeft=Date.diffWeekday(DUE_DATE, TODAY);
-			//let	daysLeft = DUE_DATE.subtract(sampleMax).divideBy(Duration.DAY);
-			daysLeft = aMath.max(1, daysLeft);
-			requiredNetCloseRatePerDay = stillOpen / daysLeft;
-		}
+		var todayPart=flat.edges[0].domain.getPartByKey(TODAY);
+		stillOpen = flat.cube[todayPart.dataIndex].Open_Bugs;
+		stillWork = flat.cube[todayPart.dataIndex].Remaining_Work;
+		daysRemaining=aMath.max(1, Date.diffWeekday(DUE_DATE, TODAY));
 
-		$("#stats").append('<span class="parameter_name">Required Closed/Day:</span>' + aMath.round(requiredNetCloseRatePerDay, 1) + '<br>');
+		var TEMPLATE=new Template(
+			'<hr>'+
+			'<span class="parameter_name">Days Remaining:</span>{{daysRemaining}}<br>'+
+			'<span class="parameter_name">Required Closed/Day:</span>{{count}} ({{work}} points)<br>'
+		);
 
-//		var expectedEndDate;
-//		{
-//			var openAtStartOfEstimate = flat.cube[flat.edges[0].domain.getPartByKey(statsMax).dataIndex-1].open;
-//			var netCloseRatePerDay = (perDay.closed-perDay["opened"]);
-//			var daysLeft = openAtStartOfEstimate / netCloseRatePerDay;
-//			expectedEndDate = statsMax.addWeekday(daysLeft);
-//			netCloseRatePerDay = aMath.max(0, netCloseRatePerDay);
-//		}
+		$("#stats").append(TEMPLATE.replace({
+			"daysRemaining":daysRemaining,
+			"count":aMath.round(stillOpen / daysRemaining, 1),
+			"work":aMath.round(stillWork / daysRemaining, 1)
+		}));
 	}//endif
 
 
@@ -509,45 +512,47 @@ var __createChart = function*(){
 		{"name":"Regressions", "value":"Regressions", "style":{"color":color.red}}
 	];
 
-	var slopes=[];
-	milestones.forall(function(m, i){
-		var ms = Mozilla.Milestone[m.name];
-		var work = ms.work;
-		var start_date=Date.newInstance(ms.start_date);
-		var targetDate=Date.newInstance(ms.targetDate);
-		var duration = Date.diffWeekday(targetDate, start_date);
-		var slope=function(date){
-			if (date <= start_date) {
-				return work;
-			} else if (date >= targetDate) {
-				return 0;
-			} else {
-				return work - (work * Date.diffWeekday(date, start_date) / duration);
-			}//endif
-		};
-		slopes.append(slope);
-	});
+//	var slopes=[];
+//	milestones.forall(function(m, i){
+//		var ms = Mozilla.Milestone[m.name];
+//		var work = ms.work;
+//		var start_date=Date.newInstance(ms.start_date);
+//		var targetDate=Date.newInstance(ms.targetDate);
+//		var duration = Date.diffWeekday(targetDate, start_date);
+//		var slope=function(date){
+//			if (date <= start_date) {
+//				return work;
+//			} else if (date >= targetDate) {
+//				return 0;
+//			} else {
+//				return work - (work * Date.diffWeekday(date, start_date) / duration);
+//			}//endif
+//		};
+//		slopes.append(slope);
+//	});
 	var ideal=function(date){
-		return aMath.round(aMath.sum.apply(undefined, slopes.map(function(s){
-			return s(date);
-		})))
+		if (date>DUE_DATE){
+			return 0;
+		}else{
+			return aMath.round(stillWork - (stillWork * Date.diffWeekday(date, TODAY) / daysRemaining));
+		}//endif
 	};
 
 	//IDEAL BURNDOWN
 	aChart.addPredictionLine({
 		"source":{
-			"name":"open",
+			"name":"Remaining_Work",
 			"domain":{"min":MIN_CHART_DATE, "max":MAX_CHART_DATE},
 			"data":flat.list
 		},
 		"predict":{
 			"name":"ideal",
-			"domain":{"min":MIN_CHART_DATE, "max":MAX_CHART_DATE},
+			"domain":{"min":TODAY, "max":MAX_CHART_DATE},
 			"line": ideal
 		}
 	});
 
-	columnsToChart.insert(1, {"name":"Ideal Bug Count", "value":"ideal", "style":{"color":"lightgray"}});
+	columnsToChart.insert(0, {"name":"Required Burndown", "value":"ideal", "style":{"color":"lightgray"}});
 	flat.select.push({"name":"ideal"});
 	flat.columns.push({"name":"ideal"});
 

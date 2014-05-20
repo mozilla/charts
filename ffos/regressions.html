@@ -129,29 +129,33 @@
 			yield (ESQuery.loadColumns({"from": "bugs"}));
 
 			var a = Log.action("Get Bug Details", true);
-			//PULL THE RAW DATA, AND THEN OPERATE ON IT 112K, 2.17sec time
-			//THE AGGREGATES ARE SPENDING ABOUT 2/3 THE TIME TRANSMITTING THE QUERY
-			var allDetails = yield(ESQuery.run({
-				"from": "bugs",
-				"select": [
-					"bug_id",
-					"modified_ts",
-					"keywords",
-					"assigned_to",
-					"component",
-					"product",
-					"cf_blocking_b2g",
-					"cf_blocking_loop",
-					"target_milestone"
-				],
-				"esfilter": {"and": [
-					Mozilla.B2G.Regressions.esfilter,
-					Mozilla.B2G.esfilter,
-					Mozilla.BugStatus.Open.esfilter,
-					Mozilla.CurrentRecords.esfilter,
-					GUI.getFilters("bugs")
-				]}
-			}));
+			try{
+				//PULL THE RAW DATA, AND THEN OPERATE ON IT 112K, 2.17sec time
+				//THE AGGREGATES ARE SPENDING ABOUT 2/3 THE TIME TRANSMITTING THE QUERY
+				var allDetails = yield(ESQuery.run({
+					"from": "bugs",
+					"select": [
+						"bug_id",
+						"modified_ts",
+						"keywords",
+						"assigned_to",
+						"component",
+						"product",
+						"cf_blocking_b2g",
+						"cf_blocking_loop",
+						"target_milestone"
+					],
+					"esfilter": {"and": [
+						Mozilla.B2G.Regressions.esfilter,
+						Mozilla.B2G.esfilter,
+						Mozilla.BugStatus.Open.esfilter,
+						Mozilla.CurrentRecords.esfilter,
+						GUI.getFilters("bugs")
+					]}
+				}));
+			}catch(e){
+				yield(null);  //EXIT EARLY
+			}//try
 			Log.actionDone(a);
 
 			var components = yield(Q({

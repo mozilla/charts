@@ -47,7 +47,8 @@ var color = {
 	"green":"#2ca02c",
 	"red":"#d62728",
 	"purple":"#9467bd",
-	"brown":"#8c564b"
+	"brown":"#8c564b",
+	"cyan":"#17becf"
 };
 
 
@@ -80,6 +81,11 @@ var createChart = function(){
 var __createChart = function*(){
 	var NOW = Date.now();
 	var TODAY = Date.today();
+
+	$("#milestone-summary").html("");
+	$("#chart").html("");
+	$("#chart_diff").html("");
+	$("#buglist").html("");
 
 	var teamName = GUI.state.team.getSelectedParts().select("name").join(" and ");
 	var teamFilter = GUI.state.team.makeFilter();
@@ -290,7 +296,7 @@ var __createChart = function*(){
 		var milestoneTotals=yield(Q({
 			"from":currMilestone,
 			"select":[
-				{"name":"effort",  "value":'nvl(ScrumBugs.parse(status_whiteboard).points, 1)-0', "aggregate":"sum"},
+				{"name":"work",  "value":'nvl(ScrumBugs.parse(status_whiteboard).points, 1)-0', "aggregate":"sum"},
 				{"name":"count",  "value":'1', "aggregate":"sum"}
 			],
 			"edges":[
@@ -308,9 +314,9 @@ var __createChart = function*(){
 				var total=aMath.add.apply(undefined, milestoneTotals.cube[i].select("count"));
 				Mozilla.Milestone[m.name].total=total;
 
-				var effort=aMath.add.apply(undefined, milestoneTotals.cube[i].select("effort"));
+				var work=aMath.add.apply(undefined, milestoneTotals.cube[i].select("work"));
 				var count=aMath.add.apply(undefined, milestoneTotals.cube[i].select("count"));
-				Mozilla.Milestone[m.name].effort=effort;
+				Mozilla.Milestone[m.name].work=work;
 				Mozilla.Milestone[m.name].count=count;
 
 				var TEMPLATE = new Template("<div>" +
@@ -497,7 +503,7 @@ var __createChart = function*(){
 
 	//WE WILL CHART A DYNAMIC SET OF COLUMNS, BASED ON IF WE ARE LOOKING AT A FUTURE OR PAST DUE DATE
 	var columnsToChart=[
-//		{"name":"Total Bugs", "value":"Total_Bugs", "style":{"color":Color.blue.multiply(0.9).hue(10).toHTML()}},
+//		{"name":"Total Bugs", "value":"Total_Bugs", "style":{"color":color.cyan, "visibility":"hidden"}},
 		{"name":"Remaining Work", "value":"Remaining_Work", "style":{"color":color.orange}},
 		{"name":"Open Bug Count", "value":"Open_Bugs", "style":{"color":color.blue}},
 		{"name":"Regressions", "value":"Regressions", "style":{"color":color.red}}
@@ -506,17 +512,17 @@ var __createChart = function*(){
 	var slopes=[];
 	milestones.forall(function(m, i){
 		var ms = Mozilla.Milestone[m.name];
-		var effort = ms.count;
+		var work = ms.work;
 		var start_date=Date.newInstance(ms.start_date);
 		var targetDate=Date.newInstance(ms.targetDate);
 		var duration = Date.diffWeekday(targetDate, start_date);
 		var slope=function(date){
 			if (date <= start_date) {
-				return effort;
+				return work;
 			} else if (date >= targetDate) {
 				return 0;
 			} else {
-				return effort - (effort * Date.diffWeekday(date, start_date) / duration);
+				return work - (work * Date.diffWeekday(date, start_date) / duration);
 			}//endif
 		};
 		slopes.append(slope);
@@ -541,7 +547,7 @@ var __createChart = function*(){
 		}
 	});
 
-	columnsToChart.insert(1, {"value":"ideal", "style":{"color":"lightgray"}});
+	columnsToChart.insert(1, {"name":"Ideal Bug Count", "value":"ideal", "style":{"color":"lightgray"}});
 	flat.select.push({"name":"ideal"});
 	flat.columns.push({"name":"ideal"});
 

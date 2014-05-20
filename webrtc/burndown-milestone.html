@@ -28,12 +28,6 @@
 	<div id="filters" class="menu"></div>
 </div>
 
-
-
-	<div style="float:right;display: inline;">
-		<a href="http://people.mozilla.com/~klahnakoski/" class="button">HOME</a>
-	</div>
-
 <div style="align:left;position:relative;float:left;width:800px;">
 	<h3 id="title"></h3>
 
@@ -47,6 +41,15 @@
 	</div>
 </div>
 <script type="application/javascript">
+var color = {
+	"blue":"#1f77b4",
+	"orange":"#ff7f0e",
+	"green":"#2ca02c",
+	"red":"#d62728",
+	"purple":"#9467bd",
+	"brown":"#8c564b"
+};
+
 
 importScript([
 	"js/main.js",
@@ -56,6 +59,8 @@ importScript([
 	'js/Dimension-Features.js',
 	"moreJS/burndown.js"
 ], function(){
+
+
 
 
 var thread;
@@ -191,12 +196,12 @@ var __createChart = function*(){
 		var chart=yield(Q({
 			"from":diff,
 			"select":[
-				{"name":"Opened", "value":"opened", "aggregate":"sum"},
-				{"name":"Regression", "value":"type.name=='Regression' ? -closed : 0", "aggregate":"sum"},
-				{"name":"Blocker", "value":"type.name=='Blocker' ? -closed : 0", "aggregate":"sum"},
-				{"name":"Targeted", "value":"type.name=='Targeted' ? -closed : 0", "aggregate":"sum"},
-				{"name":"Dups", "value":"type.name=='Dups' ? -closed : 0", "aggregate":"sum"},
-				{"name":"Other", "value":"type.name=='Other' ? -closed : 0", "aggregate":"sum"}
+				{"name":"Opened", "value":"opened", "aggregate":"sum", "style":{"color":color.blue}},
+				{"name":"Other", "value":"type.name=='Other' ? -closed : 0", "aggregate":"sum", "style":{"color":"lightgray"}},
+				{"name":"Dups", "value":"type.name=='Dups' ? -closed : 0", "aggregate":"sum", "style":{"color":"gray"}},
+				{"name":"Targeted", "value":"type.name=='Targeted' ? -closed : 0", "aggregate":"sum", "style":{"color":color.green}},
+				{"name":"Blocker", "value":"type.name=='Blocker' ? -closed : 0", "aggregate":"sum", "style":{"color":color.orange}},
+				{"name":"Regression", "value":"type.name=='Regression' ? -closed : 0", "aggregate":"sum", "style":{"color":color.red}}
 			],
 			"edges":[
 				{"name":"date", "value":"date", "domain":{"type":"time", "min":MIN_CHART_DATE, "max":MAX_CHART_DATE, "interval":Duration.DAY, "value":"value"}}
@@ -277,7 +282,8 @@ var __createChart = function*(){
 						{"range":{"expires_on":{"gt":due}}}
 					]};
 				})},
-				GUI.state.milestone.makeFilter()
+				GUI.state.milestone.makeFilter(),
+				teamFilter
 			]}
 		}));
 
@@ -379,69 +385,49 @@ var __createChart = function*(){
 	///////////////////////////////////////////////////////////////////////
 	var a = Log.action("Request Bugs", true);
 	var chart;
-	var chartCountName=GUI.state.countMode.getSimpleState();
 
-	if (chartCountName=="Work"){
-		var milestoneBugs=yield(ESQuery.run({
-			"from":"bugs",
-			"select":[
-				"bug_id",
-				"bug_status",
-				"status_whiteboard",
-				"keywords",
-				"modified_ts",
-				"expires_on"
-			],
-			"esfilter":{"and":[
-				GUI.state.milestone.makeFilter(),
-				{"range":{"modified_ts":{"lt":MAX_CHART_DATE.getMilli()}}},
-				{"range":{"expires_on":{"gte":MIN_CHART_DATE.getMilli()}}}
-			]}
-		}));
-
-		chart = yield(Q({
-			"from": milestoneBugs,
-			"select":{"name":"num", "value":'nvl(ScrumBugs.parse(status_whiteboard).points, 1)-0', "aggregate":"sum", "default":0},
-			"edges":[
-				{"name": "status", "domain":Mozilla.CountType.getDomain()},
-				{"name":"date",
-					"range":{"min":"modified_ts", "max":"expires_on"},
-					"allowNulls":false,
-					"domain":timeDomain
-				}
-			]
-		}));
-	}else{
-		chart = yield(ESQuery.run({
-			"from":"bugs",
-			"select":{"name":"num", "value":"bug_id", "aggregate":"count"},
-			"edges":[
-				{"name":"status", "domain":Mozilla.CountType.getDomain()},
-				{"name":"date",
-					"range":{"min":"modified_ts", "max":"expires_on"},
-					"allowNulls":false,
-					"domain":timeDomain
-				}
-			],
-			"esfilter":{"and":[
-				GUI.state.milestone.makeFilter(),
-				{"range":{"modified_ts":{"lt":MAX_CHART_DATE.getMilli()}}},
-				{"range":{"expires_on":{"gte":MIN_CHART_DATE.getMilli()}}}
-			]}
-		}));
-	}//endif
+	var milestoneBugs=yield(ESQuery.run({
+		"from":"bugs",
+		"select":[
+			"bug_id",
+			"bug_status",
+			"status_whiteboard",
+			"keywords",
+			"modified_ts",
+			"expires_on"
+		],
+		"esfilter":{"and":[
+			GUI.state.milestone.makeFilter(),
+			teamFilter,
+			{"range":{"modified_ts":{"lt":MAX_CHART_DATE.getMilli()}}},
+			{"range":{"expires_on":{"gte":MIN_CHART_DATE.getMilli()}}}
+		]}
+	}));
 	Log.actionDone(a);
 
-	yield (currMilestoneThread.join());
-
-
-	//CONVERT open/closed EDGE TO open/closed/total ATTRIBUTES
-	var flat = yield(Q({
-		"from":chart,
+	chart = yield(Q({
+		"from": milestoneBugs,
 		"select":[
-			{"name":"Regressions", "value":"status.name=='Regressions' ? num : null", "aggregate":"sum", "default":0},
-			{"name":"Open_Bugs", "value":"['Open', 'Regressions'].contains(status.name) ? num : null", "aggregate":"sum", "default":0},
-			{"name":chartCountName, "value":"num", "aggregate":"sum", "default":0}
+			{"name":"work", "value":'nvl(ScrumBugs.parse(status_whiteboard).points, 1)-0', "aggregate":"sum", "default":0},
+			{"name":"count", "value":'bug_id', "aggregate":"count", "default":0}
+		],
+		"edges":[
+			{"name": "status", "domain":Mozilla.CountType.getDomain()},
+			{"name":"date",
+				"range":{"min":"modified_ts", "max":"expires_on"},
+				"allowNulls":false,
+				"domain":timeDomain
+			}
+		]
+	}));
+
+	var flat = yield(Q({
+		"from": chart,
+		"select":[
+			{"name":"Regressions", "value":"status.name=='Regressions' ? count : null", "aggregate":"sum", "default":0},
+			{"name":"Open_Bugs", "value":"['Open', 'Regressions'].contains(status.name) ? count : null", "aggregate":"sum", "default":0},
+			{"name":"Remaining_Work", "value":"['Open', 'Regressions'].contains(status.name) ? work : null", "aggregate":"sum", "default":0},
+			{"name":"Total_Bugs", "value":"count", "aggregate":"sum", "default":0}
 		],
 		"edges":[
 			{"name":"date", "value":"date",
@@ -450,6 +436,11 @@ var __createChart = function*(){
 			}
 		]
 	}));
+
+
+	yield (currMilestoneThread.join());
+
+
 	var tempTimeDomain=flat.edges[0].domain;
 
 	//SHOW FUTURE VALUES AS NULLS
@@ -464,8 +455,8 @@ var __createChart = function*(){
 	var stats = yield(Q({
 		"from":flat,
 		"select":[
-			{"name":"closed", value:chartCountName+"-Open_Bugs"},
-			{"name":"total", value:chartCountName}
+			{"name":"closed", value:"Open_Bugs"},
+			{"name":"total", value:"Total_Bugs"}
 		],
 		"edges":[
 			{"name":"date", "value":"date",
@@ -480,7 +471,7 @@ var __createChart = function*(){
 	if (DUE_DATE <= TODAY){
 		//DONE, NO STATS REQUIRED
 	}else{
-		var stillOpen = flat.cube[flat.edges[0].domain.getPartByKey(TODAY).dataIndex][chartCountName];
+		var stillOpen = flat.cube[flat.edges[0].domain.getPartByKey(TODAY).dataIndex].Bug_Count;
 		var requiredNetCloseRatePerDay;
 		{
 			var daysLeft=Date.diffWeekday(DUE_DATE, TODAY);
@@ -506,15 +497,16 @@ var __createChart = function*(){
 
 	//WE WILL CHART A DYNAMIC SET OF COLUMNS, BASED ON IF WE ARE LOOKING AT A FUTURE OR PAST DUE DATE
 	var columnsToChart=[
-		{"value":chartCountName, "style":{"color":Color.blue.multiply(0.9).hue(40).toHTML(), "visibility":"hidden"}},
-		{"value":"Open_Bugs", "style":{"color":Color.green.multiply(0.9).hue(100).toHTML()}},
-		{"value":"Regressions", "style":{"color":Color.red.multiply(0.9).hue(10).toHTML()}}
+//		{"name":"Total Bugs", "value":"Total_Bugs", "style":{"color":Color.blue.multiply(0.9).hue(10).toHTML()}},
+		{"name":"Remaining Work", "value":"Remaining_Work", "style":{"color":color.orange}},
+		{"name":"Open Bug Count", "value":"Open_Bugs", "style":{"color":color.blue}},
+		{"name":"Regressions", "value":"Regressions", "style":{"color":color.red}}
 	];
 
 	var slopes=[];
 	milestones.forall(function(m, i){
 		var ms = Mozilla.Milestone[m.name];
-		var effort = (chartCountName=="Work") ? ms.effort : ms.count;
+		var effort = ms.count;
 		var start_date=Date.newInstance(ms.start_date);
 		var targetDate=Date.newInstance(ms.targetDate);
 		var duration = Date.diffWeekday(targetDate, start_date);
@@ -553,8 +545,7 @@ var __createChart = function*(){
 	flat.select.push({"name":"ideal"});
 	flat.columns.push({"name":"ideal"});
 
-
-	chartP = yield(Q({
+	var chartP = yield(Q({
 		"from":flat,
 		"select": columnsToChart,
 		"edges":[
@@ -607,13 +598,6 @@ var __createChart = function*(){
 
 $(document).ready(function(){
 	GUI.setup(createChart, [
-		{"id":"countMode", "name":"Count", "type":RadioFilter.newInstance({
-			"id":"countMode",
-			"name":"Count",
-			"message":"Chart the estimated work (default), or chart the bug count<br>",
-			"options":["Work", "Bugs"],
-			"default":"Work"
-		})},
 		{"id": "team", "name": "Team", "type": PartitionFilter.newInstance({
 			"id": "teams",
 			"name": "All Teams",

@@ -142,7 +142,6 @@ var __createChart = function*(){
 
 	restOfCharting({
 		"TODAY": TODAY,
-		"countMode": GUI.state.countMode.getSimpleState(),
 		"hierarchyMode":GUI.state.hierarchyMode.getSimpleState(),
 		"timeDomain": timeDomain,
 		"currOpenBugs": currOpenBugs,
@@ -176,7 +175,6 @@ function __reChart(){
 
 	restOfCharting({
 		"TODAY": Date.today(),
-		"countMode": GUI.state.countMode.getSimpleState(),
 		"hierarchyMode":GUI.state.hierarchyMode.getSimpleState(),
 		"timeDomain": {"type":"time", "min":sampleMin, "max":sampleMax, "interval":sampleInterval},
 		"currOpenBugs": currOpenBugs,
@@ -267,15 +265,13 @@ function restOfCharting(env){
 		// HISTORICAL COUNT
 		///////////////////////////////////////////////////////////////////////
 		var a=Log.action("Adding", true);
-		var chart= yield(Q({
+		var flat= yield(Q({
 			"from": raw_data,
-			"select":{"name":"num", "value":env.countMode=="Bugs" ? "1" : 'nvl(ScrumBugs.parse(status_whiteboard).points, 1)-0', "aggregate":"sum", "default":0},
+			"select":[
+				{"name":"Remaining Work", "value":'nvl(ScrumBugs.parse(status_whiteboard).points, 1)-0', "aggregate":"sum", "default":0, "style":{"visibility":"hidden"}},
+				{"name":"Open Bug Count", "value":"bug_id", "aggregate":"count", "default":0}
+			],
 			"edges":[
-				{"name": "status", "value": "counted", "domain": {"type": "set", "key":"value", "partitions": [
-					{"name": "Open", "value": "Open"},
-					{"name": "Closed", "value": "Closed"},
-					{"name": "none", "value":"none"}
-				]}},
 				{"name":"date",
 					"value":"date",
 					"allowNulls":false,
@@ -285,20 +281,6 @@ function restOfCharting(env){
 			"where": env.currFeatureFilter
 		}));
 
-		//CONVERT EDGE TO ATTRIBUTES
-		var flat = yield(Q({
-			"from":chart,
-			"select":[
-				{"name":"Open", "value":"status.name=='Open' ? num : null", "aggregate":"sum", "default":0},
-				{"name":"Total", "value":"status.name!='none' ? num : null", "aggregate":"sum", "default":0}
-			],
-			"edges":[
-				{"name":"date", "value":"date",
-					"allowNulls": false,
-					"domain": env.timeDomain
-				}
-			]
-		}));
 		var tempTimeDomain=flat.edges[0].domain;
 
 		//SHOW FUTURE VALUES AS NULLS
@@ -364,14 +346,6 @@ $(document).ready(function(){
 			"message":"Chart all bug dependencies (default), or chart only the bugs matching feature criterion<br><br>",
 			"options":["All", "None"],
 			"default":"All",
-			"refreshCallback":__reChart
-		})},
-		{"id":"countMode", "name":"Count", "type":RadioFilter.newInstance({
-			"id":"countMode",
-			"name":"Count",
-			"message":"Chart the estimated work (default), or show the bug count<br>",
-			"options":["Work", "Bugs"],
-			"default":"Work",
 			"refreshCallback":__reChart
 		})},
 		{"id": "feature", "name": "Feature", "type": PartitionFilter.newInstance({

@@ -17,7 +17,13 @@
 	</div>
 
 	<hr>
-	<div id="description">Counting all dependent bugs over time</div>
+	<div id="description">
+		Counting all dependent bugs over time<br>
+		<ul>
+		<li><b>Open Bug Count</b> - Simple count of open bugs<br></li>
+		<li><b>Remaining Work</b> - Sum of all bug estimates.  Defaults to one in the case of missing estimate.</li>
+		</ul>
+	</div>
 	<hr>
 	<div id="testMessage"></div>
 	<hr>
@@ -121,7 +127,6 @@ var __createChart = function*(){
 
 	restOfCharting({
 		"TODAY": TODAY,
-		"countMode": GUI.state.countMode.getSimpleState(),
 		"timeDomain": timeDomain,
 		"currOpenBugs": currOpenBugs,
 		"currTotalBugs": currTotalBugs,
@@ -159,7 +164,6 @@ function __reChart(){
 
 	restOfCharting({
 		"TODAY": Date.today(),
-		"countMode": GUI.state.countMode.getSimpleState(),
 		"timeDomain": {"type":"time", "min":sampleMin, "max":sampleMax, "interval":sampleInterval},
 		"currOpenBugs": currOpenBugs,
 		"currTotalBugs": currTotalBugs,
@@ -247,38 +251,25 @@ function restOfCharting(env){
 		// HISTORICAL COUNT
 		///////////////////////////////////////////////////////////////////////
 		var a=Log.action("Adding", true);
-		var chart= yield(Q({
+		var flat= yield(Q({
 			"from": raw_data,
-			"select":{"name":"num", "value":env.countMode=="Bugs" ? "1" : 'nvl(ScrumBugs.parse(status_whiteboard).points, 1)-0', "aggregate":"sum", "default":0},
+			"select":[
+				{"name":"Remaining Work", "value":'nvl(ScrumBugs.parse(status_whiteboard).points, 1)-0', "aggregate":"sum", "default":0, "style":{"visibility":"hidden"}},
+				{"name":"Open Bug Count", "value":"bug_id", "aggregate":"count", "default":0}
+			],
 			"edges":[
-				{"name": "status", "value": "counted", "domain": {"type": "set", "key":"value", "partitions": [
-					{"name": "Open", "value": "Open"},
-					{"name": "Closed", "value": "Closed"},
-					{"name": "none", "value":"none"}
-				]}},
 				{"name":"date",
 					"value":"date",
 					"allowNulls":false,
 					"domain":env.timeDomain
 				}
 			],
-			"where": env.currScopeFilter
+			"where": {"and":[
+				{"term":{"counted":"Open"}},
+				env.currScopeFilter
+			]}
 		}));
 
-		//CONVERT EDGE TO ATTRIBUTES
-		var flat = yield(Q({
-			"from":chart,
-			"select":[
-				{"name":"Open", "value":"status.name=='Open' ? num : null", "aggregate":"sum", "default":0},
-				{"name":"Total", "value":"status.name!='none' ? num : null", "aggregate":"sum", "default":0}
-			],
-			"edges":[
-				{"name":"date", "value":"date",
-					"allowNulls": false,
-					"domain": env.timeDomain
-				}
-			]
-		}));
 		var tempTimeDomain=flat.edges[0].domain;
 
 		//SHOW FUTURE VALUES AS NULLS
@@ -299,7 +290,18 @@ function restOfCharting(env){
 			"stacked":false,
 			"cube":flat,
 			"xAxisSize":50,
+
+			plot2: true,
+			plot2Series: [flat.select[0].name],
+			plot2OrthoAxis: 2,
+			plot2ColorAxis: 1,
+			plot2ShowDots: true,
+
 			extensionPoints: {
+				plot2Dot_shapeRadius: 1,
+				plot2Dot_shape:"circle",
+				plot2Line_lineWidth: 3,
+
 			    dot_shapeRadius: 3,
 	            dot_shape:"circle",
 				line_lineWidth: 3
@@ -337,14 +339,6 @@ $(document).ready(function(){
 		{"id":"sampleMin", "name":"Start Date", "type":"time", "default":Date.eod().add("-6week")},
 		{"id":"sampleMax", "name":"End Date", "type":"time", "default":Date.today().ceilingWeek()},
 		{"id":"sampleInterval", "name":"Interval", "type":"duration", "default":"day"},
-		{"id":"countMode", "name":"Count", "type":RadioFilter.newInstance({
-			"id":"countMode",
-			"name":"Count",
-			"message":"Chart the estimated work (default), or chart the bug count<br>",
-			"options":["Work", "Bugs"],
-			"default":"Work",
-			"refreshCallback":__reChart
-		})},
 		{"id": "scope", "name": "Scope", "type": PartitionFilter.newInstance({
 			"id": "scope",
 			"name": "Scope",

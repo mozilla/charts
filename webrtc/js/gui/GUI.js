@@ -643,7 +643,9 @@ GUI = {};
 
 			var output = {"and": []};
 			GUI.customFilters.forall(function (f, i) {
-				output.and.push(f.makeFilter());
+				if (f.makeFilter){
+					output.and.push(f.makeFilter());
+				}//endif
 			});
 			return output;
 	};

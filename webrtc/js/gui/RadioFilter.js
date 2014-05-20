@@ -67,8 +67,12 @@ RadioFilter.prototype.setup=function(){
 	radios.val([self.selected]);
 	radios.change(function(){
 		self.selected=$(this).val();
-		self.refreshCallback();
-		GUI.refresh(false);
+		if (self.refreshCallback){
+			self.refreshCallback();
+			GUI.refresh(false);
+		}else{
+			GUI.refresh();
+		}//endif
 	});
 	this.doneSetup=true;
 };//method

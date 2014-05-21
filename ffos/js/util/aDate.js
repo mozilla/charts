@@ -41,7 +41,7 @@ Date.min=function(){
 	var min=null;
 	for(var i=0;i<arguments.length;i++){
 		var v=arguments[i];
-		if (v === undefined || v == null) return null;
+		if (v === undefined || v == null) continue;
 		if (min==null || min>v) min=v;
 	}//for
 	return min;
@@ -386,7 +386,7 @@ Date.prototype.ceilingMonth = function(){
 // Minute       | mm (2 digits)      | m (1 or 2 digits)
 // Second       | ss (2 digits)      | s (1 or 2 digits)
 // MilliSecond  | fff (3 digits)     |
-// MicroSecond  | ffffff (6 digits)  | 
+// MicroSecond  | ffffff (6 digits)  |
 // AM/PM        | a                  |
 //
 // NOTE THE DIFFERENCE BETWEEN MM and mm! Month=MM, not mm!

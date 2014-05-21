@@ -37,6 +37,7 @@ Dimension.prototype = {
 					"esfilter": v.esfilter,
 					"fullFilter": v.fullFilter,
 					"dateMarks": v.dateMarks,
+					"targetDate": v.targetDate,
 					"style": Map.clone(v.style),
 					"weight": v.weight //YO! WHAT DO WE *NOT* COPY?
 				};
@@ -51,6 +52,7 @@ Dimension.prototype = {
 					"esfilter": v.esfilter,
 					"fullFilter": v.fullFilter,
 					"dateMarks": v.dateMarks,
+					"targetDate": v.targetDate,
 					"style": Map.clone(v.style),
 					"weight": v.weight   //YO!  WHAT DO WE *NOT* COPY?
 				};
@@ -68,6 +70,7 @@ Dimension.prototype = {
 						"esfilter": subpart.esfilter,
 						"fullFilter": subpart.fullFilter,
 						"dateMarks": subpart.dateMarks,
+						"targetDate": subpart.targetDate,
 						"style": Map.clone(nvl(subpart.style, subpart.parent.style)),
 						"weight": subpart.weight   //YO!  WHAT DO WE *NOT* COPY?
 					});

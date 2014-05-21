@@ -95,18 +95,9 @@ Dimension.addEdges(true, Mozilla, [
 					]}
 				},
 				{"name":"System Front-End", "esfilter":{"and":[
-					{"not":{"term":{"keywords":"perf"}}}, //AN UNFORTUNATE REDUNDANCY
-					{"term": {"product": "firefox os"}},
-					{"terms":{"component":[
-						"gaia::browser",
-						"gaia::everything.me",
-						"gaia::first time experience",
-						"gaia::homescreen",
-						"gaia::search",
-						"gaia::system",
-						"gaia::system::browser chrome"
-					]}}
+					{"term":{"status_whiteboard":"systemsfe"}}
 				]}},
+
 				{"name": "Productivity", "esfilter": {"and": [
 					{"not": {"term": {"keywords": "perf"}}}, //AN UNFORTUNATE REDUNDANCY
 					{"term": {"product": "firefox os"}},
@@ -247,6 +238,7 @@ Dimension.addEdges(true, Mozilla, [
 					{"not": {"term": {"keywords": "perf"}}},     //AN UNFORTUNATE REDUNDANCY
 					{"not": {"term":{"product":"loop"}}},        //NO WebRTC Loop Product
 					{"not": {"prefix":{"component":"webrtc"}}},  //NO WebRTC
+					{"not": {"term":{"status_whiteboard":"systemsfe"}}},  //NO SYSTEM FRONTEND
 					{"not": {"terms": {"component": [
 						//AN UNFORTUNATE LIST OF EVERYTHING, SHOULD BE AUTO-GENERATED, BUT I NEED A EQUATION SIMPLIFIER, OR ELSE I BREAK ES
 						"Canvas: 2D".toLowerCase(),

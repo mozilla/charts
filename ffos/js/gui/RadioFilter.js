@@ -16,6 +16,7 @@ RadioFilter.newInstance=function(param){
 	var self = new RadioFilter();
 	Map.expecting(param, ["id", "name", "options", "default"]);
 	Map.copy(param, self);
+	self.description = nvl(self.description, self.message);
 	self.selected=self["default"];
 	self.isFilter=true;
 	self.doneSetup=false;
@@ -46,7 +47,7 @@ RadioFilter.prototype.setSimpleState=function(value){
 RadioFilter.prototype.makeHTML=function(){
 	var html = new Template([
 		'<div id="{{id}}">',
-		this.message===undefined ? "" : "<div>{{message}}</div>",
+		this.description===undefined ? "" : "<div>{{description}}</div>",
 		{
 			"from": "options",
 			"template": '<input type="radio" name="{{id}}" value="{{.}}">{{.}}</input><br>'
@@ -67,8 +68,12 @@ RadioFilter.prototype.setup=function(){
 	radios.val([self.selected]);
 	radios.change(function(){
 		self.selected=$(this).val();
-		self.refreshCallback();
-		GUI.refresh(false);
+		if (self.refreshCallback){
+			self.refreshCallback();
+			GUI.refresh(false);
+		}else{
+			GUI.refresh();
+		}//endif
 	});
 	this.doneSetup=true;
 };//method

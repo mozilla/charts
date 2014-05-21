@@ -174,6 +174,7 @@ Dimension.addEdges(true, Mozilla, [
 		{"name": "Closed", "esfilter": Mozilla.BugStatus.Closed.esfilter}
 	]},
 	{"name": "ChurnType", "partitions": [
+		{"name": "Dups", "style": {"color": "#dddddd"}, "esfilter": {"terms":{"resolution":["duplicate", "worksforme"]}}},
 		{"name": "Regression", "esfilter": {"term": {"keywords": "regression"}}},
 		{"name": "Blocker", "esfilter": {"and": [
 			{"or": [
@@ -188,7 +189,6 @@ Dimension.addEdges(true, Mozilla, [
 				{"not": {"term": {"target_milestone": "---"}}}
 			]}
 		},
-		{"name": "Dups", "style": {"color": "#dddddd"}, "esfilter": {"terms":{"resolution":["duplicate", "worksforme"]}}},
 		{"name": "Other", "style": {"color": "#dddddd"}, "esfilter": {"match_all": {}}}
 	]}
 

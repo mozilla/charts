@@ -580,25 +580,31 @@ var __createChart = function*(){
 		},
 		"clickAction":function(series, x, d){
 			//MAP FROM HUMANE NAMES BACK TO ORIGINAL DIMENSION DEFINITION NAME
-			series = {"Bugs": "Total", "Work": "Total", "Open_Bugs": "Open_Bugs", "Regressions": "Regressions"}[series];
+			series = {"Open Bug Count": "Open", "Remaining Work": "Open", "Regressions": "Regressions"}[series];
 
 			Thread.run(function*(){
-				var buglist=(yield (ESQuery.run({
-					"from":"bugs",
-					"select":{"value":"bug_id", "aggregate":"minimum"},
-					"edges":[
-						{"name":"unique", "value":"bug_id"}
-					],
-					"esfilter":{"and":[
-						mainFilter,
-						{"range":{"modified_ts":{"lte":x.getMilli()}}},
-						{"range":{"expires_on":{"gt":x.getMilli()}}},
-						GUI.getFilters("bugs"),
-						series=="Total" ? ESQuery.TrueFilter :Mozilla.CountType[series].esfilter
-					]}
-				})));
+				try{
+					var buglist=(yield (ESQuery.run({
+						"from":"bugs",
+						"select":{"value":"bug_id", "aggregate":"minimum"},
+						"edges":[
+							{"name":"unique", "value":"bug_id"}
+						],
+						"esfilter":{"and":[
+							mainFilter,
+							{"range":{"modified_ts":{"lte":x.getMilli()}}},
+							{"range":{"expires_on":{"gt":x.getMilli()}}},
+							GUI.state.milestone.makeFilter(),
+							teamFilter,
+							series=="Total" ? ESQuery.TrueFilter :Mozilla.CountType[series].esfilter
+						]}
+					})));
 
-				Bugzilla.showBugs(buglist.cube);
+					Bugzilla.showBugs(buglist.cube);
+				}catch(e){
+					Log.warning("thread failure", e);
+					yield(null);  //SILENT FAILURE
+				}
 			});
 		}//click
 	});

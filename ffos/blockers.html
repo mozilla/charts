@@ -4,7 +4,7 @@
    - file, You can obtain one at http://mozilla.org/MPL/2.0/. -->
 <HTML>
 <HEAD>
-	<title>FFOS Blockers</title>
+	<title>FxOS Blockers</title>
 	<script type="text/javascript">function importScript(dep, func){if (func!==undefined) func();}</script>
 	<script type="text/javascript" src="js/Settings.js"></script>
 	<script type="text/javascript" src="js/rest/BugzillaClient.js"></script>
@@ -27,6 +27,7 @@
 	<script type="text/javascript" src="js/math/aMath.js"></script>
 	<script type="text/javascript" src="js/MozillaPrograms.js"></script>
 	<script type="text/javascript" src="js/util/CNV.js"></script>
+	<script type="text/javascript" src="js/util/aTemplate.js"></script>
 	<script type="text/javascript" src="lib/jquery.js"></script>
 	<script type="text/javascript" src="js/util/aDate.js"></script>
 	<script type="text/javascript" src="js/collections/aQueue.js"></script>
@@ -100,7 +101,7 @@
 		<div>Filters</div>
 	</div>
 	<div class="content" style="position:inherit;">
-		<div id="totals"><h3 style="display:inline-block;">FFOS Blockers</h3></div>
+		<div id="totals"><h3 style="display:inline-block;">FxOS Blockers</h3></div>
 		<div style="position:absolute;top:5px;right:10px;">
 			Age: <div style="vertical-align:middle;height:15px; width:150px; background: -moz-linear-gradient(left, #009F00,#699B00,  #CA7900,#954000, #A50303);position: relative;display:inline-block;"><div style="top:-3px;left:1px;color:white;position: absolute;font-size: 15px">New</div><div style="top:-3px;right:1px;color:white;position: absolute;font-size: 15px">7days+</div></div><br>
 			Unassigned Bugs:<div style="display:inline-block;bottom:0;width: 0;height: 0; border-style: solid; border-width: 0 0 15px 15px; border-color: transparent transparent #000000 transparent;"></div>
@@ -202,17 +203,7 @@
 		    }));
 			Log.actionDone(a);
 
-			var CABlockers = allTree.map(function(v){
-				if (v.bug_id==984663)
-					return v.dependencies;
-			});
-			if (CABlockers.length==0 || CABlockers[0].length==0){
-				CABlockers=[0]
-			}else{
-				CABlockers=CABlockers[0]
-			}//endif
-
-
+			var CABlockers = Array.union(allTree.filter({"term":{"bug_id":984663}}).select("dependencies")).map(function(v){return v-0;});
 
 			a = Log.action("Get Bug Details", true);
 			//PULL THE RAW DATA, AND THEN OPERATE ON IT 112K, 2.17sec time
@@ -294,7 +285,7 @@
 			var specialBlockers = (yield(Q({
 				"from": allDetails,
 				"select": [
-					{"name": "project", "value": '"CA"', "aggregate": "one"},
+					{"name": "project", "value": '"CAF"', "aggregate": "one"},
 					{"name": "additionalClass", "value":'"project-summary"', "aggregate":"one"},
 					{"name": "count", "value": "bug_id", "aggregate": "count"},
 					{"name": "bugs", "value": "bug_id", "aggregate": "array"},
@@ -305,7 +296,7 @@
 				"where": {"terms":{"bug_id":CABlockers}}
 			}))).cube;
 
-			if (specialBlockers.count==0) specialBlockers.project="CA";
+			if (specialBlockers.count==0) specialBlockers.project="CAF";
 
 			var blockerHTML = showSummary("Blockers", GUI.state.team.getSelectedParts(), totals, specialBlockers, showBlocker);
 			$("#totals").html(blockerHTML);
@@ -338,7 +329,7 @@
 							"onlyOne": false,
 							"expandAll": true
 						})},
-						{"id": "responsibility", "name": "Responsibility", "default":"FFOS_Team", "type": PartitionFilter.newInstance({
+						{"id": "responsibility", "name": "Responsibility", "default":"FxOS_Team", "type": PartitionFilter.newInstance({
 							"id": "Responsibility",
 							"name": "All Bugs",
 							"dimension": Mozilla.B2G.Responsibility,

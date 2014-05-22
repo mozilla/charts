@@ -24,6 +24,15 @@ importScript("../threads/thread.js");
 var Q;   //=Q
 
 
+function splitField(fieldname){
+	return fieldname.replaceAll("\\.", "\b").split(".").map(function(v){return v.replaceAll("\b", ".");});
+}//method
+
+function joinField(path){
+	return path.map(function(v){return v.replaceAll(".", "\\.");}.join("."));
+}//method
+
+
 (function(){
 
 	var DEBUG=true;
@@ -73,7 +82,7 @@ Qb.compile = function(query, sourceColumns, useMVEL){
 	var select = Array.newInstance(query.select);
 	for(var s = 0; s < select.length; s++){
 		if (typeof(select[s])=="string") select[s]={"value":select[s]};
-		if (select[s].name===undefined) select[s].name=select[s].value.split(".").last();
+		if (select[s].name===undefined) select[s].name=splitField(select[s].value).last();
 		if (uniqueColumns[select[s].name]!==undefined)
 			Log.error("Column with name "+select[s].name+" appeared more than once");
 		select[s].columnIndex=s+edges.length;
@@ -1015,7 +1024,7 @@ Qb.sort.compile=function(sortOrder, columns, useNames){
 			Log.warning("what?");
 		}//endif
 
-		var index=useNames ? col.name.split(".").map(function(v){return CNV.String2Quote(v);}).join("][") : col.columnIndex;
+		var index=useNames ? splitField(col.name).map(function(v){return CNV.String2Quote(v);}).join("][") : col.columnIndex;
 		f+="diff = orderedColumns["+o+"].domain.compare(a["+index+"], b["+index+"]);\n";
 		if (o==orderedColumns.length-1){
 			if (col.sortOrder===undefined || col.sortOrder==1){

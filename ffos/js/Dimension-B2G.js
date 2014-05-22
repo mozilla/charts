@@ -95,7 +95,7 @@ Dimension.addEdges(true, Mozilla, [
 					]}
 				},
 				{"name":"System Front-End", "esfilter":{"and":[
-					{"term":{"status_whiteboard":"systemsfe"}}
+					{"regexp":{"status_whiteboard":".*systemsfe.*"}}
 				]}},
 
 				{"name": "Productivity", "esfilter": {"and": [

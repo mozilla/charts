@@ -69,7 +69,8 @@ function showChurn(args) {
 					"cf_blocking_loop",
 					"keywords",
 					"target_milestone",
-					"resolution"
+					"resolution",
+					"status_whiteboard"
 				],
 				"esfilter": {"and": [
 					args.esfilter,
@@ -80,6 +81,9 @@ function showChurn(args) {
 					{"term": {"resolution": "fixed"}}
 				]}
 			}));
+
+			yield(null);
+
 		});
 
 		//PULL LATEST CLOSE DATES
@@ -120,8 +124,9 @@ function showChurn(args) {
 
 		//DIRTY REVERSE OF THE TYPES
 		churn.edges[0].domain.partitions.reverse();
-		churn.cube.reverse();		churn.edges[0].domain.partitions[0].style.visibility = "visible";
-				churn.edges[0].domain.partitions[1].style.visibility = "visible";
+		churn.cube.reverse();
+		churn.edges[0].domain.partitions[0].style.visibility = "visible";
+		churn.edges[0].domain.partitions[1].style.visibility = "visible";
 
 
 		aChart.show({
@@ -171,7 +176,8 @@ function showAges(args) {
 					"bug_id",
 					"cf_blocking_b2g",
 					"cf_blocking_loop",
-					"target_milestone"
+					"target_milestone",
+					"status_whiteboard"
 				],
 				"esfilter": {"and": [
 					GUI.getFilters("bugs"),

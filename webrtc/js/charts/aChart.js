@@ -865,7 +865,7 @@ function fixClickAction(chartParams){
 
 
 
-var BZ_SHOW_BUG_LIMIT=1000;
+var BZ_SHOW_BUG_LIMIT=300;
 function bugClicker(query, series, x){
 
 	if (typeof(query.from) != "string"){

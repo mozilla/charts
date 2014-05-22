@@ -737,7 +737,7 @@ CNV.esFilter2function=function(esFilter){
 				if (val instanceof Date){
 					if (row_val.getTime()!=terms[variable].getTime()) return false;
 				}else if (row_val instanceof Array){
-					if (!row_val.contains(variable)) return false;
+					if (!row_val.contains(val)) return false;
 				}else{
 					if (row_val!=val) return false;
 				}//endif
@@ -928,6 +928,10 @@ CNV.esFilter2Expression=function(esFilter){
 		return (variableName)+".startsWith(" + CNV.Value2Quote(value)+")";
 	}else if (op=="match_all"){
 		return "true"
+	}else if (op=="regexp"){
+		var pair = esFilter[op];
+		var variableName = Object.keys(pair)[0];
+		return "(function(){ return new RegExp("+CNV.Value2Quote(pair[variableName])+").test("+variableName+");})()";
 	} else{
 		Log.error("'" + op + "' is an unknown operation");
 	}//endif

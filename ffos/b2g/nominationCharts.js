@@ -152,14 +152,13 @@ function showNomChurn(args) {
 				Thread.run(function*() {
 					var min = x.getMilli();
 					var max = x.getMilli() + args.timeDomain.interval.milli;
-
-					var logic = NOM_CHECK_LOGIC.replaceAll("project.name", CNV.String2Quote({
+					var logic = "(new_value == 'PROJECT+' || (old_value == 'PROJECT?' && new_value != 'PROJECT-' && new_value!='PROJECT+'))".replaceAll("PROJECT", {
 						//AN UNFORTUNATE MAP FROM Project.name TO new_value PREFIX
 						"1.3":"1.3",
 						"1.3T":"1.3t",
 						"1.4":"1.4",
 						"2.0":"2.0"
-					}[series]));
+					}[series]);
 
 					var buglist = (yield (Qb.calc2List({
 						"from": all,

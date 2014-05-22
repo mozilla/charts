@@ -42,7 +42,7 @@ Qb.analytic.add=function(query, analytic){
 	}//endif
 
 	//FILL OUT THE ANALYTIC A BIT MORE
-	if (analytic.name===undefined) analytic.name=analytic.value.split(".").last();
+	if (analytic.name===undefined) analytic.name=splitField(analytic.value).last();
 	sourceColumns.forall(function(v){ if (v.name==analytic.name)
 		Log.error("All columns must have different names");});
 	analytic.columnIndex=sourceColumns.length;
@@ -156,9 +156,9 @@ Qb.analytic.compile = function(sourceColumns, expression){
 //ONLY DEFINE VARS THAT ARE USED
 		if (expression.indexOf(columnName) != -1){
 			f += "var ";
-			var parents = columnName.split(".").leftBut(1);
+			var parents = splitField(columnName).leftBut(1);
 			for (var p=0;p<parents.length;p++){
-				f += parents.left(p+1).join(".") + " = {};\n";
+				f += joinField(parents.left(p+1)) + " = {};\n";
 			}//for
 			f += columnName + "=__source." + columnName + ";\n";
 		}//endif

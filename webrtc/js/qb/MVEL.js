@@ -15,7 +15,7 @@ var MVEL = function(){
 MVEL.prototype.code = function(query){
 	var selectList = Array.newInstance(query.select);
 	var fromPath = query.from;			//FIRST NAME IS THE INDEX
-	var indexName=fromPath.split(".")[0];
+	var indexName=splitField(fromPath)[0];
 	var whereClause = query.where;
 
 	//PARSE THE fromPath
@@ -70,7 +70,7 @@ MVEL.compile.setValues=function(expression, constants){
 	for(var i=0;i<constants.length;i++){
 		var value=constants[i].value;
 		var n=constants[i].name;
-		if (n.split(".").length>=3) continue;	//DO NOT GO TOO DEEP
+		if (splitField(n).length>=3) continue;	//DO NOT GO TOO DEEP
 		if (value instanceof Array) continue;  //DO NOT MESS WITH ARRAYS
 
 		if (typeof value == "object"){
@@ -106,7 +106,7 @@ MVEL.compile.expression = function(expression, query, constants){
 
 	if (query===undefined) Log.error("Expecting call to MVEL.compile.expression to be given a reference to the query");
 	var fromPath = query.from;			//FIRST NAME IS THE INDEX
-	var indexName=fromPath.split(".")[0];
+	var indexName=splitField(fromPath)[0];
 //	var whereClause = query.where;
 
 	var context = MVEL.compile.getFrameVariables(indexName, expression, query.isLean);
@@ -161,21 +161,21 @@ MVEL.compile.getFrameVariables=function(indexName, body, isLean){
 				if (name.indexOf(".")<0){
 					contextVariables+="var "+name+" = new HashMap();\n";
 				}else{
-					defParent(name.split(".").leftBut(1).join("."));
+					defParent(joinField(splitField(name).leftBut(1)));
 					contextVariables+=name+" = new HashMap();\n";
 				}//endif
 			}//function
 
 			if (isLean || c.useSource){
 				if (c.name.indexOf(".")>=0){
-					var parent=defParent(c.name.split(".").leftBut(1).join("."));
+					var parent=defParent(joinField(splitField(c.name).leftBut(1)));
 					contextVariables += c.name + " = getSourceValue(\""+ c.name + "\");\n";
 				}else{
 					contextVariables += "var " + c.name + " = _source[\"" + c.name + "\"];\n";
 				}//endif
 			}else{
 				if (c.name.indexOf(".")>=0){
-					defParent(c.name.split(".").leftBut(1).join("."));
+					defParent(joinField(splitField(c.name).leftBut(1)));
 					contextVariables += c.name + " = getDocValue(\"" + c.name + "\");\n";
 				}else{
 					contextVariables += "var " + c.name + " = getDocValue(\"" + c.name + "\");\n";
@@ -201,7 +201,7 @@ MVEL.prototype.from = function(fromPath, loopVariablePrefix){
 	var code = "<CODE>";
 
 	if (fromPath.indexOf("\t")>=0) Log.error("Can not handle variables names with tab char");
-	var path = fromPath.replaceAll("\\.", "\t").split(".").map(function(v){return v.replaceAll("\t", "\\.")});
+	var path = splitField(fromPath);
 
 	//ADD LOCAL VARIABLES
 	var columns = ESQuery.getColumns(path[0]);

@@ -127,8 +127,6 @@ importScript("../util/aUtil.js");
 		return output;
 	};//method
 
-
-
 	//RETURN A RANDOM SAMPLE OF VALUES
 	Array.prototype.sample=function(num){
 		if (this.length<num) return this;
@@ -143,15 +141,10 @@ importScript("../util/aUtil.js");
 		return this;
 	};//method
 
-
-
-
 	Array.prototype.appendArray=function(arr){
-//		this.reverse();
 		for(var i=0;i<arr.length;i++){
 			this.push(arr[i]);
 		}//for
-//		this.reverse();
 		return this;
 	};//method
 
@@ -242,16 +235,14 @@ importScript("../util/aUtil.js");
 
 	//RETURN UNION OF UNIQUE VALUES
 	//ASSUMES THAT THE COORCED STRING VALUE IS UNIQUE
-	Array.prototype.union = function(b){
-		var output={};
-		for(var i = this.length; i--;) output[this[i]]=this[i];
-		b = Array.newInstance(b);
-		for(var j = b.length; j--;) output[b[j]]=b[j];
-		return Map.getValues(output);
+	//EXPECTING EACH ARGUMENT TO BE AN ARRAY THAT REPRESENTS A SET
+	Array.prototype.union = function(){
+		return Array.union.apply(Array, [].appendArray(arguments).append(this));
 	};//method
 
 	//RETURN UNION OF UNIQUE VALUES
 	//ASSUMES THAT THE COORCED STRING VALUE IS UNIQUE
+	//EXPECTING ONE ARGUMENT, WHICH IS A LIST OF AN ARRAYS, EACH REPRESENTING A SET
 	Array.union = function union(arrays){
 		var output={};
 		arrays.forall(function(a){

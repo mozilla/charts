@@ -28,12 +28,6 @@
 	<div id="filters" class="menu"></div>
 </div>
 
-
-
-	<div style="float:right;display: inline;">
-		<a href="http://people.mozilla.com/~klahnakoski/" class="button">HOME</a>
-	</div>
-
 <div style="align:left;position:relative;float:left;width:815px;padding-left:15px">
 	<h3 id="title"></h3>
 
@@ -55,6 +49,7 @@ importScript([
 	"moreJS/burndown.js"
 ], function(){
 
+NEEDED_FIELDS = ["status_whiteboard"];  //FOR GETTING THE SCRUMBUGZ p=N VALUES
 
 var raw_data = null;   //KEEP RAW DATA FOR RE-CHARTING
 var featureFilter = null;
@@ -86,21 +81,58 @@ var __createChart = function*(){
 	var sampleInterval = Duration.newInstance(GUI.state.sampleInterval);
 	var sampleMax = Date.newInstance(GUI.state.sampleMax).addDay();
 	var bug_ids = GUI.state.bugList.trim()=="" ? [] : GUI.state.bugList.split(",").map(function(v){return CNV.String2Integer(v.trim());});
-	var timeDomain = {"type":"time", "min":sampleMin, "max":sampleMax, "interval":sampleInterval};
+
+	var timeDomain = null;
+
+	var milestones = GUI.state.milestone.getSelectedParts();
+	var milestoneFilter = null;
+	if (milestones.length > 0) {
+		//SHOW UI dates AS DISABLED
+		$("#sampleMin").prop("disabled", true);
+		$("#sampleMax").prop("disabled", true);
+
+		//FIND REAL TIME RANGE
+		sampleMin = aMath.min(TODAY.addDay(-14), aMath.min.apply(
+			undefined,
+			milestones.select("start_date").map(Date.newInstance)
+		));
+		sampleMax = aMath.max.apply(
+			undefined,
+			milestones.select("targetDate").map(Date.newInstance)
+		).addDay(2);
+
+		milestoneFilter = {"or": milestones.select("esfilter")};
+
+		var dateMarks = [];
+		milestones.select("dateMarks").forall(function (marks){dateMarks.appendArray(Array.newInstance(marks));});
+
+		timeDomain = {"type": "time", "min": sampleMin, "max": sampleMax, "interval": sampleInterval, "dateMarks": dateMarks};
+	} else {
+		//SHOW UI dates AS DISABLED
+		$("#sampleMin").prop("disabled", false);
+		$("#sampleMax").prop("disabled", false);
+		timeDomain = {"type":"time", "min":sampleMin, "max":sampleMax, "interval":sampleInterval};
+	}//endif
+
 
 	var features = GUI.state.feature.getSelectedParts();
 	if (features.length>0){
+		var featureName=features.select("name").join(" and ");
+		if (milestones.length>0){
+			$("#title").text("Burndown for " + featureName + " (Milestone " + milestones.select("name").join(" and ") + ")");
+		}else{
+			$("#title").text("Burndown for "+featureName);
+		}//endif
+
+
 		featureFilter = {"or":features.select("esfilter")};
 		if (bug_ids.length > 0) featureFilter.or.append({"terms": {"bug_id": bug_ids}});
-
-		raw_data = yield(allOpenDependencies(featureFilter, timeDomain, Array.union(features.select("needed_fields")).union(["status_whiteboard"]), false));
-
-		var featureName=features.select("name").join(" and ");
-		$("#title").text("Burndown for "+featureName);
+		var needed_fields = Array.union([NEEDED_FIELDS].appendArray(features.select("needed_fields")).appendArray(milestones.select("needed_fields")));
+		raw_data = yield(getRawDependencyData(featureFilter, timeDomain, needed_fields, false));
 	}else{
 		if (bug_ids.length==0){
 			$("#title").text("Must select bug number, or predefined feature");
-			yield (null);
+			yield (null); //EXIT EARLY
 		}//endif
 
 		Thread.run(function*(){
@@ -116,27 +148,30 @@ var __createChart = function*(){
 				]}
 			}));
 
-			$("#title").html(r.list.map(function(v){return CNV.String2HTML(v);}).join("<br>"));
+			if (milestones.length>0){
+				$("#title").html(r.list.map(CNV.String2HTML).join("<br>")+"Milestone " + milestones.select("name").join(" and "));
+			}else{
+				$("#title").html(r.list.map(CNV.String2HTML).join("<br>"));
+			}//endif
 		});
 
-		featureFilter = {"terms":{"bug_id":bug_ids}};
-		raw_data = yield(allOpenDependencies(featureFilter, timeDomain, ["status_whiteboard"], false));
-
+		featureFilter = {"terms":{"bug_id": bug_ids}};
+		var needed_fields = Array.union([NEEDED_FIELDS].appendArray(features.select("needed_fields")).appendArray(milestones.select("needed_fields")));
+		raw_data = yield(getRawDependencyData(featureFilter, timeDomain, needed_fields, false));
 	}//endif
 
-	var currMilestoneFilter=GUI.state.hierarchyMode.getSimpleState()!="All dependencies" ?  featureFilter : {"match_all":{}};
-
-	yield (ESQuery.loadColumns({"from":"bugs"}));
+	var currFeatureFilter = GUI.state.hierarchyMode.getSimpleState() != "All dependencies" ? nvl(milestoneFilter, featureFilter) : {"match_all": {}};
+	yield (getDailyDependencies(raw_data, nvl(milestoneFilter, {"match_all": {}}) ));
 
 	//LAST DAY WILL BE CONSIDERED CURRENT FEATURE LIST
 	var currOpenBugs=raw_data.cube.last().filter({"and":[
 		{"term":{"counted":"Open"}},
-		currMilestoneFilter
+		currFeatureFilter
 	]}).select("bug_id");
 
 	var currTotalBugs=raw_data.cube.last().filter({"and":[
 		{"not":{"term":{"counted":"none"}}},
-		currMilestoneFilter
+		currFeatureFilter
 	]}).select("bug_id");
 
 	restOfCharting({
@@ -145,7 +180,7 @@ var __createChart = function*(){
 		"timeDomain": timeDomain,
 		"currOpenBugs": currOpenBugs,
 		"currTotalBugs": currTotalBugs,
-		"currFeatureFilter": currMilestoneFilter
+		"currFeatureFilter": currFeatureFilter
 	});
 }
 
@@ -159,7 +194,17 @@ function __reChart(){
 	var sampleInterval = Duration.newInstance(GUI.state.sampleInterval);
 	var sampleMax = Date.newInstance(GUI.state.sampleMax).addDay();
 
-	var currFeatureFilter=GUI.state.hierarchyMode.getSimpleState()=="All" ? {"match_all":{}} : featureFilter;
+	var milestones = GUI.state.milestone.getSelectedParts();
+	var milestoneFilter = null;
+	if (milestones.length>0){
+		$("#title").append(" (Milestone "+milestones.select("name").join(" and ")+")");
+
+		milestoneFilter = {"or": milestones.select("esfilter")};
+	}//endif
+
+	yield (getDailyDependencies(raw_data, nvl(milestoneFilter, {"match_all": {}}) ));
+
+	var currFeatureFilter = GUI.state.hierarchyMode.getSimpleState() != "All dependencies" ? nvl(milestoneFilter, featureFilter) : {"match_all": {}};
 
 	//LAST DAY WILL BE CONSIDERED CURRENT FEATURE LIST
 	var currOpenBugs=raw_data.cube.last().filter({"and":[
@@ -289,9 +334,10 @@ function restOfCharting(env){
 		var flat = yield(Q({
 			"from":chart,
 			"select":[
+//				{"name":"Total_Bugs", "value":"status.name!='none' ? count : null", "aggregate":"sum", "default":0},
 				{"name":"Open Bugs", "value":"status.name=='Open' ? count : null", "aggregate":"sum", "default":0},
 				{"name":"Remaining Work", "value":"status.name=='Open' ? work : null", "aggregate":"sum", "default":0},
-//				{"name":"Total_Bugs", "value":"status.name!='none' ? count : null", "aggregate":"sum", "default":0}
+				{"name":".", "value":"0", "aggregate":"one", "style":{"color":"#00000000"}}
 			],
 			"edges":[
 				{"name":"date",
@@ -308,10 +354,19 @@ function restOfCharting(env){
 		flat.cube.forall(function(v, i){
 			if (tempTimeDomain.partitions[i].min > env.TODAY.addDay()){
 				flat.cube[i]=Map.zip(mapAllKey(v, function(k, v){
-					return [k, null];
+					if (k=="."){
+						return [k, 0];
+					}else{
+						return [k, null];
+					}
 				}));
 			}//endif
 		});
+
+
+
+
+
 		Log.actionDone(a);
 
 
@@ -377,15 +432,16 @@ $(document).ready(function(){
 			"expandAll": true,
 			"treeDepth":0
 		})},
-//		{"id": "milestone", "name": "Milestone", "type": PartitionFilter.newInstance({
-//			"id": "milestones",
-//			"name": "All Milestones",
-//			"description": "You may restrict the feature to the only the bugs marked with the given milestone",
-//			"dimension": Mozilla.Milestone,
-//			"onlyOne": false,
-//			"expandAll": true,
-//			"treeDepth":0
-//		})},
+		{"id": "milestone", "name": "Milestone", "type": PartitionFilter.newInstance({
+			"id": "milestones",
+			"name": "All Milestones",
+			"description": "You may restrict the feature to the only the bugs marked with the given milestone",
+			"dimension": Mozilla.Milestone,
+			"onlyOne": true,
+			"expandAll": true,
+			"treeDepth":0,
+			"refreshCallback":__reChart
+		})}
 		],
 			[
 				"sampleMin=Date.newInstance(sampleMin).floor(Duration.newInstance(sampleInterval)).format('yyyy-MM-dd')",

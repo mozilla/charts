@@ -703,30 +703,9 @@ aChart.show=function(params){
 		//LOOK FOR DATES TO MARKUP
 
 		var dateMarks = [];
-		categoryAxis.domain.partitions.forall(function (part) {
-			Array.newInstance(part.dateMarks).forall(function (mark) {
-				var style = Map.setDefault({}, mark.style, part.style, {"color": "black", "lineWidth": "2.0", verticalAnchor: "top"});
-				style.strokeStyle = nvl(style.strokeStyle, style.color);
-				style.textStyle = nvl(style.textStyle, style.color);
-
-				if (mark.name !== undefined) {
-					//EXPECTING {"name":<name>, "date":<date>, "style":<style>} FORMAT
-					dateMarks.append({
-						"name": mark.name,
-						"date": Date.newInstance(mark.date),
-						"style": style
-					})
-				} else {
-					//EXPECTING <name>:<date> FORMAT
-					forAllKey(mark, function(name, date){
-						dateMarks.append({
-							"name": name,
-							"date": Date.newInstance(date),
-							"style": style
-						})
-					});
-				}
-			});
+		dateMarks.appendArray(findDateMarks(xaxis.domain));  //WE CAN PLUG SOME dateMarks RINGT INTO TIME DOMAIN FOR DISPLAY
+		categoryAxis.domain.partitions.forall(function (part) {  //EACH CATEGORY CAN HAVE IT'S OWN dateMarks to SHOW
+			dateMarks.appendArray(findDateMarks(part))
 		});
 		if (dateMarks.length>0){
 			defaultParam.renderCallback=function(){
@@ -861,7 +840,33 @@ function fixClickAction(chartParams){
 }
 
 
+function findDateMarks(part){
+	output = []
+	Array.newInstance(part.dateMarks).forall(function (mark) {
+		var style = Map.setDefault({}, mark.style, part.style, {"color": "black", "lineWidth": "2.0", verticalAnchor: "top"});
+		style.strokeStyle = nvl(style.strokeStyle, style.color);
+		style.textStyle = nvl(style.textStyle, style.color);
 
+		if (mark.name !== undefined) {
+			//EXPECTING {"name":<name>, "date":<date>, "style":<style>} FORMAT
+			output.append({
+				"name": mark.name,
+				"date": Date.newInstance(mark.date),
+				"style": style
+			})
+		} else {
+			//EXPECTING <name>:<date> FORMAT
+			forAllKey(mark, function(name, date){
+				output.append({
+					"name": name,
+					"date": Date.newInstance(date),
+					"style": style
+				})
+			});
+		}
+	});
+	return output;
+}
 
 
 

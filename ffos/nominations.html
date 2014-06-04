@@ -93,7 +93,8 @@
 			If the component has unassigned members, then it is marked with a <div style="display:inline-block;bottom:0;width: 0;height: 0; border-style: solid; border-width: 0 0 15px 15px; border-color: transparent transparent #000000 transparent;"></div>
 			 along with the count.
 		</div>
-
+		<hr>
+		<div id="last-updated" style="text-align: center;width:300px;"></div>
 		<hr>
 		<div id="filters" style="width:300px;" class="menu">
 		</div>
@@ -191,7 +192,7 @@
 					{"name": "unassignedCount", "value": '(assigned_to=="nobody@mozilla.org" ? 1 : 0)', "aggregate": "sum"}
 				],
 				"edges": [
-					"component",
+					{"name":"component", "value":'component=="general" ? component+" ("+product+")" : component'},
 					{"name": "project", "domain": Mozilla.B2G.Project.getDomain()}
 				]
 			}));
@@ -233,13 +234,14 @@
 			$("#totals").html(blockerHTML);
 
 			addProjectClickers(components);
+			showLastUpdated();
 		};
 
 		$(document).ready(function () {
 			GUI.setup(
 					createChart,
 					[
-						{"id": "project", "name": "Releases", "default":"1.3,1.3T,1.4", "type": PartitionFilter.newInstance({
+						{"id": "project", "name": "Releases", "default":"1.3,1.3T,1.4,2.0", "type": PartitionFilter.newInstance({
 							"id": "Projects",
 							"name": "All Projects",
 							"dimension": Mozilla.B2G.Project,

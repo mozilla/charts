@@ -25,7 +25,7 @@ if (typeof OWNERS != 'undefined'){
 		}//endif
 
 
-		var name = k.replaceLast(["::", ": ", ":"], "<br>");
+		var name = k.replaceLast(["::", ": ", ":"], "<br>").replaceLast(" (", "<br>(");
 		return [k.deformat(), {"name": name, "owner": {"name": owner, "manager": manager}}];
 	}));
 }//endif
@@ -34,7 +34,7 @@ function getComponentDetails(comp) {
 	var output = OWNERS[comp.deformat()];
 	if (output !== undefined) return output;
 
-	var name = comp.replaceLast(["::", ": ", ":"], "<br>");
+	var name = comp.replaceLast(["::", ": ", ":"], "<br>").replaceLast([" ("], "<br>(");
 	output = {"name": name, "owner": {"name": "", "manager": ""}};
 	OWNERS[comp.deformat()] = output;
 	return output;
@@ -251,4 +251,15 @@ function refresher(func){
 }
 
 
+function showLastUpdated(){
+	Thread.run(function*(){
+		var result = yield (ESQuery.run({
+			"from": "bugs",
+			"select": {"name": "max_date", "value": "modified_ts", "aggregate": "maximum"},
+			"esfilter": {"range": {"modified_ts": {"gte": Date.eod().addDay(-1).getMilli()}}}
+		}));
 
+		time = new Date(result.cube.max_date);
+		$("#last-updated").html("Last Updated " + time.addTimezone().format("NNN dd @ HH:mm") + Date.getTimezone());
+	});
+}

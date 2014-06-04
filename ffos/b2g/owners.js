@@ -55,7 +55,10 @@ var OWNERS = {
   "Gaia::Video": "Hema Koka (David Flanagan)",
   // "Gaia::Wallpaper": "?",
   "Gaia::Wappush": "David Scravaglieri (Anthony Ricaud)",
-  // "General": "?", // Firefox OS
+  "General (Firefox OS)": "Lawrence Mandel (Bhavana, Preeti)",
+//  "General (Core)": "Lawrence Mandel",
+//  "General (Loop+)": "Lawrence Mandel",
+
   "GonkIntegration": "Thomas Tsai", // Firefox OS
   "General Automation": "Jonathan Griffin", // Release Engineering
   "Geolocation": "Doug Turner", // Core

@@ -12,6 +12,14 @@
 var Thread;
 
 build = function () {
+
+	var currentTimestamp;
+	if (Date.currentTimestamp){
+		currentTimestamp = Date.currentTimestamp;
+	}else{
+		currentTimestamp = Date.now;
+	}//endif
+
 	var DEBUG = false;
 	var FIRST_BLOCK_TIME = 500;	//TIME UNTIL YIELD
 	var NEXT_BLOCK_TIME = 150;	//THE MAXMIMUM TIME (ms) A PIECE OF CODE SHOULD HOG THE MAIN THREAD
@@ -43,9 +51,12 @@ build = function () {
 		this.keepRunning = true;
 		this.gen = null;    //CURRENT GENERATOR
 		this.stack = [gen];
-		this.nextYield = new Date().getTime() + FIRST_BLOCK_TIME;
+		this.nextYield = currentTimestamp() + FIRST_BLOCK_TIME;
 		this.children = [];
 	};
+
+	Thread.YIELD = YIELD;
+
 
 	//YOU SHOULD NOT NEED THESE UNLESS YOU ARE CONVERTING ASYNCH CALLS TO SYNCH CALLS
 	//EVEN THEN, MAYBE YOU CAN USE Thread.call
@@ -91,7 +102,7 @@ build = function () {
 
 		var thread = new Thread(gen);
 		if (time !== undefined) {
-			thread.nextYield = new Date().getTime() + time;
+			thread.nextYield = currentTimestamp() + time;
 		}//endif
 		var result = thread.start();
 		if (result === Suspend)
@@ -134,21 +145,22 @@ build = function () {
 	function Thread_prototype_resume(retval) {
 		Thread.showWorking();
 		while (this.keepRunning) {
-			if (String(retval) === '[object Generator]') {
-				this.stack.push(retval);
-				retval = undefined
-			} else if (retval === YIELD) {
-				if (this.nextYield < new Date().getTime()) {
+			if (retval === YIELD) {
+				if (this.nextYield < currentTimestamp()) {
 					var self_ = this;
-//				this.stack.push(this.gen);
-//				this.stack.push({"close":function(){}}); //DUMMY VALUE
 					setTimeout(function () {
-						self_.nextYield = new Date().getTime() + NEXT_BLOCK_TIME;
+						self_.nextYield = currentTimestamp() + NEXT_BLOCK_TIME;
 						self_.currentRequest = undefined;
 						self_.resume();
-					}, 1);
+					}, 1
+					);
 					return Suspend;
+				}else{
+					//simply resume
 				}//endif
+			} else if (String(retval) === '[object Generator]') {
+				this.stack.push(retval);
+				retval = undefined
 			} else if (retval instanceof Suspend) {
 				this.currentRequest = retval.request;
 				if (!this.keepRunning) this.kill(new Exception("thread aborted"));
@@ -159,7 +171,7 @@ build = function () {
 			} else if (retval === Thread.Resume) {
 				var self = this;
 				retval = function (retval) {
-					self.nextYield = new Date().getTime() + NEXT_BLOCK_TIME;
+					self.nextYield = currentTimestamp()+ NEXT_BLOCK_TIME;
 					self.currentRequest = undefined;
 					self.resume(retval);
 				};
@@ -174,7 +186,6 @@ build = function () {
 			}//endif
 
 			try {
-
 				this.gen = this.stack[this.stack.length - 1];
 				if (this.gen.history === undefined) this.gen.history = [];
 
@@ -300,6 +311,7 @@ build = function () {
 	};
 
 	//LET THE MAIN EVENT LOOP GET SOME ACTION
+	// CALLING yield (Thread.YIELD) IS FASTER THAN yield (Thread.yield())
 	Thread.yield = function*() {
 		yield (YIELD);
 	};

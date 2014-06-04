@@ -162,10 +162,13 @@ function* calc2Tree(query){
 
 		var row = from[i];
 		//CALCULATE THE GROUP COLUMNS TO PLACE RESULT
+		//SLOWNESS IS CAUSED BY results BEING A LIST OF TUPLES, EACH TUPLE
+		//BEING part OBJECTS FROM EACH OF THE DIMENSIONS.  THIS FORCES
+		//A getKeyByPart(part) CALL TO FIND A KEY TO USE AS AN INDEX INTO THE
+		//AGGREGATION TREE.  IT MAY BE FASTER TO ALWAYS USE KEYS, OR USE dataIndex.
 		var results = [[]];
 		for(var f = 0; f < edges.length; f++){
 			var edge = edges[f];
-
 
 			if (edge.test || edge.range){
 				//MULTIPLE MATCHES EXIST

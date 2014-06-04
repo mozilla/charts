@@ -52,7 +52,7 @@ Hierarchy.fromList=function(args){
 // id_field - USED TO ID NODE
 // fk_field - NAME OF THE CHILDREN ARRAY, CONTAINING IDs
 //WILL UPDATE ALL BUGS IN from WITH A descendants_field
-Hierarchy.addDescendants=function*(args){
+Hierarchy.addDescendants = function*addDescendants(args) {
 	ASSERT.hasAttributes(args, ["from","id_field","fk_field","descendants_field"]);
 
 	var from=args.from;
@@ -77,11 +77,11 @@ Hierarchy.addDescendants=function*(args){
 
 	//FIND DESCENDANTS
 //	var a=Log.action("Find Descendants", true);
-	yield (Thread.yield());
+	yield (Thread.YIELD);
 	var workQueue=new aQueue(Object.keys(allParents.map));
 
 	while(workQueue.length()>0){      //KEEP WORKING WHILE THERE ARE CHANGES
-		yield (Thread.yield());
+		yield (Thread.YIELD);
 		if (DEBUG){
 			if (DEBUG_MIN>workQueue.length() && workQueue.length()%Math.pow(10, Math.round(Math.log(workQueue.length())/Math.log(10))-1)==0){
 				Log.actionDone(a);

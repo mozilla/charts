@@ -99,22 +99,17 @@ Qb.compile = function(query, sourceColumns, useMVEL){
 
 function getAggregate(result, query, select){
 	//WE NEED THE select TO BE AN ARRAY
-	var edges=query.edges;
 
 	//FIND RESULT IN tree
 	var agg = query.tree;
 	var i = 0;
-	for(; i < edges.length - 1; i++){
-		var part=result[i];
-		var v = edges[i].domain.getKey(part);
+	for(; i < result.length - 1; i++){
+		var v = result[i];
 		if (agg[v] === undefined) agg[v] = {};
 		agg = agg[v];
 	}//for
 
-
-
-	part=result[i];
-	v = edges[i].domain.getKey(part);
+	v = result[i];
 	if (agg[v] === undefined){
 		agg[v]=[];
 		//ADD SELECT DEFAULTS
@@ -169,16 +164,18 @@ function* calc2Tree(query){
 		var results = [[]];
 		for(var f = 0; f < edges.length; f++){
 			var edge = edges[f];
+			var part2key = edge.domain.getKey;
 
 			if (edge.test || edge.range){
 				//MULTIPLE MATCHES EXIST
 				var matches= edge.domain.getMatchingParts(row);
+				var matchedKeys = matches.map(part2key);
 
 				if (matches.length == 0){
 					edge.outOfDomainCount++;
 					if (edge.allowNulls){
 						for(t = results.length; t--;){
-							results[t][f] = edge.domain.NULL;
+							results[t][f] = part2key(edge.domain.NULL);
 						}//for
 					} else{
 						continue FROM;
@@ -187,11 +184,11 @@ function* calc2Tree(query){
 					//WE MULTIPLY THE NUMBER OF MATCHES TO THE CURRENT NUMBER OF RESULTS (SQUARING AND CUBING THE RESULT-SET)
 					for(t = results.length; t--;){
 						result = results[t];
-						result[f] = matches[0];
-						for(var p = 1; p < matches.length; p++){
+						result[f] = matchedKeys[0];
+						for(var p = 1; p < matchedKeys.length; p++){
 							result = result.copy();
 							results.push(result);
-							result[f] = matches[p];
+							result[f] = matchedKeys[p];
 						}//for
 					}//for
 				}//endif
@@ -207,13 +204,13 @@ function* calc2Tree(query){
 					edge.outOfDomainCount++;
 					if (edge.allowNulls){
 						for(t = results.length; t--;){
-							results[t][f] = edge.domain.NULL;
+							results[t][f] = part2key(edge.domain.NULL);
 						}//for
 					} else{
 						continue FROM;
 					}//endif
 				} else{
-					for(t = results.length; t--;) results[t][f] = p;
+					for(t = results.length; t--;) results[t][f] = v;
 				}//endif
 			}//endif
 		}//for

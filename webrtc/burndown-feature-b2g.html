@@ -308,7 +308,8 @@ function restOfCharting(env){
 			},
 			"clickAction":function(series, x, d){
 				var series2filter = {
-					"Open": {"term": {"counted": series}},
+					"Open Bug Count": {"term": {"counted": "Open"}},
+					"Remaining Work": {"term": {"counted": "Open"}},
 					"Total": {"not": {"term": {"counted": "none"}}}
 				};
 
@@ -321,6 +322,7 @@ function restOfCharting(env){
 						],
 						"esfilter":{"and":[
 							series2filter[series],
+							env.currScopeFilter,
 							{"term":{"date":x}}
 						]}
 					})));
@@ -342,7 +344,7 @@ $(document).ready(function(){
 		{"id": "scope", "name": "Scope", "type": PartitionFilter.newInstance({
 			"id": "scope",
 			"name": "Scope",
-			"dimension": Mozilla.ScopeB2G,
+			"dimension": Mozilla.Scope,
 			"onlyOne": true,
 			"showAll": true,
 			"expandAll": true,

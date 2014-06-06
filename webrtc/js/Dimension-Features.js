@@ -48,27 +48,6 @@ Dimension.addEdges(true, Mozilla, [
 		{"name": "All", "esfilter": {"match_all": {}}}
 	]},
 
-	{"name": "ScopeB2G", "index": "bugs", "needed_fields":["cf_feature_b2g", "status_whiteboard"], "esfilter": {"match_all": {}}, "edges": [
-		{"name": "UCID 2.0", "esfilter": {"and":[
-			{"regexp": {"status_whiteboard": ".*ucid.*"}},
-			{"or":[
-				{"regexp": {"status_whiteboard": ".*2\\.0.*"}},
-				{"regexp": {"status_whiteboard": ".*1\\.5.*"}}
-			]}
-		]}},
-		{"name": "UCID 2.0 + Feature-B2G = 2.0", "needed_fields":["cf_feature_b2g", "status_whiteboard"], "esfilter": {"or":[
-			{"term":{"cf_feature_b2g":"2.0"}},
-			{"and":[
-				{"regexp": {"status_whiteboard": ".*ucid.*"}},
-				{"or":[
-					{"regexp": {"status_whiteboard": ".*2\\.0.*"}},
-					{"regexp": {"status_whiteboard": ".*1\\.5.*"}}
-				]}
-			]}
-		]}},
-		{"name": "All", "esfilter": {"match_all": {}}}
-	]},
-
 	{"name": "Milestone", "index": "bugs", "isFacet": true, "edges": [
 		{
 			"name": "Firefox31",

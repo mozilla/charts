@@ -179,7 +179,7 @@ Dimension.addEdges(true, Mozilla, [
 			"start_date": "10 JUN 2014",
 			"targetDate": "21 JUL 2014",
 			"dateMarks":[
-				{"name":"FF31 Target", "date":"22 July 2014", "style":{strokeStyle:"black", verticalOffset: 20}}
+				{"name":"FF33 Target", "date":"22 July 2014", "style":{strokeStyle:"black", verticalOffset: 20}}
 			],
 			"needed_fields":["target_milestone", "cf_blocking_loop"],
 			"partitions": [

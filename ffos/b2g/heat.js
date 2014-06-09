@@ -242,12 +242,14 @@ function heatCommon() {
 }
 
 function refresher(func){
-	Thread.run(function*() {
-		while (true) {
-			yield(Thread.sleep(5 * 60 * 1000));
-			func();
-		}//while
-	});
+	function callMe(){
+		try{
+			func()
+		}catch(e){
+
+		}
+	}//method
+	setInterval(callMe, 5*60*1000);
 }
 
 

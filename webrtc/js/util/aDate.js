@@ -7,6 +7,14 @@ importScript("aUtil.js");
 importScript("../collections/aArray.js");
 
 
+if (Date.now) {
+	Date.currentTimestamp = Date.now;
+}else{
+	Date.currentTimestamp = function currentTimestamp(){
+		new Date().getTime();
+	}//method
+}//endif
+
 Date.now = function(){
 	return new Date();
 };//method

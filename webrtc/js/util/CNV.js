@@ -304,9 +304,9 @@ CNV.Value2Text=function(value){
 //CONVERT TO JAVESCRIPT FOR THE SAME
 CNV.Value2Quote=function(value){
 	if (value === undefined){
-		return "";
+		return "undefined";
 	} else if (value==NaN){
-		return NaN;
+		return "NaN";
 	} else if (value == null){
 		return "null";
 	} else if (typeof(value)=="string"){

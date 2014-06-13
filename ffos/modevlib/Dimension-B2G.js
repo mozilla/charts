@@ -368,6 +368,39 @@ Dimension.addEdges(true, Mozilla, [
 				]
 			},
 
+			{"name": "Targeted", "index": "bugs", "isFacet": true,
+				"partitions": [
+					//https://wiki.mozilla.org/Release_Management/B2G_Landing
+					{"name": "1.3",
+						"esfilter": {"or":[
+							{"terms": {"cf_blocking_b2g": ["1.3+"]}}
+						]}
+					},
+					{"name": "1.3T",
+						"esfilter": {"or":[
+							{"terms": {"cf_blocking_b2g": ["1.3t+"]}}
+						]}
+					},
+					{"name": "1.4",
+						"esfilter": {"or":[
+							{"terms": {"cf_blocking_b2g": ["1.4+"]}},
+							{"terms": {"cf_blocking_loop": ["fx30+"]}}
+						]}
+					},
+					{"name": "2.0",
+						"esfilter": {"or":[
+							{"terms": {"cf_blocking_b2g": ["2.0+"]}},
+							{"terms": {"cf_blocking_loop": ["fx31+", "fx32+"]}}
+						]}
+					},
+					{"name": "Targeted", "style": {"color": "#9467bd"}, "esfilter": {"and": [
+						{"not": {"terms": {"cf_blocking_b2g": ["1.3+", "1.4+", "1.3t+", "2.0+"]}}},
+						{"not": {"terms": {"cf_blocking_loop": ["fx30+", "fx31+", "fx32+", "fx33+", "fx30+", "fx34+", "fx35+", "fx36+"]}}}
+
+					]}}
+				]
+			},
+
 			{"name": "FinalState", "index": "bugs", "isFacet": true,
 				"partitions": [
 					{"name": "1.3",

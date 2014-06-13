@@ -29,7 +29,7 @@ function splitField(fieldname){
 }//method
 
 function joinField(path){
-	return path.map(function(v){return v.replaceAll(".", "\\.");}.join("."));
+	return path.map(function(v){return v.replaceAll(".", "\\.");}).join(".");
 }//method
 
 
@@ -997,8 +997,12 @@ Qb.merge=function(query){
 Qb.sort = function(data, sortOrder, columns){
 	if (sortOrder.length==0) return data;
 	var totalSort = Qb.sort.compile(sortOrder, columns, true);
-	data.sort(totalSort);
-	return data;
+	try{
+		data.sort(totalSort);
+		return data;
+	}catch(e){
+		Log.error("bad sort function", e)
+	}//try
 };//method
 
 
@@ -1040,11 +1044,15 @@ Qb.sort.compile=function(sortOrder, columns, useNames){
 			}//endif
 		}//endif
 	}//for
-	f+="\n}";
+	f+="\n}\ntotalSort;";
 
-	var totalSort;
-	eval(f);
-	return totalSort;
+	var totalSort=null;
+	try{
+		totalSort = eval(f);
+		return totalSort;
+	}catch(e){
+		Log.error("eval gone wrong", e)
+	}//try
 };//method
 
 

@@ -48,32 +48,15 @@ Dimension.addEdges(true, Mozilla, [
 		{"name": "All", "esfilter": {"match_all": {}}}
 	]},
 
-	{"name": "ScopeB2G", "index": "bugs", "needed_fields":["cf_feature_b2g", "status_whiteboard"], "esfilter": {"match_all": {}}, "edges": [
-		{"name": "UCID 2.0", "esfilter": {"and":[
-			{"regexp": {"status_whiteboard": ".*ucid.*"}},
-			{"or":[
-				{"regexp": {"status_whiteboard": ".*2\\.0.*"}},
-				{"regexp": {"status_whiteboard": ".*1\\.5.*"}}
-			]}
-		]}},
-		{"name": "UCID 2.0 + Feature-B2G = 2.0", "needed_fields":["cf_feature_b2g", "status_whiteboard"], "esfilter": {"or":[
-			{"term":{"cf_feature_b2g":"2.0"}},
-			{"and":[
-				{"regexp": {"status_whiteboard": ".*ucid.*"}},
-				{"or":[
-					{"regexp": {"status_whiteboard": ".*2\\.0.*"}},
-					{"regexp": {"status_whiteboard": ".*1\\.5.*"}}
-				]}
-			]}
-		]}},
-		{"name": "All", "esfilter": {"match_all": {}}}
-	]},
-
 	{"name": "Milestone", "index": "bugs", "isFacet": true, "edges": [
 		{
 			"name": "Firefox31",
 			"start_date": "18 MAR 2014",
 			"targetDate": "28 APR 2014",
+			"dateMarks":[
+				{"name":"FF31 Target", "date":"29 april 2014", "style":{strokeStyle:"black", verticalOffset: 20}}
+			],
+			"needed_fields":["target_milestone", "cf_blocking_loop"],
 			"partitions": [
 				{"name": "Blocking", "esfilter": {"and": [
 					{"term": {"cf_blocking_loop": "fx31+"}}
@@ -87,15 +70,23 @@ Dimension.addEdges(true, Mozilla, [
 		{
 			"name": "Firefox32",
 			"start_date": "29 APR 2014",
-			"targetDate": "9 JUN 2014",
+			"targetDate": "9 JUN 2014",  //END OF
+			"dateMarks":[
+				{"name":"FF32 Target", "date":"10 june 2014", "style":{strokeStyle:"black", verticalOffset: 20}}
+			],
+			"needed_fields":["target_milestone", "cf_blocking_loop"],
 			"partitions": [
-				{"name": "Blocking", "esfilter": {"and": [
-					{"term": {"cf_blocking_loop": "fx32+"}}
-				]}},
-				{"name": "Targeted", "esfilter": {"and": [
-					{"term": {"target_milestone": "mozilla32"}},
-					{"not": {"term": {"cf_blocking_loop": "fx32+"}}}  // UNFORTUNATE REDUNDANCY
-				]}}
+				{"name": "Blocking",
+					"esfilter": {"and": [
+						{"term": {"cf_blocking_loop": "fx32+"}}
+					]}
+				},
+				{"name": "Targeted",
+					"esfilter": {"and": [
+						{"term": {"target_milestone": "mozilla32"}},
+						{"not": {"term": {"cf_blocking_loop": "fx32+"}}}  // UNFORTUNATE REDUNDANCY
+					]}
+				}
 			]
 		},
 
@@ -103,6 +94,10 @@ Dimension.addEdges(true, Mozilla, [
 			"name": "2.0 S1",
 			"start_date": "28 APR 2014",
 			"targetDate":"9 MAY 2014",   //END OF DAY
+			"dateMarks":[
+				{"name":"End of S1", "date":"10 May 2014", "style":{strokeStyle:"black", verticalOffset: 20}}
+			],
+			"needed_fields":["target_milestone", "cf_blocking_b2g"],
 			"esfilter": {"term":{"target_milestone":"2.0 S1 (9may)"}},
 			"partitions": [
 				{"name": "Blocking", "esfilter": {"and": [
@@ -120,7 +115,53 @@ Dimension.addEdges(true, Mozilla, [
 			"name": "2.0 S2",
 			"start_date": "12 MAY 2014",
 			"targetDate":"23 MAY 2014",
+			"dateMarks":[
+				{"name":"End of S2", "date":"24 May 2014", "style":{strokeStyle:"black", verticalOffset: 20}}
+			],
+			"needed_fields":["target_milestone", "cf_blocking_b2g"],
 			"esfilter": {"term":{"target_milestone":"2.0 S2 (23may)"}},
+			"partitions": [
+				{"name": "Blocking", "esfilter": {"and": [
+					{"terms": {"cf_blocking_b2g": ["2.0+", "1.5+"]}}
+				]}},
+				{"name": "Targeted", "esfilter": {"and": [
+					{"exists": {"field": "target_milestone"}},
+					{"not": {"term": {"target_milestone": "---"}}}
+				]}}
+
+			]
+		},
+
+		{
+			"name": "2.0 S3",
+			"start_date": "26 MAY 2014",
+			"targetDate":"6 JUN 2014",
+			"dateMarks":[
+				{"name":"End of S3", "date":"7 Jun 2014", "style":{strokeStyle:"black", verticalOffset: 20}}
+			],
+			"needed_fields":["target_milestone", "cf_blocking_b2g"],
+			"esfilter": {"term":{"target_milestone":"2.0 S3 (6june)"}},
+			"partitions": [
+				{"name": "Blocking", "esfilter": {"and": [
+					{"terms": {"cf_blocking_b2g": ["2.0+", "1.5+"]}}
+				]}},
+				{"name": "Targeted", "esfilter": {"and": [
+					{"exists": {"field": "target_milestone"}},
+					{"not": {"term": {"target_milestone": "---"}}}
+				]}}
+
+			]
+		},
+
+		{
+			"name": "2.0 S4",
+			"start_date": "9 JUN 2014",
+			"targetDate":"20 JUN 2014",
+			"dateMarks":[
+				{"name":"End of S4", "date":"10 Jun 2014", "style":{strokeStyle:"black", verticalOffset: 20}}
+			],
+			"needed_fields":["target_milestone", "cf_blocking_b2g"],
+			"esfilter": {"term":{"target_milestone":"2.0 S4 (20june)"}},
 			"partitions": [
 				{"name": "Blocking", "esfilter": {"and": [
 					{"terms": {"cf_blocking_b2g": ["2.0+", "1.5+"]}}
@@ -137,6 +178,10 @@ Dimension.addEdges(true, Mozilla, [
 			"name": "Firefox33",
 			"start_date": "10 JUN 2014",
 			"targetDate": "21 JUL 2014",
+			"dateMarks":[
+				{"name":"FF33 Target", "date":"22 July 2014", "style":{strokeStyle:"black", verticalOffset: 20}}
+			],
+			"needed_fields":["target_milestone", "cf_blocking_loop"],
 			"partitions": [
 				{"name": "Blocking", "esfilter": {"and": [
 					{"term": {"cf_blocking_loop": "fx33+"}}
@@ -151,6 +196,11 @@ Dimension.addEdges(true, Mozilla, [
 			"name": "Firefox34",
 			"start_date": "22 JUL 2014",
 			"targetDate": "1 SEP 2014",
+			"dateMarks":[
+				{"name":"FF34 Target", "date":"2 sep 2014", "style":{strokeStyle:"black", verticalOffset: 20}}
+			],
+
+			"needed_fields":["target_milestone", "cf_blocking_loop"],
 			"partitions": [
 				{"name": "Blocking", "esfilter": {"and": [
 					{"term": {"cf_blocking_loop": "fx34+"}}
@@ -193,3 +243,4 @@ Dimension.addEdges(true, Mozilla, [
 	]}
 
 ]);
+

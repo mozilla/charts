@@ -1,24 +1,24 @@
 
-importScript("../js/aLibrary.js");
-importScript("../js/Settings.js");
+importScript("../modevlib/aLibrary.js");
+importScript("../modevlib/Settings.js");
 
-importScript("../js/rest/BugzillaClient.js");
-importScript("../js/rest/ElasticSearch.js");
-importScript("../js/qb/ESQuery.js");
-importScript("../js/Bugzilla.js");
+importScript("../modevlib/rest/BugzillaClient.js");
+importScript("../modevlib/rest/ElasticSearch.js");
+importScript("../modevlib/qb/ESQuery.js");
+importScript("../modevlib/Bugzilla.js");
 importScript([
-	"../js/gui/GUI.js",
+	"../modevlib/gui/GUI.js",
 	"../css/menu.css"
 ]);
 
-importScript("../js/math/Stats.js");
-importScript("../js/qb/Qb.js");
+importScript("../modevlib/math/Stats.js");
+importScript("../modevlib/qb/Qb.js");
 
 importScript([
 	'blockers.css',
-	'../js/Dimension-Bugzilla.js',
-	"../js/Dimension-B2G.js",
-	"../js/charts/aColor.js",
+	'../modevlib/Dimension-Bugzilla.js',
+	"../modevlib/Dimension-B2G.js",
+	"../modevlib/charts/aColor.js",
 	"hierarchy.js",
 	"heat.js"
 ]);

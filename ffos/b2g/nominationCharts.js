@@ -1,4 +1,4 @@
-importScript("../js/Dimension-B2G.js");
+importScript("../modevlib/Dimension-B2G.js");
 
 
 function showOpenNomCount(args) {

@@ -6,64 +6,64 @@
 <HEAD>
 	<title>FxOS Regressions</title>
 	<script type="text/javascript">function importScript(dep, func){if (func!==undefined) func();}</script>
-	<script type="text/javascript" src="js/Settings.js"></script>
-	<script type="text/javascript" src="js/rest/BugzillaClient.js"></script>
+	<script type="text/javascript" src="modevlib/Settings.js"></script>
+	<script type="text/javascript" src="modevlib/rest/BugzillaClient.js"></script>
 	<link type="text/css" rel="stylesheet" href="b2g/blockers.css"/>
-	<script type="text/javascript" src="js/util/aUtil.js"></script>
-	<script type="text/javascript" src="js/util/aString.js"></script>
+	<script type="text/javascript" src="modevlib/util/aUtil.js"></script>
+	<script type="text/javascript" src="modevlib/util/aString.js"></script>
 	<script type="text/javascript" src="b2g/owners.js"></script>
-	<script type="text/javascript" src="js/collections/aMatrix.js"></script>
-	<script type="text/javascript" src="js/qb/Qb.aggregate.js"></script>
-	<script type="text/javascript" src="js/qb/Qb.column.js"></script>
-	<script type="text/javascript" src="js/qb/Qb.cube.js"></script>
-	<script type="text/javascript" src="js/qb/Qb.analytic.js"></script>
-	<script type="text/javascript" src="js/gui/Filter.js"></script>
-	<script type="text/javascript" src="js/gui/ComponentFilter.js"></script>
-	<script type="text/javascript" src="js/gui/PartitionFilter.js"></script>
-	<script type="text/javascript" src="js/qb/aCompiler.js"></script>
-	<script type="text/javascript" src="js/collections/aArray.js"></script>
-	<script type="text/javascript" src="js/util/aParse.js"></script>
-	<script type="text/javascript" src="js/collections/aRelation.js"></script>
-	<script type="text/javascript" src="js/math/aMath.js"></script>
-	<script type="text/javascript" src="js/MozillaPrograms.js"></script>
-	<script type="text/javascript" src="js/util/CNV.js"></script>
-	<script type="text/javascript" src="js/util/aTemplate.js"></script>
+	<script type="text/javascript" src="modevlib/collections/aMatrix.js"></script>
+	<script type="text/javascript" src="modevlib/qb/Qb.aggregate.js"></script>
+	<script type="text/javascript" src="modevlib/qb/Qb.column.js"></script>
+	<script type="text/javascript" src="modevlib/qb/Qb.cube.js"></script>
+	<script type="text/javascript" src="modevlib/qb/Qb.analytic.js"></script>
+	<script type="text/javascript" src="modevlib/gui/Filter.js"></script>
+	<script type="text/javascript" src="modevlib/gui/ComponentFilter.js"></script>
+	<script type="text/javascript" src="modevlib/gui/PartitionFilter.js"></script>
+	<script type="text/javascript" src="modevlib/qb/aCompiler.js"></script>
+	<script type="text/javascript" src="modevlib/collections/aArray.js"></script>
+	<script type="text/javascript" src="modevlib/util/aParse.js"></script>
+	<script type="text/javascript" src="modevlib/collections/aRelation.js"></script>
+	<script type="text/javascript" src="modevlib/math/aMath.js"></script>
+	<script type="text/javascript" src="modevlib/MozillaPrograms.js"></script>
+	<script type="text/javascript" src="modevlib/util/CNV.js"></script>
+	<script type="text/javascript" src="modevlib/util/aTemplate.js"></script>
 	<script type="text/javascript" src="lib/jquery.js"></script>
-	<script type="text/javascript" src="js/util/aDate.js"></script>
-	<script type="text/javascript" src="js/collections/aQueue.js"></script>
-	<script type="text/javascript" src="js/collections/aSet.js"></script>
-	<script type="text/javascript" src="js/debug/aException.js"></script>
-	<script type="text/javascript" src="lib/jquery-ui/js/jquery-ui-1.10.2.custom.js"></script>
+	<script type="text/javascript" src="modevlib/util/aDate.js"></script>
+	<script type="text/javascript" src="modevlib/collections/aQueue.js"></script>
+	<script type="text/javascript" src="modevlib/collections/aSet.js"></script>
+	<script type="text/javascript" src="modevlib/debug/aException.js"></script>
+	<script type="text/javascript" src="lib/jquery-ui/modevlib/jquery-ui-1.10.2.custom.js"></script>
 	<script type="text/javascript" src="lib/jquery.numberformatter.js"></script>
 	<script type="text/javascript" src="lib/jstree/jquery.jstree.js"></script>
-	<script type="text/javascript" src="js/qb/Qb.domain.js"></script>
-	<script type="text/javascript" src="js/util/aDuration.js"></script>
+	<script type="text/javascript" src="modevlib/qb/Qb.domain.js"></script>
+	<script type="text/javascript" src="modevlib/util/aDuration.js"></script>
 	<link type="text/css" rel="stylesheet" href="lib/jquery-ui/css/start/jquery-ui-1.10.2.custom.css">
-	<script type="text/javascript" src="js/aFormat.js"></script>
-	<script type="text/javascript" src="js/gui/TeamFilter.js"></script>
-	<script type="text/javascript" src="js/debug/aLog.js"></script>
+	<script type="text/javascript" src="modevlib/aFormat.js"></script>
+	<script type="text/javascript" src="modevlib/gui/TeamFilter.js"></script>
+	<script type="text/javascript" src="modevlib/debug/aLog.js"></script>
 	<script type="text/javascript" src="lib/jquery.ba-bbq/jquery.ba-bbq.js"></script>
-	<script type="text/javascript" src="js/threads/thread.js"></script>
-	<script type="text/javascript" src="js/gui/ProgramFilter.js"></script>
-	<script type="text/javascript" src="js/util/aTimer.js"></script>
+	<script type="text/javascript" src="modevlib/threads/thread.js"></script>
+	<script type="text/javascript" src="modevlib/gui/ProgramFilter.js"></script>
+	<script type="text/javascript" src="modevlib/util/aTimer.js"></script>
 
-	<script type="text/javascript" src="js/rest/Rest.js"></script>
-	<script type="text/javascript" src="js/aLibrary.js"></script>
+	<script type="text/javascript" src="modevlib/rest/Rest.js"></script>
+	<script type="text/javascript" src="modevlib/aLibrary.js"></script>
 
-	<script type="text/javascript" src="js/rest/ElasticSearch.js"></script>
-	<script type="text/javascript" src="js/Bugzilla.js"></script>
-	<script type="text/javascript" src="js/math/Stats.js"></script>
-	<script type="text/javascript" src="js/qb/MVEL.js"></script>
+	<script type="text/javascript" src="modevlib/rest/ElasticSearch.js"></script>
+	<script type="text/javascript" src="modevlib/Bugzilla.js"></script>
+	<script type="text/javascript" src="modevlib/math/Stats.js"></script>
+	<script type="text/javascript" src="modevlib/qb/MVEL.js"></script>
 	<link type="text/css" rel="stylesheet" href="lib/jquery-linedtextarea/jquery-linedtextarea.css">
-	<script type="text/javascript" src="js/qb/Qb.js"></script>
+	<script type="text/javascript" src="modevlib/qb/Qb.js"></script>
 	<script type="text/javascript" src="lib/jquery-linedtextarea/jquery-linedtextarea.js"></script>
-	<script type="text/javascript" src="js/qb/ESQuery.js"></script>
-	<script type="text/javascript" src="js/Dimension.js"></script>
-	<script type="text/javascript" src="js/Dimension-Bugzilla.js"></script>
-	<script type="text/javascript" src="js/Dimension-B2G.js"></script>
-	<script type="text/javascript" src="js/gui/ProductFilter.js"></script>
-	<script type="text/javascript" src="js/charts/aColor.js"></script>
-	<script type="text/javascript" src="js/gui/GUI.js"></script>
+	<script type="text/javascript" src="modevlib/qb/ESQuery.js"></script>
+	<script type="text/javascript" src="modevlib/Dimension.js"></script>
+	<script type="text/javascript" src="modevlib/Dimension-Bugzilla.js"></script>
+	<script type="text/javascript" src="modevlib/Dimension-B2G.js"></script>
+	<script type="text/javascript" src="modevlib/gui/ProductFilter.js"></script>
+	<script type="text/javascript" src="modevlib/charts/aColor.js"></script>
+	<script type="text/javascript" src="modevlib/gui/GUI.js"></script>
 	<script type="text/javascript" src="b2g/heat.js"></script>
 	<link type="text/css" rel="stylesheet" href="css/menu.css">
 	<script type="text/javascript" src="b2g/main_lib.js"></script>

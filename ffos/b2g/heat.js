@@ -3,8 +3,8 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
 
-importScript("../js/util/aUtil.js");
-importScript("../js/util/aString.js");
+importScript("../modevlib/util/aUtil.js");
+importScript("../modevlib/util/aString.js");
 importScript("owners.js");
 
 

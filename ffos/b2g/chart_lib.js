@@ -1,12 +1,12 @@
 
 importScript([
-	'../js/main.js',
-	'../js/Dimension-Bugzilla.js',
-	"../js/Dimension-B2G.js",
+	'../modevlib/main.js',
+	'../modevlib/Dimension-Bugzilla.js',
+	"../modevlib/Dimension-B2G.js",
 	"../b2g/grid.js",
-	"../js/gui/accordion.js",
-	"../js/gui/dynamic.js",
-	"../js/gui/aColor.js",
+	"../modevlib/gui/accordion.js",
+	"../modevlib/gui/dynamic.js",
+	"../modevlib/gui/aColor.js",
 	"blockerCharts.js",
 	"nominationCharts.js",
 	"regressionCharts.js",

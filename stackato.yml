@@ -10,7 +10,7 @@ ignores: [
   ".idea",
   "src.iml",
   "out",
-  "html/es/js/etl/_OrgChart.js",
+  "html/es/modevlib/etl/_OrgChart.js",
   "html/es/lib/jstree/_lib",
   "html/es/lib/jstree/_docs",
   "html/es/lib/jstree/_demo"

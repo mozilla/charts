@@ -2,6 +2,7 @@
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
+importScript("aHTML.js");
 importScript("aUtil.js");
 
 
@@ -384,7 +385,7 @@ CNV.Cube2HTMLTable=function(query){
 	//WRITE HEADER
 
 	var header = "";
-	if (query.name) header+=HTML.tag("h2", query.name);
+	if (query.name) header+=wrapWithHtmlTag("h2", query.name);
 	var content = "";
 
 	var e=query.edges[0];
@@ -396,22 +397,22 @@ CNV.Cube2HTMLTable=function(query){
 
 		if (query.select instanceof Array){
 			header+=query.select.map(function(s, i){
-				return HTML.tag("td", s.name);
+				return wrapWithHtmlTag("td", s.name);
 			}).join("");
 
 			content=e.domain.partitions.map(function(v, i){
 				return "<tr>"+
-					HTML.tag("th", e.domain.end(v))+
+					wrapWithHtmlTag("th", e.domain.end(v))+
 					query.select.map(function(s, j){
-						return HTML.tag("td", query.cube[i][s.name])
+						return wrapWithHtmlTag("td", query.cube[i][s.name])
 					}).join("")+
 					"</tr>";
 			}).join("\n");
 		}else{
-			header += HTML.tag("th", query.select.name);
+			header += wrapWithHtmlTag("th", query.select.name);
 
 			content=e.domain.partitions.map(function(p, i){
-				return "<tr>"+HTML.tag("th", e.domain.end(p))+HTML.tag("td", query.cube[i])+"</tr>";
+				return "<tr>"+wrapWithHtmlTag("th", e.domain.end(p))+wrapWithHtmlTag("td", query.cube[i])+"</tr>";
 			}).join("\n");
 		}//endif
 	}else if (query.edges.length==2){
@@ -419,7 +420,7 @@ CNV.Cube2HTMLTable=function(query){
 			Log.error("Can not display cube: select clause can not be array, or there can be only one edge");
 		}else{
 
-			header+=HTML.tag("td", query.edges[1].name);	//COLUMN FOR SECOND EDGE
+			header+=wrapWithHtmlTag("td", query.edges[1].name);	//COLUMN FOR SECOND EDGE
 			e.domain.partitions.forall(function(p, i){
 				var name=e.domain.end(p);
 				if (name==p && typeof(name)!="string") name=p.name;
@@ -434,17 +435,17 @@ CNV.Cube2HTMLTable=function(query){
 				if (name==p && typeof(name)!="string") name=p.name;
 				if (p.name!==undefined && p.name!=name)
 					Log.error("make sure part.name matches the end(part)=="+name+" codomain");
-				content+="<tr>"+HTML.tag("th", name);
+				content+="<tr>"+wrapWithHtmlTag("th", name);
 				for(var c=0;c<query.cube.length;c++){
-					content+=HTML.tag("td", query.cube[c][r]);
+					content+=wrapWithHtmlTag("td", query.cube[c][r]);
 				}//for
 				content+="</tr>";
 			});
 
 			if (query.edges[1].allowNulls){
-				content+="<tr>"+HTML.tag("th", query.edges[1].domain.NULL.name);
+				content+="<tr>"+wrapWithHtmlTag("th", query.edges[1].domain.NULL.name);
 				for(var c=0;c<query.cube.length;c++){
-					content+=HTML.tag("td", query.cube[c][r]);
+					content+=wrapWithHtmlTag("td", query.cube[c][r]);
 				}//for
 				content+="</tr>";
 			}//endif
@@ -452,16 +453,16 @@ CNV.Cube2HTMLTable=function(query){
 
 
 			//SHOW FIRST EDGE AS ROWS, SECOND AS COLUMNS
-//			header+=HTML.tag(e.name);	//COLUMN FOR FIRST EDGE
+//			header+=wrapWithHtmlTag(e.name);	//COLUMN FOR FIRST EDGE
 //			query.edges[1].domain.partitions.forall(function(v, i){
 //				header += "<td>" + CNV.String2HTML(v.name) + "</td>";
 //			});
 //
 //			content=query.cube.map(function(r, i){
 //				return "<tr>"+
-//					HTML.tag(e.domain.partitions[i].name, "th")+
+//					wrapWithHtmlTag(e.domain.partitions[i].name, "th")+
 //					r.map(function(c, j){
-//						return HTML.tag(c);
+//						return wrapWithHtmlTag(c);
 //					}).join("")+
 //					"</tr>";
 //			}).join("");
@@ -502,7 +503,7 @@ CNV.List2HTMLTable = function(data, options){
 		columns= Qb.getColumnsFromList(data);
 	}//endif
 	columns.forall(function(v, i){
-		header += HTML.tag("td", v.name);
+		header += wrapWithHtmlTag("td", v.name);
 	});
 	header = "<thead><tr>" + header + "</tr></thead>";
 
@@ -515,7 +516,7 @@ CNV.List2HTMLTable = function(data, options){
 		var row = "";
 		for(var c = 0; c < columns.length; c++){
 			var value = data[i][columns[c].name];
-			row += HTML.tag("td", value);
+			row += wrapWithHtmlTag("td", value);
 		}//for
 		output += "<tr>" + row + "</tr>\n";
 	}//for
@@ -528,8 +529,7 @@ CNV.List2HTMLTable = function(data, options){
 };//method
 
 
-var HTML={};
-HTML.tag=function(tagName, value){
+wrapWithHtmlTag=function(tagName, value){
 	if (tagName===undefined) tagName="td";
 
 	if (value === undefined){
@@ -538,6 +538,8 @@ HTML.tag=function(tagName, value){
 	} else if (value == null){
 //		return "<"+tagName+">&lt;null&gt;</"+tagName+">";
 		return "<"+tagName+"></"+tagName+">";
+	}else if (value instanceof HTML){
+		return "<"+tagName+">" + value + "</"+tagName+">";
 	} else if (typeof(value)=="string"){
 		return "<"+tagName+">" + CNV.String2HTML(value) + "</"+tagName+">";
 	} else if (aMath.isNumeric(value)){

@@ -4,6 +4,7 @@
 
 
 importScript("aLibrary.js");
+importScript("Dimension-Bugzilla.js");
 
 
 var Hierarchy={};
@@ -298,6 +299,7 @@ function* getRawDependencyData(esfilter, dateRange, selects) {
             "from": "bugs",
             "select": allSelects.copy(),
             "esfilter": {"and": [
+	            Mozilla.BugStatus.Open.esfilter,
                 {"terms": {"bug_id": possibleTree}},
                 {"range": {"modified_ts": {"lt": dateRange.max.getMilli()}}},
                 {"range": {"expires_on": {"gte": dateRange.min.getMilli()}}}

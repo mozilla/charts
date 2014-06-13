@@ -29,7 +29,7 @@ function splitField(fieldname){
 }//method
 
 function joinField(path){
-	return path.map(function(v){return v.replaceAll(".", "\\.");}.join("."));
+	return path.map(function(v){return v.replaceAll(".", "\\.");}).join(".");
 }//method
 
 
@@ -99,17 +99,22 @@ Qb.compile = function(query, sourceColumns, useMVEL){
 
 function getAggregate(result, query, select){
 	//WE NEED THE select TO BE AN ARRAY
+	var edges=query.edges;
 
 	//FIND RESULT IN tree
 	var agg = query.tree;
 	var i = 0;
-	for(; i < result.length - 1; i++){
-		var v = result[i];
+	for(; i < edges.length - 1; i++){
+		var part=result[i];
+		var v = edges[i].domain.getKey(part);
 		if (agg[v] === undefined) agg[v] = {};
 		agg = agg[v];
 	}//for
 
-	v = result[i];
+
+
+	part=result[i];
+	v = edges[i].domain.getKey(part);
 	if (agg[v] === undefined){
 		agg[v]=[];
 		//ADD SELECT DEFAULTS
@@ -157,25 +162,20 @@ function* calc2Tree(query){
 
 		var row = from[i];
 		//CALCULATE THE GROUP COLUMNS TO PLACE RESULT
-		//SLOWNESS IS CAUSED BY results BEING A LIST OF TUPLES, EACH TUPLE
-		//BEING part OBJECTS FROM EACH OF THE DIMENSIONS.  THIS FORCES
-		//A getKeyByPart(part) CALL TO FIND A KEY TO USE AS AN INDEX INTO THE
-		//AGGREGATION TREE.  IT MAY BE FASTER TO ALWAYS USE KEYS, OR USE dataIndex.
 		var results = [[]];
 		for(var f = 0; f < edges.length; f++){
 			var edge = edges[f];
-			var part2key = edge.domain.getKey;
+
 
 			if (edge.test || edge.range){
 				//MULTIPLE MATCHES EXIST
 				var matches= edge.domain.getMatchingParts(row);
-				var matchedKeys = matches.map(part2key);
 
 				if (matches.length == 0){
 					edge.outOfDomainCount++;
 					if (edge.allowNulls){
 						for(t = results.length; t--;){
-							results[t][f] = part2key(edge.domain.NULL);
+							results[t][f] = edge.domain.NULL;
 						}//for
 					} else{
 						continue FROM;
@@ -184,11 +184,11 @@ function* calc2Tree(query){
 					//WE MULTIPLY THE NUMBER OF MATCHES TO THE CURRENT NUMBER OF RESULTS (SQUARING AND CUBING THE RESULT-SET)
 					for(t = results.length; t--;){
 						result = results[t];
-						result[f] = matchedKeys[0];
-						for(var p = 1; p < matchedKeys.length; p++){
+						result[f] = matches[0];
+						for(var p = 1; p < matches.length; p++){
 							result = result.copy();
 							results.push(result);
-							result[f] = matchedKeys[p];
+							result[f] = matches[p];
 						}//for
 					}//for
 				}//endif
@@ -204,13 +204,13 @@ function* calc2Tree(query){
 					edge.outOfDomainCount++;
 					if (edge.allowNulls){
 						for(t = results.length; t--;){
-							results[t][f] = part2key(edge.domain.NULL);
+							results[t][f] = edge.domain.NULL;
 						}//for
 					} else{
 						continue FROM;
 					}//endif
 				} else{
-					for(t = results.length; t--;) results[t][f] = v;
+					for(t = results.length; t--;) results[t][f] = p;
 				}//endif
 			}//endif
 		}//for
@@ -997,8 +997,12 @@ Qb.merge=function(query){
 Qb.sort = function(data, sortOrder, columns){
 	if (sortOrder.length==0) return data;
 	var totalSort = Qb.sort.compile(sortOrder, columns, true);
-	data.sort(totalSort);
-	return data;
+	try{
+		data.sort(totalSort);
+		return data;
+	}catch(e){
+		Log.error("bad sort function", e)
+	}//try
 };//method
 
 
@@ -1040,11 +1044,15 @@ Qb.sort.compile=function(sortOrder, columns, useNames){
 			}//endif
 		}//endif
 	}//for
-	f+="\n}";
+	f+="\n}\ntotalSort;";
 
-	var totalSort;
-	eval(f);
-	return totalSort;
+	var totalSort=null;
+	try{
+		totalSort = eval(f);
+		return totalSort;
+	}catch(e){
+		Log.error("eval gone wrong", e)
+	}//try
 };//method
 
 

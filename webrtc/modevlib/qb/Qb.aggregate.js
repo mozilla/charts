@@ -564,3 +564,38 @@ Qb.aggregate.array = function(select){
 		}
 	};
 };
+
+Qb.aggregate.union = function(select){
+	select.defaultValue = function(){
+		return {map:{}};
+	};//method
+
+	select.add = function(total, v){
+		if (v === undefined || v == null) return total;
+		total.map[v]=v;
+		return total;
+	};//method
+
+	select.domain = {
+		//HOPEFULLY WE WILL NEVER NEED TO SORT ARRAY OBJECTS
+		compare:function(a, b){
+			Log.error("Please, NO!");
+		},
+
+		NULL:null,
+
+		getCanonicalPart:function(value){
+			return value;
+		},
+
+		getKey:function(partition){
+			return partition;
+		},
+
+		end :function(total){
+			return Map.getValues(total.map);
+		}
+	};
+};
+
+

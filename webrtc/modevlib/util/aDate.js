@@ -371,6 +371,9 @@ Date.prototype.ceilingMonth = function(){
 	return this.floorMonth().addMonth(1);
 };//method
 
+Date.prototype.ceiling = function(interval){
+	return this.floor(interval).add(interval);
+};//method
 
 
 

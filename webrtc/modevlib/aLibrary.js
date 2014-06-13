@@ -5,6 +5,7 @@ importScript("collections/aSet.js");
 importScript("collections/aRelation.js");
 importScript("math/aMath.js");
 importScript("util/aString.js");
+importScript("util/aHTML.js");
 importScript("util/CNV.js");
 importScript("util/aDate.js");
 importScript("util/aDuration.js");

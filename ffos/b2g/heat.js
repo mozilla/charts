@@ -150,6 +150,27 @@ function showBlocker(detail) {
 
 
 // SHOW BLOCKER COUNT FOR ONE COMPONENT, ONE PROJECT
+function showTargeted(detail) {
+	detail.bugsList=detail.bugs.join(", ");
+	detail.bugsURL = Bugzilla.searchBugsURL(detail.bugs);
+	detail.unassignedURL = Bugzilla.searchBugsURL(detail.unassignedBugs);
+	detail.lostURL = Bugzilla.searchBugsURL(detail.lostBugs);
+	detail.color = age2color(detail.age).toHTML();
+
+	var TEMPLATE = new Template(
+		'<div class="project {{additionalClass}}"  style="background-color:{{color}}" href="{{bugsURL}}" bugsList="{{bugsList}}">' +
+		'<div class="release">{{project}}</div>' +
+		'<div class="count">{{count}}</div>' +
+		(detail.unassignedCount > 0 ? '<div class="unassigned"><a class="count_unassigned" href="{{unassignedURL}}">{{unassignedCount}}</a></div>' : '') +
+		(detail.lostCount > 0 ? '<div class="lost"><a class="count_lost" href="{{lostURL}}">{{lostCount}}</a></div>' : '') +
+		'</div>'
+	);
+
+	return TEMPLATE.replace(detail)
+}//function
+
+
+// SHOW BLOCKER COUNT FOR ONE COMPONENT, ONE PROJECT
 function showRegression(detail) {
 	detail.bugsList = detail.bugs.join(",");
 	detail.bugsURL = Bugzilla.searchBugsURL(detail.bugs);

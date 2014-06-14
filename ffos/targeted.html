@@ -106,7 +106,8 @@
 		<div id="totals"><h3 style="display:inline-block;">FxOS Targeted</h3></div>
 		<div style="position:absolute;top:5px;right:10px;">
 			Age: <div style="vertical-align:middle;height:15px; width:150px; background: -moz-linear-gradient(left, #009F00,#699B00,  #CA7900,#954000, #A50303);position: relative;display:inline-block;"><div style="top:-3px;left:1px;color:white;position: absolute;font-size: 15px">New</div><div style="top:-3px;right:1px;color:white;position: absolute;font-size: 15px">7days+</div></div><br>
-			Unassigned Bugs:<div style="display:inline-block;bottom:0;width: 0;height: 0; border-style: solid; border-width: 0 0 15px 15px; border-color: transparent transparent #000000 transparent;"></div>
+			Unassigned Bugs:<div style="display:inline-block;bottom:0;width: 0;height: 0; border-style: solid; border-width: 0 0 15px 15px; border-color: transparent transparent #000000 transparent;"></div><br>
+			Blockers w.o. Target:<div style="display:inline-block;bottom:0;width: 0;height: 0; border-style: solid; border-width: 0 15px 15px 0; border-color: transparent #000000 transparent transparent;"></div>
 		</div>
 		<div id="blockers"></div>
 	</div>
@@ -152,7 +153,13 @@
 				"esfilter":	{"and": [
 					Mozilla.BugStatus.Open.esfilter,
 					Mozilla.CurrentRecords.esfilter,
-					GUI.getFilters("bugs")
+					GUI.state.team.makeFilter(),
+					GUI.state.responsibility.makeFilter(),
+					{"or":[
+						GUI.state.milestone.makeFilter(),
+						Mozilla.B2G.Blockers.esfilter
+					]}
+
 				]}
 			}));
 			}catch(e){
@@ -160,14 +167,22 @@
 			}//try
 			Log.actionDone(a);
 
+			//MARKUP WITH isTargeted
+			allDetails.list.forall(function(v){
+				v.isTargeted = v.target_milestone && v.target_milestone!="---" ? true : false
+			});
+			allDetails.columns.append({"name":"isTargeted"});
+
 			var components = yield(Q({
-				"from": allDetails,
+				"from":allDetails,
 				"select": [
-					{"name": "count", "value": "bug_id", "aggregate": "count"},
-					{"name": "bugs", "value": "bug_id", "aggregate": "array"},
-					{"name": "age", "value": "Date.now().subtract(Date.newInstance(modified_ts)).divideBy(Duration.DAY)", "aggregate": "maximum"},
-					{"name": "unassignedCount", "value": '(assigned_to=="nobody@mozilla.org" ? 1 : 0)', "aggregate": "sum"},
-					{"name": "unassignedBugs", "value": '(assigned_to=="nobody@mozilla.org" ? bug_id : null)', "aggregate": "array"}
+					{"name": "count", "value": "isTargeted ? bug_id : null", "aggregate": "count"},
+					{"name": "bugs", "value": "isTargeted ? bug_id : null", "aggregate": "array"},
+					{"name": "age", "value": "isTargeted ? Date.now().subtract(Date.newInstance(modified_ts)).divideBy(Duration.DAY) : null", "aggregate": "maximum"},
+					{"name": "unassignedCount", "value": 'isTargeted && assigned_to=="nobody@mozilla.org" ? 1 : 0', "aggregate": "sum"},
+					{"name": "unassignedBugs", "value": 'isTargeted && assigned_to=="nobody@mozilla.org" ? bug_id : null', "aggregate": "array"},
+					{"name": "lostCount", "value": '!isTargeted ? 1 : 0', "aggregate": "sum"},
+					{"name": "lostBugs", "value": '!isTargeted ? bug_id : null', "aggregate": "array"}
 				],
 				"edges": [
 					{"name":"component", "value":'component=="general" ? component+" ("+product+")" : component'},
@@ -186,7 +201,7 @@
 						project.total = total;
 						project.additionalClass = "";
 					});
-					var blockerHTML = showComponent(component, showBlocker);
+					var blockerHTML = showComponent(component, showTargeted);
 					$("#blockers").append(blockerHTML);
 				}//endif
 			});
@@ -197,20 +212,21 @@
 			var totals = yield(Q({
 				"from": allDetails,
 				"select": [
-//					{"name": "project", "value": "project.name", "aggregate": "one"},
 					{"name": "additionalClass", "value": '"project-summary"', "aggregate": "one"},
-					{"name": "count", "value": "bug_id", "aggregate": "count"},
-					{"name": "bugs", "value": "bug_id", "aggregate": "array"},
-					{"name": "age", "value": "Date.now().subtract(Date.newInstance(modified_ts)).divideBy(Duration.DAY)", "aggregate": "maximum"},
-					{"name": "unassignedCount", "value": '(assigned_to=="nobody@mozilla.org" ? 1 : 0)', "aggregate": "sum"},
-					{"name": "unassignedBugs", "value": '(assigned_to=="nobody@mozilla.org" ? bug_id : null)', "aggregate": "array"}
+					{"name": "count", "value": "isTargeted ? bug_id : null", "aggregate": "count"},
+					{"name": "bugs", "value": "isTargeted ? bug_id : null", "aggregate": "array"},
+					{"name": "age", "value": "isTargeted ? Date.now().subtract(Date.newInstance(modified_ts)).divideBy(Duration.DAY) : null", "aggregate": "maximum"},
+					{"name": "unassignedCount", "value": 'isTargeted && assigned_to=="nobody@mozilla.org" ? 1 : 0', "aggregate": "sum"},
+					{"name": "unassignedBugs", "value": 'isTargeted && assigned_to=="nobody@mozilla.org" ? bug_id : null', "aggregate": "array"},
+					{"name": "lostCount", "value": '!isTargeted ? 1 : 0', "aggregate": "sum"},
+					{"name": "lostBugs", "value": '!isTargeted ? bug_id : null', "aggregate": "array"}
 				],
 				"edges": [
 					{"name": "project", "domain": projectDomain}
 				]
 			}));
 
-			var blockerHTML = showSummary(milestoneName+" Targeted", GUI.state.team.getSelectedParts(), totals, undefined, showBlocker);
+			var blockerHTML = showSummary(milestoneName+" Targeted", GUI.state.team.getSelectedParts(), totals, undefined, showTargeted);
 			$("#totals").html(blockerHTML);
 
 			addProjectClickers(components);

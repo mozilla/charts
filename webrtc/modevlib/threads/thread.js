@@ -21,6 +21,7 @@ build = function () {
 	}//endif
 
 	var DEBUG = false;
+	var POPUP_ON_ERROR = true;
 	var FIRST_BLOCK_TIME = 500;	//TIME UNTIL YIELD
 	var NEXT_BLOCK_TIME = 150;	//THE MAXMIMUM TIME (ms) A PIECE OF CODE SHOULD HOG THE MAIN THREAD
 	var YIELD = {"name": "yield"};  //BE COOPERATIVE, WILL PAUSE EVERY MAX_TIME_BLOCK MILLISECONDS
@@ -287,7 +288,11 @@ build = function () {
 		}//endif
 
 		if (retval instanceof Exception) {
-			Log.alert("Uncaught Error in thread: " + (this.name !== undefined ? this.name : "") + "\n  " + retval.toString());
+			if (POPUP_ON_ERROR || DEBUG){
+				Log.alert("Uncaught Error in thread: " + (this.name !== undefined ? this.name : "") + "\n  " + retval.toString());
+			}else{
+				Log.warning("Uncaught Error in thread: " + (this.name !== undefined ? this.name : "") + "\n  ", retval);
+			}//endif
 		}//endif
 
 		return {"threadResponse": retval};

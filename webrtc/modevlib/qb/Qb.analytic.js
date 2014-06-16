@@ -168,7 +168,7 @@ Qb.analytic.compile = function(sourceColumns, expression){
 	f +=
 		"var output;\n" +
 			"try{ " +
-			" output=" + expression + "; " +
+			" output = (" + expression + "); " +
 			" if (output===undefined) Log.error(\"analytic returns undefined\");\n" +
 			" return output;\n" +
 			"}catch(e){\n" +

@@ -147,7 +147,7 @@ ProgramFilter.prototype.makeHTML=function(){
 //programs IS A LIST OF OBJECTS WITH A term AND count ATTRIBUTES
 ProgramFilter.prototype.injectHTML = function(programs){
 
-	var html ='<i><a href="http://people.mozilla.com/~klahnakoski/es/js/MozillaPrograms.js">click here for definitions</a></i><br>';
+	var html ='<i><a href="http://people.mozilla.com/~klahnakoski/es/modevlib/MozillaPrograms.js">click here for definitions</a></i><br>';
 	html += '<ul id="programsList" class="menu ui-selectable">';
 	var item = new Template('<li class="{{class}}" id="program_{{name}}">{{name}} ({{count}})</li>');
 

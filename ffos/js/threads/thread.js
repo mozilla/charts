@@ -276,6 +276,7 @@ build = function () {
 		}//endif
 
 		if (retval instanceof Exception) {
+			Log.warning("Uncaught Error in thread: " + (this.name !== undefined ? this.name : "") + "\n  ", retval);
 //			Log.gray("Uncaught Error in thread: " + (this.name !== undefined ? this.name : "") + "\n  " + retval.toString());
 		}//endif
 

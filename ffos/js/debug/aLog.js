@@ -81,27 +81,64 @@ Log.gray=function(message, ok_callback, cancel_callback){
 	$('#log_alert').html(html);
 };//method
 
-
-Log.alert=function(message, ok_callback, cancel_callback){
+Log.red=function(message){
+	//GRAY OUT THE BODY, AND SHOW ERRO IN WHITE AT BOTTOM
 	Log.note(message);
 
-	var d=$('<div>'+message+"</div>").dialog({
-		title:"Alert",
-		draggable: false,
-		modal: true,
-		resizable: false,
+	window.log_alert_till = Date.now().add("20second").getMilli();
+	if (!window.log_alert){
+		window.log_alert = true;
+		$('body').css({"position":"relative"}).append('<div id="log_alert" style="position:absolute;bottom:0;height:100%;width:100%;vertical-align:bottom;zindex:10"></div>');
+	}//endif
 
-		buttons: {
-			"OK": function () {
-					$(this).dialog("close");
-					if (ok_callback) ok_callback();
-				},
-			"Cancel":cancel_callback ? function () {
-					$(this).dialog("close");
-					cancel_callback();
-				} : undefined
-		}
+	function erase() {
+		var diff = window.log_alert_till - Date.now().add("20second").getMilli();
+		if (diff>0){
+			setTimeout(erase, diff);
+		}else{
+			$('#log_alert').html("");
+		}//endif
+	}//function
+	setTimeout(erase, 20000);
+
+	var template = new Template(
+		'<div style="{{style}}">{{message|html}}</div>'
+	);
+	var html = template.expand({
+		"style":CNV.Object2CSS({
+			"width":"100%",
+			"text-align":"center",
+			"color":"white",
+			"position":"absolute",
+			"bottom":0,
+			"background-color":Color.red.darker().toHTML()
+		}),
+		"message":message.replaceAll("\n", " ").replaceAll("\t", " ").replaceAll("  ", " ")
 	});
+	$('#log_alert').html(html);
+};//method
+
+Log.alert=function(message, ok_callback, cancel_callback){
+	Log.red(message);
+	Log.note(message);
+//
+//	var d=$('<div>'+message+"</div>").dialog({
+//		title:"Alert",
+//		draggable: false,
+//		modal: true,
+//		resizable: false,
+//
+//		buttons: {
+//			"OK": function () {
+//					$(this).dialog("close");
+//					if (ok_callback) ok_callback();
+//				},
+//			"Cancel":cancel_callback ? function () {
+//					$(this).dialog("close");
+//					cancel_callback();
+//				} : undefined
+//		}
+//	});
 };//method
 
 

@@ -14,13 +14,15 @@
     font-weight: 600
 }
 
+
+* {
+    margin:0;padding:0;
+}
+
 html {
     position: relative;
-    border-top: 2px solid #fff;
-    height: 100%;
-    margin: 0px;
-    padding: 0px;
-    /*background: #f5f1e8 url(../images/bg-sand.png) repeat;*/
+    margin: 0;
+    padding: 0;
     background: url(../images/bg-gradient-sand.png) repeat-x 0 0, url(../images/bg-sand.png) repeat 0 0, #f6f5f1
 }
 
@@ -28,6 +30,9 @@ b {
     font-weight: bold;
 }
 
+hr {
+    margin: 5px 0 5px 0;
+}
 
 
 a {
@@ -99,12 +104,11 @@ body {
     font-family: 'Open Sans', sans-serif;
     font-size: 14px;
     color: #444444;
-    padding: 0px;
     height: 100%;
     width: 100%;
     line-height: 20px;
-    padding-bottom: 40px;
-    margin: 0 auto;
+    padding: 0;
+    margin: 0;
 }
 
 .footer {

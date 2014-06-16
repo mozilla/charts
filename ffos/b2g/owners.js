@@ -16,19 +16,19 @@ var OWNERS = {
   "DOM: Apps": "Fabrice Desré",
   "DOM: Core & HTML": "Andrew Overholt (Johnny Stenback)", // DOM
   "DOM": "Andrew Overholt (2nd: Johnny Stenback)", // DOM
-  "DOM: Contacts": "David Scravaglieri (Anthony Ricaud)", // DOM
+  "DOM: Contacts": "David Scravaglieri (Francisco Jordano)", // DOM
   "DOM: Device Interfaces": "Andrew Overholt (Johnny Stenback)", // DOM
   "DOM: Events": "Andrew Overholt (Johnny Stenback)",
-  "Gaia": "David Scravaglieri (Anthony Ricaud)",
+  "Gaia": "David Scravaglieri (Francisco Jordano)",
   "Gaia::Bluetooth File Transfer": "Tim Guan-tin Chien",
   "Gaia::Browser": "Gregor Wagner (Ben Francis)",
   "Gaia::Build": "Tim Guan-tin Chien",
   "Gaia::Calendar": "Dylan Oliver (Gareth Aye)",
   "Gaia::Camera": "Hema Koka (David Flanagan)",
   "Gaia::Clock": "Dylan Oliver (Marcus Cavanaugh)",
-  "Gaia::Contacts": "David Scravaglieri (Anthony Ricaud)",
-  "Gaia::Cost Control": "David Scravaglieri (Anthony Ricaud)",
-  "Gaia::Dialer": "David Scravaglieri (Anthony Ricaud)",
+  "Gaia::Contacts": "David Scravaglieri (Francisco Jordano)",
+  "Gaia::Cost Control": "David Scravaglieri (Francisco Jordano)",
+  "Gaia::Dialer": "David Scravaglieri (Francisco Jordano)",
   "Gaia::E-Mail": "Dylan Oliver (Andrew Sutherland)",
   "Gaia::Everything.me": "Gregor Wagner (Michael Henretty)",
   "Gaia::First Time Experience": "Gregor Wagner (Michael Henretty)",
@@ -44,7 +44,7 @@ var OWNERS = {
   "Gaia::Ringtones": "Hema Koka (David Flanagan)",
   "Gaia::Search": "Gregor Wagner (Kevin Grandon)",
   "Gaia::Settings": "Tim Guan-tin Chien",
-  "Gaia::SMS": "David Scravaglieri (Anthony Ricaud)",
+  "Gaia::SMS": "David Scravaglieri (Francisco Jordano)",
   "Gaia::System": "Gregor Wagner (Michael Henretty)", //  Tim relies on Gregor to actively throwing bugs over.
   "Gaia::System::Browser Chrome": "Gregor Wagner (Ben Francis)",
   "Gaia::System::Input Mgmt": "Tim Guan-tin Chien",
@@ -54,7 +54,7 @@ var OWNERS = {
   // "Gaia::UI Tests": "?",
   "Gaia::Video": "Hema Koka (David Flanagan)",
   // "Gaia::Wallpaper": "?",
-  "Gaia::Wappush": "David Scravaglieri (Anthony Ricaud)",
+  "Gaia::Wappush": "David Scravaglieri (Francisco Jordano)",
   "General (Firefox OS)": "Lawrence Mandel (Bhavana, Preeti)",
 //  "General (Core)": "Lawrence Mandel",
 //  "General (Loop+)": "Lawrence Mandel",

@@ -63,6 +63,25 @@ Log.warning = function(description, cause){
 	console.warn(e.toString());
 };//method
 
+
+Log.gray=function(message, ok_callback, cancel_callback){
+	//GRAY OUT THE BODY, AND SHOW ERRO IN WHITE AT BOTTOM
+	Log.note(message);
+
+	if (!window.log_alert){
+		window.log_alert = true;
+		$('body').css({"position":"relative"}).append('<div id="log_alert" style="background-color:rgba(00, 00, 00, 0.5);position:absolute;bottom:0;height:100%;width:100%;vertical-align:bottom;zindex:10"></div>');
+	}//endif
+
+	var template = new Template(
+		'<div style="width:100%;text-align:center;color:white;position:absolute;bottom:0;">{{message|html}}</div>'
+	);
+
+	var html = template.expand({"message":message.replaceAll("\n", " ").replaceAll("\t", " ").replaceAll("  ", " ")});
+	$('#log_alert').html(html);
+};//method
+
+
 Log.alert=function(message, ok_callback, cancel_callback){
 	Log.note(message);
 
@@ -83,11 +102,8 @@ Log.alert=function(message, ok_callback, cancel_callback){
 				} : undefined
 		}
 	});
-
-//	if (!ok_callback && !cancel_callback){
-//		setTimeout(function(){$(d).dialog("close");}, 10000);
-//	}//endif
 };//method
+
 
 
 //TRACK ALL THE ACTIONS IN PROGRESS

@@ -3,7 +3,7 @@
    - License, v. 2.0. If a copy of the MPL was not distributed with this
    - file, You can obtain one at http://mozilla.org/MPL/2.0/. -->
 <HTML>
-<HEAD>
+<HEAD >
 	<title>FxOS Blockers</title>
 	<script type="text/javascript">function importScript(dep, func){if (func!==undefined) func();}</script>
 	<script type="text/javascript" src="js/Settings.js"></script>
@@ -113,6 +113,7 @@
 		Source at <a href="https://github.com/mozilla/charts/blob/master/ffos/blockers.html">https://github.com/mozilla/charts/blob/master/ffos/blockers.html</a>
 	</div>
 </div>
+
 <script type="application/javascript">
 
 	importScript('b2g/main_lib.js', function () {
@@ -191,6 +192,10 @@
 
 			yield (Thread.join(allTreeThread));
 			yield (Thread.join(allOpenThread));
+
+			if (allOpen===undefined){
+				yield null;
+			}//endif
 
 			allTree = allTree.filter(function(v){
 				return v.bug_id==984663 || allOpen.contains(v.bug_id);

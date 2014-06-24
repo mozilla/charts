@@ -51,11 +51,19 @@ Log.debug=function(){
 	});
 };//method
 
-Log.error = function(description, cause){
-	var e=new Exception(description, cause);
-//	Log.alert(description);
-	console.error(e.toString());
-	throw e;
+Log.error = function(description, cause, stackOffset){
+	var ex=new Exception(description, cause, nvl(stackOffset, 0)+1);
+
+	try{
+		var a = generate.error;
+	}catch(e){
+		var stack = e.stack;
+		ex.stack = stack.split("\n").rightBut(nvl(stackOffset, 0)+1)
+	}//try
+
+
+	console.error(ex.toString());
+	throw ex;
 };//method
 
 Log.warning = function(description, cause){
@@ -88,7 +96,7 @@ Log.red=function(message){
 	window.log_alert_till = Date.now().add("20second").getMilli();
 	if (!window.log_alert){
 		window.log_alert = true;
-		$('body').css({"position":"relative"}).append('<div id="log_alert" style="position:absolute;bottom:0;height:100%;width:100%;vertical-align:bottom;zindex:10"></div>');
+		$('body').css({"position":"relative"}).append('<div id="log_alert" style="position:absolute;bottom:0;top:0;width:100%;vertical-align:bottom;zindex:10"></div>');
 	}//endif
 
 	function erase() {

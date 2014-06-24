@@ -68,6 +68,56 @@ Dimension.addEdges(true, Mozilla, [
 			]
 		},
 		{
+			"name": "2.0 S1",
+			"start_date": "28 APR 2014",
+			"targetDate":"9 MAY 2014",   //END OF DAY
+			"esfilter": {"term":{"target_milestone":"2.0 S1 (9may)"}},
+			"partitions": [
+				{"name": "Blocking", "esfilter": {"and": [
+					{"terms": {"cf_blocking_b2g": ["2.0+", "1.5+"]}}
+				]}},
+				{"name": "Targeted", "esfilter": {"and": [
+					{"exists": {"field": "target_milestone"}},
+					{"not": {"term": {"target_milestone": "---"}}}
+				]}}
+
+			]
+		},
+
+		{
+			"name": "2.0 S2",
+			"start_date": "12 MAY 2014",
+			"targetDate":"23 MAY 2014",
+			"esfilter": {"term":{"target_milestone":"2.0 S2 (23may)"}},
+			"partitions": [
+				{"name": "Blocking", "esfilter": {"and": [
+					{"terms": {"cf_blocking_b2g": ["2.0+", "1.5+"]}}
+				]}},
+				{"name": "Targeted", "esfilter": {"and": [
+					{"exists": {"field": "target_milestone"}},
+					{"not": {"term": {"target_milestone": "---"}}}
+				]}}
+
+			]
+		},
+
+		{
+			"name": "2.0 S3",
+			"start_date": "26 MAY 2014",
+			"targetDate": "6 JUNE 2014",
+			"esfilter": {"term":{"target_milestone":"2.0 S3 (6june)"}},
+			"partitions": [
+				{"name": "Blocking", "esfilter": {"and": [
+					{"terms": {"cf_blocking_b2g": ["2.0+", "1.5+"]}}
+				]}},
+				{"name": "Targeted", "esfilter": {"and": [
+					{"exists": {"field": "target_milestone"}},
+					{"not": {"term": {"target_milestone": "---"}}}
+				]}}
+
+			]
+		},
+		{
 			"name": "Firefox32",
 			"start_date": "29 APR 2014",
 			"targetDate": "9 JUN 2014",  //END OF
@@ -91,77 +141,45 @@ Dimension.addEdges(true, Mozilla, [
 		},
 
 		{
-			"name": "2.0 S1",
-			"start_date": "28 APR 2014",
-			"targetDate":"9 MAY 2014",   //END OF DAY
-			"dateMarks":[
-				{"name":"End of S1", "date":"10 May 2014", "style":{strokeStyle:"black", verticalOffset: 20}}
-			],
-			"needed_fields":["target_milestone", "cf_blocking_b2g"],
-			"esfilter": {"term":{"target_milestone":"2.0 S1 (9may)"}},
-			"partitions": [
-				{"name": "Blocking", "esfilter": {"and": [
-					{"terms": {"cf_blocking_b2g": ["2.0+", "1.5+"]}}
-				]}},
-				{"name": "Targeted", "esfilter": {"and": [
-					{"exists": {"field": "target_milestone"}},
-					{"not": {"term": {"target_milestone": "---"}}}
-				]}}
 
-			]
-		},
-
-		{
-			"name": "2.0 S2",
-			"start_date": "12 MAY 2014",
-			"targetDate":"23 MAY 2014",
-			"dateMarks":[
-				{"name":"End of S2", "date":"24 May 2014", "style":{strokeStyle:"black", verticalOffset: 20}}
-			],
-			"needed_fields":["target_milestone", "cf_blocking_b2g"],
-			"esfilter": {"term":{"target_milestone":"2.0 S2 (23may)"}},
-			"partitions": [
-				{"name": "Blocking", "esfilter": {"and": [
-					{"terms": {"cf_blocking_b2g": ["2.0+", "1.5+"]}}
-				]}},
-				{"name": "Targeted", "esfilter": {"and": [
-					{"exists": {"field": "target_milestone"}},
-					{"not": {"term": {"target_milestone": "---"}}}
-				]}}
-
-			]
-		},
-
-		{
-			"name": "2.0 S3",
-			"start_date": "26 MAY 2014",
-			"targetDate":"6 JUN 2014",
-			"dateMarks":[
-				{"name":"End of S3", "date":"7 Jun 2014", "style":{strokeStyle:"black", verticalOffset: 20}}
-			],
-			"needed_fields":["target_milestone", "cf_blocking_b2g"],
-			"esfilter": {"term":{"target_milestone":"2.0 S3 (6june)"}},
-			"partitions": [
-				{"name": "Blocking", "esfilter": {"and": [
-					{"terms": {"cf_blocking_b2g": ["2.0+", "1.5+"]}}
-				]}},
-				{"name": "Targeted", "esfilter": {"and": [
-					{"exists": {"field": "target_milestone"}},
-					{"not": {"term": {"target_milestone": "---"}}}
-				]}}
-
-			]
-		},
-
-		{
 			"name": "2.0 S4",
 			"start_date": "9 JUN 2014",
 			"targetDate":"20 JUN 2014",
-			"dateMarks":[
-				{"name":"End of S4", "date":"10 Jun 2014", "style":{strokeStyle:"black", verticalOffset: 20}}
-			],
-			"needed_fields":["target_milestone", "cf_blocking_b2g"],
 			"esfilter": {"term":{"target_milestone":"2.0 S4 (20june)"}},
+			"partitions": [
+				{"name": "Blocking", "esfilter": {"and": [
+					{"terms": {"cf_blocking_b2g": ["2.0+", "1.5+"]}}
+				]}},
+				{"name": "Targeted", "esfilter": {"and": [
+					{"exists": {"field": "target_milestone"}},
+					{"not": {"term": {"target_milestone": "---"}}}
+				]}}
+
+			]
+		},
+
+		{
+			"name": "2.0 S5",
+			"start_date": "23 JUN 2014",
+			"targetDate":"4 JULY 2014",
+			"esfilter": {"term":{"target_milestone":"2.0 S5 (4july)"}},
+			"partitions": [
+				{"name": "Blocking", "esfilter": {"and": [
+					{"terms": {"cf_blocking_b2g": ["2.0+", "1.5+"]}}
+				]}},
+				{"name": "Targeted", "esfilter": {"and": [
+					{"exists": {"field": "target_milestone"}},
+					{"not": {"term": {"target_milestone": "---"}}}
+				]}}
+
+			]
+		},
+
+		{
+			"name": "2.0 S6",
+			"start_date": "7 JULY 2014",
+			"targetDate":"18 JULY 2014",
+			"esfilter": {"term":{"target_milestone":"2.0 S6 (18july)"}},
 			"partitions": [
 				{"name": "Blocking", "esfilter": {"and": [
 					{"terms": {"cf_blocking_b2g": ["2.0+", "1.5+"]}}

@@ -226,6 +226,8 @@ CNV.Object2URL=function(value){
 
 
 	CNV.String2HTML = function String2HTML(value) {
+		if (value==null) return "";
+
 		var output=[];
 		for(var i=0;i<value.length;i++){
 			var c= value[i];

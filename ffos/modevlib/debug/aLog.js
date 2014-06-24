@@ -51,11 +51,19 @@ Log.debug=function(){
 	});
 };//method
 
-Log.error = function(description, cause){
-	var e=new Exception(description, cause);
-//	Log.alert(description);
-	console.error(e.toString());
-	throw e;
+Log.error = function(description, cause, stackOffset){
+	var ex=new Exception(description, cause, nvl(stackOffset, 0)+1);
+
+	try{
+		var a = generate.error;
+	}catch(e){
+		var stack = e.stack;
+		ex.stack = stack.split("\n").rightBut(nvl(stackOffset, 0)+1)
+	}//try
+
+
+	console.error(ex.toString());
+	throw ex;
 };//method
 
 Log.warning = function(description, cause){

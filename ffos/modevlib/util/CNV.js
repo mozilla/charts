@@ -226,6 +226,8 @@ CNV.Object2URL=function(value){
 
 
 	CNV.String2HTML = function String2HTML(value) {
+		if (value==null) return "";
+
 		var output=[];
 		for(var i=0;i<value.length;i++){
 			var c= value[i];
@@ -927,7 +929,7 @@ CNV.esFilter2Expression=function(esFilter){
 		var pair = esFilter[op];
 		var variableName = Object.keys(pair)[0];
 		var value = pair[variableName];
-		return (variableName)+".startsWith(" + CNV.Value2Quote(value)+")";
+		return "(typeof("+variableName+")==\"string\" && "+variableName+".startsWith(" + CNV.Value2Quote(value)+"))";
 	}else if (op=="match_all"){
 		return "true"
 	}else if (op=="regexp"){

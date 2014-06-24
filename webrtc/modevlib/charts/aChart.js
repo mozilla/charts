@@ -2,7 +2,7 @@
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
-
+importScript("../math/aMath.js");
 importScript([
 	"../../lib/jquery.js",
 	"../../lib/jquery.numberformatter.js",
@@ -1008,7 +1008,7 @@ aChart.addPredictionLine = function(param){
 		var minDomain = param.predict.domain.min.subtract(param.source.domain.min).divideBy(Duration.DAY)+1;
 
 		//COPY UP TO THE POINT OF PREDICTION (BECAUSE CHARTING LIB SUCKS)
-		for(var i = 0; i < minDomain; i++){
+		for(var i = 0; i < Math.min(minDomain, num); i++){
 			data[i]["date"] = param.source.domain.min.addDay(i);
 			data[i][param.predict.name] = data[i][param.source.name];
 		}//for

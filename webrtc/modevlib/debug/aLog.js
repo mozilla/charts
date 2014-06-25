@@ -119,6 +119,7 @@ Log.red=function(message){
 			"color":"white",
 			"position":"absolute",
 			"bottom":0,
+			"height":"23px",
 			"background-color":Color.red.darker().toHTML()
 		}),
 		"message":message.replaceAll("\n", " ").replaceAll("\t", " ").replaceAll("  ", " ")

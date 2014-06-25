@@ -237,13 +237,20 @@ importScript("../util/aUtil.js");
 	//ASSUMES THAT THE COORCED STRING VALUE IS UNIQUE
 	//EXPECTING EACH ARGUMENT TO BE AN ARRAY THAT REPRESENTS A SET
 	Array.prototype.union = function(){
-		return Array.union.apply(Array, [].appendArray(arguments).append(this));
+		return Array.union.call(Array, [].appendArray(arguments).append(this));
 	};//method
 
 	//RETURN UNION OF UNIQUE VALUES
 	//ASSUMES THAT THE COORCED STRING VALUE IS UNIQUE
 	//EXPECTING ONE ARGUMENT, WHICH IS A LIST OF AN ARRAYS, EACH REPRESENTING A SET
-	Array.union = function union(arrays){
+	Array.union = function union(){
+		var arrays;
+		if (arguments.length==1 && arguments[0] instanceof Array){
+			arrays = arguments[0]
+		}else{
+			arrays=arguments
+		}//endif
+
 		var output={};
 		arrays.forall(function(a){
 			a = Array.newInstance(a);

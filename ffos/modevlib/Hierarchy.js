@@ -242,12 +242,10 @@ Hierarchy.topologicalSort=function(args){
 };//method
 
 
-
-
-
 function* allOpenDependencies(esfilter, dateRange, selects, allOpen) {
-    var data = yield (getRawDependencyData(esfilter, dateRange, selects));
-    yield (getDailyDependencies(data, esfilter, allOpen));
+	var data = yield (getRawDependencyData(esfilter, dateRange, selects));
+	var output = yield (getDailyDependencies(data, esfilter, allOpen));
+	yield (output);
 }//method
 
 
@@ -285,12 +283,7 @@ function* getRawDependencyData(esfilter, dateRange, selects) {
     possibleTree = Array.union(possibleTree);
     Log.actionDone(a);
 
-    var allSelects = Array.union(
-        [
-            ["bug_id", "dependson", "bug_status", "modified_ts", "expires_on"],
-            selects
-        ]
-    );
+    var allSelects = selects.union(["bug_id", "dependson", "bug_status", "modified_ts", "expires_on"]);
 
     var a = Log.action("Pull dependencies");
     var raw_data = yield (ESQuery.run(
@@ -314,7 +307,7 @@ function* getRawDependencyData(esfilter, dateRange, selects) {
             "from": raw_data,
             "select": allSelects.subtract(["bug_id"]).map(
                 function (v) {
-                    return {"value": v, "aggregate": "one"}
+                    return {"value": v, "aggregate": "minimum"};  //aggregate==min BECAUSE OF ES CORRUPTION
                 }
             ),
             "edges": [

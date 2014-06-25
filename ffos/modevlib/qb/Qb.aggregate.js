@@ -23,8 +23,12 @@ Qb.aggregate.compile = function(select){
 	//SOME AGGREGATES DEFER calc() UNTIL LATER
 	if (select.aggFunction===undefined){
 		select.aggFunction=function(row, result, agg){
-			var v=this.calc(row, result);
-			return this.add(agg, v);
+			try{
+				var v=this.calc(row, result);
+				return this.add(agg, v);
+			}catch(e){
+				Log.error("can not calc", e);
+			}//try
 		};//method
 	}//endif
 

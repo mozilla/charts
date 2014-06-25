@@ -58,7 +58,8 @@ importScript([
 	'modevlib/Dimension-Bugzilla.js',
 	'modevlib/Dimension-B2G.js',
 	'modevlib/Dimension-Features.js',
-	"js/burndown.js"
+	"js/burndown.js",
+	"lib/sorttable/sorttable.js"
 ], function(){
 
 
@@ -151,7 +152,8 @@ var __createChart = function*(){
 				"assigned_to",
 				"bug_status",
 				"resolution",
-				"status_whiteboard"
+				"status_whiteboard",
+				"priority"
 			],
 			"esfilter":{"and":[
 				Mozilla.CurrentRecords.esfilter,
@@ -167,12 +169,14 @@ var __createChart = function*(){
 				{"name":"Summary", "value":"short_desc"},
 				{"name":"Owner", "value":"assigned_to"},
 				{"name":"Status", "value":"bug_status + (resolution ? ' - '+resolution : '')"},
-				{"name":"Estimate", "value":"nvl(ScrumBugs.parse(status_whiteboard).points, 'missing')"}
+				{"name":"Estimate", "value":"nvl(ScrumBugs.parse(status_whiteboard).points, 'missing')"},
+				{"name":"Priority", "value":"priority"}
 			],
 			"sort":["Status", "bug_id"]
 		}));
 
-		$("#buglist").html(bugDetails(details.list));
+		var table = $("#buglist").html(bugDetails(details.list)).find("table")[0];
+		sorttable.makeSortable(table);
 	});
 
 	var churnTimeDomain={"type":"time", "min":MIN_CHART_DATE, "max":MAX_CHART_DATE, "interval":Duration.DAY, "value":"value"};

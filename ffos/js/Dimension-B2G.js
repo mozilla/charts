@@ -5,7 +5,8 @@
 importScript("Dimension.js");
 importScript("qb/ESQuery.js");
 
-Mozilla = Mozilla || {"name": "Mozilla", "edges": []};
+if (!Mozilla) var Mozilla={"name":"Mozilla", "edges":[]};
+
 (function () {
 	//webRTC MARKS BUGS A LITTLE DIFFERENT
 	var webRTCFilter = {"or": [
@@ -434,7 +435,6 @@ Mozilla = Mozilla || {"name": "Mozilla", "edges": []};
 								{"terms": {"cf_blocking_loop": ["fx31?", "fx32?", "fx31+", "fx32+"]}}
 							]}
 						},
-						,
 						{"name": "2.1",
 							"dateMarks": [
 								{"FC": "Jul 21, 2014"},

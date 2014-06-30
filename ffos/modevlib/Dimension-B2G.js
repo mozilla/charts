@@ -18,7 +18,7 @@ var webRTCFilter={"or":[
 		{"term":{"product":"core"}},
 		{"prefix":{"component":"webrtc"}}
 	]}
-]}
+]};
 
 
 

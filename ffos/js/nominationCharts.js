@@ -52,10 +52,10 @@ function showOpenNomCount(args) {
 function showNomChurn(args) {
 	var fieldnames = ["cf_blocking_b2g", "cf_blocking_loop"];
 	var projects = [
-		{"name": "1.3", "value": "1.3?", "nom":["1.3?"], "blocker":["1.3+"]},
-		{"name": "1.3T", "value": "1.3t?", "nom":["1.3t?"], "blocker":["1.3t+"]},
-		{"name": "1.4", "value": "1.4?", "nom":["1.4?", "fx30?"], "blocker":["1.4+", "fx30+"]},
-		{"name": "2.0", "value": "2.0?", "nom":["2.0?", "fx31?", "fx32?"], "blocker":["2.0+", "fx31+", "fx32+"]}
+		{"name": "1.3", "value": "1.3?", "nom":["1.3?"], "blocker":["1.3+"], "style":Mozilla.B2G.Project["1.3"].style},
+		{"name": "1.3T", "value": "1.3t?", "nom":["1.3t?"], "blocker":["1.3t+"], "style":Mozilla.B2G.Project["1.3T"].style},
+		{"name": "1.4", "value": "1.4?", "nom":["1.4?", "fx30?"], "blocker":["1.4+", "fx30+"], "style":Mozilla.B2G.Project["1.4"].style},
+		{"name": "2.0", "value": "2.0?", "nom":["2.0?", "fx31?", "fx32?"], "blocker":["2.0+", "fx31+", "fx32+"], "style":Mozilla.B2G.Project["2.0"].style}
 	];
 	var triage = [];
 	projects.forall(function(n){

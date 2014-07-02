@@ -341,14 +341,14 @@ if (!Mozilla) var Mozilla={"name":"Mozilla", "edges":[]};
 //								{"terms": {"cf_blocking_b2g": ["1.3+", "1.3?"]}}
 //							]}
 //						},
-						{"name": "1.3/1.3T",
+						{"name": "1.3T",
 							"dateMarks": [
 								{"name": "FC", "date": "Dec 9, 2013", "style": {strokeStyle: "black", verticalOffset: 20}},
 								{"name": "CF", "date": "Mar 17, 2014", "style": {strokeStyle: "black", verticalOffset: 20}}
 							],
 							"style": {"color": "#ff7f0e"},
 							"esfilter": {"or": [
-								{"terms": {"cf_blocking_b2g": ["1.3+", "1.3?", "1.3t+", "1.3t?"]}}
+								{"terms": {"cf_blocking_b2g": ["1.3t+", "1.3t?"]}}
 							]}
 						},
 						{"name": "1.4",
@@ -404,13 +404,13 @@ if (!Mozilla) var Mozilla={"name":"Mozilla", "edges":[]};
 //							"style": {"color": "#d62728"},
 //							"esfilter": {"term": {"cf_blocking_b2g": "1.3+"}}
 //						},
-						{"name": "1.3/1.3T",
+						{"name": "1.3T",
 							"dateMarks": [
 								{"name": "FC", "date": "Dec 9, 2013", "style": {strokeStyle: "black", verticalOffset: 20}},
 								{"name": "CF", "date": "Mar 17, 2014", "style": {strokeStyle: "black", verticalOffset: 20}}
 							],
 							"style": {"color": "#ff7f0e"},
-							"esfilter": {"terms": {"cf_blocking_b2g": ["1.3+", "1.3T+"]}}},
+							"esfilter": {"terms": {"cf_blocking_b2g": ["1.3t+", "1.3t?"]}}},
 						{"name": "1.4",
 							"style": {"color": "#2ca02c"},
 							"esfilter": {"or": [
@@ -440,7 +440,7 @@ if (!Mozilla) var Mozilla={"name":"Mozilla", "edges":[]};
 								{"FC": "Jul 21, 2014"},
 								{"CF": "Sep 01, 2014"}
 							],
-							"style": {"color": "#1f77b4"},
+							"style": {"color": "#d62728"},
 							"esfilter": {"or": [
 								{"terms": {"cf_blocking_b2g": ["2.1+", "2.1?"]}},
 								{"terms": {"cf_blocking_loop": ["fx33?", "fx34?", "fx33+", "fx34+"]}}

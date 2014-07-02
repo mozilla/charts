@@ -803,7 +803,8 @@ CNV.esFilter2function=function(esFilter){
 		var variableName = Object.keys(pair)[0];
 		var value = pair[variableName];
 		return function(row, i, rows){
-			return row[variableName].startsWith(value);
+			var value = row[variableName];
+			return value!=null && value.startsWith(value);
 		}
 	}else if (op=="match_all"){
 		return TRUE_FILTER;

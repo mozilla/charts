@@ -15,21 +15,33 @@
 	<div style="height: 30px; text-align: center;vertical-align:middle;">
 		<span id="status" style="height:30px">Page Loading...</span><span class="loading"><img src="images/spinner.gif" alt=""></span>
 	</div>
-
-	<hr>
-	<div id="description"></div>
-	<hr>
-	<div id="testMessage"></div>
 	<hr>
 	<div id="stats"></div>
 	<hr>
 	<div id="parameters" class="parameters">
 	</div>
 	<div id="filters" class="menu"></div>
+	<hr>
+	<div id="description">
+		Simple burndown chart by sprint or milestone.<br><br>
+		The chart requires a milestone be selected.  Filtering by Team is
+		optional.<br><br>
+		This dashboard makes no attempt at predicting bug close rate; there is not enough
+		information in any one (or few) milestones to get reasonable estimates.
+		However, a simple grey line is provided that shows an ideal burndown
+		from the current remaining work down to zero at end of the milestone.
+		Use it as you see fit.<br><br>
+		The new/closed bugs per day statistic includes all the bugs added to
+		the milestone at the beginning, and removed at the end (provided it
+		happens inside the time window).  If you are viewing multiple
+		milestones you number may be artificially large.
+	</div>
+
+
 </div>
 
 <div style="align:left;position:relative;float:left;width:800px;">
-	<h3 id="title"></h3>
+	<h3 id="title">Milestone Burndown</h3>
 
 	<div>
 		<div id="milestone-summary" style="min-height: 30px; position: relative;"></div>
@@ -58,7 +70,8 @@ importScript([
 	'modevlib/Dimension-Bugzilla.js',
 	'modevlib/Dimension-B2G.js',
 	'modevlib/Dimension-Features.js',
-	"js/burndown.js"
+	"js/burndown.js",
+	"lib/sorttable/sorttable.js"
 ], function(){
 
 
@@ -116,7 +129,6 @@ var __createChart = function*(){
 	var sampleInterval = Duration.DAY;
 	var timeDomain = {"type":"time", "min":MIN_CHART_DATE, "max":MAX_CHART_DATE, "interval":sampleInterval};
 
-	$("#description").html("Preliminary burndown for WebRTC work");
 
 
 	if (title && title.length>0){
@@ -151,7 +163,8 @@ var __createChart = function*(){
 				"assigned_to",
 				"bug_status",
 				"resolution",
-				"status_whiteboard"
+				"status_whiteboard",
+				"priority"
 			],
 			"esfilter":{"and":[
 				Mozilla.CurrentRecords.esfilter,
@@ -167,12 +180,14 @@ var __createChart = function*(){
 				{"name":"Summary", "value":"short_desc"},
 				{"name":"Owner", "value":"assigned_to"},
 				{"name":"Status", "value":"bug_status + (resolution ? ' - '+resolution : '')"},
-				{"name":"Estimate", "value":"nvl(ScrumBugs.parse(status_whiteboard).points, 'missing')"}
+				{"name":"Estimate", "value":"nvl(ScrumBugs.parse(status_whiteboard).points, 'missing')"},
+				{"name":"Priority", "value":"priority"}
 			],
 			"sort":["Status", "bug_id"]
 		}));
 
-		$("#buglist").html(bugDetails(details.list));
+		var table = $("#buglist").html(bugDetails(details.list)).find("table")[0];
+		sorttable.makeSortable(table);
 	});
 
 	var churnTimeDomain={"type":"time", "min":MIN_CHART_DATE, "max":MAX_CHART_DATE, "interval":Duration.DAY, "value":"value"};

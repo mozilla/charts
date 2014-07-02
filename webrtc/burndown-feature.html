@@ -33,7 +33,7 @@
 	</div>
 	<div id="filters" class="menu"></div>
 </div>
-settings.param.sustained_median.window_size
+
 <div style="align:left;position:relative;float:left;width:815px;padding-left:15px">
 	<h3 id="title"></h3>
 
@@ -52,7 +52,8 @@ importScript([
 	'modevlib/Dimension-Bugzilla.js',
 	'modevlib/Dimension-B2G.js',
 	'modevlib/Dimension-Features.js',
-	"js/burndown.js"
+	"js/burndown.js",
+	"lib/sorttable/sorttable.js"
 ], function(){
 
 NEEDED_FIELDS = ["status_whiteboard"];  //FOR GETTING THE SCRUMBUGZ p=N VALUES
@@ -285,7 +286,8 @@ function restOfCharting(env){
 				"assigned_to",
 				"bug_status",
 				"resolution",
-				"status_whiteboard"
+				"status_whiteboard",
+				"priority"
 			],
 			"esfilter":{"and":[
 				Mozilla.BugStatus.Open.esfilter,
@@ -302,12 +304,14 @@ function restOfCharting(env){
 				{"name":"Summary", "value":"short_desc"},
 				{"name":"Owner", "value":"assigned_to"},
 				{"name":"Status", "value":"bug_status + (resolution ? ' - '+resolution : '')"},
-				{"name":"Estimate", "value":"nvl(ScrumBugs.parse(status_whiteboard).points, 'missing')"}
+				{"name":"Estimate", "value":"nvl(ScrumBugs.parse(status_whiteboard).points, 'missing')"},
+				{"name":"Priority", "value":"priority"}
 			],
 			"sort":["Status", "bug_id"]
 		}));
 
-		$("#buglist").html(bugDetails(details.list));
+		var table = $("#buglist").html(bugDetails(details.list)).find("table")[0];
+		sorttable.makeSortable(table)
 	});
 
 	Thread.run(function*(){
@@ -444,16 +448,16 @@ $(document).ready(function(){
 			"name": "All Milestones",
 			"description": "You may restrict the feature to the only the bugs marked with the given milestone",
 			"dimension": Mozilla.Milestone,
-			"onlyOne": true,
+			"onlyOne": false,
 			"expandAll": true,
 			"treeDepth":0,
 			"refreshCallback":__reChart
 		})}
 		],
-			[
-				"sampleMin=Date.newInstance(sampleMin).floor(Duration.newInstance(sampleInterval)).format('yyyy-MM-dd')",
-				"sampleMax=Date.newInstance(sampleMax).addDay(1).floor(Duration.newInstance(sampleInterval)).addDay(-1).format('yyyy-MM-dd')"
-			],
+		[
+			"sampleMin=Date.newInstance(sampleMin).floor(Duration.newInstance(sampleInterval)).format('yyyy-MM-dd')",
+			"sampleMax=Date.newInstance(sampleMax).addDay(1).floor(Duration.newInstance(sampleInterval)).addDay(-1).format('yyyy-MM-dd')"
+		],
 		"bugs",
 		false
 	);

@@ -801,9 +801,10 @@ CNV.esFilter2function=function(esFilter){
 	}else if (op=="prefix"){
 		var pair = esFilter[op];
 		var variableName = Object.keys(pair)[0];
-		var value = pair[variableName];
+		var prefix = pair[variableName];
 		return function(row, i, rows){
-			return row[variableName].startsWith(value);
+			var v = row[variableName];
+			return typeof(v)=="string" && v.startsWith(prefix);
 		}
 	}else if (op=="match_all"){
 		return TRUE_FILTER;

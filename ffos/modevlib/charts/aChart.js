@@ -703,7 +703,7 @@ aChart.show=function(params){
 		//LOOK FOR DATES TO MARKUP
 
 		var dateMarks = [];
-		dateMarks.appendArray(findDateMarks(xaxis.domain));  //WE CAN PLUG SOME dateMarks RINGT INTO TIME DOMAIN FOR DISPLAY
+		dateMarks.appendArray(findDateMarks(xaxis.domain));  //WE CAN PLUG SOME dateMarks RIGHT INTO TIME DOMAIN FOR DISPLAY
 		categoryAxis.domain.partitions.forall(function (part) {  //EACH CATEGORY CAN HAVE IT'S OWN dateMarks to SHOW
 			dateMarks.appendArray(findDateMarks(part))
 		});
@@ -840,8 +840,9 @@ function fixClickAction(chartParams){
 }
 
 
-function findDateMarks(part){
-	output = []
+//name IS OPTIONAL
+function findDateMarks(part, name){
+	var output = [];
 	Array.newInstance(part.dateMarks).forall(function (mark) {
 		var style = Map.setDefault({}, mark.style, part.style, {"color": "black", "lineWidth": "2.0", verticalAnchor: "top"});
 		style.strokeStyle = nvl(style.strokeStyle, style.color);
@@ -865,8 +866,15 @@ function findDateMarks(part){
 			});
 		}
 	});
-	return output;
-}
+
+	if (name){
+		return output.filter(function(p){return p.name==name;}).first().date;
+	}else{
+		return output;
+	}//endif
+}//method
+
+aChart.findDateMarks = findDateMarks;
 
 
 
@@ -884,29 +892,32 @@ function bugClicker(query, series, x){
 		//Sometimes drill down is not available, and bug list is too big, so nothing happens
 		//When there is a drilldown, the decision to show bugs is made at a lower count (prefering drilldown)
 		Thread.run(function*(){
-			var specific;
-			if (query.edges.length==2){
-				specific=Qb.specificBugs(query, [series, x]);
-			}else{
-				specific=Qb.specificBugs(query, [x]);
-			}//endif
+			try{
+				var specific;
+				if (query.edges.length==2){
+					specific=Qb.specificBugs(query, [series, x]);
+				}else{
+					specific=Qb.specificBugs(query, [x]);
+				}//endif
 
 
 
-//			var specific=Qb.specificBugs(query, [series, x]);
-			var buglist=(yield (ESQuery.run(specific)));
-//			buglist=buglist.list.map(function(b){return b.bug_id;});
-			if (buglist.cube===undefined) buglist.cube=buglist.list;
+	//			var specific=Qb.specificBugs(query, [series, x]);
+				var buglist=(yield (ESQuery.run(specific)));
+	//			buglist=buglist.list.map(function(b){return b.bug_id;});
+				if (buglist.cube===undefined) buglist.cube=buglist.list;
 
 
-			if (buglist.cube.length>BZ_SHOW_BUG_LIMIT){
-				Log.alert("Too many bugs. Truncating to "+BZ_SHOW_BUG_LIMIT+".", function(){
-					Bugzilla.showBugs(buglist.cube.substring(0, BZ_SHOW_BUG_LIMIT));
-				});
-			}else{
-				Bugzilla.showBugs(buglist.cube);
-			}//endif
-
+				if (buglist.cube.length>BZ_SHOW_BUG_LIMIT){
+					Log.alert("Too many bugs. Truncating to "+BZ_SHOW_BUG_LIMIT+".", function(){
+						Bugzilla.showBugs(buglist.cube.substring(0, BZ_SHOW_BUG_LIMIT));
+					});
+				}else{
+					Bugzilla.showBugs(buglist.cube);
+				}//endif
+			}catch(e){
+				Log.warning("failure to show bugs", e);
+			}
 		});
 
 

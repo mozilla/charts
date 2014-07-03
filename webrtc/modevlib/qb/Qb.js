@@ -151,7 +151,7 @@ function* calc2Tree(query){
 	var edges = query.edges;
 	query.columns = Qb.compile(query, sourceColumns);
 	var select = Array.newInstance(query.select);
-	var where = Qb.where.compile(nvl(query.where, query.esfilter), sourceColumns, edges);
+	var _where = Qb.where.compile(nvl(query.where, query.esfilter), sourceColumns, edges);
 	var numWhereFalse=0;
 
 
@@ -216,7 +216,7 @@ function* calc2Tree(query){
 		}//for
 
 		for(var r = results.length; r--;){
-			var pass = where(row, results[r]);
+			var pass = _where(row, results[r]);
 			if (pass){
 				calcAgg(row, results[r], query, select);
 			}else{

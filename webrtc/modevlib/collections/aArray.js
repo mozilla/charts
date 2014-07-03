@@ -244,12 +244,7 @@ importScript("../util/aUtil.js");
 	//ASSUMES THAT THE COORCED STRING VALUE IS UNIQUE
 	//EXPECTING ONE ARGUMENT, WHICH IS A LIST OF AN ARRAYS, EACH REPRESENTING A SET
 	Array.union = function union(){
-		var arrays;
-		if (arguments.length==1 && arguments[0] instanceof Array){
-			arrays = arguments[0]
-		}else{
-			arrays=arguments
-		}//endif
+		var arrays = (arguments.length==1  && arguments[0] instanceof Array) ? arguments[0] : arguments;
 
 		var output={};
 		arrays.forall(function(a){
@@ -260,6 +255,16 @@ importScript("../util/aUtil.js");
 			}//for
 		});
 		return Map.getValues(output);
+	};
+
+	Array.extend=function extend(){
+		var arrays = (arguments.length==1  && arguments[0] instanceof Array) ? arguments[0] : arguments;
+		var output=[];
+		for(var i=0;i<arrays.length;i++){
+			var a = Array.newInstance(arrays[i]);
+			output.appendArray(a);
+		}//for
+		return output;
 	};
 
 

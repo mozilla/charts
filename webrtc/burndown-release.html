@@ -1,0 +1,662 @@
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+<!-- This Source Code Form is subject to the terms of the Mozilla Public
+   - License, v. 2.0. If a copy of the MPL was not distributed with this
+   - file, You can obtain one at http://mozilla.org/MPL/2.0/. -->
+<HTML>
+<HEAD>
+	<script type="application/javascript" src="modevlib/imports/import.js"></script>
+</HEAD>
+<BODY>
+
+
+<div id="sidebar" style="width:300px;">
+	<br><br>
+
+	<div style="height: 30px; text-align: center;vertical-align:middle;">
+		<span id="status" style="height:30px">Page Loading...</span><span class="loading"><img src="images/spinner.gif" alt=""></span>
+	</div>
+	<hr>
+	<div id="description">
+		Simple burndown chart for 2.0<br><br>
+		The line chart shows regressions and the total open count (including regressions) by day.<br>
+		The bar chart shows the total bug churn on the FxOS product (plus a few related components from others)<br>
+		At the bottom is a list of open blockers assigned to this release.  This is differs from the top summary;
+		which only shows the counts at the end of the milestone (not the end of today).
+	</div>
+	<hr>
+	<div id="stats"></div>
+	<hr>
+	<div id="parameters" class="parameters">
+	</div>
+	<div id="filters" class="menu"></div>
+
+
+</div>
+
+<div style="align:left;position:relative;float:left;width:800px;">
+	<h3 id="title">Release Burndown</h3>
+
+	<div>
+		<div id="release-summary" style="min-height: 30px; position: relative;"></div>
+		<div id="chart" class="chart" style="position: relative;height:300px;"></div>
+		<div id="chart_diff" class="chart" style="position: relative;height:300px;"></div>
+		<div id="buglist" style="position: relative;width:800px"></div>
+		<div id="info" style="position: relative;width:800px"></div>
+		<div id="report"></div>
+	</div>
+</div>
+<script type="application/javascript">
+var color = {
+	"blue": "#1f77b4",
+	"orange": "#ff7f0e",
+	"green": "#2ca02c",
+	"red": "#d62728",
+	"purple": "#9467bd",
+	"brown": "#8c564b",
+	"cyan": "#17becf"
+};
+
+
+importScript([
+	"modevlib/main.js",
+	"modevlib/gui/dynamic.js",
+	'modevlib/Dimension-Bugzilla.js',
+	'modevlib/Dimension-B2G.js',
+	'modevlib/Dimension-Features.js',
+	"js/burndown.js",
+	"lib/sorttable/sorttable.js"
+], function () {
+
+
+	var thread;
+	var createChart = function () {
+		if (thread !== undefined)
+			thread.kill();
+		thread = Thread.run(function*() {
+			try {
+				yield (__createChart());
+			} catch (e) {
+				if (e.contains(Thread.Interrupted)) return;
+				throw e;
+			}//try
+		});
+	};
+
+	var __createChart = function*() {
+		var NOW = Date.now();
+		var TODAY = Date.today();
+
+		$("#release-summary").html("");
+		$("#chart").html("");
+		$("#chart_diff").html("");
+		$("#buglist").html("");
+
+		var releases = GUI.state.release.getSelectedParts();
+		var releaseName;
+		if (releases.length == 0) {
+			$("#title").text("Must select a release");
+			yield (null)
+		}//endif
+
+
+		releaseName = releases.map(function (m) {
+			return m.name;
+		}).join(" and ");
+		var START_DATE = null;
+		var DUE_DATE = null;
+		releases.forall(function (m) {
+			START_DATE = Date.min(START_DATE, Date.newInstance(startDate(m)));
+			DUE_DATE = Date.max(DUE_DATE, Date.newInstance(targetDate(m)).add(Duration.DAY));
+			MIN_CHART_DATE = Date.min(START_DATE, TODAY.subtract(Duration.newInstance("2week")));
+			MAX_CHART_DATE = DUE_DATE.addDay(1);
+		});
+		var MIN_CHART_DATE = Date.min(START_DATE, TODAY.subtract(Duration.newInstance("2week")));
+		var MAX_CHART_DATE = DUE_DATE.addDay(1);
+
+		var sampleInterval = Duration.DAY;
+		var timeDomain = {
+			"type": "time",
+			"min": MIN_CHART_DATE,
+			"max": MAX_CHART_DATE,
+			"interval": sampleInterval,
+			"dateMarks":Array.extend(releases.map(aChart.findDateMarks))
+		};
+
+
+		if (title && title.length > 0) {
+			$("#title").text(title);
+		} else {
+			$("#title").text("Burndown for " + releaseName)
+		}//endif
+
+		yield (ESQuery.loadColumns({"from": "bugs"}));
+
+		var mainFilter = {"and": [
+			{"and": [
+				{"range": {"modified_ts": {"lt": MAX_CHART_DATE.getMilli()}}},
+				{"range": {"expires_on": {"gte": MIN_CHART_DATE.getMilli()}}}
+			]},
+//		{"script":{"script":MVEL.compile.expression("floorInterval(modified_ts-" + sampleMin.getMilli() + ", " + sampleInterval.milli + ")!=floorInterval(expires_on-" + sampleMin.getMilli() + ", " + sampleInterval.milli + ")", {"from":"bugs"})}},
+			GUI.getFilters("bugs")
+		]};
+
+
+		Thread.run(function*() {
+			////////////////////////////////////////////////////////////////////////////
+			// CURRENT BUGS LIST
+			////////////////////////////////////////////////////////////////////////////
+
+			var bugs = yield (ESQuery.run({
+				"from": "public_bugs",
+				"select": [
+					"bug_id",
+					"short_desc",
+					"assigned_to",
+					"bug_status",
+					"resolution",
+					"priority"
+				],
+				"esfilter": {"and": [
+					Mozilla.CurrentRecords.esfilter,
+					Mozilla.BugStatus.Open.esfilter,
+					GUI.state.release.makeFilter()
+				]}
+			}));
+
+			var details = yield (Qb.calc2List({
+				"from": bugs,
+				"select": [
+					{"name": "bug_id", "value": "bug_id"},
+					{"name": "Summary", "value": "short_desc"},
+					{"name": "Owner", "value": "assigned_to"},
+					{"name": "Status", "value": "bug_status + (resolution ? ' - '+resolution : '')"},
+					{"name": "Priority", "value": "priority"}
+				],
+				"sort": ["Status", "bug_id"]
+			}));
+
+			var table = $("#buglist").html(releaseDetails(details.list)).find("table")[0];
+			sorttable.makeSortable(table);
+		});
+
+		var churnTimeDomain = {"type": "time", "min": MIN_CHART_DATE, "max": MAX_CHART_DATE, "interval": Duration.DAY, "value": "value"};
+
+		var perDay;
+		var churnThread = Thread.run(function*() {
+			////////////////////////////////////////////////////////////////////////////
+			// DAILY CHANGE
+			////////////////////////////////////////////////////////////////////////////
+			var minMaxBugs = yield(ElasticSearch.getOpenMinMax(Mozilla.B2G.esfilter, churnTimeDomain, ["status_whiteboard", "cf_blocking_loop", "cf_blocking_b2g", "target_milestone", "keywords", "resolution"]));
+
+			var diff = yield(Q({
+				"from": minMaxBugs,
+				"select": [
+					{"name": "opened", "value": "(time.min.getMilli()<=min && min<time.max.getMilli()) ? 1 : 0", "aggregate": "sum", "default": 0, "style": {"color": Color.blue.multiply(0.9).hue(10).toHTML()}},
+					{"name": "closed", "value": "(time.min.getMilli()<=max && max<time.max.getMilli()) ? 1 : 0", "aggregate": "sum", "default": 0, "style": {"color": Color.red.multiply(0.9).hue(10).toHTML()}}
+				],
+				"edges": [
+					{"name": "type", "domain": Mozilla.ChurnType.getDomain()},
+					{"name": "date", "test": "(time.min.getMilli()<=min && min<time.max.getMilli()) || (time.min.getMilli()<=max && max<time.max.getMilli())",
+						"allowNulls": false,
+						"domain": {"type": "time", "min": MIN_CHART_DATE, "max": MAX_CHART_DATE, "interval": Duration.DAY, "value": "value"}
+					}
+				]
+			}));
+
+			var chart = yield(Q({
+				"from": diff,
+				"select": [
+					{"name": "Opened", "value": "opened", "aggregate": "sum", "style": {"color": color.blue}},
+					{"name": "Other", "value": "type.name=='Other' ? -closed : 0", "aggregate": "sum", "style": {"color": "lightgray"}},
+					{"name": "Dups", "value": "type.name=='Dups' ? -closed : 0", "aggregate": "sum", "style": {"color": "gray"}},
+					{"name": "Targeted", "value": "type.name=='Targeted' ? -closed : 0", "aggregate": "sum", "style": {"color": color.green}},
+					{"name": "Blocker", "value": "type.name=='Blocker' ? -closed : 0", "aggregate": "sum", "style": {"color": color.orange}},
+					{"name": "Regression", "value": "type.name=='Regression' ? -closed : 0", "aggregate": "sum", "style": {"color": color.red}}
+				],
+				"edges": [
+					{"name": "date", "value": "date", "domain": {"type": "time", "min": MIN_CHART_DATE, "max": MAX_CHART_DATE, "interval": Duration.DAY, "value": "value"}}
+				]
+			}));
+
+			a = Log.action("Make chart", true);
+			aChart.show({
+				"name":"FxOS Team Bug Close (and Open) Rates",
+				"id": "chart_diff",
+				"sheetDiv": "info",
+				"type": "bar",
+				"stacked": true,
+				"cube": chart,
+				"xAxisSize": 50,
+				"clickAction": function (series, x, d) {
+					Thread.run(function*() {
+						var where = {"and": []};
+						if (series == "Opened") {
+							where.and.append({"range": {"min": {"gte": x.getMilli()}}});
+							where.and.append({"range": {"min": {"lt": x.addDay().getMilli()}}});
+						} else {
+							where.and.append({"range": {"max": {"gte": x.getMilli()}}});
+							where.and.append({"range": {"max": {"lt": x.addDay().getMilli()}}});
+							where.and.append(Mozilla.ChurnType[series].fullFilter);
+						}//endif
+
+						var buglist = minMaxBugs.list.filter(where);
+						Bugzilla.showBugs(buglist.select("bug_id"));
+					});
+				}//click
+			});
+			Log.actionDone(a);
+
+			perDay = (yield(Qb.calc2List({
+				"from": diff,
+				"select": [
+					{"name": "opened", "value": "opened", "aggregate": "sum"},
+					{"name": "newBlockers", "value":"['Blocker', 'Regression'].contains(type.name) ? opened : null", "aggregate":"sum"},
+					{"name": "closed", "value": "closed", "aggregate": "sum"}
+				],
+				"where": START_DATE.getMilli() + "<=date.getMilli() && date.getMilli()<" + Date.min(DUE_DATE, TODAY).getMilli()
+			}))).list[0];
+
+			var daysInSprint = Date.diffWeekday(Date.min(DUE_DATE, TODAY), START_DATE);
+
+
+			$("#stats").html(
+					'<span class="parameter_name">Workdays in release:</span>' + daysInSprint + '<br>' +
+					'<span class="parameter_name">New bugs per day:</span>' + aMath.round(perDay.opened / daysInSprint, 1) + '<br>' +
+					'<span class="parameter_name">New blockers per day:</span>' + aMath.round(perDay.newBlockers / daysInSprint, 1) + '<br>' +
+					'<span class="parameter_name">Closed per day:</span>' + aMath.round(perDay.closed / daysInSprint, 1) + '<br>' +
+					''
+			);
+
+		});
+
+
+		var currMilestoneThread = Thread.run(function*() {
+			///////////////////////////////////////////////////////////////////////
+			// SUMMARY OF MILESTONE
+			///////////////////////////////////////////////////////////////////////
+			var currMilestone = yield (ESQuery.run({
+				"from": "bugs",
+				"select": [
+					"bug_id",
+					"bug_status",
+					"status_whiteboard",
+					"target_milestone",
+					"cf_blocking_loop",
+					"cf_blocking_b2g",
+					"keywords",
+					"modified_ts",
+					"expires_on"
+				],
+				"esfilter": {"and": [
+					{"or": releases.map(function (m) { //ONLY RECORDS FOR THE TARGET DATES
+						var due = Date.newInstance(targetDate(m)).floorDay().addDay().getMilli();
+						return {"and": [
+							{"range": {"modified_ts": {"lte": due}}},
+							{"range": {"expires_on": {"gt": due}}}
+						]};
+					})},
+					GUI.state.release.makeFilter()
+				]}
+			}));
+
+			var releaseTotals = yield(Q({
+				"from": currMilestone,
+				"select": [
+					{"name": "count", "value": '1', "aggregate": "sum"}
+				],
+				"edges": [
+					{"name": "Milestone", "domain": Mozilla.B2G.FinalState.getDomain()},
+					{"name": "type", "domain": Mozilla.CountType.getDomain()}
+				],
+				"where": "modified_ts <= Date.newInstance(targetDate(FinalState)).floorDay().addDay().getMilli() && Date.newInstance(targetDate(FinalState)).floorDay().addDay().getMilli() < expires_on"
+			}));
+
+			//FILL TEMPLATE
+			var summary = $("#release-summary");
+			summary.html(
+					releases.map(function (m) {
+						var i = releaseTotals.edges[0].domain.getPartByKey(m.name).dataIndex;
+						var total = aMath.add.apply(undefined, releaseTotals.cube[i].select("count"));
+						Mozilla.B2G.FinalState[m.name].total = total;
+
+						var count = aMath.add.apply(undefined, releaseTotals.cube[i].select("count"));
+						Mozilla.B2G.FinalState[m.name].count = count;
+
+						var TEMPLATE = new Template("<div>" +
+								"<div style='width:230px;display: inline-block;padding:0px 10px 0px 10px'>Milestone {{release}} (end of {{date}}):</div>" +
+								"<div id='{{release}}Total' class='hoverable' style='width:75px;display:inline-block;'>Total: {{total}}</div>" +
+								"<div id='{{release}}Closed' class='hoverable' style='width:125px;display:inline-block;'>Closed: {{closed}} ({{closed_percent}}%)</div>" +
+								"<div id='{{release}}Open' class='hoverable' style='display:inline-block;'>Open Bugs: {{open}}</div>" +
+								" (<div id='{{release}}Regressions' class='hoverable' style='display:inline-block;'>{{regressions}} regressions</div>)" +
+								"</div");
+						return TEMPLATE.replace({
+							"release": m.name,
+							"date": DUE_DATE < TODAY ? DUE_DATE.subtract(Duration.DAY).format("NNN dd") : "today",
+							"total": total,
+							"open": nvl(releaseTotals.cube[i][1].count, 0) + nvl(releaseTotals.cube[i][0].count, 0),
+							"regressions": nvl(releaseTotals.cube[i][0].count, "0"),
+							"closed": releaseTotals.cube[i][2].count,
+							"closed_percent": aMath.round(releaseTotals.cube[i][2].count / total * 100)
+						});
+					})
+			);
+
+			//ADD BUG CLICKERS
+			releases.forall(function (m) {
+				var i = releaseTotals.edges[0].domain.getPartByKey(m.name).dataIndex;
+
+				var totalButton = $("#" + CNV.String2JQuery(m.name + "Total"));
+				totalButton.click(function () {
+					Thread.run(function*() {
+						var buglist = (yield (ESQuery.run({
+							"from": "bugs",
+							"select": {"value": "bug_id", "aggregate": "minimum"},
+							"edges": [
+								{"name": "unique", "value": "bug_id"}
+							],
+							"esfilter": {"and": [
+								Mozilla.CurrentRecords.esfilter,
+								GUI.state.release.makeFilter()
+							]}
+						})));
+
+						Bugzilla.showBugs(buglist.cube);
+					});
+				});
+
+				releaseTotals.edges[1].domain.partitions.forall(function (t, i) {
+					$("#" + CNV.String2JQuery(m.name + t.name)).click(function () {
+						Thread.run(function*() {
+							var buglist = (yield (ESQuery.run({
+								"from": "bugs",
+								"select": {"value": "bug_id", "aggregate": "minimum"},
+								"edges": [
+									{"name": "unique", "value": "bug_id"}
+								],
+								"esfilter": {"and": [
+									Mozilla.CurrentRecords.esfilter,
+									t.esfilter,
+									GUI.state.release.makeFilter()
+								]}
+							})));
+
+							Bugzilla.showBugs(buglist.cube);
+						});
+					});
+				});
+			});
+		});
+
+	///////////////////////////////////////////////////////////////////////
+	// BURNDOWN
+	///////////////////////////////////////////////////////////////////////
+	var a = Log.action("Request Bugs", true);
+	var chart;
+
+	var releaseBugs=yield(ESQuery.run({
+		"from":"bugs",
+		"select":[
+			"bug_id",
+			"bug_status",
+			"status_whiteboard",
+			"keywords",
+			"modified_ts",
+			"expires_on"
+		],
+		"esfilter":{"and":[
+			GUI.state.release.makeFilter(),
+			{"range":{"modified_ts":{"lt":MAX_CHART_DATE.getMilli()}}},
+			{"range":{"expires_on":{"gte":MIN_CHART_DATE.getMilli()}}}
+		]}
+	}));
+	Log.actionDone(a);
+
+	chart = yield(Q({
+		"from": releaseBugs,
+		"select":[
+			{"name":"count", "value":'bug_id', "aggregate":"count", "default":0}
+		],
+		"edges":[
+			{"name": "status", "domain":Mozilla.CountType.getDomain()},
+			{"name":"date",
+				"range":{"min":"modified_ts", "max":"expires_on"},
+				"allowNulls":false,
+				"domain":timeDomain
+			}
+		]
+	}));
+
+	var flat = yield(Q({
+		"from": chart,
+		"select":[
+			{"name":"Regressions", "value":"status.name=='Regressions' ? count : null", "aggregate":"sum", "default":0},
+			{"name":"Open_Bugs", "value":"['Open', 'Regressions'].contains(status.name) ? count : null", "aggregate":"sum", "default":0},
+			{"name":"Total_Bugs", "value":"count", "aggregate":"sum", "default":0}
+		],
+		"edges":[
+			{"name":"date", "value":"date",
+				"allowNulls":false,
+				"domain":timeDomain
+			}
+		]
+	}));
+
+
+	yield (currMilestoneThread.join());
+
+
+	var tempTimeDomain=flat.edges[0].domain;
+
+	//SHOW FUTURE VALUES AS NULLS
+	flat.cube.forall(function(v, i){
+		if (tempTimeDomain.partitions[i].min > TODAY.addDay()){
+			flat.cube[i]=Map.zip(mapAllKey(v, function(k, v){
+				return [k, null];
+			}));
+		}//endif
+	});
+
+	var stats = yield(Q({
+		"from":flat,
+		"select":[
+			{"name":"closed", value:"Open_Bugs"},
+			{"name":"total", value:"Total_Bugs"}
+		],
+		"edges":[
+			{"name":"date", "value":"date",
+				"allowNulls":false,
+				"domain":timeDomain
+			}
+		]
+	}));
+
+
+	yield (Thread.join(churnThread));
+
+
+	var stillOpen = 0;
+	var daysRemaining = 1;
+
+	if (DUE_DATE <= TODAY){
+		//DONE, NO STATS REQUIRED
+	}else{
+		var todayPart=flat.edges[0].domain.getPartByKey(TODAY);
+		stillOpen = flat.cube[todayPart.dataIndex].Open_Bugs;
+		daysRemaining=aMath.max(1, Date.diffWeekday(DUE_DATE, TODAY));
+
+		var TEMPLATE=new Template(
+			'<hr>'+
+			'<span class="parameter_name">Days Remaining:</span>{{daysRemaining}}<br>'+
+			'<span class="parameter_name">Required Closed/Day:</span>{{count}}<br>'
+		);
+
+		$("#stats").append(TEMPLATE.replace({
+			"daysRemaining":daysRemaining,
+			"count":aMath.round(stillOpen / daysRemaining, 1)
+		}));
+	}//endif
+
+
+
+
+	//WE WILL CHART A DYNAMIC SET OF COLUMNS, BASED ON IF WE ARE LOOKING AT A FUTURE OR PAST DUE DATE
+	var columnsToChart=[
+		{"name":"Total Bugs", "value":"Total_Bugs", "style":{"color":color.cyan, "visibility":"hidden"}},
+		{"name":"Open Bug Count", "value":"Open_Bugs", "style":{"color":color.blue}},
+		{"name":"Regressions", "value":"Regressions", "style":{"color":color.red}}
+	];
+
+	var ideal=function(date){
+		if (date>DUE_DATE){
+			return 0;
+		}else{
+			return aMath.round(stillOpen - (stillOpen * Date.diffWeekday(date, TODAY) / daysRemaining));
+		}//endif
+	};
+
+	//IDEAL BURNDOWN
+	aChart.addPredictionLine({
+		"source":{
+			"name":"Open_Bugs",
+			"domain":{"min":MIN_CHART_DATE, "max":MAX_CHART_DATE},
+			"data":flat.list
+		},
+		"predict":{
+			"name":"ideal",
+			"domain":{"min":TODAY, "max":MAX_CHART_DATE},
+			"line": ideal
+		}
+	});
+
+	columnsToChart.insert(0, {"name":"Required Burndown", "value":"ideal", "style":{"color":"lightgray"}});
+	flat.select.push({"name":"ideal"});
+	flat.columns.push({"name":"ideal"});
+
+	var chartP = yield(Q({
+		"from":flat,
+		"select": columnsToChart,
+		"edges":[
+			{"name":"date", "value":"date", "domain":timeDomain}
+		]
+	}));
+
+
+	a = Log.action("Make chart", true);
+	aChart.show({
+		"id":"chart",
+		"sheetDiv":"info",
+		"type":"line",
+		"stacked":false,
+		"cube":chartP,
+		"xAxisSize":50,
+		extensionPoints: {
+		    dot_shapeRadius: 3,
+            dot_shape:"circle",
+			line_lineWidth: 3
+		},
+		"clickAction":function(series, x, d){
+			//MAP FROM HUMANE NAMES BACK TO ORIGINAL DIMENSION DEFINITION NAME
+			series = {"Open Bug Count": "Open", "Remaining Work": "Open", "Regressions": "Regressions"}[series];
+
+			Thread.run(function*(){
+				try{
+					var buglist=(yield (ESQuery.run({
+						"from":"bugs",
+						"select":{"value":"bug_id", "aggregate":"minimum"},
+						"edges":[
+							{"name":"unique", "value":"bug_id"}
+						],
+						"esfilter":{"and":[
+							mainFilter,
+							{"range":{"modified_ts":{"lte":x.getMilli()}}},
+							{"range":{"expires_on":{"gt":x.getMilli()}}},
+							GUI.state.release.makeFilter(),
+							series=="Total" ? ESQuery.TrueFilter :Mozilla.CountType[series].esfilter
+						]}
+					})));
+
+					Bugzilla.showBugs(buglist.cube);
+				}catch(e){
+					Log.warning("thread failure", e);
+					yield(null);  //SILENT FAILURE
+				}
+			});
+		}//click
+	});
+	Log.actionDone(a);
+
+	};
+
+	$(document).ready(function () {
+		GUI.setup(createChart, [
+			{"id": "release", "name": "Release", "type": PartitionFilter.newInstance({
+				"id": "releases",
+				"name": "All Releases",
+				"dimension": Mozilla.B2G.FinalState,
+				"onlyOne": true,
+				"expandAll": true,
+				"treeDepth": 1
+			})}
+		],
+				[],
+				"bugs",
+				false
+		);
+
+//	GUI.productFilter = ["B2G 1.0.0 (TEF)"];
+
+	});
+
+});
+
+
+function targetDate(m) {
+	return aChart.findDateMarks(m, "SC")
+}//method
+
+function startDate(m) {
+	return aChart.findDateMarks(m, "Start")
+}//method
+
+function releaseDetails(bugs) {
+
+	bugs.forall(function (b) {
+		b.bugLink = Bugzilla.linkToBug(b.bug_id);
+	});
+
+	var output = new Template([
+		"<table class='table' style='width:800px'>",
+		"<thead><tr>",
+		"<th style='width:70px;'>ID</th>",
+		"<th style='width:390px;'>Summary</th>",
+		"<th style='width:70px;'>Status<br>Owner</th>",
+		"<th>Priority</th>",
+		"</tr></thead>",
+		"<tbody>",
+		{
+			"from": ".",
+			"template": [
+				"<tr>" +
+						"<td>{{bugLink}}</td>" +
+						"<td><div style='width:390px;word-wrap: break-word'>{{summary|html}}</div></td>" +
+						"<td><div style='width:120px;word-wrap: break-word'><b>{{status}}:</b><br><span style='font-size: .7em;'>{{owner|html}}</span></div></td>" +
+						"<td><div style='text-align: center;width:20px;'>{{priority}}</div></td>" +
+						"</tr>"
+			]
+		},
+		"</tbody>",
+		"</table>"
+	]).expand(bugs);
+
+	return output;
+}//method
+
+
+
+
+</script>
+
+
+</BODY>
+</HTML>
+

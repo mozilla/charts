@@ -8,7 +8,7 @@ function bugDetails(bugs) {
 		"<table class='table' style='width:800px'>",
 		"<thead><tr>",
 		"<th style='width:70px;'>ID</th>",
-		"<th>Summary</th>",
+		"<th style='width:290px;'>Summary</th>",
 		"<th style='width:70px;'>Status<br>Owner</th>",
 		"<th>Priority</th>",
 		"<th>Estimate</th>",

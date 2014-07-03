@@ -703,7 +703,7 @@ aChart.show=function(params){
 		//LOOK FOR DATES TO MARKUP
 
 		var dateMarks = [];
-		dateMarks.appendArray(findDateMarks(xaxis.domain));  //WE CAN PLUG SOME dateMarks RINGT INTO TIME DOMAIN FOR DISPLAY
+		dateMarks.appendArray(findDateMarks(xaxis.domain));  //WE CAN PLUG SOME dateMarks RIGHT INTO TIME DOMAIN FOR DISPLAY
 		categoryAxis.domain.partitions.forall(function (part) {  //EACH CATEGORY CAN HAVE IT'S OWN dateMarks to SHOW
 			dateMarks.appendArray(findDateMarks(part))
 		});
@@ -840,8 +840,9 @@ function fixClickAction(chartParams){
 }
 
 
-function findDateMarks(part){
-	output = []
+//name IS OPTIONAL
+function findDateMarks(part, name){
+	var output = [];
 	Array.newInstance(part.dateMarks).forall(function (mark) {
 		var style = Map.setDefault({}, mark.style, part.style, {"color": "black", "lineWidth": "2.0", verticalAnchor: "top"});
 		style.strokeStyle = nvl(style.strokeStyle, style.color);
@@ -865,8 +866,15 @@ function findDateMarks(part){
 			});
 		}
 	});
-	return output;
-}
+
+	if (name){
+		return output.filter(function(p){return p.name==name;}).first().date;
+	}else{
+		return output;
+	}//endif
+}//method
+
+aChart.findDateMarks = findDateMarks;
 
 
 

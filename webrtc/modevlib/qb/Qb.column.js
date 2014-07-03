@@ -133,8 +133,11 @@ Qb.where.compile = function(whereClause, sourceColumns, edges){
 		var columnName = edges[i].name;
 		var domainName = edges[i].domain.name;
 		//ONLY DEFINE VARS THAT ARE USED
-		if (whereClause.indexOf(domainName + ".") != -1){
+		if (whereClause.indexOf(domainName) != -1){
 			f += "var " + domainName + "=__result["+i+"];\n";
+		}//endif
+		if (whereClause.indexOf(columnName) != -1){
+			f += "var " + columnName + "=__result["+i+"];\n";
 		}//endif
 	}//for
 

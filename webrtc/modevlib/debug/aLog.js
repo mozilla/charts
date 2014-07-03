@@ -96,7 +96,7 @@ Log.red=function(message){
 	window.log_alert_till = Date.now().add("20second").getMilli();
 	if (!window.log_alert){
 		window.log_alert = true;
-		$('body').css({"position":"relative"}).append('<div id="log_alert" style="position:absolute;bottom:0;top:0;width:100%;vertical-align:bottom;zindex:10"></div>');
+		$('body').css({"position":"relative"}).append('<div id="log_alert" style="position:fixed;top:0;bottom:0;width:100%;vertical-align:bottom;pointer-events:none;"></div>');
 	}//endif
 
 	function erase() {
@@ -120,6 +120,7 @@ Log.red=function(message){
 			"position":"absolute",
 			"bottom":0,
 			"height":"23px",
+			"zindex":10,
 			"background-color":Color.red.darker().toHTML()
 		}),
 		"message":message.replaceAll("\n", " ").replaceAll("\t", " ").replaceAll("  ", " ")

@@ -188,7 +188,8 @@ importScript([
 
 		var churnTimeDomain = {"type": "time", "min": MIN_CHART_DATE, "max": MAX_CHART_DATE, "interval": Duration.DAY, "value": "value"};
 
-		var perDay;
+		var perDay=null;
+		var daysInSprint=null;
 		var churnThread = Thread.run(function*() {
 			////////////////////////////////////////////////////////////////////////////
 			// CHURN
@@ -257,7 +258,7 @@ importScript([
 				"where": START_DATE.getMilli() + "<=date.getMilli() && date.getMilli()<" + Date.min(DUE_DATE, TODAY).getMilli()
 			}))).list[0];
 
-			var daysInSprint = Date.diffWeekday(Date.min(DUE_DATE, TODAY), START_DATE);
+			daysInSprint = Date.diffWeekday(Date.min(DUE_DATE, TODAY), START_DATE);
 
 
 			$("#stats").html(
@@ -492,7 +493,7 @@ importScript([
 
 		$("#stats").append(TEMPLATE.replace({
 			"daysRemaining":daysRemaining,
-			"count":aMath.round(stillOpen / daysRemaining, 1)
+			"count":aMath.round(stillOpen / daysRemaining + perDay.opened / daysInSprint, 1)
 		}));
 	}//endif
 

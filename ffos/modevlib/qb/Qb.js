@@ -151,7 +151,7 @@ function* calc2Tree(query){
 	var edges = query.edges;
 	query.columns = Qb.compile(query, sourceColumns);
 	var select = Array.newInstance(query.select);
-	var where = Qb.where.compile(nvl(query.where, query.esfilter), sourceColumns, edges);
+	var _where = Qb.where.compile(nvl(query.where, query.esfilter), sourceColumns, edges);
 	var numWhereFalse=0;
 
 
@@ -216,7 +216,7 @@ function* calc2Tree(query){
 		}//for
 
 		for(var r = results.length; r--;){
-			var pass = where(row, results[r]);
+			var pass = _where(row, results[r]);
 			if (pass){
 				calcAgg(row, results[r], query, select);
 			}else{
@@ -723,7 +723,8 @@ Qb.normalize=function(query, edgeIndex, multiple){
 };
 
 
-Qb.removeZeroParts=function(query, edgeIndex){
+//selectValue - THE FIELD TO USE TO CHECK FOR ZEROS (REQUIRED IF RECORDS ARE OBJECTS INSTEAD OF VALUES)
+Qb.removeZeroParts=function(query, edgeIndex, selectValue){
 	if (query.cube===undefined) Log.error("Can only normalize a cube into a table at this time");
 
 	var domain = query.edges[edgeIndex].domain;
@@ -731,9 +732,15 @@ Qb.removeZeroParts=function(query, edgeIndex){
 
 	//CHECK FOR ZEROS
 	var m = new Matrix({"data": query.cube});
-	m.forall(edgeIndex, function (v, i) {
-		if (v.count !== undefined && v.count != null && v.count != 0) zeros[i] = false;
-	});
+		if (query.select instanceof Array){
+			m.forall(edgeIndex, function (v, i) {
+				if (v[selectValue] !== undefined && v[selectValue] != null && v[selectValue] != 0) zeros[i] = false;
+			});
+		}else{
+			m.forall(edgeIndex, function (v, i) {
+				if (v !== undefined && v != null && v != 0) zeros[i] = false;
+			});
+		}//endif
 
 	//REMOVE ZERO PARTS FROM EDGE
 	var j = 0;

@@ -3,13 +3,9 @@
 // License, v. 2.0. If a copy of the MPL was not distributed with this
 // file, You can obtain one at http://mozilla.org/MPL/2.0/.
 ////////////////////////////////////////////////////////////////////////////////
-// Author: Kyle Lahnakoski  (kyle@lahnakoski.com)
+//        Author: Kyle Lahnakoski  (kyle@lahnakoski.com)
+// Documentation: https://github.com/klahnakoski/jsImport/blob/master/README.md
 ////////////////////////////////////////////////////////////////////////////////
-
-
-//REASONS FOR GLOBALS IN PACKAGE CONTEXT
-//http://lisperator.net/blog/thoughts-on-commonjs-requirejs/
-
 
 //AN ARRAY WILL DEMAND LOAD ORDER
 //THIS FUNCTION CAN ONLY BE RUN ONCE, AFTER WHICH IT WILL REPLACE ITSELF WITH A NULL FUNCTION
@@ -103,11 +99,12 @@ var importScript;
 	}//method
 
 
-	function readfile(fullPath, callback) {
+	function readfile(fullPath, callback){
 		var request = new XMLHttpRequest();
 		try {
 			var url = window.location.protocol + "//" + window.location.hostname + fullPath;
 			request.open('GET', url);
+			request.responseType="text";
 			request.isDone = false;
 			request.onreadystatechange = function () {
 				if (request.readyState == 4) {
@@ -230,7 +227,7 @@ var importScript;
 				script.type = 'text/javascript';
 				script.onload = onLoadCallback;
 				script.async = false;
-				script.src = netPaths[i] + (FORCE_RELOAD ?  ("?" + new Date().getTime()) : "");  //RANDOM ENDING FORCES A REAL RELOAD;
+				script.src = netPaths[i] + (FORCE_RELOAD ? ("?" + new Date().getTime()) : "");  //RANDOM ENDING FORCES A REAL RELOAD;
 				frag.appendChild(script);
 			}//endif
 		}//for

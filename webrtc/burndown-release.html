@@ -17,10 +17,11 @@
 	</div>
 	<hr>
 	<div id="description">
-		Simple burndown chart for 2.0<br><br>
-		The line chart shows regressions and the total open count (including regressions) by day.<br>
-		The bar chart shows the total bug churn on the FxOS product (plus a few related components from others)<br>
-		At the bottom is a list of open blockers assigned to this release.  This is differs from the top summary;
+		Simple burndown chart by release<br><br>
+		The line chart shows regressions and the total blocker count (including
+		regressions) by day.  The bar chart shows the total bug churn on
+		release blockers.
+		At the bottom is a list of open blockers assigned to this release.  This is differs from the top summary,
 		which only shows the counts at the end of the milestone (not the end of today).
 	</div>
 	<hr>
@@ -131,6 +132,12 @@ importScript([
 
 		yield (ESQuery.loadColumns({"from": "bugs"}));
 
+		var releaseFilter = {"and":[
+			Mozilla.B2G.Blockers.esfilter,
+			GUI.state.release.makeFilter()
+		]};
+
+
 		var mainFilter = {"and": [
 			{"and": [
 				{"range": {"modified_ts": {"lt": MAX_CHART_DATE.getMilli()}}},
@@ -159,7 +166,7 @@ importScript([
 				"esfilter": {"and": [
 					Mozilla.CurrentRecords.esfilter,
 					Mozilla.BugStatus.Open.esfilter,
-					GUI.state.release.makeFilter()
+					releaseFilter
 				]}
 			}));
 
@@ -184,9 +191,9 @@ importScript([
 		var perDay;
 		var churnThread = Thread.run(function*() {
 			////////////////////////////////////////////////////////////////////////////
-			// DAILY CHANGE
+			// CHURN
 			////////////////////////////////////////////////////////////////////////////
-			var minMaxBugs = yield(ElasticSearch.getOpenMinMax(Mozilla.B2G.esfilter, churnTimeDomain, ["status_whiteboard", "cf_blocking_loop", "cf_blocking_b2g", "target_milestone", "keywords", "resolution"]));
+			var minMaxBugs = yield(ElasticSearch.getOpenMinMax(releaseFilter, churnTimeDomain, ["status_whiteboard", "cf_blocking_loop", "cf_blocking_b2g", "target_milestone", "keywords", "resolution"]));
 
 			var diff = yield(Q({
 				"from": minMaxBugs,
@@ -195,7 +202,6 @@ importScript([
 					{"name": "closed", "value": "(time.min.getMilli()<=max && max<time.max.getMilli()) ? 1 : 0", "aggregate": "sum", "default": 0, "style": {"color": Color.red.multiply(0.9).hue(10).toHTML()}}
 				],
 				"edges": [
-					{"name": "type", "domain": Mozilla.ChurnType.getDomain()},
 					{"name": "date", "test": "(time.min.getMilli()<=min && min<time.max.getMilli()) || (time.min.getMilli()<=max && max<time.max.getMilli())",
 						"allowNulls": false,
 						"domain": {"type": "time", "min": MIN_CHART_DATE, "max": MAX_CHART_DATE, "interval": Duration.DAY, "value": "value"}
@@ -206,12 +212,8 @@ importScript([
 			var chart = yield(Q({
 				"from": diff,
 				"select": [
-					{"name": "Opened", "value": "opened", "aggregate": "sum", "style": {"color": color.blue}},
-					{"name": "Other", "value": "type.name=='Other' ? -closed : 0", "aggregate": "sum", "style": {"color": "lightgray"}},
-					{"name": "Dups", "value": "type.name=='Dups' ? -closed : 0", "aggregate": "sum", "style": {"color": "gray"}},
-					{"name": "Targeted", "value": "type.name=='Targeted' ? -closed : 0", "aggregate": "sum", "style": {"color": color.green}},
-					{"name": "Blocker", "value": "type.name=='Blocker' ? -closed : 0", "aggregate": "sum", "style": {"color": color.orange}},
-					{"name": "Regression", "value": "type.name=='Regression' ? -closed : 0", "aggregate": "sum", "style": {"color": color.red}}
+					{"name": "Opened", "value": "opened", "aggregate": "sum", "style": {"color": color.green}},
+					{"name": "Closed", "value": "-closed", "aggregate": "sum", "style":{"color": color.red}}
 				],
 				"edges": [
 					{"name": "date", "value": "date", "domain": {"type": "time", "min": MIN_CHART_DATE, "max": MAX_CHART_DATE, "interval": Duration.DAY, "value": "value"}}
@@ -220,7 +222,7 @@ importScript([
 
 			a = Log.action("Make chart", true);
 			aChart.show({
-				"name":"FxOS Team Bug Close (and Open) Rates",
+				"name":"Open and CLose Rates",
 				"id": "chart_diff",
 				"sheetDiv": "info",
 				"type": "bar",
@@ -250,7 +252,6 @@ importScript([
 				"from": diff,
 				"select": [
 					{"name": "opened", "value": "opened", "aggregate": "sum"},
-					{"name": "newBlockers", "value":"['Blocker', 'Regression'].contains(type.name) ? opened : null", "aggregate":"sum"},
 					{"name": "closed", "value": "closed", "aggregate": "sum"}
 				],
 				"where": START_DATE.getMilli() + "<=date.getMilli() && date.getMilli()<" + Date.min(DUE_DATE, TODAY).getMilli()
@@ -261,8 +262,7 @@ importScript([
 
 			$("#stats").html(
 					'<span class="parameter_name">Workdays in release:</span>' + daysInSprint + '<br>' +
-					'<span class="parameter_name">New bugs per day:</span>' + aMath.round(perDay.opened / daysInSprint, 1) + '<br>' +
-					'<span class="parameter_name">New blockers per day:</span>' + aMath.round(perDay.newBlockers / daysInSprint, 1) + '<br>' +
+					'<span class="parameter_name">New blockers per day:</span>' + aMath.round(perDay.opened / daysInSprint, 1) + '<br>' +
 					'<span class="parameter_name">Closed per day:</span>' + aMath.round(perDay.closed / daysInSprint, 1) + '<br>' +
 					''
 			);
@@ -295,7 +295,7 @@ importScript([
 							{"range": {"expires_on": {"gt": due}}}
 						]};
 					})},
-					GUI.state.release.makeFilter()
+					releaseFilter
 				]}
 			}));
 
@@ -356,7 +356,7 @@ importScript([
 							],
 							"esfilter": {"and": [
 								Mozilla.CurrentRecords.esfilter,
-								GUI.state.release.makeFilter()
+								releaseFilter
 							]}
 						})));
 
@@ -376,7 +376,7 @@ importScript([
 								"esfilter": {"and": [
 									Mozilla.CurrentRecords.esfilter,
 									t.esfilter,
-									GUI.state.release.makeFilter()
+									releaseFilter
 								]}
 							})));
 
@@ -404,7 +404,7 @@ importScript([
 			"expires_on"
 		],
 		"esfilter":{"and":[
-			GUI.state.release.makeFilter(),
+			releaseFilter,
 			{"range":{"modified_ts":{"lt":MAX_CHART_DATE.getMilli()}}},
 			{"range":{"expires_on":{"gte":MIN_CHART_DATE.getMilli()}}}
 		]}
@@ -501,9 +501,9 @@ importScript([
 
 	//WE WILL CHART A DYNAMIC SET OF COLUMNS, BASED ON IF WE ARE LOOKING AT A FUTURE OR PAST DUE DATE
 	var columnsToChart=[
-		{"name":"Total Bugs", "value":"Total_Bugs", "style":{"color":color.cyan, "visibility":"hidden"}},
-		{"name":"Open Bug Count", "value":"Open_Bugs", "style":{"color":color.blue}},
-		{"name":"Regressions", "value":"Regressions", "style":{"color":color.red}}
+		{"name":"Total Blockers", "value":"Total_Bugs", "style":{"color":color.cyan, "visibility":"hidden"}},
+		{"name":"Open Blockers", "value":"Open_Bugs", "style":{"color":color.blue}},
+		{"name":"Regressions", "value":"Regressions", "style":{"color":color.orange}}
 	];
 
 	var ideal=function(date){
@@ -556,7 +556,7 @@ importScript([
 		},
 		"clickAction":function(series, x, d){
 			//MAP FROM HUMANE NAMES BACK TO ORIGINAL DIMENSION DEFINITION NAME
-			series = {"Open Bug Count": "Open", "Remaining Work": "Open", "Regressions": "Regressions"}[series];
+			series = {"Open Blockers": "Open", "Remaining Work": "Open", "Regressions": "Regressions"}[series];
 
 			Thread.run(function*(){
 				try{
@@ -570,7 +570,7 @@ importScript([
 							mainFilter,
 							{"range":{"modified_ts":{"lte":x.getMilli()}}},
 							{"range":{"expires_on":{"gt":x.getMilli()}}},
-							GUI.state.release.makeFilter(),
+							releaseFilter,
 							series=="Total" ? ESQuery.TrueFilter :Mozilla.CountType[series].esfilter
 						]}
 					})));
@@ -589,7 +589,7 @@ importScript([
 
 	$(document).ready(function () {
 		GUI.setup(createChart, [
-			{"id": "release", "name": "Release", "type": PartitionFilter.newInstance({
+			{"id": "release", "name": "Release", "default":"2.0", "type": PartitionFilter.newInstance({
 				"id": "releases",
 				"name": "All Releases",
 				"dimension": Mozilla.B2G.FinalState,

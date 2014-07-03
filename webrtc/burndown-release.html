@@ -4,6 +4,7 @@
    - file, You can obtain one at http://mozilla.org/MPL/2.0/. -->
 <HTML>
 <HEAD>
+	<title>Release Burndown</title>
 	<script type="application/javascript" src="modevlib/imports/import.js"></script>
 </HEAD>
 <BODY>
@@ -22,7 +23,9 @@
 		regressions) by day.  The bar chart shows the total bug churn on
 		release blockers.
 		At the bottom is a list of open blockers assigned to this release.  This is differs from the top summary,
-		which only shows the counts at the end of the milestone (not the end of today).
+		which only shows the counts at the end of the milestone (not the end of today).<br><br>
+
+		<span class="warning">Statistics are calculated using the past two weeks, usually 10 business days, not including today.</span>
 	</div>
 	<hr>
 	<div id="stats"></div>
@@ -86,6 +89,7 @@ importScript([
 	var __createChart = function*() {
 		var NOW = Date.now();
 		var TODAY = Date.today();
+		var SAMPLE_DURATION = Duration.newInstance("2week");
 
 		$("#release-summary").html("");
 		$("#chart").html("");
@@ -189,7 +193,9 @@ importScript([
 		var churnTimeDomain = {"type": "time", "min": MIN_CHART_DATE, "max": MAX_CHART_DATE, "interval": Duration.DAY, "value": "value"};
 
 		var perDay=null;
+		var perDayInSample=null;
 		var daysInSprint=null;
+		var daysInSample=null;
 		var churnThread = Thread.run(function*() {
 			////////////////////////////////////////////////////////////////////////////
 			// CHURN
@@ -257,16 +263,28 @@ importScript([
 				],
 				"where": START_DATE.getMilli() + "<=date.getMilli() && date.getMilli()<" + Date.min(DUE_DATE, TODAY).getMilli()
 			}))).list[0];
-
 			daysInSprint = Date.diffWeekday(Date.min(DUE_DATE, TODAY), START_DATE);
 
+			var sampleEnd = Date.min(DUE_DATE, TODAY);
+			var sampleStart = Date.max(START_DATE, sampleEnd.subtract(SAMPLE_DURATION));
+			daysInSample = Date.diffWeekday(sampleEnd, sampleStart);
+			perDayInSample = (yield(Qb.calc2List({
+				"from": diff,
+				"select": [
+					{"name": "opened", "value": "opened", "aggregate": "sum"},
+					{"name": "closed", "value": "closed", "aggregate": "sum"}
+				],
+				"where": sampleStart.getMilli()+ "<=date.getMilli() && date.getMilli()<" + sampleEnd.getMilli()
+			}))).list[0];
 
-			$("#stats").html(
+			if (daysInSample>=1){
+				$("#stats").html(
 					'<span class="parameter_name">Workdays in release:</span>' + daysInSprint + '<br>' +
-					'<span class="parameter_name">New blockers per day:</span>' + aMath.round(perDay.opened / daysInSprint, 1) + '<br>' +
-					'<span class="parameter_name">Closed per day:</span>' + aMath.round(perDay.closed / daysInSprint, 1) + '<br>' +
+					'<span class="parameter_name">New blockers per day:</span>' + aMath.round(perDayInSample.opened / daysInSample, 1) + '<br>' +
+					'<span class="parameter_name">Closed per day:</span>' + aMath.round(perDayInSample.closed / daysInSample, 1) + '<br>' +
 					''
-			);
+				);
+			}//endif
 
 		});
 
@@ -493,7 +511,7 @@ importScript([
 
 		$("#stats").append(TEMPLATE.replace({
 			"daysRemaining":daysRemaining,
-			"count":aMath.round(stillOpen / daysRemaining + perDay.opened / daysInSprint, 1)
+			"count":aMath.round(stillOpen / daysRemaining + perDayInSample.opened / daysInSample, 1)
 		}));
 	}//endif
 

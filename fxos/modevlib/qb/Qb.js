@@ -726,6 +726,7 @@ Qb.normalize=function(query, edgeIndex, multiple){
 //selectValue - THE FIELD TO USE TO CHECK FOR ZEROS (REQUIRED IF RECORDS ARE OBJECTS INSTEAD OF VALUES)
 Qb.removeZeroParts=function(query, edgeIndex, selectValue){
 	if (query.cube===undefined) Log.error("Can only normalize a cube into a table at this time");
+	if (selectValue===undefined) Log.error("method now requires third parameter");
 
 	var domain = query.edges[edgeIndex].domain;
 	var zeros=domain.partitions.map(function(){ return true;});

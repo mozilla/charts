@@ -219,8 +219,8 @@ importScript([
 			var chart = yield(Q({
 				"from": diff,
 				"select": [
-					{"name": "Opened", "value": "opened", "aggregate": "sum", "style": {"color": color.green}},
-					{"name": "Closed", "value": "-closed", "aggregate": "sum", "style":{"color": color.red}}
+					{"name": "Opened", "value": "opened", "aggregate": "sum", "default":0, "style": {"color": color.green}},
+					{"name": "Closed", "value": "-closed", "aggregate": "sum", "default":0, "style":{"color": color.red}}
 				],
 				"edges": [
 					{"name": "date", "value": "date", "domain": {"type": "time", "min": MIN_CHART_DATE, "max": MAX_CHART_DATE, "interval": Duration.DAY, "value": "value"}}

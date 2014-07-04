@@ -573,7 +573,7 @@ importScript("js/chart_lib.js", function () {
 			//SHOW GRID
 			both.name = team.name;
 			if (["Performance", "All Others", "All Teams"].contains(team.name)) {
-				Qb.removeZeroParts(both, 0);
+				Qb.removeZeroParts(both, 0, "count");
 			}//endif
 
 			var html = cube2grid({

@@ -185,6 +185,7 @@ var importScript;
 		var scripts = head.getElementsByTagName('script');
 		for (var s = 0; s < scripts.length; s++) {
 			var p = scripts[s].getAttribute("src");
+			if (p==null) continue;
 			var fp = getFullPath(window.location.pathname, p);
 			existingScripts.push(fp);
 		}//for

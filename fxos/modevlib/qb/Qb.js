@@ -25,7 +25,11 @@ var Q;   //=Q
 
 
 function splitField(fieldname){
-	return fieldname.replaceAll("\\.", "\b").split(".").map(function(v){return v.replaceAll("\b", ".");});
+	try{
+		return fieldname.replaceAll("\\.", "\b").split(".").map(function(v){return v.replaceAll("\b", ".");});
+	}catch(e){
+		Log.error("Can not split field", e);
+	}//try
 }//method
 
 function joinField(path){
@@ -1018,7 +1022,11 @@ Qb.sort.compile=function(sortOrder, columns, useNames){
 	var orderedColumns;
 	if (columns===undefined){
 		orderedColumns = sortOrder.map(function(v){
-			return {"name":v, "sortOrder":1, "domain":Qb.domain.value}
+			if (v.value!==undefined && v.sort!==undefined){
+				return {"name": v.value, "sortOrder":nvl(v.sort, 1), "domain":Qb.domain.value};
+			}else{
+				return {"name":v, "sortOrder":1, "domain":Qb.domain.value};
+			}//endif
 		});
 	}else{
 		orderedColumns = sortOrder.map(function(v){
@@ -1036,7 +1044,12 @@ Qb.sort.compile=function(sortOrder, columns, useNames){
 			Log.warning("what?");
 		}//endif
 
-		var index=useNames ? splitField(col.name).map(function(v){return CNV.String2Quote(v);}).join("][") : col.columnIndex;
+		if (MVEL.isKeyword(col.name)){
+			var index=useNames ? splitField(col.name).map(function(v){return CNV.String2Quote(v);}).join("][") : col.columnIndex;
+		}else{
+			Log.error("Can not handle");
+		}//endif
+
 		f+="diff = orderedColumns["+o+"].domain.compare(a["+index+"], b["+index+"]);\n";
 		if (o==orderedColumns.length-1){
 			if (col.sortOrder===undefined || col.sortOrder==1){

@@ -5,7 +5,7 @@
 <HTML>
 <HEAD>
 	<title>Milestone Burndown</title>
-	<script type="application/javascript" src="modevlib/imports/import.js"></script>
+	<script type="text/javascript" src="modevlib/imports/import.js"></script>
 
 	<script>
   (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
@@ -148,7 +148,7 @@ importScript([
 
 		var releaseFilter = {"and":[
 			Mozilla.B2G.Blockers.esfilter,
-			GUI.state.release.makeFilter()
+			GUI.getFilters("bugs")
 		]};
 
 
@@ -331,7 +331,7 @@ importScript([
 			var releaseTotals = yield(Q({
 				"from": currMilestone,
 				"select": [
-					{"name": "count", "value": '1', "aggregate": "sum"}
+					{"name": "count", "value": '1', "aggregate": "sum", "default":0}
 				],
 				"edges": [
 					{"name": "Milestone", "domain": Mozilla.B2G.FinalState.getDomain()},
@@ -352,7 +352,7 @@ importScript([
 						Mozilla.B2G.FinalState[m.name].count = count;
 
 						var TEMPLATE = new Template("<div>" +
-								"<div style='width:230px;display: inline-block;padding:0px 10px 0px 10px'>Milestone {{release}} (end of {{date}}):</div>" +
+								"<div style='width:251px;display: inline-block;padding:0px 10px 0px 10px'>Milestone {{release}} (end of {{date}}):</div>" +
 								"<div id='{{release}}Total' class='hoverable' style='width:75px;display:inline-block;'>Total: {{total}}</div>" +
 								"<div id='{{release}}Closed' class='hoverable' style='width:125px;display:inline-block;'>Closed: {{closed}} ({{closed_percent}}%)</div>" +
 								"<div id='{{release}}Open' class='hoverable' style='display:inline-block;'>Open Bugs: {{open}}</div>" +
@@ -360,7 +360,7 @@ importScript([
 								"</div");
 						return TEMPLATE.replace({
 							"release": m.name,
-							"date": DUE_DATE < TODAY ? DUE_DATE.subtract(Duration.DAY).format("NNN dd") : "today",
+							"date": DUE_DATE <= TODAY ? DUE_DATE.subtract(Duration.DAY).format("NNN dd") : "today",
 							"total": total,
 							"open": nvl(releaseTotals.cube[i][1].count, 0) + nvl(releaseTotals.cube[i][0].count, 0),
 							"regressions": nvl(releaseTotals.cube[i][0].count, "0"),
@@ -625,6 +625,14 @@ importScript([
 				"onlyOne": true,
 				"expandAll": true,
 				"treeDepth": 1
+			})},
+			{"id": "team", "name": "Team", "type": PartitionFilter.newInstance({
+				"id": "teams",
+				"name": "All Teams",
+				"dimension": Mozilla.B2G.Team,
+				"onlyOne": false,
+				"expandAll": true,
+				"treeDepth":1
 			})}
 		],
 				[],
@@ -640,7 +648,7 @@ importScript([
 
 
 function targetDate(m) {
-	return aChart.findDateMarks(m, "SC")
+	return aChart.findDateMarks(m, "FC")
 }//method
 
 function startDate(m) {

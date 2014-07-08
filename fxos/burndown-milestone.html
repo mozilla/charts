@@ -5,7 +5,7 @@
 <HTML>
 <HEAD>
 	<title>Milestone Burndown</title>
-	<script type="application/javascript" src="modevlib/imports/import.js"></script>
+	<script type="text/javascript" src="modevlib/imports/import.js"></script>
 
 	<script>
   (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
@@ -201,7 +201,7 @@ var __createChart = function*(){
 		sorttable.makeSortable(table);
 	});
 
-	var churnTimeDomain={"type":"time", "min":MIN_CHART_DATE, "max":MAX_CHART_DATE, "interval":Duration.DAY, "value":"value"};
+	var churnTimeDomain={"type":"time", "min":MIN_CHART_DATE, "max":DUE_DATE, "interval":Duration.DAY, "value":"value"};
 
 	var perDay;
 	var churnThread=Thread.run(function*(){
@@ -220,7 +220,7 @@ var __createChart = function*(){
 				{"name":"type", "domain":Mozilla.ChurnType.getDomain()},
 				{"name":"date", "test":"(time.min.getMilli()<=min && min<time.max.getMilli()) || (time.min.getMilli()<=max && max<time.max.getMilli())",
 					"allowNulls":false,
-					"domain":{"type":"time", "min":MIN_CHART_DATE, "max":MAX_CHART_DATE, "interval":Duration.DAY, "value":"value"}
+					"domain":Map.copy(churnTimeDomain)
 				}
 			]
 		}));
@@ -236,7 +236,7 @@ var __createChart = function*(){
 				{"name":"Regression", "value":"type.name=='Regression' ? -closed : 0", "aggregate":"sum", "style":{"color":color.red}}
 			],
 			"edges":[
-				{"name":"date", "value":"date", "domain":{"type":"time", "min":MIN_CHART_DATE, "max":MAX_CHART_DATE, "interval":Duration.DAY, "value":"value"}}
+				{"name":"date", "value":"date", "domain":Map.copy(churnTimeDomain)}
 			]
 		}));
 
@@ -322,8 +322,8 @@ var __createChart = function*(){
 		var milestoneTotals=yield(Q({
 			"from":currMilestone,
 			"select":[
-				{"name":"work",  "value":'nvl(ScrumBugs.parse(status_whiteboard).points, 1)-0', "aggregate":"sum"},
-				{"name":"count",  "value":'1', "aggregate":"sum"}
+				{"name":"work",  "value":'nvl(ScrumBugs.parse(status_whiteboard).points, 1)-0', "aggregate":"sum", "default":0},
+				{"name":"count",  "value":'1', "aggregate":"sum", "default":0}
 			],
 			"edges":[
 				{"name":"Milestone", "domain":Mozilla.Milestone.getDomain()},
@@ -346,7 +346,7 @@ var __createChart = function*(){
 				Mozilla.Milestone[m.name].count=count;
 
 				var TEMPLATE = new Template("<div>" +
-						"<div style='width:230px;display: inline-block;padding:0px 10px 0px 10px'>Milestone {{milestone}} (end of {{date}}):</div>" +
+						"<div style='width:251px;display: inline-block;padding:0px 10px 0px 10px'>Milestone {{milestone}} (end of {{date}}):</div>" +
 						"<div id='{{milestone}}Total' class='hoverable' style='width:75px;display:inline-block;'>Total: {{total}}</div>"+
 						"<div id='{{milestone}}Closed' class='hoverable' style='width:125px;display:inline-block;'>Closed: {{closed}} ({{closed_percent}}%)</div>"+
 						"<div id='{{milestone}}Open' class='hoverable' style='display:inline-block;'>Open Bugs: {{open}}</div>" +
@@ -354,7 +354,7 @@ var __createChart = function*(){
 						"</div");
 				return TEMPLATE.replace({
 					"milestone": m.name,
-					"date": DUE_DATE < TODAY ? DUE_DATE.subtract(Duration.DAY).format("NNN dd") : "today",
+					"date": DUE_DATE <= TODAY ? DUE_DATE.subtract(Duration.DAY).format("NNN dd") : "today",
 					"total": total,
 					"open": nvl(milestoneTotals.cube[i][1].count, 0) + nvl(milestoneTotals.cube[i][0].count, 0),
 					"regressions": nvl(milestoneTotals.cube[i][0].count, "0"),

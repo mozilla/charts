@@ -842,36 +842,40 @@ function fixClickAction(chartParams){
 
 //name IS OPTIONAL
 function findDateMarks(part, name){
-	var output = [];
-	Array.newInstance(part.dateMarks).forall(function (mark) {
-		var style = Map.setDefault({}, mark.style, part.style, {"color": "black", "lineWidth": "2.0", verticalAnchor: "top"});
-		style.strokeStyle = nvl(style.strokeStyle, style.color);
-		style.textStyle = nvl(style.textStyle, style.color);
+	try{
+		var output = [];
+		Array.newInstance(part.dateMarks).forall(function (mark) {
+			var style = Map.setDefault({}, mark.style, part.style, {"color": "black", "lineWidth": "2.0", verticalAnchor: "top"});
+			style.strokeStyle = nvl(style.strokeStyle, style.color);
+			style.textStyle = nvl(style.textStyle, style.color);
 
-		if (mark.name !== undefined) {
-			//EXPECTING {"name":<name>, "date":<date>, "style":<style>} FORMAT
-			output.append({
-				"name": mark.name,
-				"date": Date.newInstance(mark.date),
-				"style": style
-			})
-		} else {
-			//EXPECTING <name>:<date> FORMAT
-			forAllKey(mark, function(name, date){
+			if (mark.name !== undefined) {
+				//EXPECTING {"name":<name>, "date":<date>, "style":<style>} FORMAT
 				output.append({
-					"name": name,
-					"date": Date.newInstance(date),
+					"name": mark.name,
+					"date": Date.newInstance(mark.date),
 					"style": style
 				})
-			});
-		}
-	});
+			} else {
+				//EXPECTING <name>:<date> FORMAT
+				forAllKey(mark, function(name, date){
+					output.append({
+						"name": name,
+						"date": Date.newInstance(date),
+						"style": style
+					})
+				});
+			}
+		});
 
-	if (name){
-		return output.filter(function(p){return p.name==name;}).first().date;
-	}else{
-		return output;
-	}//endif
+		if (name){
+			return output.filter(function(p){return p.name==name;}).first().date;
+		}else{
+			return output;
+		}//endif
+	}catch(e){
+		Log.error("some error found", e);
+	}//try
 }//method
 
 aChart.findDateMarks = findDateMarks;

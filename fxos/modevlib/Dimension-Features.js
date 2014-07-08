@@ -276,6 +276,44 @@ Dimension.addEdges(true, Mozilla, [
 					{"not": {"term": {"cf_blocking_loop": "fx34+"}}}  // UNFORTUNATE REDUNDANCY
 				]}}
 			]
+		},
+		{
+			"name": "Firefox35",
+			"start_date": "1 sep 2014",
+			"targetDate": "13 oct 2014",
+			"dateMarks":[
+				{"name":"FF35 Target", "date":"24 oct 2014", "style":{strokeStyle:"black", verticalOffset: 20}}
+			],
+
+			"needed_fields":["target_milestone", "cf_blocking_loop"],
+			"partitions": [
+				{"name": "Blocking", "esfilter": {"and": [
+					{"term": {"cf_blocking_loop": "fx35+"}}
+				]}},
+				{"name": "Targeted", "esfilter": {"and": [
+					{"term": {"target_milestone": "mozilla35"}},
+					{"not": {"term": {"cf_blocking_loop": "fx35+"}}}  // UNFORTUNATE REDUNDANCY
+				]}}
+			]
+		},
+		{
+			"name": "Firefox36",
+			"start_date": "14 OCT 2014",
+			"targetDate": "24 nov 2014",
+			"dateMarks":[
+				{"name":"FF36 Target", "date":"25 nov 2014", "style":{strokeStyle:"black", verticalOffset: 20}}
+			],
+
+			"needed_fields":["target_milestone", "cf_blocking_loop"],
+			"partitions": [
+				{"name": "Blocking", "esfilter": {"and": [
+					{"term": {"cf_blocking_loop": "fx36+"}}
+				]}},
+				{"name": "Targeted", "esfilter": {"and": [
+					{"term": {"target_milestone": "mozilla36"}},
+					{"not": {"term": {"cf_blocking_loop": "fx36+"}}}  // UNFORTUNATE REDUNDANCY
+				]}}
+			]
 		}
 
 	].appendArray(Sprints).sort(function(a, b){

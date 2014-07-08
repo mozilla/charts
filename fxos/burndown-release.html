@@ -148,7 +148,7 @@ importScript([
 
 		var releaseFilter = {"and":[
 			Mozilla.B2G.Blockers.esfilter,
-			GUI.state.release.makeFilter()
+			GUI.getFilters("bugs")
 		]};
 
 
@@ -625,6 +625,14 @@ importScript([
 				"onlyOne": true,
 				"expandAll": true,
 				"treeDepth": 1
+			})},
+			{"id": "team", "name": "Team", "type": PartitionFilter.newInstance({
+				"id": "teams",
+				"name": "All Teams",
+				"dimension": Mozilla.B2G.Team,
+				"onlyOne": false,
+				"expandAll": true,
+				"treeDepth":1
 			})}
 		],
 				[],
@@ -640,7 +648,7 @@ importScript([
 
 
 function targetDate(m) {
-	return aChart.findDateMarks(m, "SC")
+	return aChart.findDateMarks(m, "FC")
 }//method
 
 function startDate(m) {

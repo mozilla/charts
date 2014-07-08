@@ -333,8 +333,8 @@ if (!Mozilla) var Mozilla={"name":"Mozilla", "edges":[]};
 						//https://wiki.mozilla.org/Release_Management/B2G_Landing
 //						{"name": "1.3",
 //							"dateMarks": [
-//								{"name": "FC", "date": "Dec 9, 2013", "style": {strokeStyle: "black", verticalOffset: 10}},
-//								{"name": "CF", "date": "Mar 17, 2014", "style": {strokeStyle: "black", verticalOffset: 10}}
+//								{"name": "FL", "date": "Dec 9, 2013", "style": {strokeStyle: "black", verticalOffset: 10}},
+//								{"name": "FC", "date": "Mar 17, 2014", "style": {strokeStyle: "black", verticalOffset: 10}}
 //							],
 //							"style": {"color": "#d62728"},
 //							"esfilter": {"or": [
@@ -343,8 +343,8 @@ if (!Mozilla) var Mozilla={"name":"Mozilla", "edges":[]};
 //						},
 						{"name": "1.3T",
 							"dateMarks": [
-								{"name": "FC", "date": "Dec 9, 2013", "style": {strokeStyle: "black", verticalOffset: 20}},
-								{"name": "CF", "date": "Mar 17, 2014", "style": {strokeStyle: "black", verticalOffset: 20}}
+								{"name": "FL", "date": "Dec 9, 2013", "style": {strokeStyle: "black", verticalOffset: 20}},
+								{"name": "FC", "date": "Mar 17, 2014", "style": {strokeStyle: "black", verticalOffset: 20}}
 							],
 							"style": {"color": "#ff7f0e"},
 							"esfilter": {"or": [
@@ -354,8 +354,8 @@ if (!Mozilla) var Mozilla={"name":"Mozilla", "edges":[]};
 						{"name": "1.4",
 							"dateMarks": [
 								{"name":"Start", "date": "Dec 9, 2013"},
-								{"name": "FC", "date": "Mar 17, 2014", "style": {strokeStyle: "black", verticalOffset: 30}},
-								{"name": "SC", "date": "Apr 28, 2014", "style": {strokeStyle: "black", verticalOffset: 30}},
+								{"name": "FL", "date": "Mar 17, 2014", "style": {strokeStyle: "black", verticalOffset: 30}},
+								{"name": "FC", "date": "Apr 28, 2014", "style": {strokeStyle: "black", verticalOffset: 30}},
 								{"name": "CF", "date": "Jun 9, 2014", "style": {strokeStyle: "black", verticalOffset: 30}}
 							],
 							"style": {"color": "#2ca02c"},
@@ -379,8 +379,8 @@ if (!Mozilla) var Mozilla={"name":"Mozilla", "edges":[]};
 						},
 						{"name": "2.1",
 							"dateMarks": [
-								{"FC": "Jul 21, 2014"},
-								{"CF": "Sep 01, 2014"}
+								{"FL": "Jul 21, 2014"},
+								{"FC": "Sep 01, 2014"}
 							],
 							"style": {"color": "#d62728"},
 							"esfilter": {"or": [
@@ -438,16 +438,16 @@ if (!Mozilla) var Mozilla={"name":"Mozilla", "edges":[]};
 					"partitions": [
 //						{"name": "1.3",
 //							"dateMarks": [
-//								{"name": "FC", "date": "Dec 9, 2013", "style": {strokeStyle: "black", verticalOffset: 10}},
-//								{"name": "CF", "date": "Mar 17, 2014", "style": {strokeStyle: "black", verticalOffset: 10}}
+//								{"name": "FL", "date": "Dec 9, 2013", "style": {strokeStyle: "black", verticalOffset: 10}},
+//								{"name": "FC", "date": "Mar 17, 2014", "style": {strokeStyle: "black", verticalOffset: 10}}
 //							],
 //							"style": {"color": "#d62728"},
 //							"esfilter": {"term": {"cf_blocking_b2g": "1.3+"}}
 //						},
 						{"name": "1.3T",
 							"dateMarks": [
-								{"name": "FC", "date": "Dec 9, 2013", "style": {strokeStyle: "black", verticalOffset: 20}},
-								{"name": "CF", "date": "Mar 17, 2014", "style": {strokeStyle: "black", verticalOffset: 20}}
+								{"name": "FL", "date": "Dec 9, 2013", "style": {strokeStyle: "black", verticalOffset: 20}},
+								{"name": "FC", "date": "Mar 17, 2014", "style": {strokeStyle: "black", verticalOffset: 20}}
 							],
 							"style": {"color": "#ff7f0e"},
 							"esfilter": {"terms": {"cf_blocking_b2g": ["1.3t+", "1.3t?"]}}},
@@ -459,8 +459,8 @@ if (!Mozilla) var Mozilla={"name":"Mozilla", "edges":[]};
 							]},
 							"dateMarks": [
 								{"name":"Start", "date":"Dec 9, 2013"},
-								{"name": "FC", "date": "Mar 17, 2014", "style": {strokeStyle: "black", verticalOffset: 30}},
-								{"name": "SC", "date": "Apr 28, 2014", "style": {strokeStyle: "black", verticalOffset: 30}},
+								{"name": "FL", "date": "Mar 17, 2014", "style": {strokeStyle: "black", verticalOffset: 30}},
+								{"name": "FC", "date": "Apr 28, 2014", "style": {strokeStyle: "black", verticalOffset: 30}},
 								{"name": "CF", "date": "Jun 9, 2014", "style": {strokeStyle: "black", verticalOffset: 30}}
 							]
 						},
@@ -479,8 +479,8 @@ if (!Mozilla) var Mozilla={"name":"Mozilla", "edges":[]};
 						},
 						{"name": "2.1",
 							"dateMarks": [
-								{"FC": "Jul 21, 2014"},
-								{"CF": "Sep 01, 2014"}
+								{"FL": "Jul 21, 2014"},
+								{"FC": "Sep 01, 2014"}
 							],
 							"style": {"color": "#d62728"},
 							"esfilter": {"or": [

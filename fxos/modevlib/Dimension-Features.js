@@ -7,6 +7,54 @@ importScript("qb/ESQuery.js");
 
 if (!Mozilla) var Mozilla = {"name": "Mozilla", "edges": []};
 
+
+Sprints = [
+	"33 Sprint 1- 6/23     6/10-6/23",
+	"33 Sprint 2- 7/7       6/24-7/7",
+	"33 Sprint 3- 7/21      7/7-7/21",
+	"34 Sprint 1- 8/4       7/22-8/4",
+	"34 Sprint 2- 8/18     8/5-8/18",
+	"34 Sprint 3- 9/1       8/19-9/1",
+	"35 Sprint 1- 9/15     9/2-9/15",
+	"35 Sprint 2- 9/29     9/16-9/29",
+	"35 Sprint 3- 10/1     9/30-10/13",
+	"36 Sprint 1- 10/27   10/14-10/27",
+	"36 Sprint 2- 11/10   10/28-11/10",
+	"36 Sprint 3- 11/24   11/11-11/24"
+].map(function (v) {
+		var parts = v.split("-").map(function (v) {
+			return v.trim();
+		});
+		var name = v.split("-")[0];
+
+		var targets = v.split("  ")[0].trim();
+		var blocks = "fx"+name.split(" ")[0]+"+";
+		var targetName = name.replaceAll("Sprint ", "S")+" Target";
+		var dates=[parts[1].split(" ").last(), parts.last()];
+		var startDate = Date.newInstance(dates[0].split("/").reverse().join("/") + "/2014");
+		var endDate = Date.newInstance(dates[1].split("/").reverse().join("/") + "/2014");
+
+		return {
+			"name": name,
+			"start_date": startDate,
+			"targetDate": endDate,
+			"dateMarks": [
+				{"name": targetName, "date": endDate.addDay(), "style": {strokeStyle: "black", verticalOffset: 20}}
+			],
+			"needed_fields": ["target_milestone", "cf_blocking_loop"],
+			"partitions": [
+				{"name": "Blocking", "esfilter": {"and": [
+					{"term": {"cf_blocking_loop": blocks}}
+				]}},
+				{"name": "Targeted", "esfilter": {"and": [
+					{"term": {"target_milestone": targets}},
+					{"not": {"term": {"cf_blocking_loop": blocks}}}  // UNFORTUNATE REDUNDANCY
+				]}}
+			]
+		};
+	});
+
+
 Dimension.addEdges(true, Mozilla, [
 
 	{"name": "Feature", "index": "bugs", "needed_fields":["cf_feature_b2g", "status_whiteboard"], "esfilter": {"match_all": {}}, "edges": [
@@ -230,8 +278,13 @@ Dimension.addEdges(true, Mozilla, [
 			]
 		}
 
-	]},
-
+	].appendArray(Sprints).sort(function(a, b){
+		if (Date.newInstance(a.targetDate)>Date.newInstance(b.targetDate)) return 1;
+		if (Date.newInstance(a.targetDate)<Date.newInstance(b.targetDate)) return -1;
+		if (Date.newInstance(a.start_date)>Date.newInstance(b.start_date)) return -1;
+		if (Date.newInstance(a.start_date)<Date.newInstance(b.start_date)) return 1;
+		return 0;
+	})},
 
 	{"name": "CountType", "index": "bugs", "isFacet": true, "partitions": [
 		{"name": "Regressions", "esfilter": {"and":[

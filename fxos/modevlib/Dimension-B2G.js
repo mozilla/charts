@@ -366,10 +366,10 @@ if (!Mozilla) var Mozilla={"name":"Mozilla", "edges":[]};
 						},
 						{"name": "2.0",
 							"dateMarks": [
-								{"name":"Start", "date": "Dec 9, 2013"},
-								{"FC": "Jun 9, 2014"},
-								{"SC": "Jul 21, 2014"},
-								{"CF": "Sep 01, 2014"}
+								{"name":"Start", "date": "Apr 28, 2014"},
+								{"name":"FL", "date": "Jun 9, 2014"},
+								{"name":"FC", "date": "Jul 21, 2014"},
+								{"name":"CF", "date": "Sep 01, 2014"}
 							],
 							"style": {"color": "#1f77b4"},
 							"esfilter": {"or": [
@@ -467,8 +467,8 @@ if (!Mozilla) var Mozilla={"name":"Mozilla", "edges":[]};
 						{"name": "2.0",
 							"dateMarks": [
 								{"name":"Start", "date": "Apr 28, 2014"},
-								{"name":"FC", "date": "Jun 9, 2014"},
-								{"name":"SC", "date": "Jul 21, 2014"},
+								{"name":"FL", "date": "Jun 9, 2014"},
+								{"name":"FC", "date": "Jul 21, 2014"},
 								{"name":"CF", "date": "Sep 01, 2014"}
 							],
 							"style": {"color": "#1f77b4"},

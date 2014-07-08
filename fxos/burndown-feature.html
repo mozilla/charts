@@ -5,7 +5,7 @@
 <HTML>
 <HEAD>
 	<title>Feature Burndown</title>
-	<script type="application/javascript" src="modevlib/imports/import.js"></script>
+	<script type="text/javascript" src="modevlib/imports/import.js"></script>
 
 	<script>
   (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
@@ -18,42 +18,42 @@
 	</script>
 </HEAD>
 <BODY>
+<div>
+	<div id="sidebar" style="width:300px;">
+		<br><br>
 
+		<div style="height: 30px; text-align: center;vertical-align:middle;">
+			<span id="status" style="height:30px">Page Loading...</span><span class="loading"><img src="images/spinner.gif" alt=""></span>
+		</div>
 
-
-<div id="sidebar" style="width:300px;">
-	<br><br>
-	<div style="height: 30px; text-align: center;vertical-align:middle;">
-		<span id="status" style="height:30px">Page Loading...</span><span class="loading"><img src="images/spinner.gif" alt=""></span>
+		<hr>
+		<div id="description">
+			Counting all dependent bugs over time<br>
+			<ul>
+				<li>The <b>Estimate</b> column is the p=?? value found in the status whiteboard. If there is no p value it shows "missing".</li>
+				<li><b>Remaining Work</b> is the sum of the estimate, with missing values assumed to be 1.</li>
+			</ul>
+		</div>
+		<hr>
+		<div id="testMessage"></div>
+		<hr>
+		<div id="stats"></div>
+		<hr>
+		<div id="parameters" class="parameters">
+		</div>
+		<div id="filters" class="menu"></div>
 	</div>
 
-	<hr>
-	<div id="description">
-		Counting all dependent bugs over time<br>
-		<ul>
-			<li>The <b>Estimate</b> column is the p=?? value found in the status whiteboard.  If there is no p value it shows "missing".</li>
-			<li><b>Remaining Work</b> is the sum of the estimate, with missing values assumed to be 1.</li>
-		</ul>
-	</div>
-	<hr>
-	<div id="testMessage"></div>
-	<hr>
-	<div id="stats"></div>
-	<hr>
-	<div id="parameters" class="parameters">
-	</div>
-	<div id="filters" class="menu"></div>
-</div>
+	<div style="align:left;position:relative;float:left;width:815px;padding-left:15px">
+		<h3 id="title"></h3>
 
-<div style="align:left;position:relative;float:left;width:815px;padding-left:15px">
-	<h3 id="title"></h3>
-
-	<div>
-		<div id="feature-summary" style="position: relative;min-height:30px;"></div>
-		<div id="chart" class="chart" style="position: relative;height:300px;"></div>
-		<!--<div id="chart_diff" class="chart" style="position: relative;height:300px;"></div>-->
-		<div id="buglist" style="position: relative;width:800px"></div>
-		<div id="info" style="position: relative;width:800px"></div>
+		<div>
+			<div id="feature-summary" style="position: relative;min-height:30px;"></div>
+			<div id="chart" class="chart" style="position: relative;height:300px;"></div>
+			<!--<div id="chart_diff" class="chart" style="position: relative;height:300px;"></div>-->
+			<div id="buglist" style="position: relative;width:800px"></div>
+			<div id="info" style="position: relative;width:800px"></div>
+		</div>
 	</div>
 </div>
 <div class="footer">Source code at

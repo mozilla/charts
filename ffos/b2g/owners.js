@@ -73,13 +73,13 @@ var OWNERS = {
   "Layout": "Jet Villegas", // Core
   "MFBT": "Naveed Ihsanullah",
   "Networking": "Jason Duell", // Core
-  "NFC": "Ken Chang(Vincent Chang)", // Firefox OS
-  "rtsp": "Ken Chang(Vincent Chang)", // Firefox OS
+  "NFC": "Ken Chang (Vincent Chang)", // Firefox OS
+  "rtsp": "Ken Chang (Vincent Chang)", // Firefox OS
   "Panning and Zooming": "Milan Sreckovic (Kartikaya Gupta, Botond Ballo)", // Core
   "Performance": "Mike Lee (Mason Chang)", // Firefox OS
   "Runtime": "Gregor Wagner (Fabrice Desré)", // Firefox OS
   // "Simulator": "?", // Firefox OS
-  "RIL": "Ken Chang(Hsinyi Tsai)", // Firefox OS
+  "RIL": "Ken Chang (Hsinyi Tsai)", // Firefox OS
   "Video/Audio": "Jet Villegas", // Core
   "Video/Audio: Recording": "CJ Ku", // Core
   "Vendcom": "Vance Chen", // Firefox OS

@@ -75,25 +75,71 @@ Dimension.addEdges(true, Mozilla, [
 	]},
 
 	{"name": "Scope", "index": "bugs", "needed_fields":["cf_feature_b2g", "status_whiteboard"], "esfilter": {"match_all": {}}, "edges": [
-		{"name": "UCID 2.0", "esfilter": {"and":[
-			{"regexp": {"status_whiteboard": ".*ucid.*"}},
-			{"or":[
-				{"regexp": {"status_whiteboard": ".*2\\.0.*"}},
-				{"regexp": {"status_whiteboard": ".*1\\.5.*"}}
-			]}
-		]}},
-		{"name": "Feature-B2G = 2.0", "needed_fields":["cf_feature_b2g"], "esfilter": {"term":{"cf_feature_b2g":"2.0"}}},
-		{"name": "UCID 2.0 + Feature-B2G = 2.0", "needed_fields":["cf_feature_b2g", "status_whiteboard"], "esfilter": {"or":[
-			{"term":{"cf_feature_b2g":"2.0"}},
-			{"and":[
+		{"name": "UCID 2.0",
+			"primary":"UCID 2.0 + Feature-B2G = 2.0",
+			"needed_fields":["status_whiteboard"],
+			"esfilter": {"and":[
 				{"regexp": {"status_whiteboard": ".*ucid.*"}},
 				{"or":[
 					{"regexp": {"status_whiteboard": ".*2\\.0.*"}},
 					{"regexp": {"status_whiteboard": ".*1\\.5.*"}}
 				]}
 			]}
-		]}},
-		{"name": "All", "esfilter": {"match_all": {}}}
+		},
+		{"name": "Feature-B2G = 2.0",
+			"primary":"UCID 2.0 + Feature-B2G = 2.0",
+			"needed_fields":["cf_feature_b2g"],
+			"esfilter": {"term":{"cf_feature_b2g":"2.0"}}
+		},
+		{"name": "UCID 2.0 + Feature-B2G = 2.0",
+			"primary":"UCID 2.0 + Feature-B2G = 2.0",
+			"needed_fields":["cf_feature_b2g", "status_whiteboard"],
+			"esfilter": {"or":[
+				{"term":{"cf_feature_b2g":"2.0"}},
+				{"and":[
+					{"regexp": {"status_whiteboard": ".*ucid.*"}},
+					{"or":[
+						{"regexp": {"status_whiteboard": ".*2\\.0.*"}},
+						{"regexp": {"status_whiteboard": ".*1\\.5.*"}}
+					]}
+				]}
+			]}
+		},
+		{"name": "Both 2.0",
+			"title":"both UCID 2.0 and Feature-B2G = 2.0 (inc. dependencies)",
+			"primary":"UCID 2.0 + Feature-B2G = 2.0",
+			"esfilter": {"match_all":{}}
+		},
+
+
+		{"name": "UCID 2.1",
+			"primary":"UCID 2.1 + Feature-B2G = 2.1",
+			"esfilter": {"and":[
+				{"regexp": {"status_whiteboard": ".*ucid.*"}},
+				{"regexp": {"status_whiteboard": ".*2\\.1.*"}}
+			]}
+		},
+		{"name": "Feature-B2G = 2.1",
+			"primary":"UCID 2.1 + Feature-B2G = 2.1",
+			"needed_fields":["cf_feature_b2g"],
+			"esfilter": {"term":{"cf_feature_b2g":"2.1"}}
+		},
+		{"name": "UCID 2.1 + Feature-B2G = 2.1",
+			"primary":"UCID 2.1 + Feature-B2G = 2.1",
+			"needed_fields":["cf_feature_b2g", "status_whiteboard"],
+			"esfilter": {"or":[
+				{"term":{"cf_feature_b2g":"2.1"}},
+				{"and":[
+					{"regexp": {"status_whiteboard": ".*ucid.*"}},
+					{"regexp": {"status_whiteboard": ".*2\\.1.*"}}
+				]}
+			]}
+		},
+		{"name": "Both 2.1",
+			"title":"both UCID 2.1 and Feature-B2G = 2.1 (inc. dependencies)",
+			"primary":"UCID 2.1 + Feature-B2G = 2.1",
+			"esfilter": {"match_all":{}}
+		}
 	]},
 
 	{"name": "Milestone", "index": "bugs", "isFacet": true, "edges": [

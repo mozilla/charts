@@ -202,49 +202,52 @@ var __createChart = function*(){
 		"currTotalBugs": currTotalBugs,
 		"currFeatureFilter": currFeatureFilter
 	});
-}
+};
 
 function __reChart(){
-	$("#feature-summary").html("");
-	$("#chart").html("");
-	$("#buglist").html("");
-	$("#info").html("");
+	Thread.run(function*(){
+		$("#feature-summary").html("");
+		$("#chart").html("");
+		$("#buglist").html("");
+		$("#info").html("");
 
-	var sampleMin = Date.newInstance(GUI.state.sampleMin);
-	var sampleInterval = Duration.newInstance(GUI.state.sampleInterval);
-	var sampleMax = Date.newInstance(GUI.state.sampleMax).addDay();
+		var sampleMin = Date.newInstance(GUI.state.sampleMin);
+		var sampleInterval = Duration.newInstance(GUI.state.sampleInterval);
+		var sampleMax = Date.newInstance(GUI.state.sampleMax).addDay();
 
-	var milestones = GUI.state.milestone.getSelectedParts();
-	var milestoneFilter = null;
-	if (milestones.length>0){
-		$("#title").append(" (Milestone "+milestones.select("name").join(" and ")+")");
+		var milestones = GUI.state.milestone.getSelectedParts();
+		var milestoneFilter = null;
+		if (milestones.length>0){
+			$("#title").append(" (Milestone "+milestones.select("name").join(" and ")+")");
 
-		milestoneFilter = {"or": milestones.select("esfilter")};
-	}//endif
+			milestoneFilter = {"or": milestones.select("esfilter")};
+		}//endif
 
-	yield (getDailyDependencies(raw_data, nvl(milestoneFilter, {"match_all": {}}) ));
+		yield (getDailyDependencies(raw_data, nvl(milestoneFilter, {"match_all": {}}) ));
 
-	var currFeatureFilter = GUI.state.hierarchyMode.getSimpleState() != "All dependencies" ? nvl(milestoneFilter, featureFilter) : {"match_all": {}};
+		var currFeatureFilter = GUI.state.hierarchyMode.getSimpleState() != "All dependencies" ? nvl(milestoneFilter, featureFilter) : {"match_all": {}};
 
-	//LAST DAY WILL BE CONSIDERED CURRENT FEATURE LIST
-	var currOpenBugs=raw_data.cube.last().filter({"and":[
-		{"term":{"counted":"Open"}},
-		currFeatureFilter
-	]}).select("bug_id");
+		//LAST DAY WILL BE CONSIDERED CURRENT FEATURE LIST
+		var currOpenBugs=raw_data.cube.last().filter({"and":[
+			{"term":{"counted":"Open"}},
+			currFeatureFilter
+		]}).select("bug_id");
 
-	var currTotalBugs=raw_data.cube.last().filter({"and":[
-		{"not":{"term":{"counted":"none"}}},
-		currFeatureFilter
-	]}).select("bug_id");
+		var currTotalBugs=raw_data.cube.last().filter({"and":[
+			{"not":{"term":{"counted":"none"}}},
+			currFeatureFilter
+		]}).select("bug_id");
 
-	restOfCharting({
-		"TODAY": Date.today(),
-		"hierarchyMode":GUI.state.hierarchyMode.getSimpleState(),
-		"timeDomain": {"type":"time", "min":sampleMin, "max":sampleMax, "interval":sampleInterval},
-		"currOpenBugs": currOpenBugs,
-		"currTotalBugs": currTotalBugs,
-		"currFeatureFilter": currFeatureFilter
-	})
+		restOfCharting({
+			"TODAY": Date.today(),
+			"hierarchyMode":GUI.state.hierarchyMode.getSimpleState(),
+			"timeDomain": {"type":"time", "min":sampleMin, "max":sampleMax, "interval":sampleInterval},
+			"currOpenBugs": currOpenBugs,
+			"currTotalBugs": currTotalBugs,
+			"currFeatureFilter": currFeatureFilter
+		})
+
+	});
 }//function
 
 

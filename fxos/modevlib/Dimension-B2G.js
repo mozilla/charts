@@ -114,7 +114,7 @@ if (!Mozilla) var Mozilla={"name":"Mozilla", "edges":[]};
 						{"regexp": {"status_whiteboard": ".*systemsfe.*"}}
 					]}},
 
-					{"name":"Stream3", "esfilter": {"term": {"status_whiteboard": "ft:stream3"}}},
+					{"name":"Stream3", "esfilter": {"term":{"status_whiteboard.tokenized":"ft:stream3"}}},
 
 					{"name": "Productivity", "esfilter": {"and": [
 						{"not": {"term": {"keywords": "perf"}}}, //AN UNFORTUNATE REDUNDANCY

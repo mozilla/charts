@@ -114,6 +114,8 @@ if (!Mozilla) var Mozilla={"name":"Mozilla", "edges":[]};
 						{"regexp": {"status_whiteboard": ".*systemsfe.*"}}
 					]}},
 
+					{"name":"Stream3", "esfilter": {"term": {"status_whiteboard": "ft:stream3"}}},
+
 					{"name": "Productivity", "esfilter": {"and": [
 						{"not": {"term": {"keywords": "perf"}}}, //AN UNFORTUNATE REDUNDANCY
 						{"term": {"product": "firefox os"}},
@@ -254,6 +256,7 @@ if (!Mozilla) var Mozilla={"name":"Mozilla", "edges":[]};
 						{"not": {"term": {"keywords": "perf"}}},     //AN UNFORTUNATE REDUNDANCY
 						{"not": {"term": {"product": "loop"}}},        //NO WebRTC Loop Product
 						{"not": {"prefix": {"component": "webrtc"}}},  //NO WebRTC
+						{"not": {"term": {"status_whiteboard": "ft:stream3"}}},  //NO Stream3
 						{"not": {"term": {"status_whiteboard": "systemsfe"}}},  //NO SYSTEM FRONTEND
 						{"not": {"terms": {"component": [
 							//AN UNFORTUNATE LIST OF EVERYTHING, SHOULD BE AUTO-GENERATED, BUT I NEED A EQUATION SIMPLIFIER, OR ELSE I BREAK ES

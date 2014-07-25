@@ -148,7 +148,7 @@ var __createChart = function*(){
 		featureFilter = {"or":features.select("esfilter")};
 		if (bug_ids.length > 0) featureFilter.or.append({"terms": {"bug_id": bug_ids}});
 		var needed_fields = Array.union([NEEDED_FIELDS].appendArray(features.select("needed_fields")).appendArray(milestones.select("needed_fields")));
-		raw_data = yield(getRawDependencyData(featureFilter, timeDomain, needed_fields, false));
+		raw_data = yield(getRawDependencyData(featureFilter, timeDomain, needed_fields));
 	}else{
 		if (bug_ids.length==0){
 			$("#title").text("Must select bug number, or predefined feature");
@@ -177,7 +177,7 @@ var __createChart = function*(){
 
 		featureFilter = {"terms":{"bug_id": bug_ids}};
 		var needed_fields = Array.union([NEEDED_FIELDS].appendArray(features.select("needed_fields")).appendArray(milestones.select("needed_fields")));
-		raw_data = yield(getRawDependencyData(featureFilter, timeDomain, needed_fields, false));
+		raw_data = yield(getRawDependencyData(featureFilter, timeDomain, needed_fields));
 	}//endif
 
 	var currFeatureFilter = GUI.state.hierarchyMode.getSimpleState() != "All dependencies" ? nvl(milestoneFilter, featureFilter) : {"match_all": {}};

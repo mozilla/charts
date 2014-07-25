@@ -112,7 +112,7 @@ importScript([
 
 		var newFeatureFilter = Mozilla.Scope[currScope.primary].esfilter;
 		if (newFeatureFilter !== featureFilter || !raw_data) {
-			featureFilter = {"and":[newFeatureFilter, {"term":{"bug_id":1003040}}]};
+			featureFilter = newFeatureFilter;
 			raw_data = yield(getRawDependencyData(featureFilter, timeDomain, Mozilla.Scope["needed_fields"]));
 		}//endif
 

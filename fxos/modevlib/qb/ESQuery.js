@@ -36,8 +36,8 @@ ESQuery.DEBUG = false;
 	var red = Color.RED.multiply(0.5).toHTML();
 
 	ESQuery.INDEXES = {
-		"bugs": {"name":"private_bugs", "style":{"color":"black","background-color":yellow}, "host": "http://elasticsearch-private.bugs.scl3.mozilla.com:9200", "path": "/private_bugs/bug_version"},
-		"public_bugs": {"style":{"color":"white", "background-color":green}, "host": "https://esfrontline.bugzilla.mozilla.org:443", "path": "/public_bugs/bug_version"},
+		"bugs": {"name":"private bugs cluster", "style":{"color":"black","background-color":yellow}, "host": "http://elasticsearch-private.bugs.scl3.mozilla.com:9200", "path": "/private_bugs/bug_version"},
+		"public_bugs": {"name":"Mozilla public bugs cluster", "style":{"color":"white", "background-color":green}, "host": "https://esfrontline.bugzilla.mozilla.org:443", "path": "/public_bugs/bug_version"},
 		"public_bugs_backend": {"style":{"color":"black","background-color":yellow}, "host": "http://elasticsearch1.bugs.scl3.mozilla.com:9200", "path": "/public_bugs/bug_version"},
 		"public_bugs_proxy": {"style":{"color":"black","background-color":yellow}, "host": "http://klahnakoski-es.corp.tor1.mozilla.com:9201", "path": "/public_bugs/bug_version"},
 		"public_comments": {"style":{"color":"black","background-color":yellow}, "host": "http://elasticsearch1.bugs.scl3.mozilla.com:9200", "path": "/public_comments/bug_comment"},

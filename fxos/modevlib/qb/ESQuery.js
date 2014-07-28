@@ -4,6 +4,7 @@
 
 
 importScript("../util/CNV.js");
+importScript("../charts/aColor.js");
 importScript("../collections/aArray.js");
 importScript("../util/aDate.js");
 importScript("../util/aUtil.js");
@@ -28,64 +29,73 @@ ESQuery.DEBUG = false;
 ////////////////////////////////////////////////////////////////////////////////
 // THESE ARE THE AVAILABLE ES INDEXES/TYPES
 ////////////////////////////////////////////////////////////////////////////////
-ESQuery.INDEXES = {
-	"bugs": {"host": "http://elasticsearch-private.bugs.scl3.mozilla.com:9200", "path": "/private_bugs/bug_version"},
-	"public_bugs": {"host": "https://esfrontline.bugzilla.mozilla.org:443", "path": "/public_bugs/bug_version"},
-	"public_bugs_backend": {"host": "http://elasticsearch1.bugs.scl3.mozilla.com:9200", "path": "/public_bugs/bug_version"},
-	"public_bugs_proxy": {"host": "http://klahnakoski-es.corp.tor1.mozilla.com:9201", "path": "/public_bugs/bug_version"},
-	"public_comments": {"host": "http://elasticsearch1.bugs.scl3.mozilla.com:9200", "path": "/public_comments/bug_comment"},
-	"private_bugs": {"host": "http://elasticsearch6.bugs.scl3.mozilla.com:9200", "path": "/private_bugs/bug_version"},
-	"private_comments": {"host": "http://elasticsearch4.bugs.scl3.mozilla.com:9200", "path": "/private_comments/bug_comment"},
 
-	"tor_bugs": {"host": "http://klahnakoski-es.corp.tor1.mozilla.com:9200", "path": "/bugs/bug_version"},
-	"tor_public_bugs": {"host": "http://klahnakoski-es.corp.tor1.mozilla.com:9200", "path": "/public_bugs/bug_version"},
-	"tor_private_bugs": {"host": "http://klahnakoski-es.corp.tor1.mozilla.com:9200", "path": "/private_bugs/bug_version"},
+(function(){
+	var green = Color.GREEN.multiply(0.5).hue(10).toHTML();
+	var yellow = Color.RED.multiply(0.7).hue(-60).toHTML();
+	var red = Color.RED.multiply(0.5).toHTML();
 
-	"bug_hierarchy": {"host": "http://elasticsearch-private.bugs.scl3.mozilla.com:9200", "path": "/bug_hierarchy/bug_hierarchy"},
-	"bug_dependencies": {"host": "https://esfrontline.bugzilla.mozilla.org:443", "path": "/bug_hierarchy/bug_version"},
+	ESQuery.INDEXES = {
+		"bugs": {"name":"private_bugs", "style":{"color":"black","background-color":yellow}, "host": "http://elasticsearch-private.bugs.scl3.mozilla.com:9200", "path": "/private_bugs/bug_version"},
+		"public_bugs": {"style":{"color":"white", "background-color":green}, "host": "https://esfrontline.bugzilla.mozilla.org:443", "path": "/public_bugs/bug_version"},
+		"public_bugs_backend": {"style":{"color":"black","background-color":yellow}, "host": "http://elasticsearch1.bugs.scl3.mozilla.com:9200", "path": "/public_bugs/bug_version"},
+		"public_bugs_proxy": {"style":{"color":"black","background-color":yellow}, "host": "http://klahnakoski-es.corp.tor1.mozilla.com:9201", "path": "/public_bugs/bug_version"},
+		"public_comments": {"style":{"color":"black","background-color":yellow}, "host": "http://elasticsearch1.bugs.scl3.mozilla.com:9200", "path": "/public_comments/bug_comment"},
+		"private_bugs": {"style":{"color":"black","background-color":yellow}, "host": "http://elasticsearch6.bugs.scl3.mozilla.com:9200", "path": "/private_bugs/bug_version"},
+		"private_comments": {"style":{"color":"black","background-color":yellow}, "host": "http://elasticsearch4.bugs.scl3.mozilla.com:9200", "path": "/private_comments/bug_comment"},
+
+		"tor_bugs": {"style":{"color":"black","background-color":yellow}, "host": "http://klahnakoski-es.corp.tor1.mozilla.com:9200", "path": "/bugs/bug_version"},
+		"tor_public_bugs": {"style":{"color":"black","background-color":yellow}, "host": "http://klahnakoski-es.corp.tor1.mozilla.com:9200", "path": "/public_bugs/bug_version"},
+		"tor_private_bugs": {"style":{"color":"black","background-color":yellow}, "host": "http://klahnakoski-es.corp.tor1.mozilla.com:9200", "path": "/private_bugs/bug_version"},
+
+		"bug_hierarchy": {"style":{"color":"black","background-color":yellow}, "host": "http://elasticsearch-private.bugs.scl3.mozilla.com:9200", "path": "/bug_hierarchy/bug_hierarchy"},
+		"bug_dependencies": {"style":{"color":"black","background-color":yellow}, "host": "http://elasticsearch-private.bugs.scl3.mozilla.com:9200", "path": "/private_bugs/bug_version"},
+
+		"public_bug_hierarchy": {"style":{"color":"white", "background-color":green}, "host": "https://esfrontline.bugzilla.mozilla.org:443", "path": "/bug_hierarchy/bug_hierarchy"},
+		"public_bug_dependencies": {"style":{"color":"white", "background-color":green}, "host": "https://esfrontline.bugzilla.mozilla.org:443", "path": "/bug_hierarchy/bug_version"},
 
 
-	"public_bug_hierarchy": {"host": "https://esfrontline.bugzilla.mozilla.org:443", "path": "/bug_hierarchy/bug_hierarchy"},
+		//TODO: HAVE CODE SCAN SCHEMA FOR NESTED OPTIONS
+		"public_bugs.changes": {},
+		"public_bugs.attachments": {},
+		"public_bugs.attachments.flags": {},
+		"private_bugs.changes": {},
+		"private_bugs.attachments": {},
+		"private_bugs.attachments.flags": {},
+		"bugs.changes": {},
+		"bugs.attachments": {},
+		"bugs.attachments.flags": {},
 
-	"bug_dependencies": {"host": "http://elasticsearch-private.bugs.scl3.mozilla.com:9200", "path": "/private_bugs/bug_version"},
-	"public_bug_dependencies": {"host": "https://esfrontline.bugzilla.mozilla.org:443", "path": "/bug_hierarchy/bug_version"},
+		"reviews": {"style":{"color":"black","background-color":yellow}, "host": "http://elasticsearch-private.bugs.scl3.mozilla.com:9200", "path": "/reviews/review"},
+		"bug_summary": {"style":{"color":"black","background-color":yellow}, "host": "http://elasticsearch-private.bugs.scl3.mozilla.com:9200", "path": "/bug_summary/bug_summary"},
+		"bug_tags": {"style":{"color":"black","background-color":yellow}, "host": "http://elasticsearch-private.bugs.scl3.mozilla.com:9200", "path": "/bug_tags/bug_tags"},
+		"org_chart": {"style":{"color":"black","background-color":yellow}, "host": "http://elasticsearch-private.bugs.scl3.mozilla.com:9200", "path": "/org_chart/person"},
+		"temp": {"style":{"color":"black","background-color":yellow}, "host": "http://elasticsearch-private.bugs.scl3.mozilla.com:9200", "path": ""},
+		"telemetry": {"style":{"color":"black","background-color":yellow}, "host": "http://elasticsearch-private.bugs.scl3.mozilla.com:9200", "path": "/telemetry_agg_valid_201305/data"},
+		"raw_telemetry": {"style":{"color":"black","background-color":yellow}, "host": "http://klahnakoski-es.corp.tor1.mozilla.com:9200", "path": "/raw_telemetry/data"},
 
+		"talos": {"style":{"color":"black","background-color":yellow}, "host": "http://klahnakoski-es.corp.tor1.mozilla.com:9200", "path": "/talos/test_results"},
+		"b2g_tests": {"style":{"color":"black","background-color":yellow}, "host": "http://elasticsearch-private.bugs.scl3.mozilla.com:9200", "path": "/b2g_tests/results"},
+		"b2g": {"style":{"color":"black","background-color":yellow}, "host": "http://elasticsearch-private.bugs.scl3.mozilla.com:9200", "path": "/b2g_tests/results"},
 
-	"public_bug_hierarchy": {"host": "https://esfrontline.bugzilla.mozilla.org:443", "path": "/bug_hierarchy/bug_hierarchy"},
-	//TODO: HAVE CODE SCAN SCHEMA FOR NESTED OPTIONS
-	"public_bugs.changes": {},
-	"public_bugs.attachments": {},
-	"public_bugs.attachments.flags": {},
-	"private_bugs.changes": {},
-	"private_bugs.attachments": {},
-	"private_bugs.attachments.flags": {},
-	"bugs.changes": {},
-	"bugs.attachments": {},
-	"bugs.attachments.flags": {},
+		"perfy": {"style":{"color":"black","background-color":yellow}, "host": "http://elasticsearch-private.bugs.scl3.mozilla.com:9200", "path": "/perfy/scores"},
+		"local_perfy": {"style":{"background-color":red}, "host": "http://localhost:9200", "path": "/perfy/scores"},
 
-	"reviews": {"host": "http://elasticsearch-private.bugs.scl3.mozilla.com:9200", "path": "/reviews/review"},
-	"bug_summary": {"host": "http://elasticsearch-private.bugs.scl3.mozilla.com:9200", "path": "/bug_summary/bug_summary"},
-	"bug_tags": {"host": "http://elasticsearch-private.bugs.scl3.mozilla.com:9200", "path": "/bug_tags/bug_tags"},
-	"org_chart": {"host": "http://elasticsearch-private.bugs.scl3.mozilla.com:9200", "path": "/org_chart/person"},
-	"temp": {"host": "http://elasticsearch-private.bugs.scl3.mozilla.com:9200", "path": ""},
-	"telemetry": {"host": "http://elasticsearch-private.bugs.scl3.mozilla.com:9200", "path": "/telemetry_agg_valid_201305/data"},
-	"raw_telemetry": {"host": "http://klahnakoski-es.corp.tor1.mozilla.com:9200", "path": "/raw_telemetry/data"},
+		"eideticker": {"style":{"background-color":red}, "host": "http://localhost:9200", "path": "/eideticker/results"}
 
-	"talos": {"host": "http://klahnakoski-es.corp.tor1.mozilla.com:9200", "path": "/talos/test_results"},
-	"b2g_tests": {"host": "http://elasticsearch-private.bugs.scl3.mozilla.com:9200", "path": "/b2g_tests/results"},
-	"b2g": {"host": "http://elasticsearch-private.bugs.scl3.mozilla.com:9200", "path": "/b2g_tests/results"},
+	};
 
-	"perfy": {"host": "http://elasticsearch-private.bugs.scl3.mozilla.com:9200", "path": "/perfy/scores"},
-	"local_perfy": {"host": "http://localhost:9200", "path": "/perfy/scores"},
+	//GIVE ALL CLUSTERS NAMES
+	Map.forall(ESQuery.INDEXES, function(k, v){
+		v.name=nvl(v.name, k);
+	});
 
-	"eideticker": {"host": "http://localhost:9200", "path": "/eideticker/results"}
+	//TRY PRIVATE CLUSTER FIRST, THEN FALL BACK TO PUBLIC
+	ESQuery.INDEXES.bugs.alternate = ESQuery.INDEXES.public_bugs;
+	ESQuery.INDEXES.bug_hierarchy.alternate = ESQuery.INDEXES.public_bug_hierarchy;
+	ESQuery.INDEXES.bug_dependencies.alternate = ESQuery.INDEXES.public_bug_dependencies;
 
-};
-
-//TRY PRIVATE CLUSTER FIRST, THEN FALL BACK TO PUBLIC
-ESQuery.INDEXES.bugs.alternate = ESQuery.INDEXES.public_bugs;
-ESQuery.INDEXES.bug_hierarchy.alternate = ESQuery.INDEXES.public_bug_hierarchy;
-ESQuery.INDEXES.bug_dependencies.alternate = ESQuery.INDEXES.public_bug_dependencies;
+})();
 
 
 (function () {
@@ -319,14 +329,14 @@ ESQuery.INDEXES.bug_dependencies.alternate = ESQuery.INDEXES.public_bug_dependen
 
 
 	ESQuery.prototype.run = function*() {
-		if (!this.query.url) {
-			var indexInfo = ESQuery.INDEXES[splitField(this.query.from)[0]];
-			if (indexInfo.host === undefined) Log.error("must have host defined");
-			this.query.url = indexInfo.host + indexInfo.path;
+		if (!this.query.index) {
+			this.query.index = ESQuery.INDEXES[splitField(this.query.from)[0]];
+			if (this.query.index === undefined) Log.error("must have host defined");
+			this.query.index.url = this.query.index.host + this.query.index.path;
 		}//endif
 
 
-		if (!this.query.url.endsWith("/_search")) this.query.url += "/_search";  //WHEN QUERIES GET RECYCLED, THEIR url IS SOMETIMES STILL AROUND
+		if (!this.query.index.url.endsWith("/_search")) this.query.index.url += "/_search";  //WHEN QUERIES GET RECYCLED, THEIR url IS SOMETIMES STILL AROUND
 		var postResult;
 		if (ESQuery.DEBUG) Log.note(CNV.Object2JSON(this.esQuery));
 
@@ -336,7 +346,7 @@ ESQuery.INDEXES.bug_dependencies.alternate = ESQuery.INDEXES.public_bug_dependen
 		try {
 			try {
 				postResult = yield (Rest.post({
-					url: this.query.url,
+					url: this.query.index.url,
 					data: CNV.Object2JSON(this.esQuery),
 					dataType: "json",
 					headers: {

@@ -144,6 +144,9 @@ var forAllKey=function(map, func){
 	}//for
 };
 
+Map.forall = forAllKey;
+Map.items = forAllKey;
+
 var countAllKey=function(map){
 	var count=0;
 	var keys=Object.keys(map);

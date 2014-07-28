@@ -213,8 +213,8 @@ var __createChart = function*(){
 		var diff = yield(Q({
 			"from":minMaxBugs,
 			"select":[
-				{"name":"opened", "value":"(time.min.getMilli()<=min && min<time.max.getMilli()) ? 1 : 0", "aggregate":"sum", "default":0, "style":{"color":Color.blue.multiply(0.9).hue(10).toHTML()}},
-				{"name":"closed", "value":"(time.min.getMilli()<=max && max<time.max.getMilli()) ? 1 : 0", "aggregate":"sum", "default":0, "style":{"color":Color.red.multiply(0.9).hue(10).toHTML()}}
+				{"name":"opened", "value":"(time.min.getMilli()<=min && min<time.max.getMilli()) ? 1 : 0", "aggregate":"sum", "default":0, "style":{"color":Color.BLUE.multiply(0.9).hue(10).toHTML()}},
+				{"name":"closed", "value":"(time.min.getMilli()<=max && max<time.max.getMilli()) ? 1 : 0", "aggregate":"sum", "default":0, "style":{"color":Color.RED.multiply(0.9).hue(10).toHTML()}}
 			],
 			"edges":[
 				{"name":"type", "domain":Mozilla.ChurnType.getDomain()},

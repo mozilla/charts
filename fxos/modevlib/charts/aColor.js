@@ -38,9 +38,9 @@ Color = function (L, h, s) {
 	}).reverse();
 
 
-	Color.red = new Color(1.0, 240.0, 1.0);
-	Color.green = new Color(1.0, 120.0, 1.0);
-	Color.blue = new Color(1.0, 0.0, 1.0);
+	Color.RED = new Color(1.0, 240.0, 1.0);
+	Color.GREEN = new Color(1.0, 120.0, 1.0);
+	Color.BLUE = new Color(1.0, 0.0, 1.0);
 
 
 	var ColorSRGB = function (r, g, b) {
@@ -123,10 +123,13 @@ Color = function (L, h, s) {
 		return hex(Map.zip(["r", "g", "b"].map(function (c) {
 			return [c, x0[c] * (1 - Lpart) * (1 - hpart) + xH[c] * hpart * (1 - Lpart) + xL[c] * Lpart * (1 - hpart) + xHL[c] * hpart * Lpart];
 		})));
-	}
+	};
 
 
 	function hex(value) {
+		if (value===undefined){
+			Log.error();
+		}//endif
 		return "#" + CNV.int2hex(Math.round(value.r), 2) + CNV.int2hex(Math.round(value.g), 2) + CNV.int2hex(Math.round(value.b), 2);
 	}//function
 

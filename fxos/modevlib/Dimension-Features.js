@@ -22,37 +22,77 @@ Sprints = [
 	"36 Sprint 2- 11/10   10/28-11/10",
 	"36 Sprint 3- 11/24   11/11-11/24"
 ].map(function (v) {
-		var parts = v.split("-").map(function (v) {
-			return v.trim();
-		});
-		var name = v.split("-")[0];
-
-		var targets = v.split("  ")[0].trim();
-		var blocks = "fx"+name.split(" ")[0]+"+";
-		var targetName = name.replaceAll("Sprint ", "S")+" Target";
-		var dates=[parts[1].split(" ").last(), parts.last()];
-		var startDate = Date.newInstance(dates[0].split("/").reverse().join("/") + "/2014");
-		var endDate = Date.newInstance(dates[1].split("/").reverse().join("/") + "/2014");
-
-		return {
-			"name": name,
-			"start_date": startDate,
-			"targetDate": endDate,
-			"dateMarks": [
-				{"name": targetName, "date": endDate.addDay(), "style": {strokeStyle: "black", verticalOffset: 20}}
-			],
-			"needed_fields": ["target_milestone", "cf_blocking_loop"],
-			"partitions": [
-				{"name": "Blocking", "esfilter": {"and": [
-					{"term": {"cf_blocking_loop": blocks}}
-				]}},
-				{"name": "Targeted", "esfilter": {"and": [
-					{"term": {"target_milestone": targets}},
-					{"not": {"term": {"cf_blocking_loop": blocks}}}  // UNFORTUNATE REDUNDANCY
-				]}}
-			]
-		};
+	var parts = v.split("-").map(function (v) {
+		return v.trim();
 	});
+	var name = v.split("-")[0];
+
+	var targets = v.split("  ")[0].trim();
+	var blocks = "fx"+name.split(" ")[0]+"+";
+	var targetName = name.replaceAll("Sprint ", "S")+" Target";
+	var dates=[parts[1].split(" ").last(), parts.last()];
+	var startDate = Date.newInstance(dates[0].split("/").reverse().join("/") + "/2014");
+	var endDate = Date.newInstance(dates[1].split("/").reverse().join("/") + "/2014");
+
+	return {
+		"name": name,
+		"start_date": startDate,
+		"targetDate": endDate,
+		"dateMarks": [
+			{"name": targetName, "date": endDate.addDay(), "style": {strokeStyle: "black", verticalOffset: 20}}
+		],
+		"needed_fields": ["target_milestone", "cf_blocking_loop"],
+		"partitions": [
+			{"name": "Blocking", "esfilter": {"and": [
+				{"term": {"cf_blocking_loop": blocks}}
+			]}},
+			{"name": "Targeted", "esfilter": {"and": [
+				{"term": {"target_milestone": targets}},
+				{"not": {"term": {"cf_blocking_loop": blocks}}}  // UNFORTUNATE REDUNDANCY
+			]}}
+		]
+	};
+}).appendArray([
+	"2.1 S1 (1aug)  7/28-8/1",
+	"2.1 S2 (15aug)  8/2-8/15",
+	"2.1 S3 (29aug)  8/16-8/29",
+	"2.1 S4 (12sep)  8/30-9/12",
+	"2.1 S5 (26sep)  9/13-9/26",
+	"2.1 S6 (10oct)  9/27-10/10"
+].map(function(v){
+	var parts = v.split("  ").map(function (v) {
+		return v.trim();
+	});
+	var name = parts[0].left(6);
+	var targets = parts[0].trim();
+	var blocks = parts[0].left(3);
+
+	var targetName = name;
+	var dates=parts[1].split("-");
+	var startDate = Date.newInstance(dates[0].split("/").reverse().join("/") + "/2014");
+	var endDate = Date.newInstance(dates[1].split("/").reverse().join("/") + "/2014");
+
+	return {
+		"name": name,
+		"start_date": startDate,
+		"targetDate": endDate,
+		"dateMarks": [
+			{"name": targetName, "date": endDate.addDay(), "style": {strokeStyle: "black", verticalOffset: 20}}
+		],
+		"needed_fields": ["target_milestone", "cf_blocking_b2g"],
+		"partitions": [
+			{"name": "Blocking", "esfilter": {"and": [
+				{"term": {"cf_blocking_b2g": blocks}}
+			]}},
+			{"name": "Targeted", "esfilter": {"and": [
+				{"term": {"target_milestone": targets}},
+				{"not": {"term": {"cf_blocking_loop": blocks}}}  // UNFORTUNATE REDUNDANCY
+			]}}
+		]
+	};
+
+
+}));
 
 
 Dimension.addEdges(true, Mozilla, [

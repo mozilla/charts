@@ -65,7 +65,7 @@ Sprints = [
 	});
 	var name = parts[0].left(6);
 	var targets = parts[0].trim();
-	var blocks = parts[0].left(3);
+	var blocks = parts[0].left(3)+"+";
 
 	var targetName = name;
 	var dates=parts[1].split("-");

@@ -321,7 +321,8 @@ importScript([
 			MAX_CHART_DATE = DUE_DATE.addDay(1);
 		});
 		var MIN_CHART_DATE = Date.min(START_DATE, TODAY.subtract(Duration.newInstance("2week")));
-		var MAX_CHART_DATE = DUE_DATE.addDay(1);
+		//IF TODAY IS CLOSE TO DUE_DATE THEN USE TODAY
+		var MAX_CHART_DATE = Date.max(DUE_DATE, (TODAY.subtract(DUE_DATE).milli < Duration.newInstance("2week").milli ? TODAY : DUE_DATE)).addDay(1);
 
 		var sampleInterval = Duration.DAY;
 		var timeDomain = {
@@ -434,7 +435,7 @@ importScript([
 
 			a = Log.action("Make chart", true);
 			aChart.show({
-				"name":"Open and CLose Rates",
+				"name":"Open and Close Rates",
 				"id": "chart_diff",
 				"sheetDiv": "info",
 				"type": "bar",

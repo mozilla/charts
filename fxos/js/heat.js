@@ -8,7 +8,7 @@ importScript("../modevlib/util/aString.js");
 importScript("owners.js");
 
 
-var HIGHLIGHT=Color.blue.hue(60).multiply(0.6);
+var HIGHLIGHT=Color.BLUE.hue(60).multiply(0.6);
 
 
 if (typeof OWNERS != 'undefined'){
@@ -238,7 +238,7 @@ function addProjectClickers(cube) {
 
 
 function age2color(age) {
-	var green = Color.green.multiply(0.4);
+	var green = Color.GREEN.multiply(0.4);
 	var color = green.hue(Math.min(1.0, age / 7) * 120);
 	return color;
 }//function
@@ -283,6 +283,10 @@ function showLastUpdated(){
 		}));
 
 		time = new Date(result.cube.max_date);
-		$("#last-updated").html("Last Updated " + time.addTimezone().format("NNN dd @ HH:mm") + Date.getTimezone());
+
+		var lu = $("#last-updated");
+		lu.html(new Template("<div style='{{style|css}}'>{{name}}</div>").expand(result.index));
+		lu.append("Last Updated " + time.addTimezone().format("NNN dd @ HH:mm") + Date.getTimezone());
+
 	});
 }

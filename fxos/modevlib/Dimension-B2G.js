@@ -101,15 +101,43 @@ if (!Mozilla) var Mozilla={"name":"Mozilla", "edges":[]};
 				},
 
 				{"name": "Team", "isFacet": true, "partitions": [
+
+					{"name": "Comms", "esfilter": {"and": [
+						{"term": {"product": "firefox os"}},
+						{"terms": {"component": [
+							"dom: contacts",
+							"gaia::contacts",
+							"gaia::cost control",
+							"gaia::dialer",
+							"gaia::sms"
+						]}}
+					]}},
+
+					{"name": "Media", "esfilter": {"and": [
+						{"not": {"term": {"keywords": "perf"}}}, //AN UNFORTUNATE REDUNDANCY
+						{"term": {"product": "firefox os"}},
+						{"terms": {"component": [
+							"gaia::camera",
+							"gaia::fmradio",
+							"gaia::gallery",
+							"gaia::music",
+							"gaia::video",
+							"gaia::ringtones"
+						]}}
+					]}},
+
 					{"name": "Performance",
 						"esfilter": {"or": [
-							{"term": {"keywords": "perf"}},
+							{"and":[
+								{"term": {"keywords": "perf"}}
+							]},
 							{"and": [
 								{"term": {"product": "firefox os"}},
 								{"term": {"component": "performance"}}
 							]}
 						]}
 					},
+
 					{"name": "System Front-End", "esfilter": {"and": [
 						{"regexp": {"status_whiteboard": ".*systemsfe.*"}}
 					]}},
@@ -127,18 +155,7 @@ if (!Mozilla) var Mozilla={"name":"Mozilla", "edges":[]};
 							"gaia::notes"
 						]}}
 					]}},
-					{"name": "Media", "esfilter": {"and": [
-						{"not": {"term": {"keywords": "perf"}}}, //AN UNFORTUNATE REDUNDANCY
-						{"term": {"product": "firefox os"}},
-						{"terms": {"component": [
-							"gaia::camera",
-							"gaia::fmradio",
-							"gaia::gallery",
-							"gaia::music",
-							"gaia::video",
-							"gaia::ringtones"
-						]}}
-					]}},
+
 					{"name": "RIL", "esfilter": {"and": [
 						{"not": {"term": {"keywords": "perf"}}}, //AN UNFORTUNATE REDUNDANCY
 						{"terms": {"component": [
@@ -164,17 +181,6 @@ if (!Mozilla) var Mozilla={"name":"Mozilla", "edges":[]};
 						{"terms": {"component": [
 							"video/audio: recording",
 							"video/audio"
-						]}}
-					]}},
-					{"name": "Comms", "esfilter": {"and": [
-						{"not": {"term": {"keywords": "perf"}}}, //AN UNFORTUNATE REDUNDANCY
-						{"term": {"product": "firefox os"}},
-						{"terms": {"component": [
-							"dom: contacts",
-							"gaia::contacts",
-							"gaia::cost control",
-							"gaia::dialer",
-							"gaia::sms"
 						]}}
 					]}},
 					{"name": "Devices", "esfilter": {"and": [

@@ -1098,7 +1098,7 @@ Qb.drill=function(query, parts){
 	Map.copy(query, newQuery);
 	newQuery.cube=undefined;
 	newQuery.list=undefined;
-	newQuery.url=undefined;			//REMOVE, MAY CAUSE PROBLEMS
+	newQuery.index=undefined;			//REMOVE, MAY CAUSE PROBLEMS
 	if (query.esfilter){
 		if (query.esfilter.and){
 			newQuery.esfilter={"and":query.esfilter.and.copy()};

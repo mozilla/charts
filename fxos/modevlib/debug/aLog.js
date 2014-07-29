@@ -121,7 +121,7 @@ Log.red=function(message){
 			"bottom":0,
 			"height":"23px",
 			"zindex":10,
-			"background-color":Color.red.darker().toHTML()
+			"background-color":Color.RED.darker().toHTML()
 		}),
 		"message":message.replaceAll("\n", " ").replaceAll("\t", " ").replaceAll("  ", " ")
 	});

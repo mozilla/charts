@@ -26,7 +26,7 @@ var Template=function Template(template){
 
 	var FUNC={};
 	FUNC.html=CNV.String2HTML;
-
+	FUNC.css=CNV.Object2style;
 
 
 	function _expand(template, namespaces){
@@ -96,7 +96,7 @@ var Template=function Template(template){
 				val=FUNC[func](val);
 			}//for
 
-			if (val!==undefined && (val instanceof String || (typeof map[key])!="object")){
+			if (val!==undefined && (val instanceof String || typeof(val)=="string" || (typeof map[key])!="object")){
 				output=output.replaceAll(output.substring(s, e + 2), val);
 				e = s + val.length;
 			}else{

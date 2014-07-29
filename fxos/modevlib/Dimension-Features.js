@@ -41,7 +41,7 @@ Sprints = [
 		"dateMarks": [
 			{"name": targetName, "date": endDate.addDay(), "style": {strokeStyle: "black", verticalOffset: 20}}
 		],
-		"needed_fields": ["target_milestone", "cf_blocking_loop"],
+		"needed_fields": ["target_milestone", "cf_blocking_loop", "cf_blocking_b2g"],
 		"partitions": [
 			{"name": "Blocking", "esfilter": {"and": [
 				{"term": {"cf_blocking_loop": blocks}}
@@ -79,14 +79,14 @@ Sprints = [
 		"dateMarks": [
 			{"name": targetName, "date": endDate.addDay(), "style": {strokeStyle: "black", verticalOffset: 20}}
 		],
-		"needed_fields": ["target_milestone", "cf_blocking_b2g"],
+		"needed_fields": ["target_milestone", "cf_blocking_b2g", "cf_blocking_loop"],
 		"partitions": [
 			{"name": "Blocking", "esfilter": {"and": [
 				{"term": {"cf_blocking_b2g": blocks}}
 			]}},
 			{"name": "Targeted", "esfilter": {"and": [
 				{"term": {"target_milestone": targets}},
-				{"not": {"term": {"cf_blocking_loop": blocks}}}  // UNFORTUNATE REDUNDANCY
+				{"not": {"term": {"cf_blocking_b2g": blocks}}}  // UNFORTUNATE REDUNDANCY
 			]}}
 		]
 	};

@@ -315,6 +315,10 @@ importScript(['modevlib/main.js', 'modevlib/Dimension-Bugzilla.js', "modevlib/Di
 		}));
 		Log.actionDone(a);
 
+		allBugs.list.forall(function(v){
+			v.status_whiteboard=nvl(v.status_whiteboard, "");
+		});
+
 		var counting = null;
 		var countingThread = Thread.run(function*() {
 			counting = yield(Q({

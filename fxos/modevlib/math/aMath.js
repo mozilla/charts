@@ -53,7 +53,7 @@ aMath={};
 	};//method
 
 
-	aMath.SUM=function SUM(values) {
+	function SUM(values) {
 		var sum = null;
 		for (var i = 0; i < values.length; i++) {
 			var v = values[i];
@@ -64,9 +64,10 @@ aMath={};
 				sum += v;
 		}//for
 		return sum;
-	};//add
+	}
 
-	aMath.sum=function(){
+	aMath.SUM = SUM;
+	aMath.sum = function () {
 		return SUM(arguments);
 	};//add
 
@@ -90,15 +91,16 @@ aMath={};
 		return add/count;
 	};//add
 
-	aMath.MAX=function MAX(values){
+	function MAX(values){
 		var max=null;
 		for(var i=0;i<values.length;i++){
 			if (values[i]==null) continue;
 			if (max==null || max<values[i]) max=values[i];
 		}//for
 		return max;
-	};//method
+	}
 
+	aMath.MAX=MAX;
 	aMath.max=function(){
 		return MAX(arguments);
 	};//method
@@ -113,13 +115,10 @@ aMath={};
 		return min;
 	}//method
 
-	aMath.MIN=MIN;
-	aMath.min=function(){
+	aMath.MIN = MIN;
+	aMath.min = function () {
 		return MIN(arguments);
 	};//method
-
-
-
 
 
 	//

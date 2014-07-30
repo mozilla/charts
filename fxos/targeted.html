@@ -133,7 +133,7 @@
 		var __createChart = function*() {
 			yield (ESQuery.loadColumns({"from": "bugs"}));
 
-			var milestoneName = GUI.state.milestone.getSelectedParts()[0].name;
+			var milestoneName = GUI.state.milestone.getSelectedParts().select("name").join(" and ");
 
 			var a = Log.action("Get Bug Details", true);
 			try{
@@ -266,7 +266,7 @@
 							"name": "All Milestones",
 							"dimension": Mozilla.Milestone,
 							"treeDepth":0,
-							"onlyOne": true,
+							"onlyOne": false,
 							"expandAll": true
 						})},
 						{"id": "responsibility", "name": "Responsibility", "default": "FxOS_Team", "type": PartitionFilter.newInstance({

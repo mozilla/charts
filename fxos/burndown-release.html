@@ -324,6 +324,9 @@ importScript([
 		//IF TODAY IS CLOSE TO DUE_DATE THEN USE TODAY
 		var MAX_CHART_DATE = Date.max(DUE_DATE, (TODAY.subtract(DUE_DATE).milli < Duration.newInstance("2week").milli ? TODAY : DUE_DATE)).addDay(1);
 
+		if (START_DATE==null)
+			Log.error("no date range to work with");
+
 		var sampleInterval = Duration.DAY;
 		var timeDomain = {
 			"type": "time",
@@ -817,7 +820,7 @@ importScript([
 			{"id": "release", "name": "Release", "default":"2.0", "type": PartitionFilter.newInstance({
 				"id": "releases",
 				"name": "All Releases",
-				"dimension": Mozilla.B2G.FinalState,
+				"dimension": Mozilla.B2G.Project,
 				"onlyOne": true,
 				"expandAll": true,
 				"treeDepth": 1
@@ -836,20 +839,19 @@ importScript([
 				false
 		);
 
-//	GUI.productFilter = ["B2G 1.0.0 (TEF)"];
-
 	});
 
 });
 
 
 function targetDate(m) {
-	return aChart.findDateMarks(m, "FC")
+	return Date.min(Date.newInstance(m.targetDate), Date.newInstance(aChart.findDateMarks(m, "FC")))
 }//method
 
 function startDate(m) {
-	return aChart.findDateMarks(m, "Start")
+	return m.start_date;
 }//method
+
 
 function releaseDetails(bugs) {
 

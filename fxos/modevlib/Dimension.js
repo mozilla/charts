@@ -37,6 +37,7 @@ Dimension.prototype = {
 					"esfilter": v.esfilter,
 					"fullFilter": v.fullFilter,
 					"dateMarks": v.dateMarks,
+					"start_date": v.start_date,
 					"targetDate": v.targetDate,
 					"style": Map.clone(v.style),
 					"weight": v.weight //YO! WHAT DO WE *NOT* COPY?

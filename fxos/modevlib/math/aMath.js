@@ -4,138 +4,160 @@
 
 
 aMath={};
-aMath.PI=Math.PI;
+
+(function(){
+	aMath.PI=Math.PI;
 
 
-aMath.isNumeric = function(n){
-	if (n==null) return null;
-	return !isNaN(parseFloat(n)) && isFinite(n);
-};
+	aMath.isNumeric = function(n){
+		if (n==null) return null;
+		return !isNaN(parseFloat(n)) && isFinite(n);
+	};
 
-aMath.isNaN = function(n){
-	return typeof(n)=="number" && n != +n;
-};
-
-
-if (!aMath.isNaN(NaN)) Log.error();
-if (aMath.isNaN("test")) Log.error();
-if (aMath.isNaN(0)) Log.error();
-if (aMath.isNaN(42)) Log.error();
-if (aMath.isNaN({"hi":42})) Log.error();
+	aMath.isNaN = function(n){
+		return typeof(n)=="number" && n != +n;
+	};
 
 
-
-
-
-
-//THIS WILL RETURN ZERO IF value IS NOT A NUMBER
-aMath.alpha2zero=function(value){
-	return aMath.isNumeric(value) ? value-0 : 0;
-};
-
-aMath.sign = function(n){
-	if (n==null) return null;
-	return n > 0.0 ? 1.0 : (n < 0.0 ? -1.0 : 0.0);
-};
-
-aMath.abs=function(n){
-	if (n==null) return null;
-	return Math.abs(n);
-};
-
-
-aMath.round=function(value, rounding){
-	if (rounding===undefined) return Math.round(value);
-	var d=Math.pow(10, rounding);
-	return Math.round(value*d)/d;
-};//method
-
-
-aMath.min=function(){
-	var min=null;
-	for(var i=0;i<arguments.length;i++){
-		if (arguments[i]==null) continue;
-		if (min==null || min>arguments[i]) min=arguments[i];
-	}//for
-	return min;
-};//method
-
-
-aMath.add=function(){
-	var add=null;
-	for(var i=0;i<arguments.length;i++){
-		if (arguments[i]==null) continue;
-		if (add==null)
-			add=arguments[i];
-		else
-			add+=arguments[i];
-	}//for
-	return add;
-};//add
-
-aMath.sum=aMath.add;
-
-
-aMath.mean=function(){
-	var add=null;
-	var count=0;
-	for(var i=0;i<arguments.length;i++){
-		if (arguments[i]==null) continue;
-		if (add==null)
-			add=arguments[i]-0;
-		else
-			add+=arguments[i]-0;
-		count++
-	}//for
-
-	if (add==null) return null;
-	return add/count;
-};//add
-
-
-aMath.max=function(){
-	var max=null;
-	for(var i=0;i<arguments.length;i++){
-		if (arguments[i]==null) continue;
-		if (max==null || max<arguments[i]) max=arguments[i];
-	}//for
-	return max;
-};//method
-
-//
-aMath.average=function(array){
-	var total=0.0;
-	var count=0;
-	for(var i=0;i<array.length;i++){
-		if (array[i]==null) continue;
-		total+=array[i];
-		count++;
-	}//for
-	if (count==0) return null;
-	return total/count;
-};//method
+	if (!aMath.isNaN(NaN)) Log.error();
+	if (aMath.isNaN("test")) Log.error();
+	if (aMath.isNaN(0)) Log.error();
+	if (aMath.isNaN(42)) Log.error();
+	if (aMath.isNaN({"hi":42})) Log.error();
 
 
 
-aMath.floor=Math.floor;
-aMath.ceil=Math.ceil;
-aMath.ceiling=Math.ceil;
-aMath.log=Math.log;
-aMath.random=Math.random;
 
-niceNumbers=[11, 12, 15, 20, 22, 24, 25, 30, 35, 40, 45, 50, 60, 70, 80, 90, 100];
 
-aMath.niceCeiling=function(value){
-	if (value==0) return 0;
-	if (value<0) Log.error("negative numbers not supported yet");
-	var sig=Math.floor(Math.log10(value))-1;
-	var d=Math.pow(10, sig);
-	value/=d;
-	for (var i=0;i<niceNumbers.length;i++)
-		if (niceNumbers[i]>=value)
-			return niceNumbers[i]*d;
-	Log.error("bug");
-};
+
+	//THIS WILL RETURN ZERO IF value IS NOT A NUMBER
+	aMath.alpha2zero=function(value){
+		return aMath.isNumeric(value) ? value-0 : 0;
+	};
+
+	aMath.sign = function(n){
+		if (n==null) return null;
+		return n > 0.0 ? 1.0 : (n < 0.0 ? -1.0 : 0.0);
+	};
+
+	aMath.abs=function(n){
+		if (n==null) return null;
+		return Math.abs(n);
+	};
+
+
+	aMath.round=function(value, rounding){
+		if (rounding===undefined) return Math.round(value);
+		var d=Math.pow(10, rounding);
+		return Math.round(value*d)/d;
+	};//method
+
+
+	aMath.SUM=function SUM(values) {
+		var sum = null;
+		for (var i = 0; i < values.length; i++) {
+			var v = values[i];
+			if (v == null) continue;
+			if (sum == null)
+				sum = v;
+			else
+				sum += v;
+		}//for
+		return sum;
+	};//add
+
+	aMath.sum=function(){
+		return SUM(arguments);
+	};//add
+
+
+	aMath.add=aMath.sum;
+
+
+	aMath.mean=function(){
+		var add=null;
+		var count=0;
+		for(var i=0;i<arguments.length;i++){
+			if (arguments[i]==null) continue;
+			if (add==null)
+				add=arguments[i]-0;
+			else
+				add+=arguments[i]-0;
+			count++
+		}//for
+
+		if (add==null) return null;
+		return add/count;
+	};//add
+
+	aMath.MAX=function MAX(values){
+		var max=null;
+		for(var i=0;i<values.length;i++){
+			if (values[i]==null) continue;
+			if (max==null || max<values[i]) max=values[i];
+		}//for
+		return max;
+	};//method
+
+	aMath.max=function(){
+		return MAX(arguments);
+	};//method
+
+
+	function MIN(values){
+		var min=null;
+		for(var i=0;i<values.length;i++){
+			if (values[i]==null) continue;
+			if (min==null || min>values[i]) min=values[i];
+		}//for
+		return min;
+	}//method
+
+	aMath.MIN=MIN;
+	aMath.min=function(){
+		return MIN(arguments);
+	};//method
+
+
+
+
+
+	//
+	aMath.average=function(array){
+		var total=0.0;
+		var count=0;
+		for(var i=0;i<array.length;i++){
+			if (array[i]==null) continue;
+			total+=array[i];
+			count++;
+		}//for
+		if (count==0) return null;
+		return total/count;
+	};//method
+
+
+
+	aMath.floor=Math.floor;
+	aMath.ceil=Math.ceil;
+	aMath.ceiling=Math.ceil;
+	aMath.log=Math.log;
+	aMath.random=Math.random;
+
+	niceNumbers=[11, 12, 15, 20, 22, 24, 25, 30, 35, 40, 45, 50, 60, 70, 80, 90, 100];
+
+	aMath.niceCeiling=function(value){
+		if (value==0) return 0;
+		if (value<0) Log.error("negative numbers not supported yet");
+		var sig=Math.floor(Math.log10(value))-1;
+		var d=Math.pow(10, sig);
+		value/=d;
+		for (var i=0;i<niceNumbers.length;i++)
+			if (niceNumbers[i]>=value)
+				return niceNumbers[i]*d;
+		Log.error("bug");
+	};
+
+})();
 
 
 

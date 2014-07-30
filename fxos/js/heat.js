@@ -41,7 +41,7 @@ function getComponentDetails(comp) {
 }//function
 
 
-// SHOW BLOCKER COUNT FOR ONE COMPONENT
+// SHOW COUNT FOR ONE COMPONENT
 function showComponent(detail, showTYPE) {
 	var TEMPLATE = new Template('<div class="blocker">' +
 		'<div class="component">{{component}}</div>' +
@@ -56,7 +56,7 @@ function showComponent(detail, showTYPE) {
 	component.manager = meta.owner.manager;
 	component.owner = meta.owner.name=="" ? "": "(" + meta.owner.name + ")";
 	component.projectDetail = detail.map(function (project, i) {
-		if (project.count > 0) {
+		if (project.show) {
 			return showTYPE(project);
 		}//endif
 	}).join("");
@@ -64,7 +64,7 @@ function showComponent(detail, showTYPE) {
 }//function
 
 // SHOW SUMMARY COUNT
-function showSummary(type, team, detail, specialBugs, showTYPE) {
+function showSummary(type, team, detail, grandTotal, specialBugs, showTYPE) {
 
 	var TEMPLATE = new Template(
 		'<h3 style="padding: 20px 0 0 10px;vertical-align: top; display:inline-block">{{name}} {{type}}</h3><div class="blocker">' +
@@ -75,8 +75,9 @@ function showSummary(type, team, detail, specialBugs, showTYPE) {
 		'{{specialDetail}}' +
 		'</div>');
 
-	var total = aMath.sum.apply(undefined, detail.cube.select("count"));
+	var total = aMath.SUM(detail.cube.select("count"));
 	var component = {};
+	component.type = type;
 
 	if (team.length==0){
 		component.name = "FxOS"
@@ -87,7 +88,7 @@ function showSummary(type, team, detail, specialBugs, showTYPE) {
 	var numSummary=0;
 	component.projectDetail = detail.cube.map(function (project, i) {
 		project.project = detail.edges[0].domain.partitions[i].name;
-		if (project.count > 0) {
+		if (project.show) {
 			numSummary++;
 			return showTYPE(project);
 		}//endif
@@ -100,18 +101,7 @@ function showSummary(type, team, detail, specialBugs, showTYPE) {
 		component.specialDetail = "";
 	}//endif
 
-
-	component.total=showTYPE({
-		"project":"Total",
-		"count":aMath.sum.apply(undefined, detail.cube.select("count")),
-		"unassignedCount":aMath.sum.apply(undefined, detail.cube.select("unassignedCount")),
-		"age":aMath.max.apply(undefined, detail.cube.select("age")),
-		"bugs":detail.from.list.select("bug_id"),
-		"unassignedBugs": detail.from.list.filter(Mozilla.B2G.Unassigned.esfilter).select("bug_id"),
-		"additionalClass": "project-summary"
-
-	});
-	component.type=type;
+	component.total=showTYPE(grandTotal);
 
 	return TEMPLATE.replace(component)
 }//function
@@ -124,7 +114,7 @@ function showNominations(detail) {
 	detail.color = age2color(detail.age).toHTML();
 
 	var TEMPLATE = new Template(
-		'<div class="project {{additionalClass}}"  style="background-color:{{color}}" href="{{bugsURL}}" bugsList="{{bugsList}}">' +
+		'<div class="project {{additionalClass}}"  style="background-color:{{color}}" href="{{bugsURL}}" bugsList="{{bugsList}}" project="{{project}}">' +
 		'<div class="release">{{project}}</div>' +
 		'<div class="count">{{count}}</div>' +
 		'</div>');
@@ -139,7 +129,7 @@ function showBlocker(detail) {
 	detail.unassignedURL = Bugzilla.searchBugsURL(detail.unassignedBugs);
 	detail.color = age2color(detail.age).toHTML();
 
-	var TEMPLATE = new Template('<div class="project {{additionalClass}}"  style="background-color:{{color}}" href="{{bugsURL}}" bugsList="{{bugsList}}">' +
+	var TEMPLATE = new Template('<div class="project {{additionalClass}}"  style="background-color:{{color}}" href="{{bugsURL}}" bugsList="{{bugsList}" project="{{project}}">' +
 		'<div class="release">{{project}}</div>' +
 		'<div class="count">{{count}}</div>' +
 		(detail.unassignedCount > 0 ? '<div class="unassigned"><a class="count_unassigned" href="{{unassignedURL}}">{{unassignedCount}}</a></div>' : '') +
@@ -152,13 +142,13 @@ function showBlocker(detail) {
 // SHOW BLOCKER COUNT FOR ONE COMPONENT, ONE PROJECT
 function showTargeted(detail) {
 	detail.bugsList=detail.bugs.join(", ");
-	detail.bugsURL = Bugzilla.searchBugsURL(detail.bugs);
+	detail.bugsURL = detail.bugs.length==0 ? "" : Bugzilla.searchBugsURL(detail.bugs);
 	detail.unassignedURL = Bugzilla.searchBugsURL(detail.unassignedBugs);
 	detail.lostURL = Bugzilla.searchBugsURL(detail.lostBugs);
 	detail.color = age2color(detail.age).toHTML();
 
 	var TEMPLATE = new Template(
-		'<div class="project {{additionalClass}}"  style="background-color:{{color}}" href="{{bugsURL}}" bugsList="{{bugsList}}">' +
+		'<div class="project {{additionalClass}}"  style="background-color:{{color}}" href="{{bugsURL}}" bugsList="{{bugsList}}" project="{{project}}">' +
 		'<div class="release">{{project}}</div>' +
 		'<div class="count">{{count}}</div>' +
 		(detail.unassignedCount > 0 ? '<div class="unassigned"><a class="count_unassigned" href="{{unassignedURL}}">{{unassignedCount}}</a></div>' : '') +
@@ -177,7 +167,7 @@ function showRegression(detail) {
 	detail.unassignedURL = Bugzilla.searchBugsURL(detail.unassignedBugs);
 	detail.color = age2color(detail.age).toHTML();
 
-	var TEMPLATE = new Template('<div class="project {{additionalClass}}"  style="background-color:{{color}}" href="{{bugsURL}}" bugsList="{{bugsList}}">' +
+	var TEMPLATE = new Template('<div class="project {{additionalClass}}"  style="background-color:{{color}}" href="{{bugsURL}}" bugsList="{{bugsList}}" project="{{project}}">' +
 		'<div class="release">{{project}}</div>' +
 		'<div class="count">{{count}}</div>' +
 		(detail.unassignedCount > 0 ? '<div class="unassigned"><a class="count_unassigned" href="{{unassignedURL}}">{{unassignedCount}}</a></div>' : '') +
@@ -199,6 +189,7 @@ function addProjectClickers(cube) {
 		$(this).css("background-color", old_color);
 	}).click(function (e) {
 		var link = $(this).attr("href");
+		if (!link) return;
 		window.open(link);
 	});
 
@@ -208,18 +199,23 @@ function addProjectClickers(cube) {
 		return false;
 	});
 
+	$(".count_lost").click(function (e) {
+		var link = $(this).attr("href");
+		window.open(link);
+		return false;
+	});
+
 	$(".project-summary").hover(function (e) {
 		var self = $(this);
-		var bugs = self.attr("bugsList").split(",").map(function (v) {
-			return CNV.String2Integer(v.trim());
-		});
+		var projectName = self.attr("project");
 		$(".project").filter(function(){
 			var pro = $(this);
 
 			if (pro.get(0)==self.get(0)) return true;
 			if (pro.hasClass("project-summary")) return false;
-			var thisBugs=pro.attr("bugsList").split(",").map(function(v){return CNV.String2Integer(v.trim());});
-			return bugs.intersect(thisBugs).length>0;
+			var thisProjectName=pro.attr("project");
+			var overlap = projectName=="Total" || projectName==thisProjectName;
+			return overlap;
 		}).each(function(){
 			var old_color = $(this).attr("old_color");
 			if (old_color == undefined) {

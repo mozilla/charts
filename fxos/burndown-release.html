@@ -541,10 +541,10 @@ importScript([
 			summary.html(
 					releases.map(function (m) {
 						var i = releaseTotals.edges[0].domain.getPartByKey(m.name).dataIndex;
-						var total = aMath.add.apply(undefined, releaseTotals.cube[i].select("count"));
+						var total = aMath.SUM( releaseTotals.cube[i].select("count"));
 						Mozilla.B2G.FinalState[m.name].total = total;
 
-						var count = aMath.add.apply(undefined, releaseTotals.cube[i].select("count"));
+						var count = aMath.SUM( releaseTotals.cube[i].select("count"));
 						Mozilla.B2G.FinalState[m.name].count = count;
 
 						var TEMPLATE = new Template("<div>" +

@@ -306,14 +306,8 @@ var __createChart = function*(){
 		$("#sampleMax").prop("disabled", true);
 
 		//FIND REAL TIME RANGE
-		sampleMin = aMath.min(TODAY.addDay(-14), aMath.min.apply(
-			undefined,
-			milestones.select("start_date").map(Date.newInstance)
-		));
-		sampleMax = aMath.max.apply(
-			undefined,
-			milestones.select("targetDate").map(Date.newInstance)
-		).addDay(2);
+		sampleMin = aMath.min(TODAY.addDay(-14), aMath.MIN(milestones.select("start_date").map(Date.newInstance)));
+		sampleMax = aMath.MAX(milestones.select("targetDate").map(Date.newInstance)).addDay(2);
 
 		milestoneFilter = {"or": milestones.select("esfilter")};
 

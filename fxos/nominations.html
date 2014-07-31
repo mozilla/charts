@@ -188,6 +188,7 @@
 			var components = yield(Q({
 				"from": allDetails,
 				"select": [
+					{"name": "show", "value": 'bug_id', "aggregate": "exists"},
 					{"name": "count", "value": "bug_id", "aggregate": "count"},
 					{"name": "bugs", "value": "bug_id", "aggregate": "array"},
 					{"name": "age", "value": "Date.now().subtract(Date.newInstance(modified_ts)).divideBy(Duration.DAY)", "aggregate": "maximum"},
@@ -201,7 +202,7 @@
 
 			$("#blockers").html("");
 			components.cube.forall(function (component, i) {
-				var total = aMath.sum.apply(undefined, component.select("count"));
+				var total = aMath.SUM( component.select("count"));
 				if (total > 0) {
 					component.forall(function (project, j) {
 						project.component = components.edges[0].domain.partitions[i].name;
@@ -219,7 +220,7 @@
 			var totals = yield(Q({
 				"from": allDetails,
 				"select": [
-//					{"name": "project", "value": "project.name", "aggregate": "one"},
+					{"name": "show", "value": "bug_id", "aggregate": "exists"},
 					{"name": "additionalClass", "value": '"project-summary"', "aggregate": "one"},
 					{"name": "count", "value": "bug_id", "aggregate": "count"},
 					{"name": "bugs", "value": "bug_id", "aggregate": "array"},
@@ -232,7 +233,17 @@
 				]
 			}));
 
-			var blockerHTML = showSummary("Nominations", GUI.state.team.getSelectedParts(), totals, undefined, showNominations);
+			var grandTotal={
+				"project":"Total",
+				"count":aMath.SUM(totals.cube.select("count")),
+				"unassignedCount":aMath.SUM(totals.cube.select("unassignedCount")),
+				"age":aMath.MAX(totals.cube.select("age")),
+				"bugs":totals.from.list.select("bug_id"),
+				"unassignedBugs": totals.from.list.filter(Mozilla.B2G.Unassigned.esfilter).select("bug_id"),
+				"additionalClass": "project-summary"
+			};
+
+			var blockerHTML = showSummary("Nominations", GUI.state.team.getSelectedParts(), totals, grandTotal, undefined, showNominations);
 			$("#totals").html(blockerHTML);
 
 			addProjectClickers(components);

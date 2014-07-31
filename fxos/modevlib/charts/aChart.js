@@ -472,7 +472,7 @@ aChart.showScatter=function(params){
 
 	//STARTS AS VISIBLE, SO TOGGLE TO HIDE
 	styles.forall(function(s, i){
-		if (s.visibility && s.visibility=="hidden"){
+		if (s.visibility && s.visibility=="hidden" && chart.legendPanel!=null){
 			var datums=chart.legendPanel.data._datums.map(function(d){
 				if (d.key.indexOf(","+categoryLabels[i]+",")>=0) return d;
 			});
@@ -777,7 +777,7 @@ aChart.show=function(params){
 
 	//STARTS AS VISIBLE, SO TOGGLE TO HIDE
 	styles.forall(function(s, i){
-		if (s.visibility && s.visibility=="hidden"){
+		if (s.visibility && s.visibility=="hidden" && chart.legendPanel!=null){
 			var datums=chart.legendPanel.data._datums.map(function(d){
 				if (d.key.indexOf(","+categoryLabels[i]+",")>=0) return d;
 			});

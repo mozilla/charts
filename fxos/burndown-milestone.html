@@ -498,6 +498,7 @@ var __createChart = function*(){
 				"status_whiteboard",
 				"target_milestone",
 				"cf_blocking_loop",
+				"cf_blocking_b2g",
 				"keywords",
 				"modified_ts",
 				"expires_on"
@@ -533,11 +534,11 @@ var __createChart = function*(){
 		summary.html(
 			milestones.map(function(m){
 				var i=milestoneTotals.edges[0].domain.getPartByKey(m.name).dataIndex;
-				var total=aMath.add.apply(undefined, milestoneTotals.cube[i].select("count"));
+				var total=aMath.SUM( milestoneTotals.cube[i].select("count"));
 				Mozilla.Milestone[m.name].total=total;
 
-				var work=aMath.add.apply(undefined, milestoneTotals.cube[i].select("work"));
-				var count=aMath.add.apply(undefined, milestoneTotals.cube[i].select("count"));
+				var work=aMath.SUM( milestoneTotals.cube[i].select("work"));
+				var count=aMath.SUM( milestoneTotals.cube[i].select("count"));
 				Mozilla.Milestone[m.name].work=work;
 				Mozilla.Milestone[m.name].count=count;
 

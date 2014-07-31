@@ -133,12 +133,11 @@
 		var __createChart = function*() {
 			yield (ESQuery.loadColumns({"from": "bugs"}));
 
-			var milestoneName = GUI.state.milestone.getSelectedParts()[0].name;
+			var milestoneName = GUI.state.milestone.getSelectedParts().select("name").join(" and ");
 
 			var a = Log.action("Get Bug Details", true);
 			try{
-			//PULL THE RAW DATA, AND THEN OPERATE ON IT 112K, 2.17sec time
-			//THE AGGREGATES ARE SPENDING ABOUT 2/3 THE TIME TRANSMITTING THE QUERY
+			//PULL THE RAW DATA IT'S FASTER THAN PULLING AGGREGATES DIRECTLY FOR OBSERVED BUG QUANTITIES
 			var allDetails = yield(ESQuery.run({
 				"from": "bugs",
 				"select": [
@@ -178,6 +177,7 @@
 			var components = yield(Q({
 				"from":allDetails,
 				"select": [
+					{"name": "show", "value": "bug_id", "aggregate": "exists"},
 					{"name": "count", "value": "isTargeted ? bug_id : null", "aggregate": "count"},
 					{"name": "bugs", "value": "isTargeted ? bug_id : null", "aggregate": "array"},
 					{"name": "age", "value": "isTargeted ? Date.now().subtract(Date.newInstance(modified_ts)).divideBy(Duration.DAY) : null", "aggregate": "maximum"},
@@ -195,7 +195,7 @@
 
 			$("#blockers").html("");
 			components.cube.forall(function (component, i) {
-				var total = aMath.sum.apply(undefined, component.select("count"));
+				var total = aMath.SUM(component.select("count"))+aMath.SUM(component.select("lostCount"));
 				if (total > 0) {
 					component.forall(function (project, j) {
 						project.component = components.edges[0].domain.partitions[i].name;
@@ -214,6 +214,7 @@
 			var totals = yield(Q({
 				"from": allDetails,
 				"select": [
+					{"name": "show", "value": 'bug_id', "aggregate": "exists"},
 					{"name": "additionalClass", "value": '"project-summary"', "aggregate": "one"},
 					{"name": "count", "value": "isTargeted ? bug_id : null", "aggregate": "count"},
 					{"name": "bugs", "value": "isTargeted ? bug_id : null", "aggregate": "array"},
@@ -228,7 +229,21 @@
 				]
 			}));
 
-			var blockerHTML = showSummary(milestoneName+" Targeted", GUI.state.team.getSelectedParts(), totals, undefined, showTargeted);
+			var lostBugs = allDetails.list.filter(function(v){return v.isTargeted==false;}).select("bug_id");
+
+			var grandTotal = {
+				"project": "Total",
+				"age": aMath.MAX(totals.cube.select("age")),
+				"count": aMath.SUM(totals.cube.select("count")),
+				"bugs": allDetails.list.filter(function(v){return v.isTargeted;}).select("bug_id"),
+				"unassignedCount": aMath.SUM(totals.cube.select("unassignedCount")),
+				"unassignedBugs": allDetails.list.filter(Mozilla.B2G.Unassigned.esfilter).select("bug_id"),
+				"lostCount": lostBugs.length,
+				"lostBugs": lostBugs,
+				"additionalClass": "project-summary"
+			};
+
+			var blockerHTML = showSummary(milestoneName+" Targeted", GUI.state.team.getSelectedParts(), totals, grandTotal, undefined, showTargeted);
 			$("#totals").html(blockerHTML);
 
 			addProjectClickers(components);
@@ -251,7 +266,7 @@
 							"name": "All Milestones",
 							"dimension": Mozilla.Milestone,
 							"treeDepth":0,
-							"onlyOne": true,
+							"onlyOne": false,
 							"expandAll": true
 						})},
 						{"id": "responsibility", "name": "Responsibility", "default": "FxOS_Team", "type": PartitionFilter.newInstance({

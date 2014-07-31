@@ -129,7 +129,7 @@ function showBlocker(detail) {
 	detail.unassignedURL = Bugzilla.searchBugsURL(detail.unassignedBugs);
 	detail.color = age2color(detail.age).toHTML();
 
-	var TEMPLATE = new Template('<div class="project {{additionalClass}}"  style="background-color:{{color}}" href="{{bugsURL}}" bugsList="{{bugsList}" project="{{project}}">' +
+	var TEMPLATE = new Template('<div class="project {{additionalClass}}"  style="background-color:{{color}}" href="{{bugsURL}}" bugsList="{{bugsList}}" project="{{project}}">' +
 		'<div class="release">{{project}}</div>' +
 		'<div class="count">{{count}}</div>' +
 		(detail.unassignedCount > 0 ? '<div class="unassigned"><a class="count_unassigned" href="{{unassignedURL}}">{{unassignedCount}}</a></div>' : '') +
@@ -208,13 +208,15 @@ function addProjectClickers(cube) {
 	$(".project-summary").hover(function (e) {
 		var self = $(this);
 		var projectName = self.attr("project");
+		var bugs = self.attr("bugsList").split(",").map(function(v){return v-0;});
 		$(".project").filter(function(){
 			var pro = $(this);
 
 			if (pro.get(0)==self.get(0)) return true;
 			if (pro.hasClass("project-summary")) return false;
 			var thisProjectName=pro.attr("project");
-			var overlap = projectName=="Total" || projectName==thisProjectName;
+			var thisBugs = pro.attr("bugsList").split(",").map(function(v){return v-0;});
+			var overlap = projectName=="Total" || projectName==thisProjectName || thisBugs.intersect(bugs).length>0;
 			return overlap;
 		}).each(function(){
 			var old_color = $(this).attr("old_color");

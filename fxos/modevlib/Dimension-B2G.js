@@ -114,7 +114,6 @@ if (!Mozilla) var Mozilla={"name":"Mozilla", "edges":[]};
 					]}},
 
 					{"name": "Media", "esfilter": {"and": [
-						{"not": {"term": {"keywords": "perf"}}}, //AN UNFORTUNATE REDUNDANCY
 						{"term": {"product": "firefox os"}},
 						{"terms": {"component": [
 							"gaia::camera",

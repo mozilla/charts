@@ -48,7 +48,7 @@ Sprints = [
 			]}},
 			{"name": "Targeted", "esfilter": {"and": [
 				{"term": {"target_milestone": targets}},
-				{"not": {"term": {"cf_blocking_loop": blocks}}}  // UNFORTUNATE REDUNDANCY
+//				{"not": {"term": {"cf_blocking_loop": blocks}}}  // UNFORTUNATE REDUNDANCY
 			]}}
 		]
 	};
@@ -86,7 +86,7 @@ Sprints = [
 			]}},
 			{"name": "Targeted", "esfilter": {"and": [
 				{"term": {"target_milestone": targets}},
-				{"not": {"term": {"cf_blocking_b2g": blocks}}}  // UNFORTUNATE REDUNDANCY
+//				{"not": {"term": {"cf_blocking_b2g": blocks}}}  // UNFORTUNATE REDUNDANCY
 			]}}
 		]
 	};

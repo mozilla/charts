@@ -197,6 +197,8 @@ Dimension.prototype = {
 					Log.error("Must define an esfilter on " + part.name + ", there are too many partitions (" + part.partitions.length + ")");
 				} else if (part.esfilter === undefined) {
 					part.esfilter = {"or": part.partitions.select("esfilter")};
+				} else {
+					//DO NOTHING
 				}//endif
 			}//endif
 		}

@@ -169,8 +169,12 @@
 			Log.actionDone(a);
 
 			//MARKUP WITH isTargeted
+			var milestoneFilter ={"and":GUI.state.milestone.getSelectedParts().map(function(p){
+				return p.Targeted.esfilter;
+			})};
+			var milestoneFunc = CNV.esFilter2function(milestoneFilter);
 			allDetails.list.forall(function(v){
-				v.isTargeted = v.target_milestone && v.target_milestone!="---" ? true : false
+				v.isTargeted = milestoneFunc(v);
 			});
 			allDetails.columns.append({"name":"isTargeted"});
 
@@ -261,7 +265,7 @@
 							"onlyOne": false,
 							"expandAll": true
 						})},
-						{"id": "milestone", "name": "Milestone", "default":"Milestone.2.0_S4", "type": PartitionFilter.newInstance({
+						{"id": "milestone", "name": "Milestone", "default":"Milestone.2.1_S1", "type": PartitionFilter.newInstance({
 							"id": "milestone",
 							"name": "All Milestones",
 							"dimension": Mozilla.Milestone,

@@ -247,7 +247,6 @@
 
 		<div id="feature-summary" style="position: relative;min-height:30px;"></div>
 		<div id="chart" class="chart" style="position: relative;height:300px;"></div>
-		<!--<div id="chart_diff" class="chart" style="position: relative;height:300px;"></div>-->
 		<div id="buglist" style="position: relative;width:800px"></div>
 		<div id="info" style="position: relative;width:800px"></div>
 	</div>
@@ -263,8 +262,9 @@ importScript([
 ], function(){
 
 
-var raw_data = undefined;   //KEEP RAW DATA FOR RE-CHARTING
-var featureFilter = null;
+var raw_data =null;   //KEEP RAW DATA FOR RE-CHARTING
+var featureFilter = null;  //IF THIS CHANGES, THEN PULL RAW DATA FROM ES AGAIN
+var timeDomain={"min":null, "max":null};  //IF THIS CHANGES, THEN PULL RAW DATA FROM ES AGAIN
 
 var thread;
 var createChart = function(){
@@ -292,7 +292,12 @@ var __createChart = function*(){
 	var sampleMin = Date.newInstance(GUI.state.sampleMin);
 	var sampleInterval = Duration.newInstance(GUI.state.sampleInterval);
 	var sampleMax = Date.newInstance(GUI.state.sampleMax).addDay();
-	var timeDomain = {"type":"time", "min":sampleMin, "max":sampleMax, "interval":sampleInterval};
+	var newTimeDomain = {"type":"time", "min":sampleMin, "max":sampleMax, "interval":sampleInterval};
+	if (raw_data==null || newTimeDomain.min.getMilli()!=timeDomain.min.getMilli() || newTimeDomain.max.getMilli()!=timeDomain.max.getMilli()){
+		raw_data=null;  // MARK AS NEEDING A RELOAD
+		timeDomain=newTimeDomain;
+	}//endif
+	var countMode = GUI.state.countMode.selected;
 
 	var scopes = GUI.state.scope.getSelectedParts();
 	var currScope = scopes[0];
@@ -304,10 +309,14 @@ var __createChart = function*(){
 	var newFeatureFilter = Mozilla.Scope[currScope.primary].esfilter;
 	if (newFeatureFilter !== featureFilter || !raw_data) {
 		featureFilter = newFeatureFilter;
+		var a = Log.action("Pull ES data");
 		raw_data = yield(getRawDependencyData(featureFilter, timeDomain, Mozilla.Scope["needed_fields"]));
+		Log.actionDone(a);
 	}//endif
 
+	var a = Log.action("Calc daily dependencies");
 	var daily = yield (getDailyDependencies(raw_data, currScopeFilter));
+	Log.actionDone(a);
 
 	//LAST DAY WILL BE CONSIDERED CURRENT FEATURE LIST
 	var currOpenBugs = daily.cube.last().filter({"term": {"counted": "Open"}}).select("bug_id");
@@ -382,7 +391,8 @@ var __createChart = function*(){
 			"sort":["Status", "bug_id"]
 		}));
 
-		$("#buglist").html(bugDetails(details.list));
+		var table = $("#buglist").html(bugDetails(details.list)).find("table")[0];
+		sorttable.makeSortable(table);
 	});
 
 	Thread.run(function*(){
@@ -391,7 +401,7 @@ var __createChart = function*(){
 		///////////////////////////////////////////////////////////////////////
 		var a=Log.action("Adding", true);
 		var chart= yield(Q({
-			"from": raw_data,
+			"from": daily,
 			"select":{"name":"num", "value":countMode=="Bugs" ? "1" : 'nvl(ScrumBugs.parse(status_whiteboard).points, 1)-0', "aggregate":"sum", "default":0},
 			"edges":[
 				{"name": "status", "value": "counted", "domain": {"type": "set", "key":"value", "partitions": [
@@ -404,8 +414,7 @@ var __createChart = function*(){
 					"allowNulls":false,
 					"domain":timeDomain
 				}
-			],
-			"where": currScopeFilter
+			]
 		}));
 
 		//CONVERT EDGE TO ATTRIBUTES
@@ -476,31 +485,32 @@ var __createChart = function*(){
 
 
 $(document).ready(function(){
-	GUI.setup(createChart, [
-		{"id":"sampleMin", "name":"Start Date", "type":"time", "default":Date.eod().add("-6week")},
-		{"id":"sampleMax", "name":"End Date", "type":"time", "default":Date.today().ceilingWeek()},
-		{"id":"sampleInterval", "name":"Interval", "type":"duration", "default":"day"},
-		{"id":"countMode", "name":"Count", "type":RadioFilter.newInstance({
-			"id":"countMode",
-			"name":"Count",
-			"message":"Chart the estimated work (default), or chart the bug count<br>",
-			"options":["Work", "Bugs"],
-			"default":"Work"
-		})},
-		{"id": "scope", "name": "Scope", "type": PartitionFilter.newInstance({
-			"id": "scope",
-			"name": "Scope",
-			"dimension": Mozilla.Scope,
-			"onlyOne": true,
-			"showAll": true,
-			"expandAll": true,
-			"treeDepth":0
-		}), "default":"UCID 2.1"}
+	GUI.setup(
+		createChart, [
+			{"id":"sampleMin", "name":"Start Date", "type":"time", "default":Date.eod().add("-6week")},
+			{"id":"sampleMax", "name":"End Date", "type":"time", "default":Date.today().ceilingWeek()},
+			{"id":"sampleInterval", "name":"Interval", "type":"duration", "default":"day"},
+			{"id":"countMode", "name":"Count", "type":RadioFilter.newInstance({
+				"id":"countMode",
+				"name":"Count",
+				"message":"Chart the estimated work (default), or chart the bug count<br>",
+				"options":["Work", "Bugs"],
+				"default":"Work"
+			})},
+			{"id": "scope", "name": "Scope", "default":"Both 2.1", "type": PartitionFilter.newInstance({
+				"id": "scope",
+				"name": "Scope",
+				"dimension": Mozilla.Scope,
+				"onlyOne": true,
+				"showAll": true,
+				"expandAll": true,
+				"treeDepth":0
+			})}
 		],
-			[
-				"sampleMin=Date.newInstance(sampleMin).floor(Duration.newInstance(sampleInterval)).format('yyyy-MM-dd')",
-				"sampleMax=Date.newInstance(sampleMax).addDay(1).floor(Duration.newInstance(sampleInterval)).addDay(-1).format('yyyy-MM-dd')"
-			],
+		[
+			"sampleMin=Date.newInstance(sampleMin).floor(Duration.newInstance(sampleInterval)).format('yyyy-MM-dd')",
+			"sampleMax=Date.newInstance(sampleMax).addDay(1).floor(Duration.newInstance(sampleInterval)).addDay(-1).format('yyyy-MM-dd')"
+		],
 		"bugs",
 		false
 	);

@@ -306,17 +306,73 @@ var __createChart = function*(){
 	var currScopeFilter = currScope.esfilter;
 	yield (ESQuery.loadColumns({"from": "bugs"}));
 
-	var newFeatureFilter = Mozilla.Scope[currScope.primary].esfilter;
-	if (newFeatureFilter !== featureFilter || !raw_data) {
-		featureFilter = newFeatureFilter;
-		var a = Log.action("Pull ES data");
-		raw_data = yield(getRawDependencyData(featureFilter, timeDomain, Mozilla.Scope["needed_fields"]));
+	if (currScope.esfilter.match_all){
+		var newFeatureFilter = Mozilla.Scope[currScope.primary].esfilter;
+		if (newFeatureFilter !== featureFilter || !raw_data) {
+			featureFilter = newFeatureFilter;
+			var a = Log.action("Pull ES data");
+			raw_data = yield(getRawDependencyData(featureFilter, timeDomain, Mozilla.Scope["needed_fields"]));
+			Log.actionDone(a);
+		}//endif
+
+		var a = Log.action("Calc daily dependencies");
+		var daily = yield (getDailyDependencies(raw_data, currScopeFilter));
 		Log.actionDone(a);
+	}else{
+		//SIMPLE, JUST THE MARKED BUGS WITH NO DEPENDENCY
+		featureFilter = null;  //SO RELOAD HAPPENS
+		raw_data = yield(ESQuery.run({
+			"from": "bugs",
+			"select": [
+				"bug_id",
+				"bug_status",
+				"modified_ts",
+				"expires_on",
+				"status_whiteboard"
+			],
+			"esfilter": {"and": [
+				currScopeFilter,
+				{"range": {"modified_ts": {"lt": timeDomain.max.getMilli()}}},
+				{"range": {"expires_on": {"gte": timeDomain.min.getMilli()}}}
+			]}
+		}));
+		raw_data.columns.append({"name": "counted"});
+		raw_data.list.forall(function(v){
+			v.counted = ['resolved','verified','closed'].contains(v.bug_status) ? 'Closed' : 'Open';
+		});
+
+		daily = yield (Q({
+			"from": raw_data,
+			"select": [
+				{"value": "status_whiteboard", "aggregate":"any"},
+				{"value": "counted", "aggregate":"maximum"}
+			],
+			"edges": [
+				{"name": "date", "range": {"min": "modified_ts", "max": "expires_on"}, "domain": timeDomain},
+				"bug_id"
+			]
+
+		}));
+
+		//ADDING COLUMNS AS MARKUP
+		daily.columns.append({"name": "date"});
+
+		//ADD date AND bug_id TO ALL RECORDS
+		var days = daily.edges[0].domain.partitions;
+		var bugs = daily.edges[1].domain.partitions;
+		for (var day = 0; day < daily.cube.length; day++) {
+			var bug = daily.cube[day];
+			var day_part = days[day];
+			bug.forall(
+					function (detail, i) {
+						detail.date = day_part.value;    //ASSIGN DATE TO AGGREGATE RECORD
+						detail.bug_id = bugs[i].value;   //ASSIGN BUG ID TO AGGREGATE RECORD
+					}
+			);
+		}//for
 	}//endif
 
-	var a = Log.action("Calc daily dependencies");
-	var daily = yield (getDailyDependencies(raw_data, currScopeFilter));
-	Log.actionDone(a);
+
 
 	//LAST DAY WILL BE CONSIDERED CURRENT FEATURE LIST
 	var currOpenBugs = daily.cube.last().filter({"term": {"counted": "Open"}}).select("bug_id");
@@ -471,7 +527,18 @@ var __createChart = function*(){
 						],
 						"esfilter":{"and":[
 							series2filter[series],
-							{"term":{"date":x}}
+							{"or":[
+								{"and":[
+									{"exists":{"field":"date"}},
+									{"term":{"date":x}}
+								]},
+								{"and":[
+									{"range":{"modified_ts":{"lte": x.getMilli()}}},
+									{"range":{"expires_on":{"gt": x.getMilli()}}}
+								]}
+
+							]}
+
 						]}
 					})));
 

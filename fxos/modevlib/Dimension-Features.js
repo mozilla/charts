@@ -116,6 +116,7 @@ Dimension.addEdges(true, Mozilla, [
 
 	{"name": "Scope", "index": "bugs", "needed_fields":["cf_feature_b2g", "status_whiteboard"], "esfilter": {"match_all": {}}, "edges": [
 		{"name": "UCID 2.0",
+			"title":"UCID 2.0 (no dependencies)",
 			"primary":"UCID 2.0 + Feature-B2G = 2.0",
 			"needed_fields":["status_whiteboard"],
 			"esfilter": {"and":[
@@ -127,11 +128,13 @@ Dimension.addEdges(true, Mozilla, [
 			]}
 		},
 		{"name": "Feature-B2G = 2.0",
+			"title":"Feature-B2G = 2.0 (no dependencies)",
 			"primary":"UCID 2.0 + Feature-B2G = 2.0",
 			"needed_fields":["cf_feature_b2g"],
 			"esfilter": {"term":{"cf_feature_b2g":"2.0"}}
 		},
 		{"name": "UCID 2.0 + Feature-B2G = 2.0",
+			"title":"UCID 2.0 and Feature-B2G = 2.0 (no dependencies)",
 			"primary":"UCID 2.0 + Feature-B2G = 2.0",
 			"needed_fields":["cf_feature_b2g", "status_whiteboard"],
 			"esfilter": {"or":[
@@ -153,6 +156,7 @@ Dimension.addEdges(true, Mozilla, [
 
 
 		{"name": "UCID 2.1",
+			"title":"UCID 2.1 (no dependencies)",
 			"primary":"UCID 2.1 + Feature-B2G = 2.1",
 			"esfilter": {"and":[
 				{"regexp": {"status_whiteboard": ".*ucid.*"}},
@@ -160,11 +164,13 @@ Dimension.addEdges(true, Mozilla, [
 			]}
 		},
 		{"name": "Feature-B2G = 2.1",
+			"title":"Feature-B2G = 2.1 (no dependencies)",
 			"primary":"UCID 2.1 + Feature-B2G = 2.1",
 			"needed_fields":["cf_feature_b2g"],
 			"esfilter": {"term":{"cf_feature_b2g":"2.1"}}
 		},
 		{"name": "UCID 2.1 + Feature-B2G = 2.1",
+			"title":"UCID 2.1 and Feature-B2G = 2.1 (no dependencies)",
 			"primary":"UCID 2.1 + Feature-B2G = 2.1",
 			"needed_fields":["cf_feature_b2g", "status_whiteboard"],
 			"esfilter": {"or":[

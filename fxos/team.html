@@ -481,7 +481,6 @@ importScript("js/chart_lib.js", function () {
 					"esfilter": {"and": [
 						Mozilla.B2G.esfilter,
 						Mozilla.CurrentRecords.esfilter,
-						team.name == "Performance" ? Mozilla.BugStatus.Open.esfilter : ESQuery.TrueFilter, //PERFORMANCE TEAM NEED NOT SHOW ALL COMPONENTS EVER TOUCHED
 						team.esfilter
 					]}
 				}));
@@ -574,7 +573,7 @@ importScript("js/chart_lib.js", function () {
 
 			//SHOW GRID
 			both.name = team.name;
-			if (["Performance", "All Others", "All Teams"].contains(team.name)) {
+			if (["All Others", "All Teams"].contains(team.name)) {
 				Qb.removeZeroParts(both, 0, "count");
 			}//endif
 

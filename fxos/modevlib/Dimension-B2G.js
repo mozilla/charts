@@ -125,18 +125,6 @@ if (!Mozilla) var Mozilla={"name":"Mozilla", "edges":[]};
 						]}}
 					]}},
 
-					{"name": "Performance",
-						"esfilter": {"or": [
-							{"and":[
-								{"term": {"keywords": "perf"}}
-							]},
-							{"and": [
-								{"term": {"product": "firefox os"}},
-								{"term": {"component": "performance"}}
-							]}
-						]}
-					},
-
 					{"name": "System Front-End", "esfilter": {"and": [
 						{"regexp": {"status_whiteboard": ".*systemsfe.*"}}
 					]}},

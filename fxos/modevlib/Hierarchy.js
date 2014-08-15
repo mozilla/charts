@@ -285,7 +285,7 @@ function* getRawDependencyData(esfilter, dateRange, selects) {
 
     var allSelects = selects.union(["bug_id", "dependson", "bug_status", "modified_ts", "expires_on"]);
 
-    var a = Log.action("Pull dependencies");
+    var a = Log.action("Pull details");
     var raw_data = yield (ESQuery.run(
         {
             "name": "Open Bug Count",
@@ -301,6 +301,7 @@ function* getRawDependencyData(esfilter, dateRange, selects) {
     Log.actionDone(a);
 
     //ORGANIZE INTO DATACUBE: (DAY x BUG_ID)
+	var a = Log.action("Fill raw cube");
     var data = yield (Q(
         {
             "from": raw_data,
@@ -315,6 +316,7 @@ function* getRawDependencyData(esfilter, dateRange, selects) {
             ]
         }
     ));
+	Log.actionDone(a);
 
     //ADDING COLUMNS AS MARKUP
     data.columns.append({"name": "counted"});

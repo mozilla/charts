@@ -159,7 +159,27 @@ Qb.aggregate.one = function(select){
 	};//method
 };
 
+////////////////////////////////////////////////////////////////////////////////
+// PICK ANY VALUE AS THE AGGREGATE
+Qb.aggregate.any = function(select){
+	select.defaultValue = function(){
+		return null;
+	};//method
 
+	select.add = function(total, v){
+		if (v === undefined || v == null) return total;
+		if (total == null) return v;
+		return null;
+	};//method
+
+	select.domain = {};
+	Map.copy(Qb.domain.value, select.domain);
+
+	select.domain.end=function(value){
+		if (value == null && select["default"]!==undefined) return eval(select["default"]);
+		return value;
+	};//method
+};
 
 Qb.aggregate.sum = function(select){
 	select.defaultValue = function(){

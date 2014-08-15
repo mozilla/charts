@@ -76,7 +76,7 @@ var OWNERS = {
   "NFC": "Ken Chang (Vincent Chang)", // Firefox OS
   "rtsp": "Ken Chang (Vincent Chang)", // Firefox OS
   "Panning and Zooming": "Milan Sreckovic (Kartikaya Gupta, Botond Ballo)", // Core
-  "Performance": "Mike Lee (Mason Chang)", // Firefox OS
+  "Performance": "Everyone", // Firefox OS
   "Runtime": "Gregor Wagner (Fabrice Desré)", // Firefox OS
   // "Simulator": "?", // Firefox OS
   "RIL": "Ken Chang (Hsinyi Tsai)", // Firefox OS

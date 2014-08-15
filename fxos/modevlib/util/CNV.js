@@ -766,11 +766,6 @@ CNV.esFilter2function=function(esFilter){
 			return (val!==undefined && val!=null);
 		};
 	}else if (op=="missing"){
-//		"missing":{
-//			"field" : "requestee",
-//			"existence" : true,
-//			"null_value" : true
-//		}
 		var field = esFilter[op].field;
 		return function(row, i, rows){
 			var val =row[field];
@@ -873,20 +868,11 @@ CNV.esFilter2Expression=function(esFilter){
 		output += "[" + valueList.map(CNV.String2Quote).join(", ") + "].intersect(Array.newInstance(" + variableName + ")).length > 0";  //ARRAY BASED FOR MULTIVALUED VARIABLES
 		return output;
 	}else if (op=="exists"){
-		//"exists":{"field":"myField"}
-		var pair = esFilter[op];
-		var variableName = pair.field;
-		return "(" + variableName + ")";
+		var variableName = esFilter[op].field;
+		return "(" + variableName + "!==undefined && " + variableName + "!=null)";
 	}else if (op=="missing"){
-//		"missing":{
-//			"field" : "requestee",
-//			"existence" : true,
-//			"null_value" : true
-//		}
-		var fieldName=(esFilter[op].field);
-		var testExistence=esFilter[op].existence;
-		var testNull=esFilter[op].null_value;
-		return "(!" + variableName + ")";
+		var variableName =esFilter[op].field;
+		return "(" + variableName + "===undefined || " + variableName + "==null)";
 	} else if (op == "range"){
 		var pair = esFilter[op];
 		var variableName = Object.keys(pair)[0];

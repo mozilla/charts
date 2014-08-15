@@ -196,7 +196,7 @@ MVEL.compile.getFrameVariables=function(indexName, body, isLean){
 // indexName NAME USED TO REFER TO HIGH LEVEL DOCUMENT
 // loopVariablePrefix PREFIX FOR LOOP VARABLES
 MVEL.prototype.from = function(fromPath, loopVariablePrefix){
-	var loopCode = "if (<PATH>!=null){ for(<VAR> : <PATH>){\n<CODE>\n}}\n";
+	var loopCode = "if (<PARENT_PATH>.containsKey(\"<PATH_END>\" && <PARENT_PATH>.<PATH_END> != null )){ for(<VAR> : <SIMPLE_PATH>){\n<CODE>\n}}\n";
 	this.prefixMap = [];
 	var code = "<CODE>";
 
@@ -224,9 +224,9 @@ MVEL.prototype.from = function(fromPath, loopVariablePrefix){
 //        var ifPath = String.join(currPath, ".?");
 		var shortPath = this.translate(pathi);
 		this.prefixMap.unshift({"path":pathi, "variable":loopVariable});
+		this.prefixMap.unshift({"path":path.slice(1, i+1).join("."), "variable":loopVariable});
 
 		var loop;
-
 //        if (i==1){
 //            loop = loopCode
 //                .replaceAll("<VAR>", loopVariable)
@@ -235,7 +235,9 @@ MVEL.prototype.from = function(fromPath, loopVariablePrefix){
 			loop = loopCode
 				.replaceAll("<VAR>", loopVariable)
 	//            .replaceAll("<IF_PATH>", shortIfPath)
-				.replaceAll("<PATH>", shortPath);
+				.replaceAll("<PARENT_PATH>", shortPath.replaceAll(".?", ".").split(".").leftBut(1).join("."))
+				.replaceAll("<PATH_END>", shortPath.replaceAll(".?", ".").split(".").last())
+				.replaceAll("<SIMPLE_PATH>", shortPath.replaceAll(".?", "."));
 //        }//endif
 		code = code.replaceAll("<CODE>", loop);
 	}//for
@@ -249,7 +251,7 @@ MVEL.prototype.translate = function(variableName){
 	var shortForm = variableName;
 	for(var p = 0; p < (this.prefixMap).length; p++){
 		var prefix = this.prefixMap[p].path;
-		if (shortForm==prefix){
+		if (shortForm.replaceAll(".?", ".")==prefix){
 			shortForm=this.prefixMap[p].variable;
 		}else{
 			shortForm=shortForm.replacePrefix(prefix+".", this.prefixMap[p].variable+".?"); //ADD NULL CHECK
@@ -312,6 +314,17 @@ MVEL.esFacet2List=function(facet, selectClause){
 };//method
 
 
+function simpleDot(value){
+	return value.replaceAll(".?", ".");
+}
+function testNullDot(value){
+	var s = simpleDot(value).split(".");
+	return s.leftBut(1).join(".")+".?"+ s.last();
+}
+
+function testNotNull(value){
+	return testNullDot(value) + " != null";
+}
 
 // PASS esFilter SIMPLIFIED ElasticSearch FILTER OBJECT
 // RETURN MVEL EXPRESSION
@@ -345,20 +358,20 @@ MVEL.prototype.where = function(esFilter){
 	} else if (op == "not"){
 		return "!(" + this.where(esFilter[op]) + ")";
 	} else if (op == "term"){
-		var pair = esFilter[op];
-		var variableName = Object.keys(pair)[0];
-		var value = pair[variableName];
-		return this.translate(variableName) + "==" + MVEL.Value2MVEL(value);
+		var pair = Map.getItems(esFilter[op])[0];
+		var variableName = this.translate(pair.key);
+		var value = pair.value;
+		return "(" + testNotNull(variableName) + " && " + variableName + "==" + MVEL.Value2MVEL(value) + ")";
 	} else if (op == "terms"){
-		var pair = esFilter[op];
-		var variableName = Object.keys(pair)[0];
-		var valueList = pair[variableName];
+		var pair = Map.getItems(esFilter[op])[0];
+		var variableName = this.translate(pair.key);
+		var valueList = pair.value;
 		if (valueList.length == 0) Log.error("Expecting something in 'terms' array");
-		if (valueList.length == 1) return this.translate(variableName) + "==" + MVEL.Value2MVEL(valueList[0]);
-		for(var i = 0; i < valueList.length; i++){
-			if (output != "") output += " || ";
-			output += "(" + this.translate(variableName) + "==" + MVEL.Value2MVEL(valueList[i]) + ")";
-		}//for
+		if (valueList.length == 1) return "(" + testNotNull(variableName) + " && " + variableName + "==" + MVEL.Value2MVEL(valueList[0])+")";
+		output = "((" + testNotNull(variableName) + ") &&\n("+
+		valueList.map(function(v){
+			return "(" + variableName + "==" + MVEL.Value2MVEL(v) + ")";
+		}).join(" ||\n ")+"))";
 		return output;
 	}else if (op=="exists"){
 		//"exists":{"field":"myField"}
@@ -366,25 +379,9 @@ MVEL.prototype.where = function(esFilter){
 		var variableName = pair.field;
 		return "(" + this.translate(variableName) + "!=null)";
 	}else if (op=="missing"){
-//		"missing":{
-//			"field" : "requestee",
-//			"existence" : true,
-//			"null_value" : true
-//		}
-		var fieldName=this.translate(esFilter[op].field);
-		var testExistence=esFilter[op].existence;
-		var testNull=esFilter[op].null_value;
+		var fieldName = this.translate(esFilter[op].field);
 
-		if (testExistence===undefined || testNull===undefined) Log.error("must have 'existence' and 'null_value' attributes");
-
-		var output=[];
-		if (testExistence && !testNull){
-			output.push("("+fieldName.replace(".?", ".")+" == empty)");		//REMOVE THE .? SO WE REFER TO THE FIELD, NOT GET THE VALUE
-		}//endif
-		if (testNull){
-			output.push("("+fieldName+"==null)");
-		}//endif
-		return output.join(" || ");
+		return "(" + fieldName.replaceAll(".?", ".").replaceAll(".", ".?") + "==null)";
 	} else if (op == "range"){
 		var pair = esFilter[op];
 		var variableName = Object.keys(pair)[0];
@@ -425,10 +422,9 @@ MVEL.prototype.where = function(esFilter){
 		var script = esFilter[op].script;
 		return this.translate(script);
 	}else if (op=="prefix"){
-		var pair = esFilter[op];
-		var variableName = Object.keys(pair)[0];
-		var value = pair[variableName];
-		return this.translate(variableName)+".startsWith(" + CNV.String2Quote(value)+")";
+		var pair = Map.getItems(esFilter[op])[0];
+		var variableName = this.translate(pair.key);
+		return "("+testNotNull(variableName)+" && "+variableName+".startsWith(" + CNV.String2Quote(pair.value)+"))";
 	}else if (op=="match_all"){
 		return "true";
 	} else{
@@ -646,6 +642,8 @@ MVEL.FUNCTIONS={
 			"var v = doc[name];\n"+
 //			"if (v is org.elasticsearch.common.mvel2.ast.Function) v = v();=n" +
 			"if (v==null || v.value==null) { null; } else " +
+			"if (v is org.elasticsearch.index.fielddata.ScriptDocValues) { v=v.getValues(); for(int i =0; i < v.size(); i++) out.add(v.get(i)); out; } else "+
+//			"if (v is Long || v is Integer || v is Double) { v; } else " +
 			"if (v.values.size()<=1){ v.value; } else " + //ES MAKES NO DISTINCTION BETWEEN v or [v], SO NEITHER DO I
 			"{for(k : v.values) out.add(k); out;}" +
 		"};\n",

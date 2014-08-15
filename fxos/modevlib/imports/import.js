@@ -11,11 +11,10 @@
 //THIS FUNCTION CAN ONLY BE RUN ONCE, AFTER WHICH IT WILL REPLACE ITSELF WITH A NULL FUNCTION
 var importScript;
 
-
 (function () {
 
 	var METHOD_NAME = "importScript";
-	var FORCE_RELOAD = true;  //COMPENSATE FOR BUG https://bugzilla.mozilla.org/show_bug.cgi?id=991252
+	var FORCE_RELOAD = false;  //COMPENSATE FOR BUG https://bugzilla.mozilla.org/show_bug.cgi?id=991252
 	var DEBUG = false;
 
 	if (typeof(window.Log) == "undefined") {
@@ -254,26 +253,15 @@ var importScript;
 					}//endif
 				}//for
 
-				{//HACK
-					//THIS IS AN UNPROVEN HACK TO SOLVE THE CYCLE PROBLEM
-					//IF A PARENT OF unprocessed NODE HAS BEEN VISITED, THEN THE NODE WILL
-					//HAVE __parent DEFINED, AND IN THEORY WE SHOULD BE ABLE CONTINUE
-					//WORKING ON THOSE
-					if (queue.length == 0 && unprocessed.length > 0) {
-						var hasParent = unprocessed.map(function (v, i) {
-							if (graph[v].__parent !== undefined) return v;
-						});
-						if (hasParent.length == 0) Log.error("Isolated cycle found");
-						hasParent = subtract(hasParent, processed);
-						unprocessed = subtract(unprocessed, hasParent);
-						for (var k = 0; k < hasParent.length; k++) {
-							if (DEBUG && contains(processed, hasParent[k]))
-								Log.error("Duplicate pushed!!");
-							queue.push(hasParent[k]);
-//							unprocessed.remove([hasParent[k]]);
-						}
+				if (queue.length == 0 && unprocessed.length > 0) {
+					//WE HAVE A LOOP!  FIND THE SMALLEST ONE AND CONTINUE
+					var smallLoop = findSmallLoop(unprocessed);
+					if (smallLoop===undefined){
+						Log.error("No loop found where one is expected")
 					}//endif
-				}//END OF HACK
+					queue = [smallLoop[0]];
+					unprocessed = subtract(unprocessed, queue);
+				}//endif
 
 				var next = queue.shift();
 				processStartingPoint(next);
@@ -281,20 +269,70 @@ var importScript;
 		}//method
 
 
+		function findSmallLoop(candidates){
+			var queue=candidates.concat();
+			var smallestLoop;
+
+			function DFS(n, past){
+				queue = subtract(queue, [n]);
+				var t = graph[n];
+				t.children.forEach(function(c){
+					if (!contains(candidates, c)) return;
+					var i=past.indexOf(c);
+					if (i>=0){
+						//LOOP FOUND__parent
+						var loop = past.slice(i);
+						{//ROTATE loop SO loop[0] HAS MINIMUM INDEGREE
+							var indegree = 1000000;
+							var r;
+							for (var t=0;t<loop.length;t++){
+								var j=graph[loop[t]].indegrees;
+								if (j<indegree){
+									indegree=j;
+									r=t
+								}//endif
+							}//for
+							loop = loop.slice(r).concat(loop.slice(0,r));
+						}
+						if (smallestLoop === undefined) {
+							smallestLoop = loop
+						} else if (graph[loop[0]].indegrees < graph[smallestLoop[0]].indegrees) {
+							smallestLoop = loop
+						} else if (graph[loop[0]].indegrees == graph[smallestLoop[0]].indegrees && loop.length < smallestLoop.length){
+							smallestLoop = loop
+						}//endif
+						return;
+					}//endif
+					past.push(c);
+					DFS(c, past);
+					past.pop();
+				});
+			}//function
+
+			while (queue.length>0){
+				var c=queue[0];
+				DFS(c, [c]);
+			}//while
+
+			return smallestLoop;
+		}//method
+
+
 		function processStartingPoint(nodeId) {
 			if (nodeId == undefined) {
 				throw "You have a cycle!!";
 			}
-			for (var i = 0; i < graph[nodeId].children.length; i++) {
-				var child = graph[nodeId].children[i];
-				graph[child].indegrees--;
-				graph[child].__parent = graph[nodeId];		//MARKUP FOR HACK
+			var node = graph[nodeId];
+			for (var i = 0; i < node.children.length; i++) {
+				var childName = node.children[i];
+				var child = graph[childName];
+				child.indegrees--;
 			}//for
 
-			var node = graph[nodeId].id;
-			if (DEBUG && contains(processed, node))
+			var nodeID = node.id;
+			if (DEBUG && contains(processed, nodeID))
 				Log.error("Duplicate pushed!!");
-			processed.push(node);
+			processed.push(nodeID);
 		}//method
 
 
@@ -320,6 +358,7 @@ var importScript;
 			addVertex(e.file);
 			addVertex(e.import);
 
+			if (e.import == e.file) continue;
 			graph[e.import].children.push(e.file);
 			graph[e.file].indegrees += 1;
 		}//for
@@ -408,8 +447,8 @@ var importScript;
 		});
 	}//method
 
+	__importScript__.DEBUG=DEBUG;
+	__importScript__.sort=sort;     //FOR TESTING
 
 	importScript = __importScript__;
-
-
 })();

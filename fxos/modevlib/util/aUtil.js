@@ -172,6 +172,23 @@ var mapAllKey=function(map, func){
 	return output;
 };
 
+
+//RETURN LIST OF {"key":key, "value":val} PAIRS
+function getItems(map){
+	var output=[];
+	var keys=Object.keys(map);
+	for(var i=keys.length;i--;){
+		var key=keys[i];
+		var val=map[key];
+		if (val!==undefined){
+			output.push({"key":key, "value":val});
+		}//endif
+	}//for
+	return output;
+}//function
+Map.getItems=getItems;
+
+
 Map.getValues=function getValues(map){
 	var output=[];
 	var keys=Object.keys(map);

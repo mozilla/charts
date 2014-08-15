@@ -755,10 +755,20 @@ aChart.show=function(params){
 		data=chartCube.cube.copy();
 	}//endif
 
+
+	//
+	//
 	data.forall(function(v,i,d){
 		v=v.copy();
 		for(var j=0;j<v.length;j++){
-			if (v[j]==null) Log.error("Charting library can not handle null values");
+			if (v[j]==null){
+				//the charting library has a bug that makes it simply not draw null values
+				//(or even leave a visual placeholder)  This results in a mismatch between
+				//the horizontal scale and the values charted.  For example, if the first
+				//day has null, then the second day is rendered in the first day position,
+				//and so on.
+				Log.error("Charting library can not handle null values (maybe set a default?)");
+			}//endif
 		}//for
 		v.splice(0,0, categoryLabels[i]);
 		d[i]=v;
@@ -785,8 +795,6 @@ aChart.show=function(params){
 		}//endif
 	});
 	chart.render(true, true, false);
-
-
 
 //	chart.basePanel.chart.legendPanel
 
@@ -843,36 +851,36 @@ function fixClickAction(chartParams){
 //name IS OPTIONAL
 function findDateMarks(part, name){
 	try{
-		var output = [];
-		Array.newInstance(part.dateMarks).forall(function (mark) {
-			var style = Map.setDefault({}, mark.style, part.style, {"color": "black", "lineWidth": "2.0", verticalAnchor: "top"});
-			style.strokeStyle = nvl(style.strokeStyle, style.color);
-			style.textStyle = nvl(style.textStyle, style.color);
+	var output = [];
+	Array.newInstance(part.dateMarks).forall(function (mark) {
+		var style = Map.setDefault({}, mark.style, part.style, {"color": "black", "lineWidth": "2.0", verticalAnchor: "top"});
+		style.strokeStyle = nvl(style.strokeStyle, style.color);
+		style.textStyle = nvl(style.textStyle, style.color);
 
-			if (mark.name !== undefined) {
-				//EXPECTING {"name":<name>, "date":<date>, "style":<style>} FORMAT
+		if (mark.name !== undefined) {
+			//EXPECTING {"name":<name>, "date":<date>, "style":<style>} FORMAT
+			output.append({
+				"name": mark.name,
+				"date": Date.newInstance(mark.date),
+				"style": style
+			})
+		} else {
+			//EXPECTING <name>:<date> FORMAT
+			forAllKey(mark, function(name, date){
 				output.append({
-					"name": mark.name,
-					"date": Date.newInstance(mark.date),
+					"name": name,
+					"date": Date.newInstance(date),
 					"style": style
 				})
-			} else {
-				//EXPECTING <name>:<date> FORMAT
-				forAllKey(mark, function(name, date){
-					output.append({
-						"name": name,
-						"date": Date.newInstance(date),
-						"style": style
-					})
-				});
-			}
-		});
+			});
+		}
+	});
 
-		if (name){
-			return output.filter(function(p){return p.name==name;}).first().date;
-		}else{
-			return output;
-		}//endif
+	if (name){
+		return output.filter(function(p){return p.name==name;}).first().date;
+	}else{
+		return output;
+	}//endif
 	}catch(e){
 		Log.error("some error found", e);
 	}//try

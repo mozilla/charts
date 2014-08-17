@@ -30,7 +30,7 @@ Bugzilla.searchBugsURL=function(bugList){
 };//method
 
 Bugzilla.linkToBug=function(bugList){
-	return HTML("<a href='"+Bugzilla.searchBugsURL(bugList)+"'>"+bugList+"</a>");
+	return new HTML("<a href='"+Bugzilla.searchBugsURL(bugList)+"'>"+bugList+"</a>");
 };//method
 
 

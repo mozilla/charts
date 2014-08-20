@@ -177,6 +177,13 @@ GUI = {};
 						"select": {"name": "max_date", "value": "info.started", "aggregate": "maximum"}
 					}))).cube.max_date);
 					$("#testMessage").html("Perfy Last Updated " + time.addTimezone().format("NNN dd @ HH:mm") + Date.getTimezone());
+				}else if (indexName == "talos"){
+					esHasErrorInIndex = false;
+					time = new Date((yield(ESQuery.run({
+						"from":"talos",
+						"select":{"name": "max_date", "value":"datazilla.date_loaded","aggregate":"maximum"}
+					}))).cube.max_date);
+					$("#testMessage").html("Latest Push " + time.addTimezone().format("NNN dd @ HH:mm") + Date.getTimezone());
 				} else {
 					return;
 				}//endif

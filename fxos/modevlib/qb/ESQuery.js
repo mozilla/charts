@@ -29,7 +29,6 @@ ESQuery.DEBUG = false;
 ////////////////////////////////////////////////////////////////////////////////
 // THESE ARE THE AVAILABLE ES INDEXES/TYPES
 ////////////////////////////////////////////////////////////////////////////////
-
 (function(){
 	var green = Color.GREEN.multiply(0.5).hue(10).toHTML();
 	var yellow = Color.RED.multiply(0.7).hue(-60).toHTML();
@@ -329,7 +328,10 @@ ESQuery.DEBUG = false;
 
 
 	ESQuery.prototype.run = function*() {
-		if (!this.query.index) {
+		if (this.query.url) {
+			this.query.index = {};
+			this.query.index.url = this.query.url;
+		}else if (!this.query.index) {
 			this.query.index = ESQuery.INDEXES[splitField(this.query.from)[0]];
 			if (this.query.index === undefined) Log.error("must have host defined");
 			this.query.index.url = this.query.index.host + this.query.index.path;
@@ -447,7 +449,7 @@ ESQuery.DEBUG = false;
 
 		if (extraSelect.length == this.query.edges.length) {
 			this.termsEdges = [];
-			this.select = Array.newInstance(this.query.select);
+			this.select = Array.newInstance(this.query.select).copy();
 			this.select.appendArray(extraSelect)
 		} else {
 			this.termsEdges = this.query.edges.copy();
@@ -495,8 +497,8 @@ ESQuery.DEBUG = false;
 			this.select = undefined;
 		}//endif
 
-		if (this.query.where)
-			Log.error("ESQuery does not support the where clause, use esfilter instead");
+//		if (this.query.where)
+//			Log.error("ESQuery does not support the where clause, use esfilter instead");
 
 		//VERY IMPORTANT!! ES CAN ONLY USE TERM PACKING ON terms FACETS, THE OTHERS WILL REQUIRE EVERY PARTITION BEING A FACET
 		this.esMode = "terms_stats";
@@ -568,10 +570,13 @@ ESQuery.DEBUG = false;
 					if (name != "") name += ",";
 					name += esFacets[i][f].dataIndex;
 					condition.push(ESQuery.buildCondition(this.facetEdges[f], esFacets[i][f], this.query));
-					constants.push({"name": this.facetEdges[f].domain.name, "value": esFacets[i][f]});
+					constants.push({"name": this.facetEdges[f].name, "value": esFacets[i][f]});
 				}//for
 			}//for
 			var q = {"name": name};
+			if (this.query.where){
+				condition.push({"script":{"script":MVEL.compile.expression(this.query.where, this.query, constants)}});
+			}//endif
 
 			var value = this.compileEdges2Term(constants);
 
@@ -795,16 +800,16 @@ ESQuery.DEBUG = false;
 	};
 
 	ESQuery.prototype.buildESQuery = function () {
-		var where;
-		if (this.query.where === undefined)        where = ESQuery.TrueFilter;
-		if (typeof(this.query.where) != "string")    where = ESQuery.TrueFilter; //NON STRING WHERE IS ASSUMED TO BE PSUDO-esFILTER (FOR CONVERSION TO MVEL)
-		if (typeof(this.query.where) == "string") {
-			if (where.trim() == "true") {
-				where = ESQuery.TrueFilter;
-			} else {
-				where = {"script": {"script": this.query.where}};
-			}//endif
-		}//endif
+//		var where;
+//		if (this.query.where === undefined)        where = ESQuery.TrueFilter;
+//		if (typeof(this.query.where) != "string")    where = ESQuery.TrueFilter; //NON STRING WHERE IS ASSUMED TO BE PSUDO-esFILTER (FOR CONVERSION TO MVEL)
+//		if (typeof(this.query.where) == "string") {
+//			if (this.query.where.trim() == "true") {
+//				where = ESQuery.TrueFilter;
+//			} else {
+//				where = {"script": {"script": this.query.where}};
+//			}//endif
+//		}//endif
 
 		var output = {
 			"query": {
@@ -814,7 +819,7 @@ ESQuery.DEBUG = false;
 					},
 					"filter": {
 						"and": [
-							where
+							{"match_all":{}}
 						]
 					}
 				}
@@ -1445,13 +1450,22 @@ ESQuery.DEBUG = false;
 	ESQuery.prototype.compileSetOp = function () {
 		var self = this;
 		this.esQuery = this.buildESQuery();
-		var select = Array.newInstance(this.query.select);
-
+		var select = this.select;
 		var isDeep = splitField(self.query.from).length > 1;
 
 		//WE CAN OPTIMIZE WHEN ALL THE FIELDS ARE SIMPLE ENOUGH
 		this.esMode = isDeep ? "setop" : "fields";
+
+		//LIST ALL PRIMITIVE FIELDS
+		var leafNodes = ESQuery.getColumns(this.query.from).map(function(c){
+			if (["object"].contains(c.type)) return undefined;
+			if (!["long", "double", "integer", "string", "boolean"].contains(c.type)){
+				Log.error("do not know how to handle type {{type}}", {"type":c.type});
+			}//endif
+			return c.name;
+		});
 		select.forall(function (s, i) {
+			if (leafNodes.contains(s.value)) return; //PRIMITIVE FIELDS CAN BE USED IN fields
 			var path = splitField(s.value);
 			if (path.length > 1 || !MVEL.isKeyword(path[0])) {
 				self.esMode = "setop";  //RETURN TO setop
@@ -1462,11 +1476,16 @@ ESQuery.DEBUG = false;
 		if (this.esMode == "fields") {
 			this.esQuery.size = nvl(this.query.limit, 200000);
 			this.esQuery.sort = nvl(this.query.sort, []);
-			if (this.query.select.value != "_source") {
-				this.esQuery.fields = select.map(function (s) {
-					return splitField(s.value)[0].split(".")[0];  //ES DOES NOT STORE COMPOUND FIELDS, ONLY INDEXES THEM.
-				});
+			if (select[0].value != "_source") {
+				this.esQuery.fields = select.select("value");
 			}//endif
+		} else if (!isDeep && Array.AND(select.map(function(s){return MVEL.isKeyword(s.value);}))) {
+			this.esQuery.facets.mvel = {
+				"terms": {
+					"field": select[0].value,
+					"size": this.query.essize
+				}
+			};
 		} else if (!isDeep && select.length == 1 && MVEL.isKeyword(select[0].value)) {
 			this.esQuery.facets.mvel = {
 				"terms": {
@@ -1489,13 +1508,23 @@ ESQuery.DEBUG = false;
 		var o = [];
 		var T = data.hits.hits;
 
-		if (this.query.select instanceof Array) {
+		if (this.query.select instanceof Array || this.select.length > 1) {
 			for (var i = T.length; i--;) {
 				var record = T[i].fields
 				var new_rec = {};
-				this.query.select.forall(function (s, j) {
-					var field = splitField(s.value)[0].split(".")[0];  //USING BASE OF MULTI_FIELD WHICH HAS ACTUAL VALUE
-					new_rec[s.name] = nvl(record[s.value], T[i][field]);
+				this.select.forall(function (s, j) {
+					if (s.domain && s.domain.interval=="none"){
+						//THESE none-interval EDGES WERE ADDED TO THE SELECT LIST
+						if (s.domain.type=="time"){
+							new_rec[s.name] = {"value": record[s.value]}
+						}else{
+							Log.error("Do not know how to handle domain of type {{type}}", {"type": s.domain.type});
+						}//endif
+					}else{
+						var field = splitField(s.value)[0].split(".")[0];  //USING BASE OF MULTI_FIELD WHICH HAS ACTUAL VALUE
+						new_rec[s.name] = nvl(record[s.value], T[i][field]);
+					}
+
 				});
 				o.push(new_rec)
 			}//for

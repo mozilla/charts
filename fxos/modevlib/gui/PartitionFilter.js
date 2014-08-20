@@ -92,7 +92,7 @@ function convertToTreeLater(self, treeNode, dimension){
 function convertToTree(self, parent, depth, dimension){
 	//depth IS CURRENT DEPTH  (0==EDGE, 1==DOMAIN PARTITIONS, etc)
 	var node={};
-	node.id=(parent.id===undefined ? "" : parent.id+".")+dimension.name.replaceAll(" ", "_");
+	node.id=(parent.id===undefined ? "" : parent.id+".")+dimension.name;
 	node.attr={id:node.id};
 	node.data=dimension.name;
 
@@ -153,7 +153,7 @@ PartitionFilter.prototype.getSelectedParts=function(){
 
 //RETURN SOMETHING SIMPLE ENOUGH TO BE USED IN A URL
 PartitionFilter.prototype.getSimpleState=function(){
-	var selected=this.selectedIDs.filter(function(v){ return v!="__all__";})
+	var selected=this.selectedIDs.filter(function(v){ return v!="__all__";});
 	if (selected.length==0) return undefined;
 	return selected.join(",");
 };

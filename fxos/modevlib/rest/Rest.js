@@ -38,7 +38,7 @@ Rest.send=function*(ajaxParam){
 	if (ajaxParam.dataType===undefined) ajaxParam.dataType="json";
 	if (ajaxParam.error===undefined){
 		ajaxParam.error=function(errorData){
-			callback(new Exception("Error while calling "+ajaxParam.url+": "+errorData));
+			callback(new Exception("Error while calling "+ajaxParam.url, errorData));
 		};
 	}//endif
 	if (typeof(ajaxParam.data)!="string") ajaxParam.data=CNV.Object2JSON(ajaxParam.data);
@@ -89,7 +89,7 @@ Rest.send=function*(ajaxParam){
 			} else if (request.isTimeout){
 				callback(new Exception("Error while calling " + ajaxParam.url, Exception.TIMEOUT));
 			} else {
-				ajaxParam.error("Bad response: " + CNV.String2Quote(request.responseText));
+				ajaxParam.error(new Exception("Bad response ("+request.status+")", CNV.String2Quote(request.responseText)));
 			}//endif
 		} else if (request.readyState == 3){
 			//RESPONSE IS ARRIVING, DISABLE TIMEOUT

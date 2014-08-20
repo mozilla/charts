@@ -7,7 +7,6 @@ importScript("qb/ESQuery.js");
 
 if (!Mozilla) var Mozilla = {"name": "Mozilla", "edges": []};
 
-
 Sprints = [
 	"33 Sprint 1- 6/23     6/10-6/23",
 	"33 Sprint 2- 7/7       6/24-7/7",

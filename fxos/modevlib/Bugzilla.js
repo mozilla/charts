@@ -2,6 +2,7 @@
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
+importScript("util/aHTML.js");
 importScript("aLibrary.js");
 importScript("rest/BugzillaClient.js");
 
@@ -29,7 +30,7 @@ Bugzilla.searchBugsURL=function(bugList){
 };//method
 
 Bugzilla.linkToBug=function(bugList){
-	return "<a href='"+Bugzilla.searchBugsURL(bugList)+"'>"+bugList+"</a>";
+	return HTML("<a href='"+Bugzilla.searchBugsURL(bugList)+"'>"+bugList+"</a>");
 };//method
 
 
@@ -52,7 +53,7 @@ Bugzilla.search=function*(bugList, fields){
 		}, function(status, data){
 			if (status=="error"){
 				numCalls--;
-				throw new Exception("can not get bugs!");
+				Log.error("can not get bugs!");
 			}//endif
 			numCalls--;
 			Log.note(result.length+"+"+data.length);

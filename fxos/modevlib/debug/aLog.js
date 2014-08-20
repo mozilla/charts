@@ -53,21 +53,12 @@ Log.debug=function(){
 
 Log.error = function(description, cause, stackOffset){
 	var ex=new Exception(description, cause, nvl(stackOffset, 0)+1);
-
-	try{
-		var a = generate.error;
-	}catch(e){
-		var stack = e.stack;
-		ex.stack = stack.split("\n").rightBut(nvl(stackOffset, 0)+1)
-	}//try
-
-
 	console.error(ex.toString());
 	throw ex;
 };//method
 
 Log.warning = function(description, cause){
-	var e=new Exception(description, cause);
+	var e=new Exception(description, cause, 1);
 	console.warn(e.toString());
 };//method
 
@@ -128,29 +119,30 @@ Log.red=function(message){
 	$('#log_alert').html(html);
 };//method
 
-Log.alert=function(message, ok_callback, cancel_callback){
-	Log.red(message);
+Log.alert = function (message, ok_callback, cancel_callback) {
 	Log.note(message);
-//
-//	var d=$('<div>'+message+"</div>").dialog({
-//		title:"Alert",
-//		draggable: false,
-//		modal: true,
-//		resizable: false,
-//
-//		buttons: {
-//			"OK": function () {
-//					$(this).dialog("close");
-//					if (ok_callback) ok_callback();
-//				},
-//			"Cancel":cancel_callback ? function () {
-//					$(this).dialog("close");
-//					cancel_callback();
-//				} : undefined
-//		}
-//	});
-};//method
+	if (cancel_callback===undefined && ok_callback===undefined) {
+		Log.red(message);
+	} else {
+		var d = $('<div>' + message + "</div>").dialog({
+			title: "Alert",
+			draggable: false,
+			modal: true,
+			resizable: false,
 
+			buttons: {
+				"OK": function () {
+					$(this).dialog("close");
+					if (ok_callback) ok_callback();
+				},
+				"Cancel": cancel_callback ? function () {
+					$(this).dialog("close");
+					cancel_callback();
+				} : undefined
+			}
+		});
+	}//endif
+};//method
 
 
 //TRACK ALL THE ACTIONS IN PROGRESS

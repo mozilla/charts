@@ -6,51 +6,51 @@
 aMath={};
 
 (function(){
-	aMath.PI=Math.PI;
+aMath.PI=Math.PI;
 
 
-	aMath.isNumeric = function(n){
-		if (n==null) return null;
-		return !isNaN(parseFloat(n)) && isFinite(n);
-	};
+aMath.isNumeric = function(n){
+	if (n==null) return null;
+	return !isNaN(parseFloat(n)) && isFinite(n);
+};
 
-	aMath.isNaN = function(n){
-		return typeof(n)=="number" && n != +n;
-	};
-
-
-	if (!aMath.isNaN(NaN)) Log.error();
-	if (aMath.isNaN("test")) Log.error();
-	if (aMath.isNaN(0)) Log.error();
-	if (aMath.isNaN(42)) Log.error();
-	if (aMath.isNaN({"hi":42})) Log.error();
+aMath.isNaN = function(n){
+	return typeof(n)=="number" && n != +n;
+};
 
 
-
+if (!aMath.isNaN(NaN)) Log.error();
+if (aMath.isNaN("test")) Log.error();
+if (aMath.isNaN(0)) Log.error();
+if (aMath.isNaN(42)) Log.error();
+if (aMath.isNaN({"hi":42})) Log.error();
 
 
 
-	//THIS WILL RETURN ZERO IF value IS NOT A NUMBER
-	aMath.alpha2zero=function(value){
-		return aMath.isNumeric(value) ? value-0 : 0;
-	};
-
-	aMath.sign = function(n){
-		if (n==null) return null;
-		return n > 0.0 ? 1.0 : (n < 0.0 ? -1.0 : 0.0);
-	};
-
-	aMath.abs=function(n){
-		if (n==null) return null;
-		return Math.abs(n);
-	};
 
 
-	aMath.round=function(value, rounding){
-		if (rounding===undefined) return Math.round(value);
-		var d=Math.pow(10, rounding);
-		return Math.round(value*d)/d;
-	};//method
+
+//THIS WILL RETURN ZERO IF value IS NOT A NUMBER
+aMath.alpha2zero=function(value){
+	return aMath.isNumeric(value) ? value-0 : 0;
+};
+
+aMath.sign = function(n){
+	if (n==null) return null;
+	return n > 0.0 ? 1.0 : (n < 0.0 ? -1.0 : 0.0);
+};
+
+aMath.abs=function(n){
+	if (n==null) return null;
+	return Math.abs(n);
+};
+
+
+aMath.round=function(value, rounding){
+	if (rounding===undefined) return Math.round(value);
+	var d=Math.pow(10, rounding);
+	return Math.round(value*d)/d;
+};//method
 
 
 	function SUM(values) {
@@ -75,21 +75,21 @@ aMath={};
 	aMath.add=aMath.sum;
 
 
-	aMath.mean=function(){
-		var add=null;
-		var count=0;
-		for(var i=0;i<arguments.length;i++){
-			if (arguments[i]==null) continue;
-			if (add==null)
-				add=arguments[i]-0;
-			else
-				add+=arguments[i]-0;
-			count++
-		}//for
+aMath.mean=function(){
+	var add=null;
+	var count=0;
+	for(var i=0;i<arguments.length;i++){
+		if (arguments[i]==null) continue;
+		if (add==null)
+			add=arguments[i]-0;
+		else
+			add+=arguments[i]-0;
+		count++
+	}//for
 
-		if (add==null) return null;
-		return add/count;
-	};//add
+	if (add==null) return null;
+	return add/count;
+};//add
 
 	function MAX(values){
 		var max=null;
@@ -124,37 +124,37 @@ aMath={};
 	//
 	aMath.average=function(array){
 		var total=0.0;
-		var count=0;
-		for(var i=0;i<array.length;i++){
-			if (array[i]==null) continue;
-			total+=array[i];
-			count++;
-		}//for
-		if (count==0) return null;
-		return total/count;
-	};//method
+	var count=0;
+	for(var i=0;i<array.length;i++){
+		if (array[i]==null) continue;
+		total+=array[i];
+		count++;
+	}//for
+	if (count==0) return null;
+	return total/count;
+};//method
 
 
 
-	aMath.floor=Math.floor;
-	aMath.ceil=Math.ceil;
-	aMath.ceiling=Math.ceil;
-	aMath.log=Math.log;
-	aMath.random=Math.random;
+aMath.floor=Math.floor;
+aMath.ceil=Math.ceil;
+aMath.ceiling=Math.ceil;
+aMath.log=Math.log;
+aMath.random=Math.random;
 
-	niceNumbers=[11, 12, 15, 20, 22, 24, 25, 30, 35, 40, 45, 50, 60, 70, 80, 90, 100];
+niceNumbers=[11, 12, 15, 20, 22, 24, 25, 30, 35, 40, 45, 50, 60, 70, 80, 90, 100];
 
-	aMath.niceCeiling=function(value){
-		if (value==0) return 0;
-		if (value<0) Log.error("negative numbers not supported yet");
-		var sig=Math.floor(Math.log10(value))-1;
-		var d=Math.pow(10, sig);
-		value/=d;
-		for (var i=0;i<niceNumbers.length;i++)
-			if (niceNumbers[i]>=value)
-				return niceNumbers[i]*d;
-		Log.error("bug");
-	};
+aMath.niceCeiling=function(value){
+	if (value==0) return 0;
+	if (value<0) Log.error("negative numbers not supported yet");
+	var sig=Math.floor(Math.log10(value))-1;
+	var d=Math.pow(10, sig);
+	value/=d;
+	for (var i=0;i<niceNumbers.length;i++)
+		if (niceNumbers[i]>=value)
+			return niceNumbers[i]*d;
+	Log.error("bug");
+};
 
 })();
 

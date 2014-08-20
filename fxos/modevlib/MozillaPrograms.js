@@ -32,7 +32,28 @@ var MozillaPrograms = {
 			["Leo Triage (leo?)", "cf_blocking_b2g", "leo?"],
 			["TEF Triage (tef?)", "cf_blocking_b2g", "tef?"],
 
-			["Build Duty", "status_whiteboard.tokenized", "buildduty"],
+		["WebRTC", "status_whiteboard.tokenized", "webrtc"],
+
+		["WebRTC Components", null, null, {"or":[ //WebRTC COMPONENTS
+			{"and":[
+				{"term":{"product":"loop"}},
+				{"term":{"component":"general"}}
+			]},
+			{"and":[
+				{"term":{"product":"loop"}},
+				{"term":{"component":"client"}}
+			]},
+			{"and":[
+				{"term":{"product":"loop"}},
+				{"term":{"component":"server"}}
+			]},
+			{"and":[
+				{"term":{"product":"core"}},
+				{"prefix":{"component":"webrtc"}}
+			]}
+		]}],
+
+		["Build Duty", "status_whiteboard.tokenized", "buildduty"],
 			["Boot2Gecko (B2G)", "cf_blocking_basecamp", "+"],
 			["Metro MVP", "status_whiteboard.tokenized", "metro-mvp"],
 			["Security", "status_whiteboard.tokenized", "sg:dos"],
@@ -75,8 +96,8 @@ var MozillaPrograms = {
 			["Fennec Triage", "cf_blocking_fennec10", "?"],
 			["Fennec Triage", "cf_blocking_fennec", "?"],
 
-			["Good First Bug", "status_whiteboard.tokenized", "good first bug"]
-
+		["Good First Bug", "status_whiteboard.tokenized", "good first bug"],
+		["Reopened", "bug_status", "reopened"]
 
 	]
 };

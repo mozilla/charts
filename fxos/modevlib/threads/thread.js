@@ -36,6 +36,17 @@ build = function () {
 	var dummy = {"close": function () {
 	}};//DUMMY GENERATOR
 
+	//RETURN FIRST NOT NULL, AND DEFINED VALUE
+	function nvl(){
+		var args = arguments;
+		var a;
+		for(var i=0;i<args.length;i++){
+			a=args[i];
+			if (a!==undefined && a!=null) return a;
+		}//for
+		return null;
+	}//method
+
 	Thread = function (gen) {
 		if (typeof(gen) == "function") {
 			try {
@@ -202,12 +213,7 @@ build = function () {
 				Thread.currentThread = mainThread;
 			} catch (e) {
 				Thread.currentThread = mainThread;
-
-				if (e instanceof Exception) {
-					retval = e;
-				} else {
-					retval = new Exception("Error", e);
-				}//endif
+				retval = Exception.wrap(e);
 			}//try
 		}//while
 		//CAN GET HERE WHEN THREAD IS KILLED AND Thread.Resume CALLS BACK
@@ -289,9 +295,9 @@ build = function () {
 
 		if (retval instanceof Exception) {
 			if (POPUP_ON_ERROR || DEBUG){
-				Log.alert("Uncaught Error in thread: " + (this.name !== undefined ? this.name : "") + "\n  " + retval.toString());
+				Log.alert("Uncaught Error in thread: " + nvl(this.name, "") + "\n  " + retval.toString());
 			}else{
-				Log.warning("Uncaught Error in thread: " + (this.name !== undefined ? this.name : "") + "\n  ", retval);
+				Log.warning("Uncaught Error in thread: " + nvl(this.name, "") + "\n  ", retval);
 			}//endif
 		}//endif
 
@@ -404,9 +410,17 @@ build = function () {
 
 if (window.Exception === undefined) {
 
-	window.Exception = function (description, cause) {
-		this.message = description;
+	window.Exception = function (message, cause) {
+		this.message = message;
 		this.cause = cause;
+	};
+
+	window.Exception.wrap=function(e){
+		if (e instanceof Exception) {
+			return e;
+		} else {
+			return new Exception("Error", e);
+		}//endif
 	};
 
 	Array.prototype.remove = function (obj, start) {

@@ -29,8 +29,11 @@ String.prototype.between=function(start, end){
 
 
 String.prototype.indent=function(numTabs){
+	if (numTabs===undefined) numTabs=1;
 	var indent="\t\t\t\t\t\t".left(numTabs);
-	return indent+this.toString().replaceAll("\n", "\n"+indent);
+	var str=this.toString();
+	var white = str.rightBut(str.rtrim().length); //REMAINING WHITE IS KEPT (CASE OF CR/LF ESPECIALLY)
+	return indent+str.rtrim().replaceAll("\n", "\n"+indent) + white;
 };
 
 
@@ -56,12 +59,9 @@ String.prototype.replaceLast=function(find, replace){
 
 
 
-String.prototype.rtrim=function(value){
-	if (value===undefined) value=" ";
-
-	var i=this.length-1;
-	for(;i>=0;i--) if (this.charAt(i)!=value) break;
-
+String.prototype.rtrim=function(values){
+	if (values===undefined) values=" \t\r\n";
+	for(var i=this.length;i--;) if (values.indexOf(this.charAt(i))<0) break;
 	return this.substring(0, i+1);
 };
 

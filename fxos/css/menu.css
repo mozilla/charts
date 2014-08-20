@@ -46,31 +46,6 @@ a:hover, a:active {
 }
 
 
-
-a.tabzilla {
-    float: right;
-    display: block;
-    background: url('../images/tab.png');
-    background-repeat: no-repeat;
-    font-family: 'Open Sans Bold';
-    font-size: 25px;
-    color: gray;
-    text-align: center;
-    height: 44px;
-    width: 150px;
-    position: relative;
-    padding-top: 7px;
-    text-transform: uppercase;
-    /*text-indent: 30px;*/
-    overflow: hidden;
-    z-index: 999
-}
-
-a.tabzilla:hover, a.tabzilla:active {
-    color: #0073aa;
-    text-decoration: none
-}
-
 .description {
     margin-top: 20px;
     margin-bottom: 20px;

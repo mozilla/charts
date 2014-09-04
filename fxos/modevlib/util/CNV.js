@@ -684,11 +684,12 @@ CNV.hex2int = function(value){
 
 
 //CONVERT FROM STRING TO SOMETHING THAT CAN BE USED BY $()
-CNV.String2JQuery=function(str){
-	var output=str.replace(/([ ;&,\.\+\*\~':"\!\^#$%@\[\]\(\)\/=>\|])/g, '\\$1');
-//	output=output.replaceAll(" ", "\\ ");
-	return output;
-};//method
+function String2Selector(str){
+    return str.replace(/([ ;&,\.\+\*\~':"\!\^#$%@\[\]\(\)\/=>\|])/g, '\\$1');
+}//method
+
+CNV.String2JQuery=String2Selector;
+CNV.String2Selector=String2Selector;
 
 
 TRUE_FILTER = function(row, i, rows){return true;};

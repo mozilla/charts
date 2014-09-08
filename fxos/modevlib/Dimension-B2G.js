@@ -491,8 +491,9 @@ if (!Mozilla) var Mozilla={"name":"Mozilla", "edges":[]};
 							"start_date":"Jul 21, 2014",
 							"targetDate":"Sep 01, 2014",
 							"dateMarks": [
-								{"FL": "Jul 21, 2014"},
-								{"FC": "Sep 01, 2014"}
+								{"FL": "Sep 02, 2014"},
+								{"FC": "Oct 13, 2014"},
+								{"CF": "Nov 24, 2014"}
 							],
 							"style": {"color": "#d62728"},
 							"esfilter": {"or": [

@@ -150,8 +150,7 @@
 							"cf_blocking_loop"
 						],
 						"esfilter": {"and": [
-							Mozilla.B2G.Nominations.esfilter,
-							Mozilla.BugStatus.Open.esfilter,
+							Mozilla.B2G.AllNominations.esfilter,
 							Mozilla.CurrentRecords.esfilter,
 							GUI.getFilters("bugs")
 						]}
@@ -168,10 +167,7 @@
 					"from":"bugs",
 					"select":{"value":"modified_ts", "aggregate":"minimum"},
 					"edges":["bug_id"],
-					"esfilter": {"and": [
-						Mozilla.B2G.Nominations.esfilter,
-						Mozilla.BugStatus.Open.esfilter
-					]}
+					"esfilter":	Mozilla.B2G.AllNominations.esfilter
 				}));
 			}catch(e){
 				yield(null);  //EXIT EARLY

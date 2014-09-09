@@ -49,9 +49,18 @@ if (!Mozilla) var Mozilla={"name":"Mozilla", "edges":[]};
 				webRTCFilter
 			]},
 			"edges": [
-				{"name": "Nominations", "index": "bugs", "esfilter": {"or": [
-					{"terms": {"cf_blocking_b2g": NOM_PROJECTS}},
-					{"terms": {"cf_blocking_loop": NOM_MILESTONES}}
+				{"name": "Nominations", "index": "bugs", "esfilter": {"and":[
+					Mozilla.BugStatus.Open.esfilter,
+					{"or": [
+						{"terms": {"cf_blocking_b2g": NOM_PROJECTS}},
+						{"terms": {"cf_blocking_loop": NOM_MILESTONES}}
+					]}
+				]}},
+				{"name": "AllNominations", "index": "bugs", "esfilter": {"and":[
+					{"or": [
+						{"terms": {"cf_blocking_b2g": NOM_PROJECTS}},
+						{"terms": {"cf_blocking_loop": NOM_MILESTONES}}
+					]}
 				]}},
 				{"name": "Blockers", "index": "bugs", "esfilter": {"or": [
 					{"terms": {"cf_blocking_b2g": BLOCKER_PROJECTS}},
@@ -381,10 +390,13 @@ if (!Mozilla) var Mozilla={"name":"Mozilla", "edges":[]};
 						},
 						{"name": "2.1",
 							"start_date":"Jul 21, 2014",
-							"targetDate":"Sep 01, 2014",
+							"targetDate":"Nov 24, 2014",
 							"dateMarks": [
-								{"FL": "Jul 21, 2014"},
-								{"FC": "Sep 01, 2014"}
+								{"Start":"Jul 21, 2014"},
+								{"FL": "Sep 01, 2014"},
+								{"FC": "Oct 10, 2014"},
+								{"CS": "Nov 14, 2014"},
+								{"CC": "Nov 24, 2014"}
 							],
 							"style": {"color": "#d62728"},
 							"esfilter": {"or": [
@@ -489,10 +501,13 @@ if (!Mozilla) var Mozilla={"name":"Mozilla", "edges":[]};
 						},
 						{"name": "2.1",
 							"start_date":"Jul 21, 2014",
-							"targetDate":"Sep 01, 2014",
+							"targetDate":"Nov 24, 2014",
 							"dateMarks": [
-								{"FL": "Jul 21, 2014"},
-								{"FC": "Sep 01, 2014"}
+								{"Start":"Jul 21, 2014"},
+								{"FL": "Sep 01, 2014"},
+								{"FC": "Oct 10, 2014"},
+								{"CS": "Nov 14, 2014"},
+								{"CC": "Nov 24, 2014"}
 							],
 							"style": {"color": "#d62728"},
 							"esfilter": {"or": [

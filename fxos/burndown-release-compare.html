@@ -1,0 +1,581 @@
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+<!-- This Source Code Form is subject to the terms of the Mozilla Public
+   - License, v. 2.0. If a copy of the MPL was not distributed with this
+   - file, You can obtain one at http://mozilla.org/MPL/2.0/. -->
+<HTML>
+<HEAD>
+<title>Release Burndown</title>
+<script type="text/javascript">function importScript(dep, func){
+	if (func !== undefined) func();
+}</script>
+<script type="text/javascript" src="modevlib/Settings.js"></script>
+<script type="text/javascript" src="modevlib/MozillaPrograms.js"></script>
+<script type="text/javascript" src="modevlib/rest/BugzillaClient.js"></script>
+<script type="text/javascript" src="modevlib/util/aUtil.js"></script>
+<script type="text/javascript" src="modevlib/util/aParse.js"></script>
+<script type="text/javascript" src="modevlib/collections/aMatrix.js"></script>
+<script type="text/javascript" src="modevlib/qb/Qb.aggregate.js"></script>
+<script type="text/javascript" src="modevlib/qb/Qb.column.js"></script>
+<script type="text/javascript" src="modevlib/qb/Qb.cube.js"></script>
+<script type="text/javascript" src="modevlib/qb/Qb.analytic.js"></script>
+<script type="text/javascript" src="modevlib/math/aMath.js"></script>
+<script type="text/javascript" src="modevlib/gui/Filter.js"></script>
+<script type="text/javascript" src="modevlib/gui/ComponentFilter.js"></script>
+<script type="text/javascript" src="modevlib/gui/PartitionFilter.js"></script>
+<script type="text/javascript" src="modevlib/qb/aCompiler.js"></script>
+<script type="text/javascript" src="modevlib/collections/aRelation.js"></script>
+<script type="text/javascript" src="modevlib/util/aString.js"></script>
+<script type="text/javascript" src="modevlib/util/aHTML.js"></script>
+<script type="text/javascript" src="modevlib/collections/aArray.js"></script>
+<script type="text/javascript" src="lib/jquery.js"></script>
+<script type="text/javascript" src="modevlib/util/CNV.js"></script>
+<script type="text/javascript" src="modevlib/util/aDate.js"></script>
+<script type="text/javascript" src="modevlib/collections/aQueue.js"></script>
+<script type="text/javascript" src="modevlib/collections/aSet.js"></script>
+<script type="text/javascript" src="modevlib/util/aTemplate.js"></script>
+<script type="text/javascript" src="lib/jquery.numberformatter.js"></script>
+<script type="text/javascript" src="lib/jquery-ui/js/jquery-ui-1.10.2.custom.js"></script>
+<script type="text/javascript" src="lib/jstree/jquery.jstree.js"></script>
+<script type="text/javascript" src="modevlib/debug/aException.js"></script>
+<script type="text/javascript" src="modevlib/qb/Qb.domain.js"></script>
+<script type="text/javascript" src="modevlib/util/aDuration.js"></script>
+<script type="text/javascript" src="lib/ccc/lib/protovis-d3.3.js"></script>
+<script type="text/javascript" src="modevlib/aFormat.js"></script>
+<link type="text/css" rel="stylesheet" href="lib/jquery-ui/css/start/jquery-ui-1.10.2.custom.css"/>
+<script type="text/javascript" src="modevlib/gui/TeamFilter.js"></script>
+<script type="text/javascript" src="lib/ccc/lib/protovis-msie.js"></script>
+<script type="text/javascript" src="modevlib/debug/aLog.js"></script>
+<script type="text/javascript" src="lib/jquery.ba-bbq/jquery.ba-bbq.js"></script>
+<script type="text/javascript" src="lib/ccc/lib/jquery.tipsy.js"></script>
+<script type="text/javascript" src="modevlib/threads/thread.js"></script>
+<script type="text/javascript" src="modevlib/gui/ProgramFilter.js"></script>
+<script type="text/javascript" src="modevlib/gui/RadioFilter.js"></script>
+<script type="text/javascript" src="modevlib/util/aTimer.js"></script>
+<link type="text/css" rel="stylesheet" href="lib/jquery-linedtextarea/jquery-linedtextarea.css"/>
+<script type="text/javascript" src="lib/ccc/lib/tipsy.js"></script>
+<script type="text/javascript" src="modevlib/rest/Rest.js"></script>
+<script type="text/javascript" src="modevlib/aLibrary.js"></script>
+<script type="text/javascript" src="lib/jquery-linedtextarea/jquery-linedtextarea.js"></script>
+<link type="text/css" rel="stylesheet" href="lib/ccc/lib/tipsy.css"/>
+<script type="text/javascript" src="modevlib/rest/ElasticSearch.js"></script>
+<script type="text/javascript" src="modevlib/Bugzilla.js"></script>
+<script type="text/javascript" src="modevlib/math/Stats.js"></script>
+<script type="text/javascript" src="modevlib/ScrumBugs.js"></script>
+<script type="text/javascript" src="modevlib/qb/MVEL.js"></script>
+<script type="text/javascript" src="lib/ccc/def/def.js"></script>
+<script type="text/javascript" src="modevlib/qb/Qb.js"></script>
+<script type="text/javascript" src="lib/ccc/pvc/pvc.js"></script>
+<script type="text/javascript" src="lib/ccc/pvc/pvc.text.js"></script>
+<script type="text/javascript" src="lib/ccc/pvc/pvc.color.js"></script>
+<script type="text/javascript" src="lib/ccc/pvc/pvc.trends.js"></script>
+<script type="text/javascript" src="lib/ccc/pvc/pvc.options.js"></script>
+<script type="text/javascript" src="lib/ccc/pvc/data/_data.js"></script>
+<script type="text/javascript" src="lib/ccc/pvc/data/meta/DimensionType.js"></script>
+<script type="text/javascript" src="lib/ccc/pvc/data/meta/ComplexType.js"></script>
+<script type="text/javascript" src="lib/ccc/pvc/data/meta/ComplexTypeProject.js"></script>
+<script type="text/javascript" src="lib/ccc/pvc/data/translation/TranslationOper.js"></script>
+<script type="text/javascript" src="lib/ccc/pvc/data/translation/MatrixTranslationOper.js"></script>
+<script type="text/javascript" src="lib/ccc/pvc/data/translation/CrosstabTranslationOper.js"></script>
+<script type="text/javascript" src="lib/ccc/pvc/data/translation/RelationalTranslationOper.js"></script>
+<script type="text/javascript" src="lib/ccc/pvc/data/Atom.js"></script>
+<script type="text/javascript" src="lib/ccc/pvc/data/Complex.js"></script>
+<script type="text/javascript" src="lib/ccc/pvc/data/ComplexView.js"></script>
+<script type="text/javascript" src="lib/ccc/pvc/data/Datum.js"></script>
+<script type="text/javascript" src="lib/ccc/pvc/data/Dimension.js"></script>
+<script type="text/javascript" src="lib/ccc/pvc/data/Data.js"></script>
+<script type="text/javascript" src="lib/ccc/pvc/data/Data.selected.js"></script>
+<script type="text/javascript" src="lib/ccc/pvc/data/GroupingSpec.js"></script>
+<script type="text/javascript" src="lib/ccc/pvc/data/DataOper.js"></script>
+<script type="text/javascript" src="lib/ccc/pvc/data/GroupingOper.js"></script>
+<script type="text/javascript" src="lib/ccc/pvc/data/LinearInterpolationOper.js"></script>
+<script type="text/javascript" src="lib/ccc/pvc/data/LinearInterpolationOperSeriesState.js"></script>
+<script type="text/javascript" src="lib/ccc/pvc/data/ZeroInterpolationOper.js"></script>
+<script type="text/javascript" src="lib/ccc/pvc/data/ZeroInterpolationOperSeriesState.js"></script>
+<script type="text/javascript" src="lib/ccc/pvc/data/Data.operations.js"></script>
+<script type="text/javascript" src="lib/ccc/pvc/data/Data.compat.js"></script>
+<script type="text/javascript" src="lib/ccc/pvc/visual/Role.js"></script>
+<script type="text/javascript" src="lib/ccc/pvc/visual/Scene.js"></script>
+<script type="text/javascript" src="lib/ccc/pvc/visual/Var.js"></script>
+<script type="text/javascript" src="lib/ccc/pvc/visual/sign/BasicSign.js"></script>
+<script type="text/javascript" src="lib/ccc/pvc/visual/sign/Sign.js"></script>
+<script type="text/javascript" src="lib/ccc/pvc/visual/sign/Panel.js"></script>
+<script type="text/javascript" src="lib/ccc/pvc/visual/sign/Label.js"></script>
+<script type="text/javascript" src="lib/ccc/pvc/visual/sign/Dot.js"></script>
+<script type="text/javascript" src="lib/ccc/pvc/visual/sign/Line.js"></script>
+<script type="text/javascript" src="lib/ccc/pvc/visual/sign/Area.js"></script>
+<script type="text/javascript" src="lib/ccc/pvc/visual/sign/Bar.js"></script>
+<script type="text/javascript" src="lib/ccc/pvc/visual/sign/PieSlice.js"></script>
+<script type="text/javascript" src="lib/ccc/pvc/visual/sign/Rule.js"></script>
+<script type="text/javascript" src="lib/ccc/pvc/visual/Context.js"></script>
+<script type="text/javascript" src="lib/ccc/pvc/visual/OptionsBase.js"></script>
+<script type="text/javascript" src="lib/ccc/pvc/visual/Axis.js"></script>
+<script type="text/javascript" src="lib/ccc/pvc/visual/CartesianAxis.js"></script>
+<script type="text/javascript" src="lib/ccc/pvc/visual/CartesianAxisRootScene.js"></script>
+<script type="text/javascript" src="lib/ccc/pvc/visual/CartesianAxisTickScene.js"></script>
+<script type="text/javascript" src="lib/ccc/pvc/visual/CartesianFocusWindow.js"></script>
+<script type="text/javascript" src="lib/ccc/pvc/visual/ColorAxis.js"></script>
+<script type="text/javascript" src="lib/ccc/pvc/visual/SizeAxis.js"></script>
+<script type="text/javascript" src="lib/ccc/pvc/visual/Legend.js"></script>
+<script type="text/javascript" src="lib/ccc/pvc/visual/legend/BulletRootScene.js"></script>
+<script type="text/javascript" src="lib/ccc/pvc/visual/legend/BulletGroupScene.js"></script>
+<script type="text/javascript" src="lib/ccc/pvc/visual/legend/BulletItemScene.js"></script>
+<script type="text/javascript" src="lib/ccc/pvc/visual/legend/BulletItemSceneSelection.js"></script>
+<script type="text/javascript" src="lib/ccc/pvc/visual/legend/BulletItemSceneVisibility.js"></script>
+<script type="text/javascript" src="lib/ccc/pvc/visual/legend/BulletItemRenderer.js"></script>
+<script type="text/javascript" src="lib/ccc/pvc/visual/legend/BulletItemDefaultRenderer.js"></script>
+<script type="text/javascript" src="lib/ccc/pvc/visual/plot/Plot.js"></script>
+<script type="text/javascript" src="lib/ccc/pvc/visual/plot/CartesianPlot.js"></script>
+<script type="text/javascript" src="lib/ccc/pvc/visual/plot/CategoricalPlot.js"></script>
+<script type="text/javascript" src="lib/ccc/pvc/visual/plot/BarPlotAbstract.js"></script>
+<script type="text/javascript" src="lib/ccc/pvc/visual/plot/BarPlot.js"></script>
+<script type="text/javascript" src="lib/ccc/pvc/visual/plot/NormalizedBarPlot.js"></script>
+<script type="text/javascript" src="lib/ccc/pvc/visual/plot/WaterfallPlot.js"></script>
+<script type="text/javascript" src="lib/ccc/pvc/visual/plot/PointPlot.js"></script>
+<script type="text/javascript" src="lib/ccc/pvc/visual/plot/MetricXYPlot.js"></script>
+<script type="text/javascript" src="lib/ccc/pvc/visual/plot/MetricPointPlot.js"></script>
+<script type="text/javascript" src="lib/ccc/pvc/visual/plot/PiePlot.js"></script>
+<script type="text/javascript" src="lib/ccc/pvc/visual/plot/HeatGridPlot.js"></script>
+<script type="text/javascript" src="lib/ccc/pvc/visual/plot/BoxPlot.js"></script>
+<script type="text/javascript" src="lib/ccc/pvc/visual/plot/BulletPlot.js"></script>
+<script type="text/javascript" src="lib/ccc/pvc/pvcAbstract.js"></script>
+<script type="text/javascript" src="lib/ccc/pvc/pvcBaseChart.js"></script>
+<script type="text/javascript" src="lib/ccc/pvc/pvcBaseChart.visualRoles.js"></script>
+<script type="text/javascript" src="lib/ccc/pvc/pvcBaseChart.data.js"></script>
+<script type="text/javascript" src="lib/ccc/pvc/pvcBaseChart.plots.js"></script>
+<script type="text/javascript" src="lib/ccc/pvc/pvcBaseChart.axes.js"></script>
+<script type="text/javascript" src="lib/ccc/pvc/pvcBaseChart.panels.js"></script>
+<script type="text/javascript" src="lib/ccc/pvc/pvcBaseChart.selection.js"></script>
+<script type="text/javascript" src="lib/ccc/pvc/pvcBaseChart.extension.js"></script>
+<script type="text/javascript" src="lib/ccc/pvc/pvcBasePanel.js"></script>
+<script type="text/javascript" src="lib/ccc/pvc/pvcPlotPanel.js"></script>
+<script type="text/javascript" src="lib/ccc/pvc/pvcMultiChartPanel.js"></script>
+<script type="text/javascript" src="lib/ccc/pvc/pvcTitlePanelAbstract.js"></script>
+<script type="text/javascript" src="lib/ccc/pvc/pvcTitlePanel.js"></script>
+<script type="text/javascript" src="lib/ccc/pvc/pvcLegendPanel.js"></script>
+<script type="text/javascript" src="lib/ccc/pvc/pvcCartesianAbstract.js"></script>
+<script type="text/javascript" src="lib/ccc/pvc/pvcGridDockingPanel.js"></script>
+<script type="text/javascript" src="lib/ccc/pvc/pvcCartesianGridDockingPanel.js"></script>
+<script type="text/javascript" src="lib/ccc/pvc/pvcCartesianAbstractPanel.js"></script>
+<script type="text/javascript" src="lib/ccc/pvc/pvcPlotBgPanel.js"></script>
+<script type="text/javascript" src="lib/ccc/pvc/pvcCategoricalAbstract.js"></script>
+<script type="text/javascript" src="lib/ccc/pvc/pvcCategoricalAbstractPanel.js"></script>
+<script type="text/javascript" src="lib/ccc/pvc/pvcAxisPanel.js"></script>
+<script type="text/javascript" src="lib/ccc/pvc/pvcAxisTitlePanel.js"></script>
+<script type="text/javascript" src="lib/ccc/pvc/pvcPiePanel.js"></script>
+<script type="text/javascript" src="lib/ccc/pvc/pvcPieChart.js"></script>
+<script type="text/javascript" src="lib/ccc/pvc/pvcBarAbstractPanel.js"></script>
+<script type="text/javascript" src="lib/ccc/pvc/pvcBarAbstract.js"></script>
+<script type="text/javascript" src="lib/ccc/pvc/pvcBarPanel.js"></script>
+<script type="text/javascript" src="lib/ccc/pvc/pvcBarChart.js"></script>
+<script type="text/javascript" src="lib/ccc/pvc/pvcNormalizedBarPanel.js"></script>
+<script type="text/javascript" src="lib/ccc/pvc/pvcNormalizedBarChart.js"></script>
+<script type="text/javascript" src="lib/ccc/pvc/visual/legend/WaterfallBulletGroupScene.js"></script>
+<script type="text/javascript" src="lib/ccc/pvc/pvcWaterfallPanel.js"></script>
+<script type="text/javascript" src="lib/ccc/pvc/pvcWaterfallChart.js"></script>
+<script type="text/javascript" src="lib/ccc/pvc/pvcPointPanel.js"></script>
+<script type="text/javascript" src="lib/ccc/pvc/pvcPoint.js"></script>
+<script type="text/javascript" src="lib/ccc/pvc/pvcHeatGridPanel.js"></script>
+<script type="text/javascript" src="lib/ccc/pvc/pvcHeatGridChart.js"></script>
+<script type="text/javascript" src="lib/ccc/pvc/pvcMetricXYAbstract.js"></script>
+<script type="text/javascript" src="lib/ccc/pvc/data/translation/MetricPointChartTranslationOper.js"></script>
+<script type="text/javascript" src="lib/ccc/pvc/pvcMetricPointPanel.js"></script>
+<script type="text/javascript" src="lib/ccc/pvc/pvcMetricPoint.js"></script>
+<script type="text/javascript" src="lib/ccc/pvc/pvcBulletChart.js"></script>
+<script type="text/javascript" src="lib/ccc/pvc/pvcParallelCoordinates.js"></script>
+<script type="text/javascript" src="lib/ccc/pvc/pvcDataTree.js"></script>
+<script type="text/javascript" src="lib/ccc/pvc/data/translation/BoxplotChartTranslationOper.js"></script>
+<script type="text/javascript" src="lib/ccc/pvc/pvcBoxplotPanel.js"></script>
+<script type="text/javascript" src="lib/ccc/pvc/pvcBoxplotChart.js"></script>
+<script type="text/javascript" src="lib/ccc/data/q01-01.js"></script>
+<script type="text/javascript" src="modevlib/main.js"></script>
+<script type="text/javascript" src="modevlib/Dimension.js"></script>
+<script type="text/javascript" src="modevlib/charts/aColor.js"></script>
+<script type="text/javascript" src="modevlib/qb/ESQuery.js"></script>
+<script type="text/javascript" src="modevlib/gui/GUI.js"></script>
+<script type="text/javascript" src="modevlib/charts/aChart.js"></script>
+<script type="text/javascript" src="modevlib/Hierarchy.js"></script>
+<script type="text/javascript" src="modevlib/Dimension-Bugzilla.js"></script>
+<link type="text/css" rel="stylesheet" href="css/menu.css"/>
+<script type="text/javascript" src="modevlib/Dimension-B2G.js"></script>
+<script type="text/javascript" src="modevlib/gui/ProductFilter.js"></script>
+<script type="text/javascript" src="modevlib/Dimension-Features.js"></script>
+<script type="text/javascript" src="js/burndown.js"></script>
+<script type="text/javascript" src="lib/sorttable/sorttable.js"></script>
+
+
+<script>
+(function(i, s, o, g, r, a, m){
+	i['GoogleAnalyticsObject'] = r;
+	i[r] = i[r] || function(){
+		(i[r].q = i[r].q || []).push(arguments)
+	}, i[r].l = 1 * new Date();
+	a = s.createElement(o),
+		m = s.getElementsByTagName(o)[0];
+	a.async = 1;
+	a.src = g;
+	m.parentNode.insertBefore(a, m)
+})(window, document, 'script', '//www.google-analytics.com/analytics.js', 'ga');
+
+ga('create', 'UA-49796218-5', 'mozilla.org');
+ga('send', 'pageview');
+</script>
+
+</HEAD>
+<BODY>
+
+
+<div id="sidebar" style="width:300px;">
+	<br><br>
+
+	<div style="height: 30px; text-align: center;vertical-align:middle;">
+		<span id="status" style="height:30px">Page Loading...</span><span class="loading"><img src="images/spinner.gif" alt=""></span>
+	</div>
+	<hr>
+	<div id="description">
+		Simple burndown chart by release<br><br>
+		The line chart shows regressions and the total blocker count (including
+		regressions) by day. The bar chart shows the total bug churn on
+		release blockers.
+		At the bottom is a list of open blockers assigned to this release. This is differs from the top summary,
+		which only shows the counts at the end of the milestone (not the end of today).<br><br>
+
+		<span class="warning">Statistics are calculated using the past two weeks, usually 10 business days, not including today.</span>
+	</div>
+	<hr>
+	<div id="stats"></div>
+	<hr>
+	<div id="parameters" class="parameters">
+	</div>
+	<div id="filters" class="menu"></div>
+
+
+</div>
+
+<div style="align:left;position:relative;float:left;width:800px;">
+	<h3 id="title">Release Burndown</h3>
+
+	<div>
+		<div id="release-summary" style="min-height: 30px; position: relative;"></div>
+		<div id="chart" class="chart" style="position: relative;height:300px;"></div>
+		<div id="chart_diff" class="chart" style="position: relative;height:300px;"></div>
+		<div id="buglist" style="position: relative;width:800px"></div>
+		<div id="info" style="position: relative;width:800px"></div>
+		<div id="report"></div>
+	</div>
+</div>
+<script type="application/javascript">
+var color = {
+	"blue" : "#1f77b4",
+	"orange" : "#ff7f0e",
+	"green" : "#2ca02c",
+	"red" : "#d62728",
+	"purple" : "#9467bd",
+	"brown" : "#8c564b",
+	"cyan" : "#17becf"
+};
+
+
+importScript([
+	"modevlib/main.js",
+	"modevlib/gui/dynamic.js",
+	'modevlib/Dimension-Bugzilla.js',
+	'modevlib/Dimension-B2G.js',
+	'modevlib/Dimension-Features.js',
+	"js/burndown.js",
+	"lib/sorttable/sorttable.js"
+], function(){
+
+
+	var thread;
+	var createChart = function(){
+		if (thread !== undefined)
+			thread.kill();
+		thread = Thread.run(function*(){
+			try {
+				yield (__createChart());
+			} catch (e) {
+				if (e.contains(Thread.Interrupted)) return;
+				throw e;
+			}//try
+		});
+	};
+
+	var __createChart = function*(){
+		var NOW = Date.now();
+		var TODAY = Date.today();
+		var SAMPLE_DURATION = Duration.newInstance("2week");
+
+		$("#release-summary").html("");
+		$("#chart").html("");
+		$("#chart_diff").html("");
+		$("#buglist").html("");
+
+		var releases = GUI.state.release.getSelectedParts();
+		var releaseName;
+		if (releases.length == 0) {
+			$("#title").text("Must select a release");
+			yield (null)
+		}//endif
+
+
+		releaseName = releases.map(function(m){
+			return m.name;
+		}).join(" and ");
+		var START_DATE = Duration.ZERO;
+		var DUE_DATE = Duration.ZERO;
+		releases.forall(function(m){
+			m.startDate = Date.newInstance(startDate(m));
+			m.dueDate = Date.newInstance(targetDate(m)).add(Duration.DAY);
+			m.filter = {"and" : [
+				m.esfilter,
+				Mozilla.BugStatus.Open.esfilter,
+				Mozilla.B2G.Blockers.esfilter,
+//				{"term":{"bug_id":1063046}},
+				{"range" : {"modified_ts" : {"lt" : m.dueDate.getMilli()}}},
+				{"range" : {"expires_on" : {"gte" : m.startDate.getMilli()}}}
+			]};
+
+			DUE_DATE = Duration.max(DUE_DATE, m.dueDate.subtract(m.startDate));
+		});
+
+		var MIN_CHART_DATE = START_DATE;
+		var MAX_CHART_DATE = DUE_DATE.addDay(1);
+
+		var sampleInterval = Duration.DAY;
+		var timeDomain = {
+			"type" : "duration",
+			"value": "value",
+			"min" : MIN_CHART_DATE,
+			"max" : MAX_CHART_DATE,
+			"interval" : sampleInterval,
+			"dateMarks" : Array.extend(releases.map(aChart.findDateMarks))
+		};
+
+
+		if (title && title.length > 0) {
+			$("#title").text(title);
+		} else {
+			$("#title").text("Burndown for " + releaseName)
+		}//endif
+
+		yield (ESQuery.loadColumns({"from" : "bugs"}));
+
+
+		///////////////////////////////////////////////////////////////////////
+		// BURNDOWN
+		///////////////////////////////////////////////////////////////////////
+		var a = Log.action("Request Bugs", true);
+		var chart;
+
+		var releaseBugs = yield(ESQuery.run({
+			"from" : "bugs",
+			"select" : [
+				"bug_id",
+				"bug_status",
+				"status_whiteboard",
+				"keywords",
+				"modified_ts",
+				"expires_on",
+				"cf_blocking_b2g",
+				"cf_blocking_loop"
+			],
+			"esfilter" : {"or" : releases.select("filter")}
+//			"limit" : 10
+		}));
+		Log.actionDone(a);
+
+		releaseBugs.list.forall(function(r){
+			r.release = "none"
+		});
+		releaseBugs.columns.append({"name" : "release", "value" : "release"});
+
+		//UPDATE DATES TO BE RELATIVE TO startDate
+		releases.forall(function(release){
+			releaseBugs.list.filter(release.filter).forall(function(r){
+				r.modified_ts = Date.newInstance(r.modified_ts).subtract(release.startDate);
+				r.expires_on = Date.min(Date.newInstance(r.expires_on), TODAY.addDay(1)).subtract(release.startDate);
+				r.startDate = release.startDate;
+				r.release = release.name;
+			});
+		});
+		releaseBugs.columns.append({"name" : "startDate", "value" : "startDate"});
+
+		chart = yield(Q({
+			"from" : releaseBugs,
+			"select" : [
+				{"name" : "count", "value" : 'bug_id', "aggregate" : "count", "default" : 0},
+				{"name": "startDate", "value": "startDate", "aggregate" : "minimum"}
+			],
+			"edges" : [
+				{"name" : "status", "domain" : Mozilla.CountType.getDomain()},
+				{"value" : "release", "domain":{"type":"set", "partitions":releases.select("name")}},
+//			{"name": "release", "value": "release", "domain":{"type":"set", "key":"name", "partitions":releases}},
+				{"name" : "date",
+					"range" : {"min" : "modified_ts", "max" : "expires_on"},
+					"allowNulls" : false,
+					"domain" : Map.copy(timeDomain)
+				}
+			]
+		}));
+
+		var select = [];
+		releases.forall(function(r){
+			select.append(
+				{"name" : r.name + " Open_Bugs", "value" : "startDate!=null && startDate.add(date)<Date.eod() && release=='" + r.name + "' && ['Open', 'Regressions'].contains(status.name) ? count : null", "aggregate" : "sum"}
+			);
+			select.append(
+				{"name" : r.name + " Regressions", "value" : "startDate!=null && startDate.add(date)<Date.eod() && release=='" + r.name + "' && status.name=='Regressions' ? Math.max(count, 0) : null", "aggregate" : "sum", "default" : 0}
+			);
+		});
+
+		var flat = yield(Q({
+			"from" : chart,
+			"select" : select,
+			"edges" : [
+				{"name" : "date", "value" : "date",
+					"allowNulls" : false,
+					"key" : "name",
+					"domain" : Map.copy(timeDomain)
+				}
+			]
+		}));
+
+//		var tempTimeDomain=flat.edges[0].domain;
+//
+//		//SHOW FUTURE VALUES AS NULLS
+//		flat.cube.forall(function(v, i){
+//			if (tempTimeDomain.partitions[i].min > TODAY.addDay()){
+//				flat.cube[i]=Map.zip(mapAllKey(v, function(k, v){
+//					return [k, null];
+//				}));
+//			}//endif
+//		});
+
+
+
+		a = Log.action("Make chart", true);
+		aChart.show({
+			"id" : "chart",
+			"sheetDiv" : "info",
+			"type" : "line",
+			"stacked" : false,
+			"cube" : flat,
+			"xAxisSize" : 50,
+			extensionPoints : {
+				dot_shapeRadius : 3,
+				dot_shape : "circle",
+				line_lineWidth : 3
+			},
+			"clickAction" : function(series, x, d){
+				//MAP FROM HUMANE NAMES BACK TO ORIGINAL DIMENSION DEFINITION NAME
+				series = {"Open Blockers" : "Open", "Remaining Work" : "Open", "Regressions" : "Regressions"}[series];
+
+				Thread.run(function*(){
+					try {
+						var buglist = (yield (ESQuery.run({
+							"from" : "bugs",
+							"select" : {"value" : "bug_id", "aggregate" : "minimum"},
+							"edges" : [
+								{"name" : "unique", "value" : "bug_id"}
+							],
+							"esfilter" : {"and" : [
+								mainFilter,
+								{"range" : {"modified_ts" : {"lte" : x.getMilli()}}},
+								{"range" : {"expires_on" : {"gt" : x.getMilli()}}},
+								releaseFilter,
+								series == "Total" ? ESQuery.TrueFilter : Mozilla.CountType[series].esfilter
+							]}
+						})));
+
+						Bugzilla.showBugs(buglist.cube);
+					} catch (e) {
+						Log.warning("thread failure", e);
+						yield(null);  //SILENT FAILURE
+					}
+				});
+			}//click
+		});
+		Log.actionDone(a);
+
+	};
+
+	$(document).ready(function(){
+		GUI.setup(
+			createChart,
+			[
+				{"id" : "release", "name" : "Release", "default" : "2.0", "type" : PartitionFilter.newInstance({
+					"id" : "releases",
+					"name" : "All Releases",
+					"dimension" : Mozilla.B2G.Project,
+					"onlyOne" : false,
+					"expandAll" : true,
+					"treeDepth" : 1
+				})},
+				{"id" : "team", "name" : "Team", "type" : PartitionFilter.newInstance({
+					"id" : "teams",
+					"name" : "All Teams",
+					"dimension" : Mozilla.B2G.Team,
+					"onlyOne" : false,
+					"expandAll" : true,
+					"treeDepth" : 1
+				})}
+			],
+			[],
+			"bugs",
+			false
+		);
+
+	});
+
+});
+
+
+function targetDate(m){
+	return Date.min(Date.newInstance(m.targetDate), Date.newInstance(aChart.findDateMarks(m, "FC")))
+}//method
+
+function startDate(m){
+	return m.start_date;
+}//method
+
+
+function releaseDetails(bugs){
+
+	bugs.forall(function(b){
+		b.bugLink = Bugzilla.linkToBug(b.bug_id);
+	});
+
+	var output = new Template([
+		"<table class='table' style='width:800px'>",
+		"<thead><tr>",
+		"<th style='width:70px;'>ID</th>",
+		"<th style='width:390px;'>Summary</th>",
+		"<th style='width:70px;'>Status<br>Owner</th>",
+		"<th>Priority</th>",
+		"</tr></thead>",
+		"<tbody>",
+		{
+			"from" : ".",
+			"template" : [
+				"<tr>" +
+					"<td>{{bugLink}}</td>" +
+					"<td><div style='width:390px;word-wrap: break-word'>{{summary|html}}</div></td>" +
+					"<td><div style='width:120px;word-wrap: break-word'><b>{{status}}:</b><br><span style='font-size: .7em;'>{{owner|html}}</span></div></td>" +
+					"<td><div style='text-align: center;width:20px;'>{{priority}}</div></td>" +
+					"</tr>"
+			]
+		},
+		"</tbody>",
+		"</table>"
+	]).expand(bugs);
+
+	return output;
+}//method
+
+
+</script>
+
+
+</BODY>
+</HTML>
+

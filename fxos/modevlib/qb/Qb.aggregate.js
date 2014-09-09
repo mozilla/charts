@@ -27,6 +27,7 @@ Qb.aggregate.compile = function(select){
 				var v=this.calc(row, result);
 				return this.add(agg, v);
 			}catch(e){
+				this.calc(row, result);
 				Log.error("can not calc", e);
 			}//try
 		};//method

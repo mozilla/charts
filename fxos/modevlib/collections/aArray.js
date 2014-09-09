@@ -169,6 +169,7 @@ importScript("../util/aUtil.js");
 	};//method
 
 	Array.prototype.first=function(){
+		if (this.length==0) return null;
 		return this[0];
 	};//method
 

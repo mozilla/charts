@@ -380,11 +380,13 @@ if (!Mozilla) var Mozilla={"name":"Mozilla", "edges":[]};
 							]}
 						},
 						{"name": "2.1",
-							"start_date":"Jul 21, 2014",
-							"targetDate":"Sep 01, 2014",
+							"start_date":"jul 21, 2014",
+							"targetDate":"Nov 24, 2014",
 							"dateMarks": [
-								{"FL": "Jul 21, 2014"},
-								{"FC": "Sep 01, 2014"}
+								{"Start": "jul 28, 2014"},
+								{"FL": "Sep 01, 2014"},
+								{"FC": "Oct 13, 2014"},
+								{"CF": "Nov 24, 2014"}
 							],
 							"style": {"color": "#d62728"},
 							"esfilter": {"or": [

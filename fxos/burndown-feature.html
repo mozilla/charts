@@ -245,7 +245,7 @@
 		<div>
 			<div id="feature-summary" style="position: relative;min-height:30px;"></div>
 			<div id="chart" class="chart" style="position: relative;height:300px;"></div>
-			<!--<div id="chart_diff" class="chart" style="position: relative;height:300px;"></div>-->
+			<div id="chart_diff" class="chart" style="position: relative;height:300px;"></div>
 			<div id="buglist" style="position: relative;width:800px"></div>
 			<div id="info" style="position: relative;width:800px"></div>
 		</div>
@@ -578,50 +578,148 @@ function restOfCharting(env){
 			}//endif
 		});
 
-
-
-
-
 		Log.actionDone(a);
 
-
-		aChart.show({
-			"id":"chart",
-			"sheetDiv":"info",
-			"type":"line",
-			"stacked":false,
-			"cube":flat,
-			"xAxisSize":50,
-			extensionPoints: {
-			    dot_shapeRadius: 3,
-	            dot_shape:"circle",
-				line_lineWidth: 3
-			},
-			"clickAction":function(series, x, d){
-				var series2filter = {
-					"Open Bugs": {"term": {"counted": "Open"}},
-					"Remaining Work": {"term": {"counted": "Open"}},
-					"Total": {"not": {"term": {"counted": "none"}}}
-				};
-
-				Thread.run(function*(){
-					var buglist=(yield (Q({
-						"from":raw_data,
-						"select":{"value":"bug_id", "aggregate":"minimum"},
-						"edges":[
-							{"name":"unique", "value":"bug_id"}
-						],
-						"esfilter":{"and":[
-							series2filter[series],
-							{"term":{"date":x}}
-						]}
-					})));
-
-					Bugzilla.showBugs([].union(buglist.cube));
-				});
-			}//click
-		});
+//		aChart.show({
+//			"id":"chart",
+//			"sheetDiv":"info",
+//			"type":"line",
+//			"stacked":false,
+//			"cube":flat,
+//			"xAxisSize":50,
+//			extensionPoints: {
+//			    dot_shapeRadius: 3,
+//	            dot_shape:"circle",
+//				line_lineWidth: 3
+//			},
+//			"clickAction":function(series, x, d){
+//				var series2filter = {
+//					"Open Bugs": {"term": {"counted": "Open"}},
+//					"Remaining Work": {"term": {"counted": "Open"}},
+//					"Total": {"not": {"term": {"counted": "none"}}}
+//				};
+//
+//				Thread.run(function*(){
+//					var buglist=(yield (Q({
+//						"from":raw_data,
+//						"select":{"value":"bug_id", "aggregate":"minimum"},
+//						"edges":[
+//							{"name":"unique", "value":"bug_id"}
+//						],
+//						"esfilter":{"and":[
+//							series2filter[series],
+//							{"term":{"date":x}}
+//						]}
+//					})));
+//
+//					Bugzilla.showBugs([].union(buglist.cube));
+//				});
+//			}//click
+//		});
 	});
+
+
+//	var churnTimeDomain = {"type": "time", "min": MIN_CHART_DATE, "max": MAX_CHART_DATE, "interval": Duration.DAY, "value": "value"};
+//
+//	var perDay=null;
+//	var perDayInSample=null;
+//	var daysInSprint=null;
+//	var daysInSample=null;
+	var churnThread = Thread.run(function*() {
+		////////////////////////////////////////////////////////////////////////////
+		// CHURN
+		////////////////////////////////////////////////////////////////////////////
+		var diff = yield(Q({
+			"from": raw_data,
+			"select": [
+				{"name": "opened", "value": "churn > 0 ? 1 : 0", "aggregate": "sum", "default": 0, "style": {"color": Color.BLUE.multiply(0.9).hue(10).toHTML()}},
+				{"name": "closed", "value": "churn < 0 ? 1 : 0", "aggregate": "sum", "default": 0, "style": {"color": Color.RED.multiply(0.9).hue(10).toHTML()}}
+			],
+			"edges": [
+				{"name": "date", "value":"date",
+					"allowNulls": false,
+					"domain": Map.setDefault({"max":env.timeDomain.max.addDay(-1)}, env.timeDomain)  //ONE LESS DAY FOR CHURN
+				}
+			]
+		}));
+
+		var chart = yield(Q({
+			"from": diff,
+			"select": [
+//				{"name": "Opened", "value": "opened", "aggregate": "sum", "default":0, "style": {"color": Color.GREEN}},
+//				{"name": "Closed", "value": "-closed", "aggregate": "sum", "default":0, "style":{"color": Color.RED}}
+				{"name": "Opened", "value": "1", "aggregate": "sum", "default":0, "style": {"color": Color.GREEN}},
+				{"name": "Closed", "value": "-1", "aggregate": "sum", "default":0, "style":{"color": Color.RED}}
+			],
+			"edges": [
+				{"name": "date", "value":"date",
+					"allowNulls": false,
+					"domain": Map.setDefault({"max":env.timeDomain.max.addDay(-1)}, env.timeDomain)
+				}
+			]
+		}));
+
+		a = Log.action("Make chart", true);
+		aChart.show({
+			"name":"Open and Close Rates",
+			"id": "chart_diff",
+			"sheetDiv": "info",
+			"type": "bar",
+			"stacked": true,
+			"cube": chart,
+			"xAxisSize": 50,
+//			"clickAction": function (series, x, d) {
+//				Thread.run(function*() {
+//					var where = {"and": []};
+//					if (series == "Opened") {
+//						where.and.append({"range": {"min": {"gte": x.getMilli()}}});
+//						where.and.append({"range": {"min": {"lt": x.addDay().getMilli()}}});
+//					} else {
+//						where.and.append({"range": {"max": {"gte": x.getMilli()}}});
+//						where.and.append({"range": {"max": {"lt": x.addDay().getMilli()}}});
+//						where.and.append(Mozilla.ChurnType[series].fullFilter);
+//					}//endif
+//
+//					var buglist = raw_data.list.filter(where);
+//					Bugzilla.showBugs(buglist.select("bug_id"));
+//				});
+//			}//click
+		});
+		Log.actionDone(a);
+
+//		perDay = (yield(Qb.calc2List({
+//			"from": diff,
+//			"select": [
+//				{"name": "opened", "value": "opened", "aggregate": "sum"},
+//				{"name": "closed", "value": "closed", "aggregate": "sum"}
+//			],
+//			"where": START_DATE.getMilli() + "<=date.getMilli() && date.getMilli()<" + Date.min(DUE_DATE, TODAY).getMilli()
+//		}))).list[0];
+//		daysInSprint = Date.diffWeekday(Date.min(DUE_DATE, TODAY), START_DATE);
+//
+//		var sampleEnd = Date.min(DUE_DATE, TODAY);
+//		var sampleStart = Date.max(START_DATE, sampleEnd.subtract(SAMPLE_DURATION));
+//		daysInSample = Date.diffWeekday(sampleEnd, sampleStart);
+//		perDayInSample = (yield(Qb.calc2List({
+//			"from": diff,
+//			"select": [
+//				{"name": "opened", "value": "opened", "aggregate": "sum"},
+//				{"name": "closed", "value": "closed", "aggregate": "sum"}
+//			],
+//			"where": sampleStart.getMilli()+ "<=date.getMilli() && date.getMilli()<" + sampleEnd.getMilli()
+//		}))).list[0];
+//
+//		if (daysInSample>=1){
+//			$("#stats").html(
+//				'<span class="parameter_name">Workdays in release:</span>' + daysInSprint + '<br>' +
+//				'<span class="parameter_name">New blockers per day:</span>' + aMath.round(perDayInSample.opened / daysInSample, 1) + '<br>' +
+//				'<span class="parameter_name">Closed per day:</span>' + aMath.round(perDayInSample.closed / daysInSample, 1) + '<br>' +
+//				''
+//			);
+//		}//endif
+
+	});
+
 
 }
 

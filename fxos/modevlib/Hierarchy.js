@@ -311,7 +311,7 @@ function* getRawDependencyData(esfilter, dateRange, selects) {
                 }
             ),
             "edges": [
-                {"name": "date", "range": {"min": "modified_ts", "max": "expires_on"}, "domain": dateRange},
+                {"name": "date", "range": {"min": "modified_ts", "max": "expires_on"}, "domain": Map.copy(dateRange)},
                 "bug_id"
             ]
         }
@@ -319,7 +319,8 @@ function* getRawDependencyData(esfilter, dateRange, selects) {
 	Log.actionDone(a);
 
     //ADDING COLUMNS AS MARKUP
-    data.columns.append({"name": "counted"});
+	data.columns.append({"name": "counted"});
+	data.columns.append({"name": "churn"});
     data.columns.append({"name": "date"});
 
     //ADD date AND bug_id TO ALL RECORDS
@@ -342,26 +343,26 @@ function* getRawDependencyData(esfilter, dateRange, selects) {
 // data - DATA CUBE OF bugs X date
 // topBugFilter - FILTER TO DETERMINE EACH DAY'S TOP-LEVEL BUG IDS (function, or esfilter)
 // allOpen - true IF WE COUNT OPEN DEPENDENCIES OF CLOSED BUGS
-//REWRITES THE .counted ATTRIBUTE TO BE "Open", "Closed", or "none"
+// REWRITES THE .counted ATTRIBUTE TO BE "Open", "Closed", or "none"
+// REWRITES THE .churn ATTRIBUTE TO BE +1 (to Open), -1 (from Open), 0 (no change)
 function* getDailyDependencies(data, topBugFilter) {
     if (typeof(topBugFilter) != "function") topBugFilter = CNV.esFilter2function(topBugFilter);
 
 	//FOR EACH DAY, FIND ALL DEPENDANT BUGS
+	var yesterdayBugs = null;
 	for (var day = 0; day < data.cube.length; day++) {
-		var bug = data.cube[day];
-		var allTopBugs = bug.map(function (detail) {
-			if (topBugFilter(detail)) return detail;
-		});
+		var todayBugs = data.cube[day];
+		var allTopBugs = todayBugs.filter(topBugFilter);
 
 		yield (Hierarchy.addDescendants({
-			"from": bug,
+			"from": todayBugs,
 			"id_field": "bug_id",
 			"fk_field": "dependson",
 			"descendants_field": "dependencies"
 		}));
 
 		var allDescendantsForToday = Array.union(allTopBugs.select("dependencies")).union(allTopBugs.select("bug_id")).map(function(v){return v-0;});
-		bug.forall(function(detail, i){
+		todayBugs.forall(function(detail, i){
 			if (allDescendantsForToday.contains(detail.bug_id)){
 				detail.counted="Closed"
 			}else{
@@ -370,7 +371,7 @@ function* getDailyDependencies(data, topBugFilter) {
 		});
 
 		var openTopBugs = [];
-		var openBugs = bug.map(function (detail) {
+		var openBugs = todayBugs.map(function (detail) {
 			if (["new", "assigned", "unconfirmed", "reopened"].contains(detail.bug_status)){
                 if (topBugFilter(detail)) -openTopBugs.append(detail);
 				return detail;
@@ -386,13 +387,30 @@ function* getDailyDependencies(data, topBugFilter) {
 			"descendants_field": "dependencies"
 		}));
 
-		var openDescendantsForToday = Array.union(openTopBugs.select("dependencies")).union(openTopBugs.select("bug_id")).map(function(v){return v-0;});
-		bug.forall(function(detail, i){
-			if (openDescendantsForToday.contains(detail.bug_id) && ["new", "assigned", "unconfirmed", "reopened"].contains(detail.bug_status)){
-				detail.counted="Open"
+		var openDescendantsForToday = Array.union(openTopBugs.select("dependencies")).union(openTopBugs.select("bug_id")).map(function(v){
+			return v - 0;
+		});
+		todayBugs.forall(function(detail, i){
+			var yBug = {};
+			if (yesterdayBugs) yBug = yesterdayBugs[i];
+
+			if (openDescendantsForToday.contains(detail.bug_id) && ["new", "assigned", "unconfirmed", "reopened"].contains(detail.bug_status)) {
+				detail.counted = "Open";
+				if (yBug.counted == "Open") {
+					yBug.churn = 0;
+				} else {
+					yBug.churn = 1;
+				}//endif
+			} else {
+				if (yBug.counted != "Open") {
+					yBug.churn = 0;
+				} else {
+					yBug.churn = -1;
+				}//endif
 			}//endif
 		});
 
+		yesterdayBugs = todayBugs;
 	}//for
 
 	yield (data);

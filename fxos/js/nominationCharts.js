@@ -56,7 +56,8 @@ function showNomChurn(args) {
 		{"name": "1.3T", "value": "1.3t?", "nom":["1.3t?"], "blocker":["1.3t+"], "style":Mozilla.B2G.Project["1.3T"].style},
 		{"name": "1.4", "value": "1.4?", "nom":["1.4?", "fx30?"], "blocker":["1.4+", "fx30+"], "style":Mozilla.B2G.Project["1.4"].style},
 		{"name": "2.0", "value": "2.0?", "nom":["2.0?", "fx31?", "fx32?"], "blocker":["2.0+", "fx31+", "fx32+"], "style":Mozilla.B2G.Project["2.0"].style},
-		{"name": "2.1", "value": "2.1?", "nom":["2.1?"], "blocker":["2.1+"], "style":Mozilla.B2G.Project["2.1"].style}
+		{"name": "2.1", "value": "2.1?", "nom":["2.1?", "fx33?", "fx34?"], "blocker":["2.1+", "fx33+", "fx34+"], "style":Mozilla.B2G.Project["2.1"].style},
+		{"name": "2.2", "value": "2.2?", "nom":["2.2?", "fx35?", "fx36?"], "blocker":["2.2+", "fx35+", "fx36+"], "style":Mozilla.B2G.Project["2.2"].style}
 	];
 	var triage = [];
 	projects.forall(function(n){
@@ -159,7 +160,8 @@ function showNomChurn(args) {
 						"1.3T":"1.3t",
 						"1.4":"1.4",
 						"2.0":"2.0",
-						"2.1":"2.1"
+						"2.1":"2.1",
+						"2.2":"2.2"
 					}[series]);
 
 					var buglist = (yield (Qb.calc2List({

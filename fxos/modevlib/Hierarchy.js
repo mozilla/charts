@@ -332,6 +332,7 @@ function* getRawDependencyData(esfilter, dateRange, selects) {
         bug.forall(
             function (detail, i) {
                 detail.date = day_part.value;    //ASSIGN DATE TO AGGREGATE RECORD
+	            detail.churn = 0;
                 detail.bug_id = bugs[i].value;   //ASSIGN BUG ID TO AGGREGATE RECORD
             }
         );

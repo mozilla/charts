@@ -107,9 +107,15 @@ Color = function (L, h, s) {
 	};
 
 	Color.prototype.toHTML = function () {
-		var Lfloor = aMath.floor(this.L*COLOR_MESH.length);
-		var Lfloor_2 = (Lfloor + 1) % COLOR_MESH.length;
-		var Lpart = this.L*COLOR_MESH.length - Lfloor;
+		if (this.L==1.0){
+			var Lfloor = COLOR_MESH.length-1;
+			var Lfloor_2 = Lfloor;
+			var Lpart = 1.0;
+		}else{
+			var Lfloor = aMath.floor(this.L*COLOR_MESH.length);
+			var Lfloor_2 = (Lfloor + 1) % COLOR_MESH.length;
+			var Lpart = this.L*COLOR_MESH.length - Lfloor;
+		}//endif
 
 		var hfloor = aMath.floor(this.h / 10);
 		var hfloor_2 = (hfloor + 1) % COLOR_MESH[Lfloor].length;
@@ -124,7 +130,6 @@ Color = function (L, h, s) {
 			return [c, x0[c] * (1 - Lpart) * (1 - hpart) + xH[c] * hpart * (1 - Lpart) + xL[c] * Lpart * (1 - hpart) + xHL[c] * hpart * Lpart];
 		})));
 	};
-
 
 	function hex(value) {
 		if (value===undefined){

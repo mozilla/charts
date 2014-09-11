@@ -675,7 +675,14 @@ aChart.show=function(params){
 //				return "hi there";
 //			}
 		},
-		"colors":styles.map(function(s){return s.color;}),
+		"colors":styles.map(function(s){
+			var c = s.color;
+			if (c.toHTML){
+				return c.toHTML();
+			}else{
+				return c;
+			}//endif
+		}),
 		plotFrameVisible: false,
 		"colorNormByCategory": false,        //FOR HEAT CHARTS
 		extensionPoints: {

@@ -45,13 +45,16 @@ aMath={};
 		return Math.abs(n);
 	};
 
-
 	aMath.round=function(value, rounding){
 		if (rounding===undefined) return Math.round(value);
-		var d=Math.pow(10, rounding);
+		var d;
+		if (rounding.digits!==undefined){
+			d = Math.pow(10, rounding.digits - aMath.ceiling(aMath.log10(value)));
+		}else{
+			d=Math.pow(10, rounding);
+		}//endif
 		return Math.round(value*d)/d;
 	};//method
-
 
 	function SUM(values) {
 		var sum = null;

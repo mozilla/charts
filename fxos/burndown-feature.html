@@ -710,12 +710,12 @@ function restOfCharting(env){
 		yield (countThread.join());
 
 
-		//IDEAL BURNDOWN
+//		//IDEAL BURNDOWN
 		aChart.addPredictionLine({
 			"source":{
 				"name":"Open Bugs",
 				"domain":env.timeDomain,
-				"data":simpleCount.list
+				"data": simpleCount.cube
 			},
 			"predict":{
 				"name":"ideal",
@@ -725,7 +725,7 @@ function restOfCharting(env){
 		});
 
 		simpleCount.columns.insert(0, {"name":"Required Burndown", "value":"ideal", "style":{"color":"lightgray"}});
-		simpleCount.select.push({"name":"ideal"});
+		simpleCount.select.insert(0, {"name":"ideal", "style":{"color":"lightgray"}});
 		simpleCount.columns.push({"name":"ideal"});
 
 		aChart.show({

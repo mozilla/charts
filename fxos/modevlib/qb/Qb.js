@@ -324,16 +324,17 @@ function* calc2Cube(query){
 
 	//ASSIGN dataIndex TO ALL PARTITIONS
 	var edges = query.edges;
-	for(var f = 0; f < edges.length; f++){
-		if (edges[f].domain.type=="default"){
-			edges[f].domain.partitions.sort(edges[f].domain.compare);
+	edges.forall(function(edge){
+		edge.domain = Map.copy(edge.domain);
+		if (edge.domain.type=="default"){
+			edge.domain.partitions.sort(edge.domain.compare);
 		}//endif
 		var p = 0;
-		for(; p < (edges[f].domain.partitions).length; p++){
-			edges[f].domain.partitions[p].dataIndex = p;
+		for(; p < (edge.domain.partitions).length; p++){
+			edge.domain.partitions[p].dataIndex = p;
 		}//for
-		edges[f].domain.NULL.dataIndex = p;
-	}//for
+		edge.domain.NULL.dataIndex = p;
+	});
 
 	//MAKE THE EMPTY DATA GRID
 	query.cube = Qb.cube.newInstance(edges, 0, query.select);
@@ -357,13 +358,13 @@ Qb.List2Cube=function(query){
 
 	//ASSIGN dataIndex TO ALL PARTITIONS
 	var edges = query.edges;
-	for(var f = 0; f < edges.length; f++){
-		var p = 0;
-		for(; p < (edges[f].domain.partitions).length; p++){
-			edges[f].domain.partitions[p].dataIndex = p;
+	edges.forall(function(edge){
+		edge.domain = Map.copy(edge.domain);
+		for(var p = 0; p < edge.domain.partitions.length; p++){
+			edge.domain.partitions[p].dataIndex = p;
 		}//for
-		edges[f].domain.NULL.dataIndex = p;
-	}//for
+		edge.domain.NULL.dataIndex = p;
+	});//for
 
 	//MAKE THE EMPTY DATA GRID
 	query.cube = Qb.cube.newInstance(edges, 0, query.select);

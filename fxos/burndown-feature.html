@@ -245,7 +245,7 @@
 		<div>
 			<div id="feature-summary" style="position: relative;min-height:30px;"></div>
 			<div id="chart" class="chart" style="position: relative;height:300px;"></div>
-			<!--<div id="chart_diff" class="chart" style="position: relative;height:300px;"></div>-->
+			<div id="chart_diff" class="chart" style="position: relative;height:300px;"></div>
 			<div id="buglist" style="position: relative;width:800px"></div>
 			<div id="info" style="position: relative;width:800px"></div>
 		</div>
@@ -286,7 +286,7 @@ var createChart = function(){
 var __createChart = function*(){
 	$("#feature-summary").html("");
 	$("#chart").html("");
-	$("#chart_diff").html("");
+	$("#chart-diff").html("");
 	$("#buglist").html("");
 	$("#info").html("");
 
@@ -298,6 +298,8 @@ var __createChart = function*(){
 	var bug_ids = GUI.state.bugList.trim()=="" ? [] : GUI.state.bugList.split(",").map(function(v){return CNV.String2Integer(v.trim());});
 
 	var timeDomain = null;
+	var needed_fields = null;
+	var dateMarks = [];
 
 	var milestones = GUI.state.milestone.getSelectedParts();
 	var milestoneFilter = null;
@@ -312,15 +314,14 @@ var __createChart = function*(){
 
 		milestoneFilter = {"or": milestones.select("esfilter")};
 
-		var dateMarks = [];
-		milestones.select("dateMarks").forall(function (marks){dateMarks.appendArray(Array.newInstance(marks));});
+		milestones.select("dateMarks").forall(function(marks){
+			dateMarks.appendArray(Array.newInstance(marks));
+		});
 
-		timeDomain = {"type": "time", "min": sampleMin, "max": sampleMax, "interval": sampleInterval, "dateMarks": dateMarks};
 	} else {
 		//SHOW UI dates AS DISABLED
 		$("#sampleMin").prop("disabled", false);
 		$("#sampleMax").prop("disabled", false);
-		timeDomain = {"type":"time", "min":sampleMin, "max":sampleMax, "interval":sampleInterval};
 	}//endif
 
 
@@ -334,9 +335,14 @@ var __createChart = function*(){
 		}//endif
 
 
+		features.select("dateMarks").forall(function(marks){
+			dateMarks.appendArray(Array.newInstance(marks));
+		});
+
 		featureFilter = {"or":features.select("esfilter")};
 		if (bug_ids.length > 0) featureFilter.or.append({"terms": {"bug_id": bug_ids}});
-		var needed_fields = Array.union([NEEDED_FIELDS].appendArray(features.select("needed_fields")).appendArray(milestones.select("needed_fields")));
+		needed_fields = Array.union([NEEDED_FIELDS].appendArray(features.select("needed_fields")).appendArray(milestones.select("needed_fields")));
+		timeDomain = {"type": "time", "min": sampleMin, "max": sampleMax, "interval": sampleInterval, "dateMarks": dateMarks};
 		raw_data = yield(getRawDependencyData(featureFilter, timeDomain, needed_fields));
 	}else{
 		if (bug_ids.length==0){
@@ -365,9 +371,12 @@ var __createChart = function*(){
 		});
 
 		featureFilter = {"terms":{"bug_id": bug_ids}};
-		var needed_fields = Array.union([NEEDED_FIELDS].appendArray(features.select("needed_fields")).appendArray(milestones.select("needed_fields")));
+		needed_fields = Array.union([NEEDED_FIELDS].appendArray(features.select("needed_fields")).appendArray(milestones.select("needed_fields")));
+		timeDomain = {"type": "time", "min": sampleMin, "max": sampleMax, "interval": sampleInterval, "dateMarks": dateMarks};
 		raw_data = yield(getRawDependencyData(featureFilter, timeDomain, needed_fields));
 	}//endif
+
+
 
 	var currFeatureFilter = GUI.state.hierarchyMode.getSimpleState() != "All dependencies" ? nvl(milestoneFilter, featureFilter) : {"match_all": {}};
 	yield (getDailyDependencies(raw_data, nvl(milestoneFilter, {"match_all": {}}) ));
@@ -397,6 +406,7 @@ function __reChart(){
 	Thread.run(function*(){
 		$("#feature-summary").html("");
 		$("#chart").html("");
+		$("#chart-diff").html("");
 		$("#buglist").html("");
 		$("#info").html("");
 
@@ -519,7 +529,8 @@ function restOfCharting(env){
 		sorttable.makeSortable(table)
 	});
 
-	Thread.run(function*(){
+	var simpleCount = null;
+	var countThread = Thread.run(function*(){
 		///////////////////////////////////////////////////////////////////////
 		// HISTORICAL COUNT
 		///////////////////////////////////////////////////////////////////////
@@ -546,7 +557,7 @@ function restOfCharting(env){
 		}));
 
 		//CONVERT EDGE TO ATTRIBUTES
-		var flat = yield(Q({
+		simpleCount = yield(Q({
 			"from":chart,
 			"select":[
 //				{"name":"Total_Bugs", "value":"status.name!='none' ? count : null", "aggregate":"sum", "default":0},
@@ -563,12 +574,12 @@ function restOfCharting(env){
 			]
 		}));
 
-		var tempTimeDomain=flat.edges[0].domain;
+		var tempTimeDomain=simpleCount.edges[0].domain;
 
 		//SHOW FUTURE VALUES AS NULLS
-		flat.cube.forall(function(v, i){
+		simpleCount.cube.forall(function(v, i){
 			if (tempTimeDomain.partitions[i].min > env.TODAY.addDay()){
-				flat.cube[i]=Map.zip(mapAllKey(v, function(k, v){
+				simpleCount.cube[i]=Map.zip(mapAllKey(v, function(k, v){
 					if (k=="."){
 						return [k, 0];
 					}else{
@@ -578,19 +589,151 @@ function restOfCharting(env){
 			}//endif
 		});
 
-
-
-
-
 		Log.actionDone(a);
 
+	});
+
+
+	var churnTimeDomain =  Map.setDefault({"max":env.timeDomain.max.addDay(-1)}, env.timeDomain);  //ONE LESS DAY FOR CHURN
+
+	var ideal = null;
+
+	var churnThread = Thread.run(function*() {
+		////////////////////////////////////////////////////////////////////////////
+		// CHURN
+		////////////////////////////////////////////////////////////////////////////
+		var chart = yield(Q({
+			"from": raw_data,
+			"select": [
+				{"name": "Opened", "value": "churn > 0 ? 1 : 0", "aggregate": "sum", "default": 0, "style": {"color": Color.GREEN.multiply(0.5).hue(20)}},
+				{"name": "Closed", "value": "churn < 0 ? -1 : 0", "aggregate": "sum", "default": 0, "style": {"color": Color.RED.multiply(0.7).hue(10)}}
+			],
+			"edges": [
+				{"name": "date", "value":"date",
+					"allowNulls": false,
+					"domain": churnTimeDomain
+				}
+			]
+		}));
+
+		a = Log.action("Make chart", true);
+		aChart.show({
+			"name":"Open and Close Rates",
+			"id": "chart_diff",
+			"sheetDiv": "info",
+			"type": "bar",
+			"stacked": true,
+			"cube": chart,
+			"xAxisSize": 50,
+			"clickAction": function (series, x, d) {
+				Thread.run(function*() {
+					var where = {"and": [
+						{"term": {"date": x}},
+						{"term":{"churn": series == "Opened" ? 1 : -1}}
+					]};
+
+					var buglist = raw_data.list.filter(where);
+					Bugzilla.showBugs(buglist.select("bug_id"));
+				});
+			}//click
+		});
+		Log.actionDone(a);
+
+		var DUE_DATE = Date.newInstance(GUI.state.sampleMax).addDay();
+		var START_DATE = env.timeDomain.min;
+		var SAMPLE_DURATION = Duration.newInstance("2week");
+
+		perDay = (yield(Qb.calc2List({
+			"from": chart,
+			"select": [
+				{"name": "opened", "value": "Opened", "aggregate": "sum"},
+				{"name": "closed", "value": "Closed", "aggregate": "sum"}
+			],
+			"where": START_DATE.getMilli() + "<=date.getMilli() && date.getMilli()<" + Date.min(DUE_DATE, env.TODAY).getMilli()
+		}))).list[0];
+		daysInSprint = Date.diffWeekday(Date.min(DUE_DATE, env.TODAY), START_DATE);
+
+		var sampleEnd = Date.min(DUE_DATE, env.TODAY);
+		var sampleStart = Date.max(START_DATE, sampleEnd.subtract(SAMPLE_DURATION));
+		daysInSample = Date.diffWeekday(sampleEnd, sampleStart);
+		perDayInSample = (yield(Qb.calc2List({
+			"from": chart,
+			"select": [
+				{"name": "opened", "value": "Opened", "aggregate": "sum"},
+				{"name": "closed", "value": "Closed", "aggregate": "sum"}
+			],
+			"where": sampleStart.getMilli()+ "<=date.getMilli() && date.getMilli()<" + sampleEnd.getMilli()
+		}))).list[0];
+
+		//CURRENT OPEN BUG COUNT
+		var todayOpenBugs = raw_data.cube[env.TODAY.subtract(START_DATE).divideBy(Duration.DAY)].filter({"term" : {"counted" : "Open"}}).length;
+		var daysRemaining = Date.diffWeekday(DUE_DATE, env.TODAY);
+		var moreBugsExpected = perDayInSample.opened / daysInSample * daysRemaining;
+		var requiredRate = (todayOpenBugs + moreBugsExpected) / daysRemaining;
+
+		$("#stats").html("");
+
+		if (daysInSample>=1){
+			$("#stats").append(
+				'<span class="parameter_name">Workdays in release:</span>' + daysInSprint + '<br>' +
+				'<span class="parameter_name">New bugs per day:</span>' + aMath.round(perDayInSample.opened / daysInSample, 1) + '<br>' +
+				'<span class="parameter_name">Closed per day:</span>' + aMath.round(Math.abs(perDayInSample.closed) / daysInSample, 1) + '<br>' +
+				''
+			);
+		}//endif
+
+		if (daysRemaining>1){
+			$("#stats").append(
+				'<span class="parameter_name">Days remaining:</span>' + aMath.round(daysRemaining, 0) + '<br>' +
+				'<span class="parameter_name">Required Closed / Day:</span>' + aMath.round(requiredRate, 1) + '<br>'
+			);
+		}//endif
+
+		ideal=function(date){
+			if (date>DUE_DATE){
+				return 0;
+			}else{
+				return aMath.round(todayOpenBugs - (todayOpenBugs * Date.diffWeekday(date, env.TODAY) / daysRemaining));
+			}//endif
+		};
+
+
+	});
+
+
+	Thread.run(function*(){
+		////////////////////////////////////////////////////////////////////////////
+		// RENDER BURNDOWN
+		////////////////////////////////////////////////////////////////////////////
+
+		yield (churnThread.join());
+		yield (countThread.join());
+
+
+//		//IDEAL BURNDOWN
+		aChart.addPredictionLine({
+			"source":{
+				"name":"Open Bugs",
+				"domain":env.timeDomain,
+				"data": simpleCount.cube
+			},
+			"predict":{
+				"name":"ideal",
+				"domain":{"min":env.TODAY, "max":env.timeDomain.max},
+				"line": ideal
+			}
+		});
+
+		simpleCount.columns.insert(0, {"name":"Required Burndown", "value":"ideal", "style":{"color":"lightgray"}});
+		simpleCount.select.insert(0, {"name":"ideal", "style":{"color":"lightgray"}});
+		simpleCount.columns.push({"name":"ideal"});
 
 		aChart.show({
 			"id":"chart",
 			"sheetDiv":"info",
 			"type":"line",
 			"stacked":false,
-			"cube":flat,
+			"cube":simpleCount,
 			"xAxisSize":50,
 			extensionPoints: {
 			    dot_shapeRadius: 3,
@@ -622,7 +765,6 @@ function restOfCharting(env){
 			}//click
 		});
 	});
-
 }
 
 

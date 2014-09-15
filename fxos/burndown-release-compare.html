@@ -232,14 +232,9 @@ ga('send', 'pageview');
 	</div>
 	<hr>
 	<div id="description">
-		Simple burndown chart by release<br><br>
+		Compare release burndowns<br><br>
 		The line chart shows regressions and the total blocker count (including
-		regressions) by day. The bar chart shows the total bug churn on
-		release blockers.
-		At the bottom is a list of open blockers assigned to this release. This is differs from the top summary,
-		which only shows the counts at the end of the milestone (not the end of today).<br><br>
-
-		<span class="warning">Statistics are calculated using the past two weeks, usually 10 business days, not including today.</span>
+		regressions) by day.  Previous releases can also be over layed.
 	</div>
 	<hr>
 	<div id="stats"></div>
@@ -302,6 +297,7 @@ importScript([
 
 	var __createChart = function*(){
 		var NOW = Date.now();
+		var EOD = Date.eod();
 		var TODAY = Date.today();
 		var SAMPLE_DURATION = Duration.newInstance("2week");
 
@@ -355,7 +351,7 @@ importScript([
 		if (title && title.length > 0) {
 			$("#title").text(title);
 		} else {
-			$("#title").text("Burndown for " + releaseName)
+			$("#title").text("Compare " + releaseName)
 		}//endif
 
 		yield (ESQuery.loadColumns({"from" : "bugs"}));
@@ -403,13 +399,11 @@ importScript([
 		chart = yield(Q({
 			"from" : releaseBugs,
 			"select" : [
-				{"name" : "count", "value" : 'bug_id', "aggregate" : "count", "default" : 0},
-				{"name": "startDate", "value": "startDate", "aggregate" : "minimum"}
+				{"name" : "count", "value" : 'bug_id', "aggregate" : "count"}
 			],
 			"edges" : [
 				{"name" : "status", "domain" : Mozilla.CountType.getDomain()},
-				{"value" : "release", "domain":{"type":"set", "partitions":releases.select("name")}},
-//			{"name": "release", "value": "release", "domain":{"type":"set", "key":"name", "partitions":releases}},
+				{"name":"release", "value" : "release", "domain":{"type":"set", "key":"name", "partitions":releases}},
 				{"name" : "date",
 					"range" : {"min" : "modified_ts", "max" : "expires_on"},
 					"allowNulls" : false,
@@ -418,14 +412,32 @@ importScript([
 			]
 		}));
 
+		//FUTURE DATES ARE SET TO null
+		new Matrix({"data":chart.cube}).forall(function(v, c, cube){
+			var diff = chart.edges[2].domain.partitions[c[2]].min;
+			if (releases[c[1]].startDate.add(diff) > EOD){
+				v.count=null;
+			}//endif
+		});
+
+
+		var regressionColor=["#ff0000", "#e5afaf"];
+		var countColor=["#0070c0", "#accce4"];
 		var select = [];
-		releases.forall(function(r){
-			select.append(
-				{"name" : r.name + " Open_Bugs", "value" : "startDate!=null && startDate.add(date)<Date.eod() && release=='" + r.name + "' && ['Open', 'Regressions'].contains(status.name) ? count : null", "aggregate" : "sum"}
-			);
-			select.append(
-				{"name" : r.name + " Regressions", "value" : "startDate!=null && startDate.add(date)<Date.eod() && release=='" + r.name + "' && status.name=='Regressions' ? Math.max(count, 0) : null", "aggregate" : "sum", "default" : 0}
-			);
+
+		releases.forall(function(r, i){
+			select.append({
+				"name" : r.name + " Open_Bugs",
+				"value" : "release.name=='" + r.name + "' && ['Open', 'Regressions'].contains(status.name) ? count : null",
+				"aggregate" : "sum",
+				"style":{"color":countColor[releases.length - i - 1]}
+			});
+			select.append({
+				"name" : r.name + " Regressions",
+				"value" : "release.name=='" + r.name + "' && status.name=='Regressions' ? count : null",
+				"aggregate" : "sum",
+				"style":{"color":regressionColor[releases.length - i - 1]}
+			});
 		});
 
 		var flat = yield(Q({
@@ -440,12 +452,13 @@ importScript([
 			]
 		}));
 
-//		var tempTimeDomain=flat.edges[0].domain;
-//
+
 //		//SHOW FUTURE VALUES AS NULLS
+//		var tempTimeParts=flat.edges[0].domain.partitions;
 //		flat.cube.forall(function(v, i){
-//			if (tempTimeDomain.partitions[i].min > TODAY.addDay()){
-//				flat.cube[i]=Map.zip(mapAllKey(v, function(k, v){
+//			var part = tempTimeParts[i];
+//			if (part.min > TODAY.addDay()){
+//				flat.cube[i]=Map.zip(mapAllKey(v, function(k, vv){
 //					return [k, null];
 //				}));
 //			}//endif

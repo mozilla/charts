@@ -42,6 +42,14 @@ function joinField(path){
 	var DEBUG=true;
 
 
+Qb.reverse=function reverse(list){
+	var output = list.copy();
+	output.reverse();
+	return output;
+};
+
+
+
 Qb.compile = function(query, sourceColumns, useMVEL){
 //COMPILE COLUMN CALCULATION CODE
 	var columns = [];

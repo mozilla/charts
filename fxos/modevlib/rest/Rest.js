@@ -77,7 +77,7 @@ Rest.send=function*(ajaxParam){
 
 	request.onreadystatechange = function(){
 		if (request.readyState == 4){
-			if (request.status == 200){
+			if ([200, 201].contains(request.status)){
 				var response = request.responseText;
 				if (ajaxParam.dataType == 'json'){
 					response = CNV.JSON2Object(response);
@@ -154,11 +154,14 @@ Rest.post=function(ajaxParam){
 	return Rest.send(ajaxParam);
 };//method
 
-Rest["delete"]=function(ajaxParam){
-//	Log.warning("DISABLED DELETE OF "+ajaxParam.url);
-//	yield (null);
-	ajaxParam.type="DELETE";
-	return Rest.send(ajaxParam);
+Rest["delete"]=function*(ajaxParam){
+	if (ajaxParam.url.indexOf("org_chart")>0){
+		ajaxParam.type="DELETE";
+		yield (Rest.send(ajaxParam));
+	}else{
+		Log.warning("DISABLED DELETE OF "+ajaxParam.url);
+		yield (null);
+	}
 };//method
 
 

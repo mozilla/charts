@@ -48,7 +48,6 @@ importScript("../util/aUtil.js");
 	};//method
 
 
-
 	Array.prototype.forall=function(func){
 		for(var i=0;i<this.length;i++){
 			func(this[i], i, this);
@@ -145,12 +144,16 @@ importScript("../util/aUtil.js");
 		return this;
 	};//method
 
-	Array.prototype.appendArray=function(arr){
+	function appendArray(arr){
 		for(var i=0;i<arr.length;i++){
 			this.push(arr[i]);
 		}//for
 		return this;
-	};//method
+	}//method
+	Array.prototype.appendArray=appendArray;
+	Array.prototype.appendList=appendArray;
+	Array.prototype.extend=appendArray;
+
 
 	if (DEBUG){
 		var temp=[0,1,2].appendArray([3,4,5]);

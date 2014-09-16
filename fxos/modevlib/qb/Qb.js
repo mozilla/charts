@@ -1016,6 +1016,7 @@ Qb.merge=function(query){
 ////////////////////////////////////////////////////////////////////////////////
 //TAKE data LIST OF OBJECTS AND ENSURE names ARE ORDERED
 Qb.sort = function(data, sortOrder, columns){
+	sortOrder = Array.newInstance(sortOrder);
 	if (sortOrder.length==0) return data;
 	var totalSort = Qb.sort.compile(sortOrder, columns, true);
 	try{

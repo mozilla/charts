@@ -31,7 +31,10 @@ TeamFilter.newInstance=function(field_name){
 				{"name":"name", "value":"name"},
 				{"name":"email", "value":"email"},
 				{"name":"manager", "value":"manager"}
-			]
+			],
+			"esfilter":{"and":[
+				{"exists":{"field":"id"}},
+			]}
 		}))).list;
 
 		var others={
@@ -60,14 +63,14 @@ TeamFilter.newInstance=function(field_name){
 		people.forall(function(v, i){
 			v.id=v.id.between("mail=", ",");
 
-			if (v.manager==null){
+			if (v.manager==undefined || v.manager==null || v.manager=="null"){
 				if (!["other@mozilla.com", "nobody@mozilla.org", "community@mozilla.org"].contains(v.id)){
 					v.manager="other@mozilla.com";
 				}//endif
 			}else{
 				v.manager = v.manager.between("mail=", ",");
 			}//endif
-			
+
 			if (v.email==null) v.email=v.id;
 
 			if (self.managers[v.id])
@@ -96,9 +99,9 @@ TeamFilter.newInstance=function(field_name){
 				}//endif
 				return v;
 			});
-			others.children.subtract(hier);
+			others.children = others.children.filter({"not":{"terms":hier.select("id")}});
 		}//endif
-		
+
 		self.injectHTML(hier);
 
 		//JSTREE WILL NOT BE LOADED YET
@@ -176,16 +179,16 @@ TeamFilter.prototype.makeFilter = function(field_name){
 	if (selected.length == 0) return ESQuery.TrueFilter;
 
 	//FIND BZ EMAILS THAT THE GIVEN LIST MAP TO
-	var getEmail=function(list, children){
+	var bzEmails=[];
+	var getEmail=function(children){
 		children.forall(function(child, i){
 			if (child.email)
-				list.push(child.email);
+				bzEmails.appendArray(Array.newInstance(child.email));
 			if (child.children)
-				getEmail(list, child.children);
+				getEmail(child.children);
 		});
 	};//method
-	var bzEmails=[];
-	getEmail(bzEmails, selected);
+	getEmail(selected);
 
 	if (bzEmails.length==0) return ESQuery.TrueFilter;
 
@@ -195,7 +198,7 @@ TeamFilter.prototype.makeFilter = function(field_name){
 		bzEmails.remove("community@mozilla.org");
 		var allEmails=this.people.map(function(v, i){return v.email;});
 		allEmails.push("nobody@mozilla.org");
-		
+
 		output.or.push({"not":{"terms":Map.newInstance(field_name, allEmails)}});
 	}//endif
 
@@ -243,7 +246,7 @@ TeamFilter.prototype.injectHTML = function(hier){
 		"plugins":[ "themes", "json_data", "ui", "checkbox" ]
 	}).bind("change_state.jstree", function (e, data){
 		if (self.disableUI) return;
-	
+
 		//WE NOW HAVE A RIDICULOUS NUMBER OF CHECKED ITEMS, REDUCE TO MINIMUM COVER
 		var minCover=[];
 

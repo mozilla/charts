@@ -236,11 +236,77 @@ aChart.showPie=function(params){
 		Log.warning("Nothing to pie-chart");
 		return;
 	}//endif
-	if (chartCube.edges.length!=1) Log.error("Only one dimension suuported");
 	if (chartCube.select instanceof Array) Log.error("Can not chart when select clause is an array");
 
 
-	var seriesLabels=getAxisLabels(chartCube.edges[0]);
+	var values = null;
+
+	if (chartCube.edges.length==1){
+		var seriesLabels=getAxisLabels(chartCube.edges[0]);
+
+		if (params.minPercent!==undefined){
+			var other = 0;
+
+			//COLAPSE INTO 'OTHER' CATEEGORY
+			var total = aMath.SUM(chartCube.cube);
+			values = [];
+			chartCube.cube.forall(function(v, i){
+				if (v/total >= params.minPercent){
+					values.append({"name":seriesLabels[i], "value":v})
+				}else{
+					other+=v;
+				}//endif
+			});
+			values = Qb.sort(values, {"value:":"value", "sort":-1});
+			if (other > 0) values.append({"name": "Other", "value": other});
+		}else{
+			values = chartCube.cube.map(function(v, i){
+				values.append({"name":seriesLabels[i], "value":v})
+			});
+			values = Qb.sort(values, {"value:":"value", "sort":-1});
+		}//endif
+	} else if (chartCube.edges.length==2){
+		var aLabels=getAxisLabels(chartCube.edges[0]);
+		var bLabels=getAxisLabels(chartCube.edges[1]);
+
+		if (params.minPercent!==undefined){
+			var allOther = 0;
+
+			//COLAPSE INTO 'OTHER' CATEEGORY
+			var total = aMath.SUM(chartCube.cube.map(aMath.SUM));
+			values = [];
+			chartCube.cube.forall(function(s, i){
+				var other = 0;
+				var hasSpecific = false;
+				s.forall(function(v, j){
+					if (v/total >= params.minPercent){
+						values.append({"name":aLabels[i]+"::"+bLabels[j], "value":v});
+						hasSpecific=true;
+					}else{
+						other+=v;
+					}//endif
+				});
+				if (other/total >= params.minPercent){
+					if (hasSpecific){
+						values.append({"name":aLabels[i]+"::Other", "value":other})
+					}else{
+						values.append({"name":aLabels[i], "value":other})
+					}//endif
+				}else{
+					allOther+=other;
+				}//endif
+			});
+			values = Qb.sort(values, {"value":"value", "sort":-1});
+			if (allOther>0) values.append({"name":"Other", "value":allOther});
+		}else{
+			Log.error("having hierarchical dimension without a minPercent is not implemented");
+		}//endif
+	}else{
+		Log.error("Only one dimension supported");
+	}//endif
+
+
+
 
 
 	var chartParams={
@@ -279,7 +345,7 @@ aChart.showPie=function(params){
 
 	//FILL THE CROSS TAB DATASTUCTURE TO THE FORMAT EXPECTED (2D array of rows
 	//first row is series names, first column of each row is category name
-	var data=chartCube.cube.map(function(v, i){return [seriesLabels[i], v]});
+	var data=values.map(function(v, i){return [v.name, v.value]});
 
 
 	var cccData = {

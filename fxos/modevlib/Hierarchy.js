@@ -33,6 +33,29 @@ Hierarchy.fromList=function(args){
 		}//endif
 	});
 
+	//WE MAY HAVE CYCLES!! (REMOVE CYCLES UP TO 2 IN LENGTH)
+	var deleteMe=[];
+	Map.forall(childList, function(parent, children){
+		children.forall(function(child){
+			if (child.id==parent){
+				deleteMe.append([parent, child]);
+				return;
+			}//endif
+
+			var grandchildren = childList[child.id];
+			if (grandchildren) grandchildren.forall(function(grand){
+				if (grand.id==parent){
+					deleteMe.append([parent, child]);
+				}//endif
+			});
+		});
+	});
+	deleteMe.forall(function(pair){
+		childList[pair[0]]=childList[pair[0]].filter({"not":{"term":{"id":pair[1].id}}});
+	});
+	roots.appendArray(deleteMe.select("1"));
+
+
 	var heir=function(children){
 		children.forall(function(child, i){
 			var grandchildren=childList[child[args.id_field]];

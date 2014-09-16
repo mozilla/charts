@@ -65,10 +65,13 @@ ESQuery.DEBUG = false;
 		"bugs.attachments": {},
 		"bugs.attachments.flags": {},
 
-		"reviews": {"style":{"color":"black","background-color":yellow}, "host": "http://elasticsearch-private.bugs.scl3.mozilla.com:9200", "path": "/reviews/review"},
+
+
+        "reviews": {"style":{"color":"black","background-color":yellow}, "host": "http://klahnakoski-es.corp.tor1.mozilla.com:9200", "path": "/reviews/patch_review"},
+//        "reviews": {"style":{"color":"black","background-color":yellow}, "host": "http://elasticsearch-private.bugs.scl3.mozilla.com:9200", "path": "/reviews/review"},
 		"bug_summary": {"style":{"color":"black","background-color":yellow}, "host": "http://elasticsearch-private.bugs.scl3.mozilla.com:9200", "path": "/bug_summary/bug_summary"},
 		"bug_tags": {"style":{"color":"black","background-color":yellow}, "host": "http://elasticsearch-private.bugs.scl3.mozilla.com:9200", "path": "/bug_tags/bug_tags"},
-		"org_chart": {"style":{"color":"black","background-color":yellow}, "host": "http://elasticsearch-private.bugs.scl3.mozilla.com:9200", "path": "/org_chart/person"},
+		"org_chart": {"style":{"color":"black","background-color":yellow}, "host": "http://elasticsearch-private.bugs.scl3.mozilla.com:9200", "alias":"org_chart", "path": "/org_chart/person"},
 		"temp": {"style":{"color":"black","background-color":yellow}, "host": "http://elasticsearch-private.bugs.scl3.mozilla.com:9200", "path": ""},
 		"telemetry": {"style":{"color":"black","background-color":yellow}, "host": "http://elasticsearch-private.bugs.scl3.mozilla.com:9200", "path": "/telemetry_agg_valid_201305/data"},
 		"raw_telemetry": {"style":{"color":"black","background-color":yellow}, "host": "http://klahnakoski-es.corp.tor1.mozilla.com:9200", "path": "/raw_telemetry/data"},
@@ -1510,7 +1513,7 @@ ESQuery.DEBUG = false;
 
 		if (this.query.select instanceof Array || this.select.length > 1) {
 			for (var i = T.length; i--;) {
-				var record = T[i].fields
+				var record = nvl(T[i].fields, {});
 				var new_rec = {};
 				this.select.forall(function (s, j) {
 					if (s.domain && s.domain.interval=="none"){

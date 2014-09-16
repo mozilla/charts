@@ -252,10 +252,7 @@ ga('send', 'pageview');
 	<div>
 		<div id="release-summary" style="min-height: 30px; position: relative;"></div>
 		<div id="chart" class="chart" style="position: relative;height:300px;"></div>
-		<div id="chart_diff" class="chart" style="position: relative;height:300px;"></div>
-		<div id="buglist" style="position: relative;width:800px"></div>
-		<div id="info" style="position: relative;width:800px"></div>
-		<div id="report"></div>
+		<div id="info"></div>
 	</div>
 </div>
 <script type="application/javascript">
@@ -421,8 +418,8 @@ importScript([
 		});
 
 
-		var regressionColor=["#ff0000", "#e5afaf"];
-		var countColor=["#0070c0", "#accce4"];
+		var regressionColor=["#ff0000", "#e5afaf", "#e5afaf", "#e5afaf", "#e5afaf"];
+		var countColor=["#0070c0", "#accce4", "#accce4", "#accce4", "#accce4"];
 		var select = [];
 
 		releases.forall(function(r, i){

@@ -642,9 +642,11 @@ MVEL.FUNCTIONS={
 			"var v = doc[name];\n"+
 //			"if (v is org.elasticsearch.common.mvel2.ast.Function) v = v();=n" +
 			"if (v==null || v.value==null) { null; } else " +
+			"if (v.values.size()<=1){ v.value; } else " + //ES MAKES NO DISTINCTION BETWEEN v or [v], SO NEITHER DO I
 			"if (v is org.elasticsearch.index.fielddata.ScriptDocValues) { v=v.getValues(); for(int i =0; i < v.size(); i++) out.add(v.get(i)); out; } else "+
 //			"if (v is Long || v is Integer || v is Double) { v; } else " +
-			"if (v.values.size()<=1){ v.value; } else " + //ES MAKES NO DISTINCTION BETWEEN v or [v], SO NEITHER DO I
+//			"if (v.values.size()==0){ null; } else " +
+//			"if (v.values.size()<=1){ v.value; } else " + //ES MAKES NO DISTINCTION BETWEEN v or [v], SO NEITHER DO I
 			"{for(k : v.values) out.add(k); out;}" +
 		"};\n",
 

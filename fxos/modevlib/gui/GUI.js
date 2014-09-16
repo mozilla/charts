@@ -150,8 +150,14 @@ GUI = {};
 					tm.html(new Template("<div style={{style|css}}>{{name}}</div>").expand(result.index));
 					tm.append("<br>ES Last Updated " + time.addTimezone().format("NNN dd @ HH:mm") + Date.getTimezone());
 				} else if (indexName == "reviews") {
-					time = yield (REVIEWS.getLastUpdated());
-					$("#testMessage").html("Reviews Last Updated " + time.addTimezone().format("NNN dd @ HH:mm") + Date.getTimezone());
+                    var result = yield (ESQuery.run({
+                        "from": "reviews",
+                        "select": [
+                            {"name": "last_request", "value": "request_time", "aggregate": "maximum"}
+                        ]
+                    }));
+                    time = Date.newInstance(result.cube.last_request);
+                    $("#testMessage").html("Reviews Last Updated " + time.addTimezone().format("NNN dd @ HH:mm") + Date.getTimezone());
 				} else if (indexName == "bug_tags") {
 					esHasErrorInIndex = false;
 					time = yield (BUG_TAGS.getLastUpdated());

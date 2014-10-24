@@ -22,7 +22,7 @@ if (!Mozilla) var Mozilla={"name":"Mozilla", "edges":[]};
 
 	//ADD PROJECTS AND MILESTAONES HERE
 	//BUT REMEMBER TO ADD DETAILED ENTRIES (AT BOTTOM)
-	var PROJECTS = ["1.3", "1.3t", "1.4", "2.0", "2.1"];
+	var PROJECTS = ["1.3", "1.3t", "1.4", "2.0", "2.1", "2.2"];
 	var NOM_PROJECTS = PROJECTS.map(function (p) {
 		return p + "?";
 	});
@@ -49,9 +49,18 @@ if (!Mozilla) var Mozilla={"name":"Mozilla", "edges":[]};
 				webRTCFilter
 			]},
 			"edges": [
-				{"name": "Nominations", "index": "bugs", "esfilter": {"or": [
-					{"terms": {"cf_blocking_b2g": NOM_PROJECTS}},
-					{"terms": {"cf_blocking_loop": NOM_MILESTONES}}
+				{"name": "Nominations", "index": "bugs", "esfilter": {"and":[
+					Mozilla.BugStatus.Open.esfilter,
+					{"or": [
+						{"terms": {"cf_blocking_b2g": NOM_PROJECTS}},
+						{"terms": {"cf_blocking_loop": NOM_MILESTONES}}
+					]}
+				]}},
+				{"name": "AllNominations", "index": "bugs", "esfilter": {"and":[
+					{"or": [
+						{"terms": {"cf_blocking_b2g": NOM_PROJECTS}},
+						{"terms": {"cf_blocking_loop": NOM_MILESTONES}}
+					]}
 				]}},
 				{"name": "Blockers", "index": "bugs", "esfilter": {"or": [
 					{"terms": {"cf_blocking_b2g": BLOCKER_PROJECTS}},
@@ -380,13 +389,14 @@ if (!Mozilla) var Mozilla={"name":"Mozilla", "edges":[]};
 							]}
 						},
 						{"name": "2.1",
-							"start_date":"jul 21, 2014",
+							"start_date":"Jul 21, 2014",
 							"targetDate":"Nov 24, 2014",
 							"dateMarks": [
-								{"Start": "jul 28, 2014"},
+								{"Start":"Jul 21, 2014"},
 								{"FL": "Sep 01, 2014"},
-								{"FC": "Oct 13, 2014"},
-								{"CF": "Nov 24, 2014"}
+								{"FC": "Oct 10, 2014"},
+								{"CS": "Nov 14, 2014"},  //partner delivery
+								{"CC": "Nov 24, 2014"}
 							],
 							"style": {"color": "#d62728"},
 							"esfilter": {"or": [
@@ -394,8 +404,19 @@ if (!Mozilla) var Mozilla={"name":"Mozilla", "edges":[]};
 								{"terms": {"cf_blocking_loop": ["fx33?", "fx34?", "fx33+", "fx34+"]}}
 							]}
 						},
+						{"name": "2.2",
+							"start_date":"Oct 10, 2014",
+							"targetDate":"Nov 24, 2014",
+							"dateMarks": [
+							],
+							"style": {"color": "#ff7f0e"},
+							"esfilter": {"or": [
+								{"terms": {"cf_blocking_b2g": ["2.2+", "2.2?"]}},
+								{"terms": {"cf_blocking_loop": ["fx35?", "fx36?", "fx35+", "fx36+"]}}
+							]}
+						},
 						{"name": "Other", "style": {"color": "#9467bd"}, "esfilter": {"and": [
-							{"not": {"terms": {"cf_blocking_b2g": NOM_PROJECTS.union(BLOCKER_PROJECTS)}}},
+							{"not": {"terms": {"cf_blocking_b2g": NOM_PROJECTS.union(BLOCKER_PROJECTS)}}},  //TODO: No way to select 1.3
 							{"not": {"terms": {"cf_blocking_loop": NOM_MILESTONES.union(BLOCKER_MILESTONE)}}}
 
 						]}}
@@ -432,10 +453,16 @@ if (!Mozilla) var Mozilla={"name":"Mozilla", "edges":[]};
 							{"terms": {"cf_blocking_b2g": ["2.1+"]}},
 							{"terms": {"cf_blocking_loop": ["fx33+", "fx34+"]}}
 						]}
-					},					{"name": "Targeted", "style": {"color": "#9467bd"}, "esfilter": {"and": [
-						{"not": {"terms": {"cf_blocking_b2g": ["1.3+", "1.4+", "1.3t+", "2.0+"]}}},
-						{"not": {"terms": {"cf_blocking_loop": ["fx30+", "fx31+", "fx32+", "fx33+", "fx30+", "fx34+", "fx35+", "fx36+"]}}}
-
+					},
+					{"name": "2.2",
+						"esfilter": {"or":[
+							{"terms": {"cf_blocking_b2g": ["2.2+"]}},
+							{"terms": {"cf_blocking_loop": ["fx35+", "fx36+"]}}
+						]}
+					},
+					{"name": "Targeted", "style": {"color": "#9467bd"}, "esfilter": {"and": [
+						{"not": {"terms": {"cf_blocking_b2g": BLOCKER_PROJECTS}}},
+						{"not": {"terms": {"cf_blocking_loop": BLOCKER_MILESTONE}}}
 					]}}
 				]
 			},
@@ -491,16 +518,29 @@ if (!Mozilla) var Mozilla={"name":"Mozilla", "edges":[]};
 						},
 						{"name": "2.1",
 							"start_date":"Jul 21, 2014",
-							"targetDate":"Sep 01, 2014",
+							"targetDate":"Nov 24, 2014",
 							"dateMarks": [
-								{"FL": "Sep 02, 2014"},
-								{"FC": "Oct 13, 2014"},
-								{"CF": "Nov 24, 2014"}
+								{"Start":"Jul 21, 2014"},
+								{"FL": "Sep 01, 2014"},
+								{"FC": "Oct 10, 2014"},
+								{"CS": "Nov 14, 2014"},
+								{"CC": "Nov 24, 2014"}
 							],
 							"style": {"color": "#d62728"},
 							"esfilter": {"or": [
 								{"terms": {"cf_blocking_b2g": ["2.1+", "2.1?"]}},
 								{"terms": {"cf_blocking_loop": ["fx33?", "fx34?", "fx33+", "fx34+"]}}
+							]}
+						},
+						{"name": "2.2",
+							"start_date":"Oct 10, 2014",
+							"targetDate":"Nov 24, 2014",
+							"dateMarks": [
+							],
+							"style": {"color": "#ff7f0e"},
+							"esfilter": {"or": [
+								{"terms": {"cf_blocking_b2g": ["2.2+", "2.2?"]}},
+								{"terms": {"cf_blocking_loop": ["fx35?", "fx36?", "fx35+", "fx36+"]}}
 							]}
 						},
 						{"name": "Targeted",

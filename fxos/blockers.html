@@ -258,40 +258,40 @@
 
 		$(document).ready(function () {
 			GUI.setup(
-					createChart,
-					[
-						{"id": "project", "name": "Releases", "default":"1.3T,1.4,2.0,2.1", "type": PartitionFilter.newInstance({
-							"id": "Projects",
-							"name": "All Projects",
-							"dimension": Mozilla.B2G.Project,
-							"onlyOne": false,
-							"expandAll": true
-						})},
-						{"id": "team", "name": "Teams", "type": PartitionFilter.newInstance({
-							"id": "Teams",
-							"name": "All Teams",
-							"dimension": Mozilla.B2G.Team,
-							"onlyOne": false,
-							"expandAll": true
-						})},
-						{"id": "component", "name": "Components", "type": PartitionFilter.newInstance({
-							"id": "Components",
-							"name": "All Components",
-							"dimension": Mozilla.B2G.Component,
-							"onlyOne": false,
-							"expandAll": true
-						})},
-						{"id": "responsibility", "name": "Responsibility", "default": "FxOS_Team", "type": PartitionFilter.newInstance({
-							"id": "Responsibility",
-							"name": "All Bugs",
-							"dimension": Mozilla.B2G.Responsibility,
-							"onlyOne": true,
-							"expandAll": true
-						})}
-					],
-					[],
-					null,
-					false		//SHOW DEFAULT FILTERS?
+				createChart,
+				[
+					{"id": "project", "name": "Releases", "default":"1.3T,1.4,2.0,2.1,2.2", "type": PartitionFilter.newInstance({
+						"id": "Projects",
+						"name": "All Projects",
+						"dimension": Mozilla.B2G.Project,
+						"onlyOne": false,
+						"expandAll": true
+					})},
+					{"id": "team", "name": "Teams", "type": PartitionFilter.newInstance({
+						"id": "Teams",
+						"name": "All Teams",
+						"dimension": Mozilla.B2G.Team,
+						"onlyOne": false,
+						"expandAll": true
+					})},
+					{"id": "component", "name": "Components", "type": PartitionFilter.newInstance({
+						"id": "Components",
+						"name": "All Components",
+						"dimension": Mozilla.B2G.Component,
+						"onlyOne": false,
+						"expandAll": true
+					})},
+					{"id": "responsibility", "name": "Responsibility", "default": "FxOS_Team", "type": PartitionFilter.newInstance({
+						"id": "Responsibility",
+						"name": "All Bugs",
+						"dimension": Mozilla.B2G.Responsibility,
+						"onlyOne": true,
+						"expandAll": true
+					})}
+				],
+				[],
+				null,
+				false		//SHOW DEFAULT FILTERS?
 			);
 		});
 	});

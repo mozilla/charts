@@ -311,37 +311,40 @@ importScript([
 		}//endif
 
 
-		releaseName = releases.map(function(m){
+		releaseName = Qb.reverse(releases).map(function(m){
 			return m.name;
 		}).join(" and ");
-		var START_DATE = Duration.ZERO;
-		var DUE_DATE = Duration.ZERO;
+
+		var focalRelease=releases.last();
+
+		//FIND THE RANGE OF TIME WE NEED
 		releases.forall(function(m){
 			m.startDate = Date.newInstance(startDate(m));
+			m.targetDate = Date.newInstance(targetDate(m));
 			m.dueDate = Date.newInstance(targetDate(m)).add(Duration.DAY);
+		});
+		var MIN_CHART_DATE = focalRelease.startDate.subtract(focalRelease.targetDate);
+		var MAX_CHART_DATE = Duration.ZERO.addDay(1);
+
+		//MAKE SURE WE PULL ENOUGH DATA FOR ALL RELEASES
+		releases.forall(function(m){
 			m.filter = {"and" : [
 				m.esfilter,
 				Mozilla.BugStatus.Open.esfilter,
 				Mozilla.B2G.Blockers.esfilter,
-//				{"term":{"bug_id":1063046}},
-				{"range" : {"modified_ts" : {"lt" : m.dueDate.getMilli()}}},
-				{"range" : {"expires_on" : {"gte" : m.startDate.getMilli()}}}
+				{"range" : {"modified_ts" : {"lt" : m.targetDate.add(MAX_CHART_DATE).getMilli()}}},
+				{"range" : {"expires_on" : {"gte" : m.targetDate.add(MIN_CHART_DATE).getMilli()}}}
 			]};
-
-			DUE_DATE = Duration.max(DUE_DATE, m.dueDate.subtract(m.startDate));
 		});
-
-		var MIN_CHART_DATE = START_DATE;
-		var MAX_CHART_DATE = DUE_DATE.addDay(1);
 
 		var sampleInterval = Duration.DAY;
 		var timeDomain = {
-			"type" : "duration",
+			"type" : "time",
 			"value": "value",
-			"min" : MIN_CHART_DATE,
-			"max" : MAX_CHART_DATE,
+			"min" : focalRelease.startDate,
+			"max" : focalRelease.targetDate,
 			"interval" : sampleInterval,
-			"dateMarks" : Array.extend(releases.map(aChart.findDateMarks))
+			"dateMarks" : aChart.findDateMarks(focalRelease)
 		};
 
 
@@ -382,16 +385,17 @@ importScript([
 		});
 		releaseBugs.columns.append({"name" : "release", "value" : "release"});
 
-		//UPDATE DATES TO BE RELATIVE TO startDate
+		//UPDATE DATES TO BE RELATIVE TO targetDate
 		releases.forall(function(release){
 			releaseBugs.list.filter(release.filter).forall(function(r){
-				r.modified_ts = Date.newInstance(r.modified_ts).subtract(release.startDate);
-				r.expires_on = Date.min(Date.newInstance(r.expires_on), TODAY.addDay(1)).subtract(release.startDate);
-				r.startDate = release.startDate;
+				// di' = (di-ti)+to
+				r.modified_ts = focalRelease.targetDate.add(Date.newInstance(r.modified_ts).subtract(release.targetDate));
+				r.expires_on = focalRelease.targetDate.add(Date.min(Date.newInstance(r.expires_on), TODAY.addDay(1)).subtract(release.targetDate));
+				r.targetDate = release.targetDate;
 				r.release = release.name;
 			});
 		});
-		releaseBugs.columns.append({"name" : "startDate", "value" : "startDate"});
+		releaseBugs.columns.append({"name" : "targetDate", "value" : "targetDate"});
 
 		chart = yield(Q({
 			"from" : releaseBugs,
@@ -411,10 +415,9 @@ importScript([
 
 		//FUTURE DATES ARE SET TO null
 		new Matrix({"data":chart.cube}).forall(function(v, c, cube){
-			var diff = chart.edges[2].domain.partitions[c[2]].min;
-			if (releases[c[1]].startDate.add(diff) > EOD){
-				v.count=null;
-			}//endif
+			if (chart.edges[1].domain.partitions[c[1]]!=focalRelease) return;
+			var date = chart.edges[2].domain.partitions[c[2]].min;
+			if (date >= EOD) v.count=null;
 		});
 
 
@@ -541,7 +544,8 @@ importScript([
 
 
 function targetDate(m){
-	return Date.min(Date.newInstance(m.targetDate), Date.newInstance(aChart.findDateMarks(m, "FC")))
+	return m.targetDate;
+//	return Date.min(Date.newInstance(m.targetDate), Date.newInstance(aChart.findDateMarks(m, "FC")))
 }//method
 
 function startDate(m){

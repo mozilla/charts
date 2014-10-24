@@ -106,6 +106,18 @@ Duration.max = function(a, b){
 	}//endif
 };//method
 
+Duration.min = function(a, b){
+	if (a.month < b.month) {
+		return a;
+	} else if (b.month < a.month) {
+		return b;
+	} else if (a.milli < b.milli) {
+		return a;
+	} else {
+		return b;
+	}//endif
+};//method
+
 
 Duration.newInstance = function(obj){
 	if (obj === undefined) return undefined;

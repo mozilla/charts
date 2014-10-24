@@ -27,7 +27,7 @@ from util import MoDevMetricsDriver, path2fullpath
     "fxos/burndown-milestone.html#milestone=Milestone.34+Sprint+1",
     "fxos/burndown-release.html#release=2.2",
     "fxos/burndown-release-compare.html#release=2.0,2.1",
-    "fxos/burndown-ucid.html"
+    "fxos/burndown-ucid.html#scope=Scope.Both+2.1"
 ])
 def test_one_page(path):
     fullpath = path2fullpath(path)

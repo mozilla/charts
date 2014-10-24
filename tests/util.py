@@ -27,7 +27,6 @@ def path2fullpath(path):
     return fullpath
 
 
-
 class MoDevMetricsDriver(object):
     def __init__(self, driver):
         self.driver = driver

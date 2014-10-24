@@ -22,11 +22,11 @@ from util import MoDevMetricsDriver, path2fullpath
     "fxos/targeted.html",
     "fxos/team.html",
     "fxos/overall.html",
-    "fxos/burndown-feature.html",
-    "fxos/burndown-feature-b2g.html",
-    "fxos/burndown-milestone.html",
-    "fxos/burndown-release.html",
-    "fxos/burndown-release-compare.html",
+    "fxos/burndown-feature.html#bugList=1037305",
+    "fxos/burndown-feature-b2g.html#sampleInterval=day&sampleMax=2014-10-26&sampleMin=2014-09-13&scope=Scope.Both+2.1",
+    "fxos/burndown-milestone.html#milestone=Milestone.34+Sprint+1",
+    "fxos/burndown-release.html#release=2.2",
+    "fxos/burndown-release-compare.html#release=2.0,2.1",
     "fxos/burndown-ucid.html"
 ])
 def test_one_page(path):

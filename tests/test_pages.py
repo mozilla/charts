@@ -19,7 +19,7 @@ from util import MoDevMetricsDriver, path2fullpath
     "fxos/blockers.html",
     "fxos/nominations.html",
     "fxos/regressions.html",
-    "fxos/targeted.html",
+    "fxos/targeted.html#milestone=Milestone.2.1+S6",
     "fxos/team.html",
     "fxos/overall.html",
     "fxos/burndown-feature.html#bugList=1037305",

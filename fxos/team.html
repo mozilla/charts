@@ -572,11 +572,24 @@ importScript("js/chart_lib.js", function () {
 				{"from": uBlocker, "edges": ["Component", "Project", "State"]}
 			]);
 
+			//LIMIT OURSELVES TO 4 PROJECTS, AND MOVE EXTRAS TO LAST
+			var m = new Matrix({"data":both.cube});
+			var first = both.edges[1].domain.partitions.length-4;
+			var last = both.edges[1].domain.partitions.length-1;
+			m.forall(function(v, c){
+				if (c[1]<first){
+					m.get([c[0], last, c[2]]).count+= v.count;
+					v.count=0;
+				}//endif
+			});
+			Qb.removeZeroParts(both, 1, "count");
+
 			//SHOW GRID
 			both.name = team.name;
 			if (["All Others", "All Teams"].contains(team.name)) {
 				Qb.removeZeroParts(both, 0, "count");
 			}//endif
+
 
 			var html = cube2grid({
 				"cube": both,

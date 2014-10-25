@@ -220,6 +220,6 @@ Telemetry.addonGUID2Name = {
 	"{0F827075-B026-42F3-885D-98981EE7B1AE}": "BrowserProtect ADWARE"
 };
 
-forAllKey(Telemetry.addonGUID2Name, function(k,v){
+Map.forall(Telemetry.addonGUID2Name, function(k,v){
 	Telemetry.addonGUID2Name[k.toLowerCase()]=v;
 });

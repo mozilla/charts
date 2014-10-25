@@ -54,7 +54,7 @@ SimplePartitionFilter = function () {
 						self.removeClass("selected");
 					}else{
 						if (self.onlyOne){
-							forAllKey(self.id2DIV_ID, function(k,v){
+							Map.forall(self.id2DIV_ID, function(k,v){
 								self.removeClass("selected");
 							});
 						}//endif

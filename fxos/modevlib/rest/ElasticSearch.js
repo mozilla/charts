@@ -9,7 +9,7 @@ ElasticSearch={};
 
 //ElasticSearch.pushURL="http://elasticsearch-private.bugs.scl3.mozilla.com:9200";
 //ElasticSearch.pushURL="http://elasticsearch7.metrics.scl3.mozilla.com:9200";
-ElasticSearch.pushURL="http://localhost:9200";
+ElasticSearch.pushURL="http://klahnakoski-es.corp.tor1.mozilla.com:9200";
 
 
 ElasticSearch.search=function*(index, esquery){
@@ -27,9 +27,9 @@ ElasticSearch.search=function*(index, esquery){
 	yield (output);
 };
 
-ElasticSearch.setRefreshInterval=function*(indexName, rate){
+ElasticSearch.setRefreshInterval=function*(destination, rate){
 	var data=yield (Rest.put({
-		"url": ElasticSearch.pushURL+"/"+indexName+"/_settings",
+		"url": joinPath(destination.host, destination.path, "_settings"),
 		"data":{"index":{"refresh_interval":"1s"}}
 	}));
 	Log.note("Refresh Interval to "+rate+": "+CNV.Object2JSON(data));
@@ -38,10 +38,10 @@ ElasticSearch.setRefreshInterval=function*(indexName, rate){
 
 
 //EXPECTING THE DATA ARRAY TO ALREADY HAVE ODD ENTRIES STARTING WITH { "create":{ "_id" : ID } }
-ElasticSearch.bulkInsert=function*(indexName, typeName, dataArray){
+ElasticSearch.bulkInsert=function*(destination, dataArray){
 //	try{
 		yield (Rest.post({
-			"url":ElasticSearch.pushURL+"/"+indexName+"/"+typeName+"/_bulk",
+			"url":joinPath(destination.host, destination.path, "_bulk"),
 			"data":dataArray.join("\n")+"\n",
 			dataType: "text"
 		}));

@@ -2,17 +2,29 @@
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
+String.prototype.trim=function(values){
+	if (values===undefined) values=" \t\r\n";
+	if (this.length==0) return "";
 
+	for(var s=0;s<this.length;s++) if (values.indexOf(this.charAt(s))<0) break;
+	for(var e=this.length;e--;) if (values.indexOf(this.charAt(e))<0) break;
+	return this.substring(s, Math.max(s, e+1));
+};
 
 String.join = function(list, seperator){
 	var output = "";
-
 	for(var i = 0; i < list.length; i++){
 		if (output != "") output += seperator;
 		output += list[i];
 	}//for
 	return output;
 };
+
+String.trim=function(v){
+	return v.trim();
+};
+
+
 
 //RETURN THE STRING BETWEEN THE start AND end
 //IF end IS UNDEFINED, THEN GRABS TO END OF STRING
@@ -29,8 +41,11 @@ String.prototype.between=function(start, end){
 
 
 String.prototype.indent=function(numTabs){
+	if (numTabs===undefined) numTabs=1;
 	var indent="\t\t\t\t\t\t".left(numTabs);
-	return indent+this.toString().replaceAll("\n", "\n"+indent);
+	var str=this.toString();
+	var white = str.rightBut(str.rtrim().length); //REMAINING WHITE IS KEPT (CASE OF CR/LF ESPECIALLY)
+	return indent+str.rtrim().replaceAll("\n", "\n"+indent) + white;
 };
 
 
@@ -56,12 +71,9 @@ String.prototype.replaceLast=function(find, replace){
 
 
 
-String.prototype.rtrim=function(value){
-	if (value===undefined) value=" ";
-
-	var i=this.length-1;
-	for(;i>=0;i--) if (this.charAt(i)!=value) break;
-
+String.prototype.rtrim=function(values){
+	if (values===undefined) values=" \t\r\n";
+	for(var i=this.length;i--;) if (values.indexOf(this.charAt(i))<0) break;
 	return this.substring(0, i+1);
 };
 
@@ -146,3 +158,14 @@ function isString(value){
 }//method
 
 
+function joinPath(){
+	var output = [];
+	output.append(arguments[0].rtrim("/"));
+	for (var i = 1; i < arguments.length; i++) {
+		var a = arguments[i];
+		if (a !== undefined && a != null) {
+			output.append(arguments[i].trim("/"))
+		}//endif
+	}//for
+	return output.join("/");
+}//method

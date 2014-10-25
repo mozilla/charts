@@ -46,31 +46,6 @@ a:hover, a:active {
 }
 
 
-
-a.tabzilla {
-    float: right;
-    display: block;
-    background: url('../images/tab.png');
-    background-repeat: no-repeat;
-    font-family: 'Open Sans Bold';
-    font-size: 25px;
-    color: gray;
-    text-align: center;
-    height: 44px;
-    width: 150px;
-    position: relative;
-    padding-top: 7px;
-    text-transform: uppercase;
-    /*text-indent: 30px;*/
-    overflow: hidden;
-    z-index: 999
-}
-
-a.tabzilla:hover, a.tabzilla:active {
-    color: #0073aa;
-    text-decoration: none
-}
-
 .description {
     margin-top: 20px;
     margin-bottom: 20px;
@@ -323,6 +298,14 @@ h4 {
 }
 
 
+table tr th, table tr td {
+    border: 0;
+    padding: 0;
+    border-collapse: collapse;
+    border-spacing: 0;
+    text-align: left;
+    vertical-align: top;
+}
 
 .table {
     width: 100%;
@@ -333,7 +316,6 @@ h4 {
 .table th, .table td {
     border-top: 1px solid rgba(0, 0, 0, 0.2);
     padding: 5px 20px 5px 0;
-    text-align: left;
 }
 
 .table thead th, .table thead td {
@@ -341,7 +323,8 @@ h4 {
     padding-top: 0;
     font-size: 16px;
     font-family: 'Open Sans Light', sans-serif;
-    font-weight: normal
+    font-weight: normal;
+    vertical-align: top;
 }
 
 

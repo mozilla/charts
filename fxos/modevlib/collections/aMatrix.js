@@ -14,6 +14,9 @@ Matrix=function(arg){
 			d = d[0];
 		}//while
 		this.num=this.dim.length;
+		if (this.num==0 && typeof(arg.data)=="object"){
+			Log.error("Expecting an array");
+		}//endif
 		this.data=arg.data;
 	}else if (arg instanceof Array){
 		//EXPECTING COORDINATES ARRAY
@@ -31,38 +34,66 @@ Matrix=function(arg){
 // i - IS THE INDEX INTO THE edge
 // c - AN ARRAY OF COORDINATES v IS FOUND AT
 // cube - THE WHOLE CUBE
-Matrix.prototype.forall = function (edge, func) {
-	var data=this.data;
+// NOTE: c[edge]==i
+function forall1(edge, func){
+	var data = this.data;
 	var num = this.num;
 	var c = Uint32Array(this.num);
 
-	function iter(v, d) {
+	function iter(v, d){
 		if (d == num) {
 			func(v, c[edge], c, data);
 		} else {
 			for (var j = 0; j < v.length; j++) {
-				c[d]=j;
-				iter(v[j], d+1);
+				c[d] = j;
+				iter(v[j], d + 1);
 			}//for
 		}//endif
 	}//function
 	iter(data, 0);
-};
+}
+
+
+//PROVIDE func(v, c, cube) WHERE
+// v - IS A VALUE IN THE CUBE
+// c - AN ARRAY OF COORDINATES v IS FOUND AT
+// cube - THE WHOLE CUBE
+Matrix.prototype.forall = function(func, other){
+	if (other!==undefined){
+		Log.error("No longer supported, use the simpler version");
+	}//endif
+
+	var data = this.data;
+	var num = this.num;
+	var c = Uint32Array(this.num);
+
+	function iter(v, d){
+		if (d == num) {
+			func(v, c, data);
+		} else {
+			for (var j = 0; j < v.length; j++) {
+				c[d] = j;
+				iter(v[j], d + 1);
+			}//for
+		}//endif
+	}//function
+	iter(data, 0);
+}
+
 
 //PROVIDE func(v, i, c, cube) WHERE
 // v - IS A VALUE IN THE CUBE
-// i - IS THE INDEX INTO THE edge
 // c - AN ARRAY OF COORDINATES v IS FOUND AT
 // cube - THE WHOLE CUBE
 // func MUST RETURN A NEW VALUE
-Matrix.prototype.map = function (edge, func) {
+Matrix.prototype.map = function (func) {
 	var data=this.data;
 	var num = this.num;
 	var c = Uint32Array(this.num);
 
 	function iter(v, d) {
 		if (d == num) {
-			return func(v, c[edge], c, data);
+			return func(v, c, data);
 		} else {
 			var output=[];
 			for (var j = 0; j < v.length; j++) {
@@ -103,4 +134,25 @@ Matrix.prototype.filter = function (edge, func) {
 	return iter(data, 0);
 };
 
+Matrix.prototype.get=function(coord){
+	if (coord.length!=this.num){
+		Log.error("expecting coordinates of "+this.num+" dimensions")
+	}//endif
+	var d=this.data;
+	for(var i=0;i<coord.length;i++){
+		d=d[coord[i]];
+	}//for
+	return d;
+};
 
+Matrix.prototype.set=function(coord, value){
+	if (coord.length!=this.num){
+		Log.error("expecting coordinates of "+this.num+" dimensions")
+	}//endif
+	var d=this.data;
+	for(var i=0;i<coord.length-1;i++){
+		d=d[coord[i]];
+	}//for
+	d[coord[this.num-1]]=value;
+	return this;
+};

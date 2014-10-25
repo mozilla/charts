@@ -38,7 +38,7 @@ Qb.column.compile = function(resultColumn, sourceColumns, edges, useMVEL){  //us
 			if (!v.esfilter){
 				all_have_filters=false;
 			}else{
-				calc_val+="if ("+CNV.esFilter2Expression(v.esfilter)+") return "+CNV.Value2Quote(v.value)+";\nelse ";
+				calc_val+="if ("+CNV.esFilter2Expression(v.esfilter)+") return "+ CNV.Value2Quote(v[resultColumn.domain.key])+";\nelse ";
 			}//endif
 		});
 		calc_val+="return null;\n";
@@ -56,7 +56,8 @@ Qb.column.compile = function(resultColumn, sourceColumns, edges, useMVEL){  //us
 	}//endif
 
 	//COMPILE THE CALCULATION OF THE DESTINATION COLUMN USING THE SOURCE COLUMNS
-	var f = "resultColumn.calc=function(__source, __result){\n";
+	var f = "resultColumn.calc=function(__source, __result){\n" +
+		"try{\n";
 	for(var s = 0; s < sourceColumns.length; s++){
 		var columnName = sourceColumns[s].name;
 		//ONLY DEFINE VARS THAT ARE USED
@@ -83,9 +84,9 @@ Qb.column.compile = function(resultColumn, sourceColumns, edges, useMVEL){  //us
 	}//for
 
 	f +=
-		"var output;\n"+
-		"try{ " +
-			"	output=(" + resultColumn.value + ");\n" +
+			"   var output;\n"+
+
+			"	output = " + resultColumn.value + ";\n" +
 			"	if (output===undefined || (output!=null && aMath.isNaN(output))) Log.error(\"" + resultColumn.name + " returns \"+CNV.Value2Quote(output));\n"+
 			"	return output;\n" +
 			"}catch(e){\n" +

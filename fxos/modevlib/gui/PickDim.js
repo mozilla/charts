@@ -72,7 +72,7 @@ PickDim.prototype.select = function(name){
 		//CAN ONLY SELECT ONE EDGE AT A TIME
 		var self=this;
 		//FIND DIV FOR THE PART, AND UNSELECT
-		forAllKey(this.focus.selected, function(k, v){
+		Map.forall(this.focus.selected, function(k, v){
 			if (v){
 				self.unselect(k);
 			}//endif

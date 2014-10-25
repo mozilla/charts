@@ -4,12 +4,14 @@
 
 
 importScript([
-		"../../lib/jquery.js",
-		"../../lib/jquery-ui/js/jquery-ui-1.10.2.custom.js",
-		"../../lib/jquery-ui/css/start/jquery-ui-1.10.2.custom.css",
-		"../../lib/jquery.ba-bbq/jquery.ba-bbq.js",
-		"../../lib/jquery-linedtextarea/jquery-linedtextarea.css",
-		"../../lib/jquery-linedtextarea/jquery-linedtextarea.js"
+	"../../lib/jquery.js",
+	"../../lib/jquery-ui/js/jquery-ui-1.10.2.custom.js",
+	"../../lib/jquery-ui/css/start/jquery-ui-1.10.2.custom.css",
+	"../../lib/jquery.ba-bbq/jquery.ba-bbq.js",
+	"../../lib/jquery-linedtextarea/jquery-linedtextarea.css",
+	"../../lib/jquery-linedtextarea/jquery-linedtextarea.js",
+	"../../lib/jsonlint/jsl.parser.js",
+	"../../lib/jsonlint/jsl.format.js"
 ]);
 
 importScript("Filter.js");
@@ -150,8 +152,14 @@ GUI = {};
 					tm.html(new Template("<div style={{style|css}}>{{name}}</div>").expand(result.index));
 					tm.append("<br>ES Last Updated " + time.addTimezone().format("NNN dd @ HH:mm") + Date.getTimezone());
 				} else if (indexName == "reviews") {
-					time = yield (REVIEWS.getLastUpdated());
-					$("#testMessage").html("Reviews Last Updated " + time.addTimezone().format("NNN dd @ HH:mm") + Date.getTimezone());
+                    var result = yield (ESQuery.run({
+                        "from": "reviews",
+                        "select": [
+                            {"name": "last_request", "value": "request_time", "aggregate": "maximum"}
+                        ]
+                    }));
+                    time = Date.newInstance(result.cube.last_request);
+                    $("#testMessage").html("Reviews Last Updated " + time.addTimezone().format("NNN dd @ HH:mm") + Date.getTimezone());
 				} else if (indexName == "bug_tags") {
 					esHasErrorInIndex = false;
 					time = yield (BUG_TAGS.getLastUpdated());
@@ -177,6 +185,13 @@ GUI = {};
 						"select": {"name": "max_date", "value": "info.started", "aggregate": "maximum"}
 					}))).cube.max_date);
 					$("#testMessage").html("Perfy Last Updated " + time.addTimezone().format("NNN dd @ HH:mm") + Date.getTimezone());
+				}else if (indexName == "talos"){
+					esHasErrorInIndex = false;
+					time = new Date((yield(ESQuery.run({
+						"from":"talos",
+						"select":{"name": "max_date", "value":"datazilla.date_loaded","aggregate":"maximum"}
+					}))).cube.max_date);
+					$("#testMessage").html("Latest Push " + time.addTimezone().format("NNN dd @ HH:mm") + Date.getTimezone());
 				} else {
 					return;
 				}//endif
@@ -236,7 +251,7 @@ GUI = {};
 			if (!GUI.State2URL.isEnabled) return;
 
 			var simplestate = {};
-			forAllKey(GUI.state, function (k, v) {
+			Map.forall(GUI.state, function (k, v) {
 
 				var p = GUI.parameters.map(function (v, i) {
 					if (v.id == k) return v;
@@ -276,7 +291,7 @@ GUI = {};
 
 		GUI.URL2State = function () {
 			var urlState = jQuery.bbq.getState();
-			forAllKey(urlState, function (k, v) {
+			Map.forall(urlState, function (k, v) {
 				if (GUI.state[k] === undefined) return;
 
 				var p = GUI.parameters.map(function (v, i) {

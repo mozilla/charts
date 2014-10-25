@@ -94,6 +94,31 @@ Duration.parse = function(value){
 };//method
 
 
+Duration.max = function(a, b){
+	if (a.month > b.month) {
+		return a;
+	} else if (b.month > a.month) {
+		return b;
+	} else if (a.milli > b.milli) {
+		return a;
+	} else {
+		return b;
+	}//endif
+};//method
+
+Duration.min = function(a, b){
+	if (a.month < b.month) {
+		return a;
+	} else if (b.month < a.month) {
+		return b;
+	} else if (a.milli < b.milli) {
+		return a;
+	} else {
+		return b;
+	}//endif
+};//method
+
+
 Duration.newInstance = function(obj){
 	if (obj === undefined) return undefined;
 	if (obj == null) return null;
@@ -123,12 +148,22 @@ Duration.prototype.add = function(duration){
 	return output;
 };//method
 
+Duration.prototype.addDay = function(numDay){
+	return this.add(Duration.DAY.multiply(numDay));
+};//method
+
+
+Duration.prototype.lt = function(val){
+	return this.milli < val.milli;
+};//method
+
+Duration.prototype.lte = function(val){
+	return this.milli <= val.milli;
+};//method
 
 Duration.prototype.multiply=function(amount){
 	var output=new Duration();
 	output.milli=this.milli*amount;
-//	if (output.milli==Duration.MILLI_VALUES.day*31)
-//		Log.error("problem");
 	output.month=this.month*amount;
 	return output;
 };//method

@@ -498,7 +498,74 @@ Qb.domain.duration = function(column, sourceColumns){
 
 
 	if (column.range){
-		Log.error("duration ranges not supported yet");
+		if (column.range.min===undefined && column.range.max===undefined){
+			Log.error("Expecting the range parameter to have a min, or max, or both");
+		}//endif
+
+		d.getCanonicalPart = undefined;  //DO NOT USE WHEN MULTIVALUED
+
+		var f =
+			"d.getMatchingParts=function(__source){\n" +
+			"	if (__source==null) return [];\n";
+
+		for(var s = 0; s < sourceColumns.length; s++){
+			var v = sourceColumns[s].name;
+			//ONLY DEFINE VARS THAT ARE USED
+			if (column.range.min && column.range.min.indexOf(v) != -1){
+				f += "var " + v + "=__source." + v + ";\n";
+			}//endif
+			if (column.range.max && column.range.max.indexOf(v) != -1){
+				f += "var " + v + "=__source." + v + ";\n";
+			}//endif
+		}//for
+
+		var condition;
+		if (column.range.type!==undefined && column.range.type=="inclusive"){
+			//ANY OVERLAP WITH THE PARTITIONS WILL MATCH
+			condition=[];
+			if (column.range.min){
+				condition.push("(" + column.range.min + "==null || " + column.range.min + ".lt(" + d.name + ".max))");
+			}//endif
+			if (column.range.max){
+				condition.push("(" + column.range.max + "==null || " + d.name + ".min" + ".lte(" + column.range.max + "))");
+			}//endif
+			condition=condition.join(" && ");
+		}else{
+			condition=[];
+			//IF THE PARTITION KEY IS IN THE RANGE, THEN MATCH
+			if (column.range.min){
+				condition.push("(" + column.range.min + "==null || " + column.range.min + ".lt(" + d.name + ".min))");
+			}//endif
+			if (column.range.max){
+				condition.push("(" + column.range.max + "==null || " + d.name + ".min" + ".lte(" + column.range.max + "))");
+			}//endif
+			condition=condition.join(" && ");
+		}
+
+		f +=
+			"	var output=[];\n" +
+			"	for(var i=0;i<this.partitions.length;i++){\n" +
+			"		var " + d.name + "=this.partitions[i];\n" +
+			"		if ("+condition+") output.push(" + d.name + ");\n " +
+			"	}\n " +
+			"	return output;\n " +
+			"}";
+		eval(f);
+
+		if (d.partitions === undefined){
+			d.map = {};
+			d.partitions = [];
+			if (!noMin && !noMax){
+				Qb.domain.duration.addRange(d.min, d.max, d);
+			}//endif
+		} else{
+			d.map = {};
+			for(var v = 0; v < d.partitions.length; v++){
+				d.map[d.partitions[v].value] = d.partitions[v];  //ASSUME THE DOMAIN HAS THE value ATTRIBUTE
+			}//for
+		}//endif
+
+
 	}else if (column.test === undefined){
 		var noMin=(d.min===undefined);
 		var noMax=(d.max===undefined);
@@ -563,6 +630,23 @@ Qb.domain.duration = function(column, sourceColumns){
 	} else{
 		d.error("matching multi to duration domain is not supported");
 	}//endif
+
+	d.getPartByKey=function(key){
+		if (key == null  || key=="null") return this.NULL;
+		if (typeof(key)=="string" || typeof(key)=="number")
+			key=Duration.newInstance(key);
+		if (key.lt(this.min) || this.max.lte(key))
+			return this.NULL;
+
+		var i=aMath.floor(key.subtract(this.min).divideBy(this.interval));
+
+		if (i>=this.partitions.length) return this.NULL;
+		if (key.milli<this.partitions[i].min.milli || this.partitions[i].max.milli<=key.milli){
+			i=aMath.floor(key.subtract(this.min, this.interval).divideBy(this.interval));
+			Log.warning("programmer error "+i);
+		}//endif
+		return this.partitions[i];
+	};//method
 
 
 	d.getCanonicalPart=function(part){
@@ -1149,7 +1233,7 @@ Qb.domain.set.compileKey=function(domain){
 			var f =
 				"newGetKeyFunction=function(__part){\n"+
 				"	if (__part==this.NULL) return null;\n";
-					forAllKey(partition, function(attrName, value){
+					Map.forall(partition, function(attrName, value){
 						if (key.indexOf(attrName) >= 0) f += "var " + attrName + "=__part." + attrName + ";\n";
 					});
 			f+=	"	return "+key+"\n"+
@@ -1177,8 +1261,20 @@ Qb.domain.compileEnd=function(domain){
 			if (!domain.columns){
 				domain.columns=Qb.getColumnsFromList(domain.partitions);
 			}//endif
+
 			//RECOMPILE SELF WITH NEW INFO
-			domain.end=aCompile.expression(domain.value, domain);
+			if (MVEL.isKeyword(domain.value)){
+				domain.end=function(part){
+					if (part===undefined) return domain.NULL;
+					return Map.get(part, domain.value);
+				};
+			}else{
+				var calcEnd=aCompile.expression(domain.value, domain);
+				domain.end=function(part){
+					if (part===undefined) return domain.NULL;
+					return calcEnd(part);
+				};
+			}//endif
 			return domain.end(part);
 		};//method
 	}else if (domain.end===undefined){

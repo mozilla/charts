@@ -40,9 +40,12 @@ importScript("../util/aUtil.js");
 
 
 	Array.prototype.copy = function(){
-		return this.slice(0);
+		//http://jsperf.com/new-array-vs-splice-vs-slice/19
+		var b=[];
+		var i = this.length;
+		while(i--) { b[i] = this[i]; }
+		return b;
 	};//method
-
 
 
 	Array.prototype.forall=function(func){
@@ -71,8 +74,10 @@ importScript("../util/aUtil.js");
 	Array.prototype.select=function(attrName){
 		var output=[];
 		if (typeof(attrName)=="string"){
-			for(var i=0;i<this.length;i++) output.push(this[i][attrName]);
-		}else{
+			for(var i=0;i<this.length;i++)
+				output.push(this[i][attrName]);
+		}else if (attrName instanceof Array){
+			//SELECT MANY VALUES INTO NEW OBJECT
 			for(var i=0;i<this.length;i++){
 				var v=this[i];
 				var o={};
@@ -82,6 +87,10 @@ importScript("../util/aUtil.js");
 				}//for
 				output.push(o);
 			}//for
+		}else{
+			//ASSUMING NUMERICAL INDEX
+			for(var i=0;i<this.length;i++)
+				output.push(this[i][attrName]);
 		}//endif
 		return output;
 	};//method
@@ -141,12 +150,16 @@ importScript("../util/aUtil.js");
 		return this;
 	};//method
 
-	Array.prototype.appendArray=function(arr){
+	function appendArray(arr){
 		for(var i=0;i<arr.length;i++){
 			this.push(arr[i]);
 		}//for
 		return this;
-	};//method
+	}//method
+	Array.prototype.appendArray=appendArray;
+	Array.prototype.appendList=appendArray;
+	Array.prototype.extend=appendArray;
+
 
 	if (DEBUG){
 		var temp=[0,1,2].appendArray([3,4,5]);
@@ -165,6 +178,7 @@ importScript("../util/aUtil.js");
 	};//method
 
 	Array.prototype.first=function(){
+		if (this.length==0) return null;
 		return this[0];
 	};//method
 
@@ -256,6 +270,17 @@ importScript("../util/aUtil.js");
 		}//for
 		return Map.getValues(output);
 	};
+
+
+	function AND(values){
+		for(var i=values.length;i--;){
+			var v=values[i];
+			if (v==false) return false;
+		}//for
+		return true;
+	}
+	Array.AND=AND;
+
 
 	Array.extend=function extend(){
 		var arrays = (arguments.length==1  && arguments[0] instanceof Array) ? arguments[0] : arguments;

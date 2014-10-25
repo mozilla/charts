@@ -251,7 +251,7 @@
 
 
 <div style="align:left;position:relative;float:left;width:800px;padding-top: 10px;">
-	<h3 id="title">FxOS Projects Dashboard</h3>
+	<h3 id="title">FxOS Releases</h3>
 
 	<div>
 		<div id="info" style="width:800px;"></div>
@@ -378,6 +378,19 @@ importScript(['modevlib/main.js', 'modevlib/Dimension-Bugzilla.js', "modevlib/Di
 			{"from": ages, "edges": ["Team", "Project", "State"]},
 			{"from": uBlocker, "edges": ["Team", "Project", "State"]}
 		]);
+
+		//LIMIT OURSELVES TO 5 PROJECTS, AND MOVE EXTRAS TO LAST
+		var m = new Matrix({"data":both.cube});
+		var first = both.edges[1].domain.partitions.length-5;
+		var last = both.edges[1].domain.partitions.length-1;
+		m.forall(function(v, c){
+			if (c[1]<first){
+				m.get([c[0], last, c[2]]).count+= v.count;
+				v.count=0;
+			}//endif
+		});
+		Qb.removeZeroParts(both, 1, "count");
+
 
 		//EXPOSE NULLS AS LEGITIMATE PARTS
 		both.edges.forall(function (edge, e) {

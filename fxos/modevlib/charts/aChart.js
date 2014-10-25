@@ -138,8 +138,6 @@ importScript([
 	"../../lib/ccc/pvc/data/translation/BoxplotChartTranslationOper.js",
 	"../../lib/ccc/pvc/pvcBoxplotPanel.js",
 	"../../lib/ccc/pvc/pvcBoxplotChart.js",
-
-	"../../lib/ccc/data/q01-01.js"
 ]);
 
 
@@ -165,6 +163,22 @@ var CHART_TYPES={
 	"box":"BoxplotChart"
 };
 
+////////////////////////////////////////////////////////////////////////////
+// STYLES
+////////////////////////////////////////////////////////////////////////////
+var DEFAULT_STYLES = [
+	{"color":"#1f77b4"},
+	{"color":"#ff7f0e"},
+	{"color":"#2ca02c"},
+	{"color":"#d62728"},
+	{"color":"#9467bd"},
+	{"color":"#8c564b"},
+	{"color":"#e377c2"},
+	{"color":"#7f7f7f"},
+	{"color":"#bcbd22"},
+	{"color":"#17becf"}
+];
+aChart.DEFAULT_STYLES=DEFAULT_STYLES;
 
 
 function copyParam(fromParam, toParam){
@@ -225,8 +239,12 @@ aChart.showProgress=function(params){
 
 
 
-
+/*
+minPercent = PREVENT SLICES SMALLER THAN GIVEN (minPercent<1.0)
+otherStyle = STYLE FOR THE other SLICE
+ */
 aChart.showPie=function(params){
+
 	var divName=params.id;
 
 	var type=params.type;
@@ -236,11 +254,91 @@ aChart.showPie=function(params){
 		Log.warning("Nothing to pie-chart");
 		return;
 	}//endif
-	if (chartCube.edges.length!=1) Log.error("Only one dimension suuported");
 	if (chartCube.select instanceof Array) Log.error("Can not chart when select clause is an array");
 
 
-	var seriesLabels=getAxisLabels(chartCube.edges[0]);
+
+	var values = null;
+
+	if (chartCube.edges.length==1){
+		var seriesLabels=getAxisLabels(chartCube.edges[0]);
+
+		if (params.minPercent!==undefined){
+			var other = 0;
+
+			//COLAPSE INTO 'OTHER' CATEEGORY
+			var total = aMath.SUM(chartCube.cube);
+			values = [];
+			chartCube.cube.forall(function(v, i){
+				if (v/total >= params.minPercent){
+					values.append({"name":seriesLabels[i], "value":v, "style":chartCube.edges[0].domain.partitions[i].style})
+				}else{
+					other+=v;
+				}//endif
+			});
+			values = Qb.sort(values, {"value" : "value", "sort" : -1});
+			if (other > 0) values.append({"name" : "Other", "value" : other, "style":params.otherStyle});
+		} else {
+			values = chartCube.cube.map(function(v, i){
+				return {"name" : seriesLabels[i], "value" : v, "style":chartCube.edges[0].domain.partitions[i].style}
+			});
+			values = Qb.sort(values, {"value" : "value", "sort" : -1});
+		}//endif
+	} else if (chartCube.edges.length==2){
+		var aLabels=getAxisLabels(chartCube.edges[0]);
+		var bLabels=getAxisLabels(chartCube.edges[1]);
+
+		if (params.minPercent!==undefined){
+			var allOther = 0;
+
+			//COLAPSE INTO 'OTHER' CATEEGORY
+			var total = aMath.SUM(chartCube.cube.map(aMath.SUM));
+			values = [];
+			chartCube.cube.forall(function(s, i){
+				var other = 0;
+				var hasSpecific = false;
+				s.forall(function(v, j){
+					if (v/total >= params.minPercent){
+						values.append({"name":aLabels[i]+"::"+bLabels[j], "value":v});
+						hasSpecific=true;
+					}else{
+						other+=v;
+					}//endif
+				});
+				if (other/total >= params.minPercent){
+					if (hasSpecific){
+						values.append({"name":aLabels[i]+"::Other", "value":other})
+					}else{
+						values.append({"name":aLabels[i], "value":other})
+					}//endif
+				}else{
+					allOther+=other;
+				}//endif
+			});
+			values = Qb.sort(values, {"value":"value", "sort":-1});
+			if (allOther>0) values.append({"name":"Other", "value":allOther, "style":params.otherStyle});
+		}else{
+			Log.error("having hierarchical dimension without a minPercent is not implemented");
+		}//endif
+	}else{
+		Log.error("Only one dimension supported");
+	}//endif
+
+
+	var colors = values.map(function(v, i){
+		var c="black";
+		if (v.style && v.style.color) {
+			c = v.style.color;
+		} else {
+			c = DEFAULT_STYLES[i % DEFAULT_STYLES.length].color;
+		}//endif
+		if (c.toHTML){
+			return c.toHTML();
+		}else{
+			return c;
+		}//endif
+	});
+
 
 
 	var chartParams={
@@ -257,6 +355,7 @@ aChart.showPie=function(params){
 		timeSeries: false,
 		valuesVisible:false,
 		showValues: false,
+		"colors":colors,
 		extensionPoints: {
 			noDataMessage_text: "No Data To Chart"
 //			xAxisLabel_textAngle: aMath.PI/4,
@@ -279,7 +378,7 @@ aChart.showPie=function(params){
 
 	//FILL THE CROSS TAB DATASTUCTURE TO THE FORMAT EXPECTED (2D array of rows
 	//first row is series names, first column of each row is category name
-	var data=chartCube.cube.map(function(v, i){return [seriesLabels[i], v]});
+	var data=values.map(function(v, i){return [v.name, v.value]});
 
 
 	var cccData = {
@@ -670,6 +769,7 @@ aChart.show=function(params){
 		yAxisPosition: "right",
 		yAxisSize: 50,
 		xAxisSize: 50,
+		"otherStyle":{"color":"lightgray"},
 		tooltip:{
 //			"format":function(){
 //				return "hi there";
@@ -762,10 +862,20 @@ aChart.show=function(params){
 		data=chartCube.cube.copy();
 	}//endif
 
+
+	//
+	//
 	data.forall(function(v,i,d){
 		v=v.copy();
 		for(var j=0;j<v.length;j++){
-			if (v[j]==null) Log.error("Charting library can not handle null values");
+			if (v[j]==null){
+				//the charting library has a bug that makes it simply not draw null values
+				//(or even leave a visual placeholder)  This results in a mismatch between
+				//the horizontal scale and the values charted.  For example, if the first
+				//day has null, then the second day is rendered in the first day position,
+				//and so on.
+				Log.error("Charting library can not handle null values (maybe set a default?)");
+			}//endif
 		}//for
 		v.splice(0,0, categoryLabels[i]);
 		d[i]=v;
@@ -792,8 +902,6 @@ aChart.show=function(params){
 		}//endif
 	});
 	chart.render(true, true, false);
-
-
 
 //	chart.basePanel.chart.legendPanel
 
@@ -850,36 +958,41 @@ function fixClickAction(chartParams){
 //name IS OPTIONAL
 function findDateMarks(part, name){
 	try{
-		var output = [];
-		Array.newInstance(part.dateMarks).forall(function (mark) {
-			var style = Map.setDefault({}, mark.style, part.style, {"color": "black", "lineWidth": "2.0", verticalAnchor: "top"});
-			style.strokeStyle = nvl(style.strokeStyle, style.color);
-			style.textStyle = nvl(style.textStyle, style.color);
+	var output = [];
+	Array.newInstance(part.dateMarks).forall(function (mark) {
+		var style = Map.setDefault({}, mark.style, part.style, {"color": "black", "lineWidth": "2.0", verticalAnchor: "top"});
+		style.strokeStyle = nvl(style.strokeStyle, style.color);
+		style.textStyle = nvl(style.textStyle, style.color);
 
-			if (mark.name !== undefined) {
-				//EXPECTING {"name":<name>, "date":<date>, "style":<style>} FORMAT
+		if (mark.name !== undefined) {
+			//EXPECTING {"name":<name>, "date":<date>, "style":<style>} FORMAT
+			output.append({
+				"name": mark.name,
+				"date": Date.newInstance(mark.date),
+				"style": style
+			})
+		} else {
+			//EXPECTING <name>:<date> FORMAT
+			Map.forall(mark, function(name, date){
 				output.append({
-					"name": mark.name,
-					"date": Date.newInstance(mark.date),
+					"name": name,
+					"date": Date.newInstance(date),
 					"style": style
 				})
-			} else {
-				//EXPECTING <name>:<date> FORMAT
-				forAllKey(mark, function(name, date){
-					output.append({
-						"name": name,
-						"date": Date.newInstance(date),
-						"style": style
-					})
-				});
-			}
-		});
+			});
+		}
+	});
 
-		if (name){
-			return output.filter(function(p){return p.name==name;}).first().date;
+	if (name){
+		var matches = output.filter(function(p){return p.name==name;});
+		if (matches.length>0){
+			return matches.first().date;
 		}else{
 			return output;
 		}//endif
+	}else{
+		return output;
+	}//endif
 	}catch(e){
 		Log.error("some error found", e);
 	}//try
@@ -972,7 +1085,8 @@ function getAxisLabels(axis){
 			} else if (v.milli === undefined){
 				return v.value.toString();
 			} else{
-				return v.toString();
+				return ""+v.divideBy(Duration.DAY);
+//				return v.toString();
 			}//endif
 		});
 	} else if (axis.domain.type == "numeric"){

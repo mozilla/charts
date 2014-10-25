@@ -7,7 +7,6 @@ importScript("qb/ESQuery.js");
 
 if (!Mozilla) var Mozilla = {"name" : "Mozilla", "edges" : []};
 
-
 Sprints = [
 	"33 Sprint 1- 6/23     6/10-6/23",
 	"33 Sprint 2- 7/7       6/24-7/7",
@@ -113,7 +112,11 @@ Dimension.addEdges(true, Mozilla, [
 		{"name" : "Loop MLP", "esfilter" : {"term" : {"bug_id" : 972866}}},
 		{"name" : "Loop Mobile MVP", "esfilter" : {"term" : {"bug_id" : 970426}}},
 		{"name" : "e10s on Nightly",
-			"esfilter" : {"term" : {"bug_id" : 997462}},
+			"needed_fields":["blocked"],
+			"esfilter" : {"or" : [
+				{"term" : {"bug_id" : 997462}},
+				{"term" : {"blocked" : 997462}}
+			]},
 			"dateMarks" : [
 				{"name" : "e10s Target", "date" : "Nov 9, 2014", "style" : {strokeStyle : "gray", verticalOffset : 20}}
 			]

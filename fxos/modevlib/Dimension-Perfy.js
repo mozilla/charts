@@ -19,7 +19,7 @@ Dimension.addEdges(false,  Mozilla, [
 			"name":"Benchmark",
 			"type":"set",
 			"field":["info.benchmark", "info.test"],
-			"esfilter":{"range":{"started":{"gte":Date.eod().add(Duration.newInstance("-8month")).getMilli()}}}
+			"esfilter":{"range":{"started":{"gte":Date.newInstance("Nov 1, 2013").getMilli()}}}
 		},
 		{
 			"name":"Browser",

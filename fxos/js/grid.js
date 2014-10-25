@@ -8,17 +8,6 @@ var NOW = Date.today();
 var TOO_LATE = NOW.subtract(Duration.newInstance("2day"));
 var REALLY_TOO_LATE = NOW.subtract(Duration.newInstance("1week"));
 
-function isVisible(projectName, stateName) {
-	if (projectName == "Other" && ["Open - Unassigned", "Open - Assigned", "Regression"].contains(stateName)) {
-		return true;
-	} else if (projectName != "Other" && ["Nominated", "Blocker", "Regression"].contains(stateName)) {
-		return true;
-	}//endif
-	return false;
-}
-
-
-
 function addNumberClickers(cube, mainFilter) {
 	var prefix = cube.name.deformat() + "_value";
 	$("td div").filter(function () {
@@ -107,9 +96,7 @@ function cube2grid(param) {
 		}).join(""));
 	head = head.replaceAll("{{PROJECT_HEADERS2}}", projectEdge.domain.partitions.map(function (project) {
 		var stateHeaders = stateEdge.domain.partitions.map(function (state) {
-			if (isVisible(project.name, state.name)) {
-				return stateHeader.replaceAll("{{STATE}}", state.name.replaceAll(" ", "&nbsp;"));
-			}//endif
+			return stateHeader.replaceAll("{{STATE}}", state.name.replaceAll(" ", "&nbsp;"));
 		}).join("");
 		return projectHeader2.replaceAll("{{STATE_HEADERS}}", stateHeaders);
 	}).join(""));
@@ -124,32 +111,30 @@ function cube2grid(param) {
 				var project = projectEdge.domain.partitions[p];
 				return projectData.replaceAll("{{STATE_DATA}}", states.map(function (value, s) {
 					var state = stateEdge.domain.partitions[s];
-					if (isVisible(project.name, state.name)) {
-						var html;
+					var html;
 
-						if (value.count == 0) {
-							html = stateData
-								.replaceAll("{{VALUE}}", " ")
-								.replaceAll("{{STYLE}}", "")
-								.replaceAll("{{dynamic_style}}", "")
-						} else {
-							html = stateData
-								.replaceAll("{{VALUE}}", value.count)
-								.replaceAll("{{STYLE}}", CNV.Object2CSS(style))
-								.replaceAll("{{dynamic_style}}", CNV.Object2CSS(dynamic_style))
-								.replaceAll("{{COLOR}}", age2color(value.age).toHTML())
-								.replaceAll("{{LIGHTER}}", age2color(value.age).lighter().toHTML());
-						}//endif
-
-						if (value.unassigned > 0) {
-							html = html.replaceAll("{{unassigned}}", "<div class='small_unassigned'></div>");
-						}else{
-							html = html.replaceAll("{{unassigned}}", "");
-						}//endif
-
-						html = html.replaceAll("{{ID}}", id_prefix + t + "x" + p + "x" + s);
-						return html;
+					if (value.count == 0) {
+						html = stateData
+							.replaceAll("{{VALUE}}", " ")
+							.replaceAll("{{STYLE}}", "")
+							.replaceAll("{{dynamic_style}}", "")
+					} else {
+						html = stateData
+							.replaceAll("{{VALUE}}", value.count)
+							.replaceAll("{{STYLE}}", CNV.Object2CSS(style))
+							.replaceAll("{{dynamic_style}}", CNV.Object2CSS(dynamic_style))
+							.replaceAll("{{COLOR}}", age2color(value.age).toHTML())
+							.replaceAll("{{LIGHTER}}", age2color(value.age).lighter().toHTML());
 					}//endif
+
+					if (value.unassigned > 0) {
+						html = html.replaceAll("{{unassigned}}", "<div class='small_unassigned'></div>");
+					}else{
+						html = html.replaceAll("{{unassigned}}", "");
+					}//endif
+
+					html = html.replaceAll("{{ID}}", id_prefix + t + "x" + p + "x" + s);
+					return html;
 				}).join(""));
 			}).join(""));
 	}).join("");

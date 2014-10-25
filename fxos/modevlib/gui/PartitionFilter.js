@@ -72,6 +72,7 @@ function convertToTreeLater(self, treeNode, dimension){
 		var pleaseUpdate = (treeNode.children==WAITING_FOR_RESULTS);
 		treeNode.children = dimension.partitions.map(function (v, i) {
 			if (i < nvl(dimension.limit, DEFAULT_CHILD_LIMIT)){
+				v.limit = nvl(v.limit, dimension.limit, DEFAULT_CHILD_LIMIT);
 				return convertToTree(self, {}, 1, v);
 			}//endif
 		});
@@ -92,7 +93,7 @@ function convertToTreeLater(self, treeNode, dimension){
 function convertToTree(self, parent, depth, dimension){
 	//depth IS CURRENT DEPTH  (0==EDGE, 1==DOMAIN PARTITIONS, etc)
 	var node={};
-	node.id=(parent.id===undefined ? "" : parent.id+".")+dimension.name.replaceAll(" ", "_");
+	node.id=(parent.id===undefined ? "" : parent.id+".")+dimension.name;
 	node.attr={id:node.id};
 	node.data=dimension.name;
 
@@ -108,6 +109,7 @@ function convertToTree(self, parent, depth, dimension){
 			if (depth < self.treeDepth){
 				node.children=dimension.partitions.map(function(v,i){
 					if (i<nvl(dimension.limit, DEFAULT_CHILD_LIMIT))
+						v.limit = nvl(v.limit, dimension.limit, DEFAULT_CHILD_LIMIT);
 						return convertToTree(self, depth==0 ? {} : node, depth+1, v);
 				});
 				if (depth==0){
@@ -120,6 +122,7 @@ function convertToTree(self, parent, depth, dimension){
 	}//endif
 	if (dimension.edges){
 		node.children=dimension.edges.map(function(v,i){
+			v.limit = nvl(v.limit, dimension.limit, DEFAULT_CHILD_LIMIT);
 			return convertToTree(self, node, 0, v);
 		});
 	}//endif
@@ -153,7 +156,7 @@ PartitionFilter.prototype.getSelectedParts=function(){
 
 //RETURN SOMETHING SIMPLE ENOUGH TO BE USED IN A URL
 PartitionFilter.prototype.getSimpleState=function(){
-	var selected=this.selectedIDs.filter(function(v){ return v!="__all__";})
+	var selected=this.selectedIDs.filter(function(v){ return v!="__all__";});
 	if (selected.length==0) return undefined;
 	return selected.join(",");
 };

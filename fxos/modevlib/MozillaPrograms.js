@@ -7,11 +7,13 @@ var MozillaPrograms = {
 		"columns": ["projectName", "attributeName", "attributeValue", "esfilter"],
 		"rows": [
 			["e10s Blockers", "cf_tracking_e10s", "+"],
+			["e10s (M2)", "cf_tracking_e10s", "m2+"],
+			["e10s (M3)", "cf_tracking_e10s", "m3+"],
 			["e10s Noms", "cf_tracking_e10s", "?"],
 			["e10s Later", "cf_tracking_e10s", "later"],
 
-			["B2G 2.0", "cf_blocking_b2g", "2.0+"],
-			["B2G 2.0", "cf_blocking_b2g", "1.5+"],
+			["B2G 2.1", "cf_blocking_b2g", "2.1+"],
+			["B2G 2.0", "cf_blocking_b2g", ["2.0+", "1.5+"]],
 			["B2G 1.4", "cf_blocking_b2g", "1.4+"],
 			["B2G 1.3", "cf_blocking_b2g", "1.3+"],
 			["B2G 1.3t", "cf_blocking_b2g", "1.3t+"],
@@ -32,7 +34,28 @@ var MozillaPrograms = {
 			["Leo Triage (leo?)", "cf_blocking_b2g", "leo?"],
 			["TEF Triage (tef?)", "cf_blocking_b2g", "tef?"],
 
-			["Build Duty", "status_whiteboard.tokenized", "buildduty"],
+		["WebRTC", "status_whiteboard.tokenized", "webrtc"],
+
+		["WebRTC Components", null, null, {"or":[ //WebRTC COMPONENTS
+			{"and":[
+				{"term":{"product":"loop"}},
+				{"term":{"component":"general"}}
+			]},
+			{"and":[
+				{"term":{"product":"loop"}},
+				{"term":{"component":"client"}}
+			]},
+			{"and":[
+				{"term":{"product":"loop"}},
+				{"term":{"component":"server"}}
+			]},
+			{"and":[
+				{"term":{"product":"core"}},
+				{"prefix":{"component":"webrtc"}}
+			]}
+		]}],
+
+		["Build Duty", "status_whiteboard.tokenized", "buildduty"],
 			["Boot2Gecko (B2G)", "cf_blocking_basecamp", "+"],
 			["Metro MVP", "status_whiteboard.tokenized", "metro-mvp"],
 			["Security", "status_whiteboard.tokenized", "sg:dos"],
@@ -75,8 +98,8 @@ var MozillaPrograms = {
 			["Fennec Triage", "cf_blocking_fennec10", "?"],
 			["Fennec Triage", "cf_blocking_fennec", "?"],
 
-			["Good First Bug", "status_whiteboard.tokenized", "good first bug"]
-
+		["Good First Bug", "status_whiteboard.tokenized", "good first bug"],
+		["Reopened", "bug_status", "reopened"]
 
 	]
 };

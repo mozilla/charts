@@ -264,6 +264,7 @@ Date.prototype.addWeekday = function(value){
 
 
 Date.prototype.addWeek = function(value){
+	if (value===undefined) value=1;
 	var output = new Date(this);
 	output.setUTCDate(this.getUTCDate() + (value * 7));
 	return output;
@@ -833,7 +834,7 @@ Date.getDateFromFormat=function(val, format, isPastDate){
 };//method
 
 // ------------------------------------------------------------------
-// parseDate( date_string [,isPastDate] [, prefer_euro_format] )
+// parseDate( date_string [,isPastDate])
 //
 // This function takes a date string and tries to match it to a
 // number of possible date formats to get the value. It will try to
@@ -841,9 +842,6 @@ Date.getDateFromFormat=function(val, format, isPastDate){
 // y-M-d   MMM d, y   MMM d,y   y-MMM-d   d-MMM-y  MMM d
 // M/d/y   M-d-y      M.d.y     MMM-d     M/d      M-d
 // d/M/y   d-M-y      d.M.y     d-MMM     d/M      d-M
-// A second argument may be passed to instruct the method to search
-// for formats like d/M/y (european format) before M/d/y (American).
-// Returns a Date object or null if no patterns match.
 // ------------------------------------------------------------------
 {
 	var generalFormats = ['EE MMM d, yyyy', 'EE MMM d, yyyy @ hh:mm a', 'y M d', 'y - M - d',  'yyyy - MM - dd HH : mm : ss', 'MMM d, y', 'MMM d y', 'MMM d', 'y - MMM - d', 'yyyyMMMd', 'd - MMM - y', 'd MMM y'];

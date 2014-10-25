@@ -81,7 +81,7 @@ Map.clone = Map.jsonCopy;
 //IF map IS NOT 1-1 THAT'S YOUR PROBLEM
 Map.inverse=function(map){
 	var output={};
-	forAllKey(map, function(k, v){output[v]=k;});
+	Map.forall(map, function(k, v){output[v]=k;});
 	return output;
 };//method
 
@@ -92,6 +92,19 @@ Map.expecting=function(obj, keyList){
 		if (obj[keyList[i]]===undefined) Log.error("expecting object to have '"+keyList[i]+"' attribute");
 	}//for
 };
+
+// ASSUME THE DOTS (.) IN fieldName ARE SEPARATORS
+// AND THE RESULTING LIST IS A PATH INTO THE STRUCTURE
+// (ESCAPE "." WITH "\\.", IF REQUIRED)
+Map.get=function(obj, fieldName){
+	if (obj===undefined || obj==null) return obj;
+	var path = splitField(fieldName);
+	for (var i=0;i<path.length;i++){
+		obj = obj[path[i]];
+		if (obj===undefined || obj==null) return obj;
+	}//endif
+	return obj;
+};//method
 
 
 Map.codomain=function(map){
@@ -172,6 +185,23 @@ var mapAllKey=function(map, func){
 	return output;
 };
 
+
+//RETURN LIST OF {"key":key, "value":val} PAIRS
+function getItems(map){
+	var output=[];
+	var keys=Object.keys(map);
+	for(var i=keys.length;i--;){
+		var key=keys[i];
+		var val=map[key];
+		if (val!==undefined){
+			output.push({"key":key, "value":val});
+		}//endif
+	}//for
+	return output;
+}//function
+Map.getItems=getItems;
+
+
 Map.getValues=function getValues(map){
 	var output=[];
 	var keys=Object.keys(map);
@@ -191,7 +221,7 @@ Map.getValues=function getValues(map){
 var reverseMap=function(map, codomain){
 	var output=[];
 	codomain.forall(function(c, i){
-		forAllKey(map, function(k, v){
+		Map.forall(map, function(k, v){
 			if (v===c) output.push(k);
 		});
 	});

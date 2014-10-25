@@ -29,7 +29,6 @@ ESQuery.DEBUG = false;
 ////////////////////////////////////////////////////////////////////////////////
 // THESE ARE THE AVAILABLE ES INDEXES/TYPES
 ////////////////////////////////////////////////////////////////////////////////
-
 (function(){
 	var green = Color.GREEN.multiply(0.5).hue(10).toHTML();
 	var yellow = Color.RED.multiply(0.7).hue(-60).toHTML();
@@ -66,15 +65,20 @@ ESQuery.DEBUG = false;
 		"bugs.attachments": {},
 		"bugs.attachments.flags": {},
 
-		"reviews": {"style":{"color":"black","background-color":yellow}, "host": "http://elasticsearch-private.bugs.scl3.mozilla.com:9200", "path": "/reviews/review"},
+
+
+//        "reviews": {"style":{"color":"black","background-color":green}, "host": "http://klahnakoski-es.corp.tor1.mozilla.com:9200", "path": "/reviews/patch_review"},
+		"public_reviews": {"style":{"color":"white","background-color":green}, "host": "https://esfrontline.bugzilla.mozilla.org:443", "path": "/reviews/patch_review"},
+		"reviews": {"style":{"color":"black","background-color":yellow}, "host": "http://elasticsearch-private.bugs.scl3.mozilla.com:9200", "path": "/reviews/patch_review"},
 		"bug_summary": {"style":{"color":"black","background-color":yellow}, "host": "http://elasticsearch-private.bugs.scl3.mozilla.com:9200", "path": "/bug_summary/bug_summary"},
 		"bug_tags": {"style":{"color":"black","background-color":yellow}, "host": "http://elasticsearch-private.bugs.scl3.mozilla.com:9200", "path": "/bug_tags/bug_tags"},
-		"org_chart": {"style":{"color":"black","background-color":yellow}, "host": "http://elasticsearch-private.bugs.scl3.mozilla.com:9200", "path": "/org_chart/person"},
+		"org_chart": {"style":{"color":"black","background-color":yellow}, "host": "http://elasticsearch-private.bugs.scl3.mozilla.com:9200", "alias":"org_chart", "path": "/org_chart/person"},
 		"temp": {"style":{"color":"black","background-color":yellow}, "host": "http://elasticsearch-private.bugs.scl3.mozilla.com:9200", "path": ""},
 		"telemetry": {"style":{"color":"black","background-color":yellow}, "host": "http://elasticsearch-private.bugs.scl3.mozilla.com:9200", "path": "/telemetry_agg_valid_201305/data"},
 		"raw_telemetry": {"style":{"color":"black","background-color":yellow}, "host": "http://klahnakoski-es.corp.tor1.mozilla.com:9200", "path": "/raw_telemetry/data"},
 
 		"talos": {"style":{"color":"black","background-color":yellow}, "host": "http://klahnakoski-es.corp.tor1.mozilla.com:9200", "path": "/talos/test_results"},
+		"public_talos": {"style":{"color":"black","background-color":yellow}, "host": "http://67.55.30.33:9201", "path": "/talos/test_results"},
 		"b2g_tests": {"style":{"color":"black","background-color":yellow}, "host": "http://elasticsearch-private.bugs.scl3.mozilla.com:9200", "path": "/b2g_tests/results"},
 		"b2g": {"style":{"color":"black","background-color":yellow}, "host": "http://elasticsearch-private.bugs.scl3.mozilla.com:9200", "path": "/b2g_tests/results"},
 
@@ -94,6 +98,9 @@ ESQuery.DEBUG = false;
 	ESQuery.INDEXES.bugs.alternate = ESQuery.INDEXES.public_bugs;
 	ESQuery.INDEXES.bug_hierarchy.alternate = ESQuery.INDEXES.public_bug_hierarchy;
 	ESQuery.INDEXES.bug_dependencies.alternate = ESQuery.INDEXES.public_bug_dependencies;
+	ESQuery.INDEXES.talos.alternate=ESQuery.INDEXES.public_talos;
+	ESQuery.INDEXES.reviews.alternate = ESQuery.INDEXES.public_reviews;
+
 
 })();
 
@@ -134,7 +141,7 @@ ESQuery.DEBUG = false;
 	//RETURN THE COLUMN DEFINITIONS IN THE GIVEN esProperties OBJECT
 	ESQuery.parseColumns = function (indexName, parentName, esProperties) {
 		var columns = [];
-		forAllKey(esProperties, function (name, property) {
+		Map.forall(esProperties, function (name, property) {
 			var fullName = [parentName, name].concatenate(".");
 
 			if (property.type == "nested") {
@@ -155,7 +162,7 @@ ESQuery.DEBUG = false;
 			if (property.type === undefined) return;
 			if (property.type == "multi_field") {
 				property.type = property.fields[name].type;  //PULL DEFAULT TYPE
-				forAllKey(property.fields, function (n, p, i) {
+				Map.forall(property.fields, function (n, p, i) {
 					if (n == name) {
 						//DEFAULT
 						columns.push({"name": fullName, "type": p.type, "useSource": p.index == "no"});
@@ -329,7 +336,10 @@ ESQuery.DEBUG = false;
 
 
 	ESQuery.prototype.run = function*() {
-		if (!this.query.index) {
+		if (this.query.url) {
+			this.query.index = {};
+			this.query.index.url = this.query.url;
+		}else if (!this.query.index) {
 			this.query.index = ESQuery.INDEXES[splitField(this.query.from)[0]];
 			if (this.query.index === undefined) Log.error("must have host defined");
 			this.query.index.url = this.query.index.host + this.query.index.path;
@@ -375,7 +385,7 @@ ESQuery.DEBUG = false;
 			}//try
 
 			var self = this;
-			if (postResult.facets) forAllKey(postResult.facets, function (facetName, f) {
+			if (postResult.facets) Map.forall(postResult.facets, function (facetName, f) {
 				if (f._type == "statistical") return;
 				if (!f.terms) return;
 
@@ -447,7 +457,7 @@ ESQuery.DEBUG = false;
 
 		if (extraSelect.length == this.query.edges.length) {
 			this.termsEdges = [];
-			this.select = Array.newInstance(this.query.select);
+			this.select = Array.newInstance(this.query.select).copy();
 			this.select.appendArray(extraSelect)
 		} else {
 			this.termsEdges = this.query.edges.copy();
@@ -495,8 +505,8 @@ ESQuery.DEBUG = false;
 			this.select = undefined;
 		}//endif
 
-		if (this.query.where)
-			Log.error("ESQuery does not support the where clause, use esfilter instead");
+//		if (this.query.where)
+//			Log.error("ESQuery does not support the where clause, use esfilter instead");
 
 		//VERY IMPORTANT!! ES CAN ONLY USE TERM PACKING ON terms FACETS, THE OTHERS WILL REQUIRE EVERY PARTITION BEING A FACET
 		this.esMode = "terms_stats";
@@ -568,10 +578,13 @@ ESQuery.DEBUG = false;
 					if (name != "") name += ",";
 					name += esFacets[i][f].dataIndex;
 					condition.push(ESQuery.buildCondition(this.facetEdges[f], esFacets[i][f], this.query));
-					constants.push({"name": this.facetEdges[f].domain.name, "value": esFacets[i][f]});
+					constants.push({"name": this.facetEdges[f].name, "value": esFacets[i][f]});
 				}//for
 			}//for
 			var q = {"name": name};
+			if (this.query.where){
+				condition.push({"script":{"script":MVEL.compile.expression(this.query.where, this.query, constants)}});
+			}//endif
 
 			var value = this.compileEdges2Term(constants);
 
@@ -660,6 +673,10 @@ ESQuery.DEBUG = false;
 
 		var output = [];
 		var partitions = edge.domain.partitions;
+		if (partitions.length==0){
+			Log.error("There are no partitions in edge "+edge.name+", which is destined for a facet, which wil result in nothing")
+		}//endif
+
 		for (var i = 0; i < partitions.length; i++) {
 			var deeper = this.getAllEdges(edgeDepth + 1);
 			for (var o = 0; o < deeper.length; o++) {
@@ -795,16 +812,16 @@ ESQuery.DEBUG = false;
 	};
 
 	ESQuery.prototype.buildESQuery = function () {
-		var where;
-		if (this.query.where === undefined)        where = ESQuery.TrueFilter;
-		if (typeof(this.query.where) != "string")    where = ESQuery.TrueFilter; //NON STRING WHERE IS ASSUMED TO BE PSUDO-esFILTER (FOR CONVERSION TO MVEL)
-		if (typeof(this.query.where) == "string") {
-			if (where.trim() == "true") {
-				where = ESQuery.TrueFilter;
-			} else {
-				where = {"script": {"script": this.query.where}};
-			}//endif
-		}//endif
+//		var where;
+//		if (this.query.where === undefined)        where = ESQuery.TrueFilter;
+//		if (typeof(this.query.where) != "string")    where = ESQuery.TrueFilter; //NON STRING WHERE IS ASSUMED TO BE PSUDO-esFILTER (FOR CONVERSION TO MVEL)
+//		if (typeof(this.query.where) == "string") {
+//			if (this.query.where.trim() == "true") {
+//				where = ESQuery.TrueFilter;
+//			} else {
+//				where = {"script": {"script": this.query.where}};
+//			}//endif
+//		}//endif
 
 		var output = {
 			"query": {
@@ -814,7 +831,7 @@ ESQuery.DEBUG = false;
 					},
 					"filter": {
 						"and": [
-							where
+							{"match_all":{}}
 						]
 					}
 				}
@@ -1347,7 +1364,7 @@ ESQuery.DEBUG = false;
 
 		//FILL Qb
 		if (self.query.select instanceof Array) {
-			forAllKey(data.facets, function (edgeName, facetValue) {
+			Map.forall(data.facets, function (edgeName, facetValue) {
 				var coord = edgeName.split(",");
 				var d = cube;
 				var num = self.query.edges.length;
@@ -1364,7 +1381,7 @@ ESQuery.DEBUG = false;
 				}//for
 			});
 		} else {
-			forAllKey(data.facets, function (edgeName, facetValue) {
+			Map.forall(data.facets, function (edgeName, facetValue) {
 				var coord = edgeName.split(",");
 				var d = cube;
 				var num = self.query.edges.length - 1;
@@ -1445,13 +1462,22 @@ ESQuery.DEBUG = false;
 	ESQuery.prototype.compileSetOp = function () {
 		var self = this;
 		this.esQuery = this.buildESQuery();
-		var select = Array.newInstance(this.query.select);
-
+		var select = this.select;
 		var isDeep = splitField(self.query.from).length > 1;
 
 		//WE CAN OPTIMIZE WHEN ALL THE FIELDS ARE SIMPLE ENOUGH
 		this.esMode = isDeep ? "setop" : "fields";
+
+		//LIST ALL PRIMITIVE FIELDS
+		var leafNodes = ESQuery.getColumns(this.query.from).map(function(c){
+			if (["object"].contains(c.type)) return undefined;
+			if (!["long", "double", "integer", "string", "boolean"].contains(c.type)){
+				Log.error("do not know how to handle type {{type}}", {"type":c.type});
+			}//endif
+			return c.name;
+		});
 		select.forall(function (s, i) {
+			if (leafNodes.contains(s.value)) return; //PRIMITIVE FIELDS CAN BE USED IN fields
 			var path = splitField(s.value);
 			if (path.length > 1 || !MVEL.isKeyword(path[0])) {
 				self.esMode = "setop";  //RETURN TO setop
@@ -1462,11 +1488,16 @@ ESQuery.DEBUG = false;
 		if (this.esMode == "fields") {
 			this.esQuery.size = nvl(this.query.limit, 200000);
 			this.esQuery.sort = nvl(this.query.sort, []);
-			if (this.query.select.value != "_source") {
-				this.esQuery.fields = select.map(function (s) {
-					return splitField(s.value)[0].split(".")[0];  //ES DOES NOT STORE COMPOUND FIELDS, ONLY INDEXES THEM.
-				});
+			if (select[0].value != "_source") {
+				this.esQuery.fields = select.select("value");
 			}//endif
+		} else if (!isDeep && Array.AND(select.map(function(s){return MVEL.isKeyword(s.value);}))) {
+			this.esQuery.facets.mvel = {
+				"terms": {
+					"field": select[0].value,
+					"size": this.query.essize
+				}
+			};
 		} else if (!isDeep && select.length == 1 && MVEL.isKeyword(select[0].value)) {
 			this.esQuery.facets.mvel = {
 				"terms": {
@@ -1489,13 +1520,23 @@ ESQuery.DEBUG = false;
 		var o = [];
 		var T = data.hits.hits;
 
-		if (this.query.select instanceof Array) {
+		if (this.query.select instanceof Array || this.select.length > 1) {
 			for (var i = T.length; i--;) {
-				var record = T[i].fields
+				var record = nvl(T[i].fields, {});
 				var new_rec = {};
-				this.query.select.forall(function (s, j) {
-					var field = splitField(s.value)[0].split(".")[0];  //USING BASE OF MULTI_FIELD WHICH HAS ACTUAL VALUE
-					new_rec[s.name] = nvl(record[s.value], T[i][field]);
+				this.select.forall(function (s, j) {
+					if (s.domain && s.domain.interval=="none"){
+						//THESE none-interval EDGES WERE ADDED TO THE SELECT LIST
+						if (s.domain.type=="time"){
+							new_rec[s.name] = {"value": record[s.value]}
+						}else{
+							Log.error("Do not know how to handle domain of type {{type}}", {"type": s.domain.type});
+						}//endif
+					}else{
+						var field = splitField(s.value)[0].split(".")[0];  //USING BASE OF MULTI_FIELD WHICH HAS ACTUAL VALUE
+						new_rec[s.name] = nvl(record[s.value], T[i][field]);
+					}
+
 				});
 				o.push(new_rec)
 			}//for

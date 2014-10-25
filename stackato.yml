@@ -14,7 +14,8 @@ ignores: [
   "html/es/modevlib/etl/_OrgChart.js",
   "html/es/lib/jstree/_lib",
   "html/es/lib/jstree/_docs",
-  "html/es/lib/jstree/_demo"
+  "html/es/lib/jstree/_demo",
+  "tests"
 ]
 url: [
   "charts.paas.mozilla.org",

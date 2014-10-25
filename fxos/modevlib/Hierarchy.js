@@ -7,37 +7,60 @@ importScript("aLibrary.js");
 importScript("Dimension-Bugzilla.js");
 
 
-var Hierarchy={};
+var Hierarchy = {};
 
 
 // CONVERT FROM AN ARRAY OF OBJECTS WITH A parent_field DEFINED TO A TREE OF
 // THE SAME, BUT WITH child_field CONTAINING AN ARRAY OF CHILDREN
 // ALL OBJECTS MUST HAVE id_field DEFINED
 // RETURNS AN ARRAY OF ROOT NODES.
-Hierarchy.fromList=function(args){
+Hierarchy.fromList = function(args){
 	ASSERT.hasAttributes(args, ["id_field", "parent_field", "child_field"]);
 
-	var childList={};
-	var roots=[];
+	var childList = {};
+	var roots = [];
 
 	args.from.forall(function(p, i){
-		if (p[args.parent_field]!=null){
-			var peers=childList[p[args.parent_field]];
-			if (!peers){
-				peers=[];
-				childList[p[args.parent_field]]=peers;
+		if (p[args.parent_field] != null) {
+			var peers = childList[p[args.parent_field]];
+			if (!peers) {
+				peers = [];
+				childList[p[args.parent_field]] = peers;
 			}//endif
 			peers.push(p);
-		}else{
+		} else {
 			roots.push(p);
 		}//endif
 	});
 
-	var heir=function(children){
+	//WE MAY HAVE CYCLES!! (REMOVE CYCLES UP TO 2 IN LENGTH)
+	var deleteMe = [];
+	Map.forall(childList, function(parent, children){
+		children.forall(function(child){
+			if (child.id == parent) {
+				deleteMe.append([parent, child]);
+				return;
+			}//endif
+
+			var grandchildren = childList[child.id];
+			if (grandchildren) grandchildren.forall(function(grand){
+				if (grand.id == parent) {
+					deleteMe.append([parent, child]);
+				}//endif
+			});
+		});
+	});
+	deleteMe.forall(function(pair){
+		childList[pair[0]] = childList[pair[0]].filter({"not" : {"term" : {"id" : pair[1].id}}});
+	});
+	roots.appendArray(deleteMe.select("1"));
+
+
+	var heir = function(children){
 		children.forall(function(child, i){
-			var grandchildren=childList[child[args.id_field]];
-			if (grandchildren){
-				child[args.child_field]=grandchildren;
+			var grandchildren = childList[child[args.id_field]];
+			if (grandchildren) {
+				child[args.child_field] = grandchildren;
 				heir(grandchildren);
 			}//endif
 		});
@@ -53,24 +76,24 @@ Hierarchy.fromList=function(args){
 // id_field - USED TO ID NODE
 // fk_field - NAME OF THE CHILDREN ARRAY, CONTAINING IDs
 //WILL UPDATE ALL BUGS IN from WITH A descendants_field
-Hierarchy.addDescendants = function*addDescendants(args) {
-	ASSERT.hasAttributes(args, ["from","id_field","fk_field","descendants_field"]);
+Hierarchy.addDescendants = function*addDescendants(args){
+	ASSERT.hasAttributes(args, ["from", "id_field", "fk_field", "descendants_field"]);
 
-	var from=args.from;
-	var id=args.id_field;
-	var fk=args.fk_field;
-	var descendants_field=args.descendants_field;
-	var DEBUG=nvl(args.DEBUG, false);
-	var DEBUG_MIN=1000000;
+	var from = args.from;
+	var id = args.id_field;
+	var fk = args.fk_field;
+	var descendants_field = args.descendants_field;
+	var DEBUG = nvl(args.DEBUG, false);
+	var DEBUG_MIN = 1000000;
 
 	//REVERSE POINTERS
-	var allParents=new aRelation();
-	var allDescendants=new aRelation();
+	var allParents = new aRelation();
+	var allDescendants = new aRelation();
 	from.forall(function(p){
-		var children=p[fk];
-		if (children) for(var i=children.length;i--;){
-			var c=children[i];
-			if (c=="") continue;
+		var children = p[fk];
+		if (children) for (var i = children.length; i--;) {
+			var c = children[i];
+			if (c == "") continue;
 			allParents.add(c, p[id]);
 			allDescendants.add(p[id], c);
 		}//for
@@ -79,35 +102,35 @@ Hierarchy.addDescendants = function*addDescendants(args) {
 	//FIND DESCENDANTS
 //	var a=Log.action("Find Descendants", true);
 	yield (Thread.YIELD);
-	var workQueue=new aQueue(Object.keys(allParents.map));
+	var workQueue = new aQueue(Object.keys(allParents.map));
 
-	while(workQueue.length()>0){      //KEEP WORKING WHILE THERE ARE CHANGES
+	while (workQueue.length() > 0) {      //KEEP WORKING WHILE THERE ARE CHANGES
 		yield (Thread.YIELD);
-		if (DEBUG){
-			if (DEBUG_MIN>workQueue.length() && workQueue.length()%Math.pow(10, Math.round(Math.log(workQueue.length())/Math.log(10))-1)==0){
+		if (DEBUG) {
+			if (DEBUG_MIN > workQueue.length() && workQueue.length() % Math.pow(10, Math.round(Math.log(workQueue.length()) / Math.log(10)) - 1) == 0) {
 				Log.actionDone(a);
-				a=Log.action("Work queue remaining: "+workQueue.length(), true);
-				DEBUG_MIN=workQueue.length();
+				a = Log.action("Work queue remaining: " + workQueue.length(), true);
+				DEBUG_MIN = workQueue.length();
 			}//endif
 		}//endif
-		var node=workQueue.pop();
+		var node = workQueue.pop();
 
-		var desc=allDescendants.get(node);
+		var desc = allDescendants.get(node);
 
-		var parents=allParents.get(node);
-		for(var i=parents.length;i--;){
-			var parent=parents[i];
+		var parents = allParents.get(node);
+		for (var i = parents.length; i--;) {
+			var parent = parents[i];
 
-			var original=allDescendants.getMap(parent);
+			var original = allDescendants.getMap(parent);
 
 
-			if (original===undefined){
-				for(var d=desc.length;d--;){
+			if (original === undefined) {
+				for (var d = desc.length; d--;) {
 					allDescendants.add(parent, desc[d]);
 				}//for
 				workQueue.add(parent);
-			}else{
-				for(var d=desc.length;d--;){
+			} else {
+				for (var d = desc.length; d--;) {
 					if (original[desc[d]]) continue;
 					allDescendants.add(parent, desc[d]);
 					workQueue.add(parent);
@@ -117,13 +140,12 @@ Hierarchy.addDescendants = function*addDescendants(args) {
 	}//while
 
 	from.forall(function(p){
-		p[descendants_field]=allDescendants.get(p[id]);
+		p[descendants_field] = allDescendants.get(p[id]);
 	});
 
 //	Log.actionDone(a);
 	yield (null);
 };
-
 
 
 // HEAVILY ALTERED FROM BELOW
@@ -145,17 +167,17 @@ Hierarchy.addDescendants = function*addDescendants(args) {
 
 //REQUIRES from BE A MAP FROM id_field TO OBJECT
 //children_id_field IS THE FIELD THIS LIST OF IDs
-Hierarchy.topologicalSort=function(args){
+Hierarchy.topologicalSort = function(args){
 	Map.expecting(args, ["from", "id_field", "children_id_field"]);
 
 
-	var graph=args.from;
-	var id_field=args.id_field;
-	var children_field=args.children_id_field;
+	var graph = args.from;
+	var id_field = args.id_field;
+	var children_field = args.children_id_field;
 //	var children_field="_EDGES";
 
 	//ADD EDGES SO FOLLOWING ALGORITHM WORKS
-//	forAllKey(graph, function(k, v){
+//	Map.forall(graph, function(k, v){
 //		v[children_field]=[];
 //		v[children_id_field].forall(function(v, i){
 //			v[children_field].push(graph[v]);
@@ -169,10 +191,10 @@ Hierarchy.topologicalSort=function(args){
 	var queue = [];
 
 	function processList(){
-		while(processed.length < numberOfNodes){
-			for(var i = 0; i < unprocessed.length; i++){
+		while (processed.length < numberOfNodes) {
+			for (var i = 0; i < unprocessed.length; i++) {
 				var nodeid = unprocessed[i];
-				if (graph[nodeid].indegrees === 0){
+				if (graph[nodeid].indegrees === 0) {
 					queue.push(nodeid);
 					unprocessed.splice(i, 1); //Remove this node, its all done.
 					i--;//decrement i since we just removed that index from the iterated list;
@@ -180,13 +202,15 @@ Hierarchy.topologicalSort=function(args){
 			}//for
 
 			{//HACK
-			//THIS IS AN UNPROVEN HACK TO SOLVE THE CYCLE PROBLEM
-			//IF A PARENT OF unprocessed NODE HAS BEEN VISITED, THEN THE NODE WILL
-			//HAVE __parent DEFINED, AND IN THEORY WE SHOULD BE ABLE CONTINUE
-			//WORKING ON THOSE
-				if (queue.length==0 && unprocessed.length>0){
-					var hasParent=unprocessed.map(function(v,i){if (graph[v].__parent!==undefined) return v;});
-					if (hasParent.length==0) Log.error("Isolated cycle found");
+				//THIS IS AN UNPROVEN HACK TO SOLVE THE CYCLE PROBLEM
+				//IF A PARENT OF unprocessed NODE HAS BEEN VISITED, THEN THE NODE WILL
+				//HAVE __parent DEFINED, AND IN THEORY WE SHOULD BE ABLE CONTINUE
+				//WORKING ON THOSE
+				if (queue.length == 0 && unprocessed.length > 0) {
+					var hasParent = unprocessed.map(function(v, i){
+						if (graph[v].__parent !== undefined) return v;
+					});
+					if (hasParent.length == 0) Log.error("Isolated cycle found");
 					queue.appendArray(hasParent);
 				}//endif
 			}//END OF HACK
@@ -197,37 +221,37 @@ Hierarchy.topologicalSort=function(args){
 
 
 	function processStartingPoint(nodeId){
-		if (nodeId == undefined){
+		if (nodeId == undefined) {
 			throw "You have a cycle!!";
 		}
 		graph[nodeId][children_field].forall(function(child){
 			graph[child].indegrees--;
-			graph[child].__parent=graph[nodeId];		//MARKUP FOR HACK
+			graph[child].__parent = graph[nodeId];		//MARKUP FOR HACK
 		});
 		processed.push(graph[nodeId]);
 	}
 
 
 	function populateIndegreesAndUnprocessed(){
-		forAllKey(graph, function(nodeId, node){
+		Map.forall(graph, function(nodeId, node){
 			unprocessed.push(nodeId);
-			if (node.indegrees===undefined) node.indegrees = 0;
-			if (node[children_field]===undefined) node[children_field]=[];
+			if (node.indegrees === undefined) node.indegrees = 0;
+			if (node[children_field] === undefined) node[children_field] = [];
 
 //			if (nodeId=="836963"){
 //				Log.note("");
 //			}//endif
 
 			node[children_field].forall(function(e){
-				if (graph[e]===undefined){
-					graph[e]=Map.newInstance(id_field, e);
+				if (graph[e] === undefined) {
+					graph[e] = Map.newInstance(id_field, e);
 				}//endif
 
 //				if (nodeId==831910 && e==831532) return;	//REMOVE CYCLE (CAN'T HANDLE CYCLES)
 
-				if (graph[e].indegrees===undefined){
+				if (graph[e].indegrees === undefined) {
 					graph[e].indegrees = 1
-				} else{
+				} else {
 					graph[e].indegrees++;
 				}//endif
 			});
@@ -237,12 +261,12 @@ Hierarchy.topologicalSort=function(args){
 	populateIndegreesAndUnprocessed();
 	processList();
 
-	if (processed.length!=numberOfNodes) Log.error("broken");
+	if (processed.length != numberOfNodes) Log.error("broken");
 	return processed;
 };//method
 
 
-function* allOpenDependencies(esfilter, dateRange, selects, allOpen) {
+function* allOpenDependencies(esfilter, dateRange, selects, allOpen){
 	var data = yield (getRawDependencyData(esfilter, dateRange, selects));
 	var output = yield (getDailyDependencies(data, esfilter, allOpen));
 	yield (output);
@@ -254,145 +278,166 @@ function* allOpenDependencies(esfilter, dateRange, selects, allOpen) {
 // dateRange - A time DOMAIN DEFINITION
 // selects - A LIST OF COLUMNS ALSO REQUIRED BY THE CALLER
 //RETURNS CUBE OF bug X date
-function* getRawDependencyData(esfilter, dateRange, selects) {
+function* getRawDependencyData(esfilter, dateRange, selects){
 
-    var a = Log.action("Get dependencies", true);
-    var topBugs = (yield(ESQuery.run(
-        {
-            "from": "bugs",
-            "select": "bug_id",
-            "esfilter": {"and": [
-                esfilter
-            ]}
-        }
-    ))).list;
-    topBugs = [].union(topBugs);
+	var a = Log.action("Get dependencies", true);
+	var topBugs = (yield(ESQuery.run(
+		{
+			"from" : "bugs",
+			"select" : "bug_id",
+			"esfilter" : {"and" : [
+				esfilter
+			]}
+		}
+	))).list;
+	topBugs = [].union(topBugs);
 
-    var possibleTree = (yield(ESQuery.run(
-        {
-            "from": "bug_hierarchy",
-            "select": [
-                "bug_id",
-                "descendants"
-            ],
-            "esfilter": {"terms": {"bug_id": topBugs}}
-        }
-    ))).list;
-    possibleTree = possibleTree.select("descendants");
-    possibleTree.append(topBugs);
-    possibleTree = Array.union(possibleTree);
-    Log.actionDone(a);
-
-    var allSelects = selects.union(["bug_id", "dependson", "bug_status", "modified_ts", "expires_on"]);
-
-    var a = Log.action("Pull details");
-    var raw_data = yield (ESQuery.run(
-        {
-            "name": "Open Bug Count",
-            "from": "bugs",
-            "select": allSelects.copy(),
-            "esfilter": {"and": [
-                {"terms": {"bug_id": possibleTree}},
-                {"range": {"modified_ts": {"lt": dateRange.max.getMilli()}}},
-                {"range": {"expires_on": {"gte": dateRange.min.getMilli()}}}
-            ]}
-        }
-    ));
-    Log.actionDone(a);
-
-    //ORGANIZE INTO DATACUBE: (DAY x BUG_ID)
-	var a = Log.action("Fill raw cube");
-    var data = yield (Q(
-        {
-            "from": raw_data,
-            "select": allSelects.subtract(["bug_id"]).map(
-                function (v) {
-                    return {"value": v, "aggregate": "minimum"};  //aggregate==min BECAUSE OF ES CORRUPTION
-                }
-            ),
-            "edges": [
-                {"name": "date", "range": {"min": "modified_ts", "max": "expires_on"}, "domain": dateRange},
-                "bug_id"
-            ]
-        }
-    ));
+	var possibleTree = (yield(ESQuery.run(
+		{
+			"from" : "bug_hierarchy",
+			"select" : [
+				"bug_id",
+				"descendants"
+			],
+			"esfilter" : {"terms" : {"bug_id" : topBugs}}
+		}
+	))).list;
+	possibleTree = possibleTree.select("descendants");
+	possibleTree.append(topBugs);
+	possibleTree = Array.union(possibleTree);
 	Log.actionDone(a);
 
-    //ADDING COLUMNS AS MARKUP
-    data.columns.append({"name": "counted"});
-    data.columns.append({"name": "date"});
+	var allSelects = selects.union(["bug_id", "dependson", "bug_status", "modified_ts", "expires_on"]);
 
-    //ADD date AND bug_id TO ALL RECORDS
-    var days = data.edges[0].domain.partitions;
-    var bugs = data.edges[1].domain.partitions;
-    for(var day = 0; day < data.cube.length; day++) {
-        var bug = data.cube[day];
-        var day_part = days[day];
-        bug.forall(
-            function (detail, i) {
-                detail.date = day_part.value;    //ASSIGN DATE TO AGGREGATE RECORD
-                detail.bug_id = bugs[i].value;   //ASSIGN BUG ID TO AGGREGATE RECORD
-            }
-        );
-    }//for
-    return data;
+	var a = Log.action("Pull details");
+	var raw_data = yield (ESQuery.run(
+		{
+			"name" : "Open Bug Count",
+			"from" : "bugs",
+			"select" : allSelects.copy(),
+			"esfilter" : {"and" : [
+				{"terms" : {"bug_id" : possibleTree}},
+				{"range" : {"modified_ts" : {"lt" : dateRange.max.getMilli()}}},
+				{"range" : {"expires_on" : {"gte" : dateRange.min.getMilli()}}}
+			]}
+		}
+	));
+	Log.actionDone(a);
+
+	//ORGANIZE INTO DATACUBE: (DAY x BUG_ID)
+	var a = Log.action("Fill raw cube");
+	var data = yield (Q(
+		{
+			"from" : raw_data,
+			"select" : allSelects.subtract(["bug_id"]).map(
+				function(v){
+					return {"value" : v, "aggregate" : "minimum"};  //aggregate==min BECAUSE OF ES CORRUPTION
+				}
+			),
+			"edges" : [
+				{"name" : "date", "range" : {"min" : "modified_ts", "max" : "expires_on"}, "domain" : Map.copy(dateRange)},
+				"bug_id"
+			]
+		}
+	));
+	Log.actionDone(a);
+
+	//ADDING COLUMNS AS MARKUP
+	data.columns.append({"name" : "counted"});
+	data.columns.append({"name" : "churn"});
+	data.columns.append({"name" : "date"});
+
+	//ADD date AND bug_id TO ALL RECORDS
+	var days = data.edges[0].domain.partitions;
+	var bugs = data.edges[1].domain.partitions;
+	for (var day = 0; day < data.cube.length; day++) {
+		var bug = data.cube[day];
+		var day_part = days[day];
+		bug.forall(
+			function(detail, i){
+				detail.date = day_part.value;    //ASSIGN DATE TO AGGREGATE RECORD
+				detail.churn = 0;
+				detail.bug_id = bugs[i].value;   //ASSIGN BUG ID TO AGGREGATE RECORD
+			}
+		);
+	}//for
+	return data;
 }
 
 //EXPECTING
 // data - DATA CUBE OF bugs X date
 // topBugFilter - FILTER TO DETERMINE EACH DAY'S TOP-LEVEL BUG IDS (function, or esfilter)
 // allOpen - true IF WE COUNT OPEN DEPENDENCIES OF CLOSED BUGS
-//REWRITES THE .counted ATTRIBUTE TO BE "Open", "Closed", or "none"
-function* getDailyDependencies(data, topBugFilter) {
-    if (typeof(topBugFilter) != "function") topBugFilter = CNV.esFilter2function(topBugFilter);
+// REWRITES THE .counted ATTRIBUTE TO BE "Open", "Closed", or "none"
+// REWRITES THE .churn ATTRIBUTE TO BE +1 (to Open), -1 (from Open), 0 (no change)
+function* getDailyDependencies(data, topBugFilter){
+	if (typeof(topBugFilter) != "function") topBugFilter = CNV.esFilter2function(topBugFilter);
 
 	//FOR EACH DAY, FIND ALL DEPENDANT BUGS
+	var yesterdayBugs = null;
 	for (var day = 0; day < data.cube.length; day++) {
-		var bug = data.cube[day];
-		var allTopBugs = bug.map(function (detail) {
-			if (topBugFilter(detail)) return detail;
-		});
+		var todayBugs = data.cube[day];
+		var allTopBugs = todayBugs.filter(topBugFilter);
 
 		yield (Hierarchy.addDescendants({
-			"from": bug,
-			"id_field": "bug_id",
-			"fk_field": "dependson",
-			"descendants_field": "dependencies"
+			"from" : todayBugs,
+			"id_field" : "bug_id",
+			"fk_field" : "dependson",
+			"descendants_field" : "dependencies"
 		}));
 
-		var allDescendantsForToday = Array.union(allTopBugs.select("dependencies")).union(allTopBugs.select("bug_id")).map(function(v){return v-0;});
-		bug.forall(function(detail, i){
-			if (allDescendantsForToday.contains(detail.bug_id)){
-				detail.counted="Closed"
-			}else{
-				detail.counted="none";
+		var allDescendantsForToday = Array.union(allTopBugs.select("dependencies")).union(allTopBugs.select("bug_id")).map(function(v){
+			return v - 0;
+		});
+		todayBugs.forall(function(detail, i){
+			if (allDescendantsForToday.contains(detail.bug_id)) {
+				detail.counted = "Closed"
+			} else {
+				detail.counted = "none";
 			}//endif
 		});
 
 		var openTopBugs = [];
-		var openBugs = bug.map(function (detail) {
-			if (["new", "assigned", "unconfirmed", "reopened"].contains(detail.bug_status)){
-                if (topBugFilter(detail)) -openTopBugs.append(detail);
+		var openBugs = todayBugs.map(function(detail){
+			if (["new", "assigned", "unconfirmed", "reopened"].contains(detail.bug_status)) {
+				if (topBugFilter(detail)) -openTopBugs.append(detail);
 				return detail;
-			}else{
+			} else {
 				return undefined;
 			}//endif
 		});
 
 		yield (Hierarchy.addDescendants({
-			"from": openBugs,
-			"id_field": "bug_id",
-			"fk_field": "dependson",
-			"descendants_field": "dependencies"
+			"from" : openBugs,
+			"id_field" : "bug_id",
+			"fk_field" : "dependson",
+			"descendants_field" : "dependencies"
 		}));
 
-		var openDescendantsForToday = Array.union(openTopBugs.select("dependencies")).union(openTopBugs.select("bug_id")).map(function(v){return v-0;});
-		bug.forall(function(detail, i){
-			if (openDescendantsForToday.contains(detail.bug_id) && ["new", "assigned", "unconfirmed", "reopened"].contains(detail.bug_status)){
-				detail.counted="Open"
+		var openDescendantsForToday = Array.union(openTopBugs.select("dependencies")).union(openTopBugs.select("bug_id")).map(function(v){
+			return v - 0;
+		});
+		todayBugs.forall(function(detail, i){
+			var yBug = {};
+			if (yesterdayBugs) yBug = yesterdayBugs[i];
+
+			if (openDescendantsForToday.contains(detail.bug_id) && ["new", "assigned", "unconfirmed", "reopened"].contains(detail.bug_status)) {
+				detail.counted = "Open";
+				if (yBug.counted == "Open") {
+					yBug.churn = 0;
+				} else {
+					yBug.churn = 1;
+				}//endif
+			} else {
+				if (yBug.counted != "Open") {
+					yBug.churn = 0;
+				} else {
+					yBug.churn = -1;
+				}//endif
 			}//endif
 		});
 
+		yesterdayBugs = todayBugs;
 	}//for
 
 	yield (data);

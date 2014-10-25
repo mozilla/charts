@@ -42,6 +42,14 @@ function joinField(path){
 	var DEBUG=true;
 
 
+Qb.reverse=function reverse(list){
+	var output = list.copy();
+	output.reverse();
+	return output;
+};
+
+
+
 Qb.compile = function(query, sourceColumns, useMVEL){
 //COMPILE COLUMN CALCULATION CODE
 	var columns = [];
@@ -281,8 +289,7 @@ Qb.calc2List = function*(query){
 	yield (Thread.yield());
 
 	//ORDER THE OUTPUT
-	if (query.sort === undefined) query.sort = [];
-	if (!(query.sort instanceof Array)) query.sort=[query.sort];
+	query.sort = Array.newInstance(query.sort);
 	output = Qb.sort(output, query.sort, query.columns);
 
 	//COLLAPSE OBJECTS TO SINGLE VALUE
@@ -315,25 +322,37 @@ Qb.calc2List = function*(query){
 function* calc2Cube(query){
 	if (query.edges===undefined) query.edges=[];
 
-	if (query.edges.length==0 && Array.newInstance(query.select).length>0){
-		var o=yield (aggOP(query));
-		yield (o);
+	if (query.edges.length==0){
+		var isAgg=false;
+		Array.newInstance(query.select).forall(function(s){
+			if (s.aggregate!==undefined && s.aggregate!="none"){
+				isAgg=true;
+			}//endif
+		});
+		if (isAgg){
+			var oA=yield (aggOP(query));
+			yield (oA);
+		}else{
+			var oS=yield (setOP(query));
+			yield (oS);
+		}//endif
 	}//endif
 
 	yield (calc2Tree(query));
 
 	//ASSIGN dataIndex TO ALL PARTITIONS
 	var edges = query.edges;
-	for(var f = 0; f < edges.length; f++){
-		if (edges[f].domain.type=="default"){
-			edges[f].domain.partitions.sort(edges[f].domain.compare);
+	edges.forall(function(edge){
+		edge.domain = Map.copy(edge.domain);
+		if (edge.domain.type=="default"){
+			edge.domain.partitions.sort(edge.domain.compare);
 		}//endif
 		var p = 0;
-		for(; p < (edges[f].domain.partitions).length; p++){
-			edges[f].domain.partitions[p].dataIndex = p;
+		for(; p < (edge.domain.partitions).length; p++){
+			edge.domain.partitions[p].dataIndex = p;
 		}//for
-		edges[f].domain.NULL.dataIndex = p;
-	}//for
+		edge.domain.NULL.dataIndex = p;
+	});
 
 	//MAKE THE EMPTY DATA GRID
 	query.cube = Qb.cube.newInstance(edges, 0, query.select);
@@ -357,13 +376,13 @@ Qb.List2Cube=function(query){
 
 	//ASSIGN dataIndex TO ALL PARTITIONS
 	var edges = query.edges;
-	for(var f = 0; f < edges.length; f++){
-		var p = 0;
-		for(; p < (edges[f].domain.partitions).length; p++){
-			edges[f].domain.partitions[p].dataIndex = p;
+	edges.forall(function(edge){
+		edge.domain = Map.copy(edge.domain);
+		for(var p = 0; p < edge.domain.partitions.length; p++){
+			edge.domain.partitions[p].dataIndex = p;
 		}//for
-		edges[f].domain.NULL.dataIndex = p;
-	}//for
+		edge.domain.NULL.dataIndex = p;
+	});//for
 
 	//MAKE THE EMPTY DATA GRID
 	query.cube = Qb.cube.newInstance(edges, 0, query.select);
@@ -482,12 +501,10 @@ function* setOP(query){
 	var select = Array.newInstance(query.select);
 	var columns = select;
 
-
-
-	for(s = 0; s < select.length; s++){
-		if (typeof(s)=='string') select[s]={"value":s};
-		Qb.column.compile(select[s], sourceColumns, undefined);
-	}//for
+	select.forall(function(s, i){
+		if (typeof(s)=='string') select[i]={"value":s};
+		Qb.column.compile(select[i], sourceColumns, undefined);
+	});
 	var where = Qb.where.compile(query.where, sourceColumns, []);
 
 	var output = [];
@@ -564,99 +581,53 @@ Qb.toTable=function(query){
 };//method
 
 
-Qb.Cube2List=function*(query, options){
+Qb.Cube2List=function(query, options){
 	//WILL end() ALL PARTS UNLESS options.useStruct==true OR options.useLabels==true
-
 	options=nvl(options, {});
 	options.useStruct=nvl(options.useStruct, false);
 	options.useLabels=nvl(options.useLabels, false);
 
-	var endFunction="query.edges[<NUM>].domain.end";
+	//PRECOMPUTE THE EDGES
+	var edges = query.edges;
+	var domains = edges.select("domain");
+	var endFunction=domains.select("end");
 	if (options.useStruct){
-		endFunction="function(v){return v;}";
+		endFunction=query.edges.map(function(e){ return function(v){return v;};});
 	}else if (options.useLabels){
-		endFunction="query.edges[<NUM>].domain.label";
+		endFunction=domains.select("label");
 	}//endif
+	var parts=domains.select("partitions");
+	var names=query.edges.select("name");
 
-	var name=Array.newInstance(query.select)[0].name;
-	if (query.select instanceof Array) name=undefined;
-	if (query.cube===undefined) Log.error("Can only turn a cube into a table at this time");
-	if (query.cube.length==0) yield ([]);
-	var sample=query.cube; for(var i=0;i<query.edges.length;i++) sample=sample[0];
-	var isArray=(sample instanceof Array);
+	var m = new Matrix({"data":query.cube});
 
-
-
-	var prep=
-		"var parts<NUM>=query.edges[<NUM>].domain.partitions.copy();\n"+
-		"if (query.edges[<NUM>].allowNulls) parts<NUM>.push(query.edges[<NUM>].domain.NULL);\n"+
-		"var end<NUM>="+endFunction+";\n"+
-		"var name<NUM>=query.edges[<NUM>].name;\n"+
-		"var partValue<NUM>=[];\n"+
-		"for(var p<NUM>=0; p<NUM><parts<NUM>.length; p<NUM>++) partValue<NUM>.push("+
-			"end<NUM>("+
-			"parts<NUM>[p<NUM>]"+
-			")"+
-		");\n"+
-		""
-	;
-
-	var loop=
-		"for(var p<NUM>=0; p<NUM><parts<NUM>.length;p<NUM>++){\n"+
-			"<BODY>"+
-		"}\n";
-
-	var assignEdge="row[<EDGE_NAME>]=partValue<NUM>[p<NUM>];\n";
-
-	var accessCube="query.cube";
-	var loops="<BODY>";
-	var pre="";
-	var assignEdges="";
-	for(var i=0;i<query.edges.length;i++){
-		pre+=prep.replaceAll("<NUM>", ""+i);
-		loops=loops.replace("<BODY>", loop.replaceAll("<NUM>", ""+i));
-		assignEdges+=assignEdge.replaceAll("<NUM>", ""+i).replaceAll("<EDGE_NAME>", CNV.String2Quote(query.edges[i].name));
-		accessCube+="[p"+i+"]";
-	}//for
-
-
-	var assignSelect;
-	if (name){
-		assignSelect="var row={};\nrow["+CNV.String2Quote(name)+"]="+accessCube+";\n";
-	}else if (isArray){
-		assignSelect=
-			"var row={};\n"+
-			"for(var s=0;s<query.select.length;s++){\n"+
-			"	row[query.select[s].name]="+accessCube+"[s];\n"+
-			"}\n";
+	var output = [];
+	if (query.select instanceof Array){
+		m.forall(function(v, c){
+			var o = Map.copy(v);
+			for(var e=0;e<c.length;e++){
+				if (edges[e].allowNulls && parts[e].length==c[e]){
+					o[names[e]]=endFunction[e](domains[e].NULL);
+				}else{
+					o[names[e]]=endFunction[e](parts[e][c[e]]);
+				}//endif
+			}//for
+			output.append(o);
+		});
 	}else{
-		assignSelect="var row=Map.copy("+accessCube+");\n";
+		m.forall(function(v, c){
+			var o = Map.newInstance(query.select.name, v);
+			for(var e=0;e<c.length;e++){
+				if (edges[e].allowNulls && parts[e].length==c[e]){
+					o[names[e]]=endFunction[e](domains[e].NULL);
+				}else{
+					o[names[e]]=endFunction[e](parts[e][c[e]]);
+				}//endif
+			}//for
+			output.append(o);
+		});
 	}//endif
-
-	var code=
-		"cube2list=function(query){\n"+
-			"var output=[];\n"+
-			pre+
-			loops.replace("<BODY>",
-				assignSelect+
-				assignEdges+
-				"output.push(row);\n"
-			)+
-			"return output;"+
-		"};"
-	;
-
-	//COMPILE
-	var cube2list;
-	eval(code);
-
-
-	{//EVAL
-		var t=new aTimer("Convert from cube to list", Duration.SECOND);
-		yield (cube2list(query));
-		t.end();
-	}
-
+	return output;
 };//method
 
 
@@ -728,24 +699,26 @@ Qb.normalize=function(query, edgeIndex, multiple){
 
 
 //selectValue - THE FIELD TO USE TO CHECK FOR ZEROS (REQUIRED IF RECORDS ARE OBJECTS INSTEAD OF VALUES)
-Qb.removeZeroParts=function(query, edgeIndex, selectValue){
-	if (query.cube===undefined) Log.error("Can only normalize a cube into a table at this time");
-	if (selectValue===undefined) Log.error("method now requires third parameter");
+Qb.removeZeroParts = function(query, edgeIndex, selectValue){
+	if (query.cube === undefined) Log.error("Can only normalize a cube into a table at this time");
+	if (selectValue === undefined) Log.error("method now requires third parameter");
 
 	var domain = query.edges[edgeIndex].domain;
-	var zeros=domain.partitions.map(function(){ return true;});
+	var zeros = domain.partitions.map(function(){
+		return true;
+	});
 
 	//CHECK FOR ZEROS
-	var m = new Matrix({"data": query.cube});
-		if (query.select instanceof Array){
-			m.forall(edgeIndex, function (v, i) {
-				if (v[selectValue] !== undefined && v[selectValue] != null && v[selectValue] != 0) zeros[i] = false;
-			});
-		}else{
-			m.forall(edgeIndex, function (v, i) {
-				if (v !== undefined && v != null && v != 0) zeros[i] = false;
-			});
-		}//endif
+	var m = new Matrix({"data" : query.cube});
+	if (query.select instanceof Array) {
+		m.forall(function(v, c){
+			if (v[selectValue] !== undefined && v[selectValue] != null && v[selectValue] != 0) zeros[c[edgeIndex]] = false;
+		});
+	} else {
+		m.forall(function(v, i){
+			if (v !== undefined && v != null && v != 0) zeros[edgeIndex] = false;
+		});
+	}//endif
 
 	//REMOVE ZERO PARTS FROM EDGE
 	var j = 0;
@@ -858,7 +831,7 @@ Qb.getColumnsFromQuery=function*(query){
 	} else if (query.from.list){
 		sourceColumns = query.from.columns;
 	} else if (query.from.cube){
-		query.from.list = yield (Qb.Cube2List(query.from));
+		query.from.list = Qb.Cube2List(query.from);
 		sourceColumns = query.from.columns;
 	}else if (query.from.from!=undefined){
 		query.from=yield (Qb.calc2List(query.from));
@@ -1007,6 +980,7 @@ Qb.merge=function(query){
 ////////////////////////////////////////////////////////////////////////////////
 //TAKE data LIST OF OBJECTS AND ENSURE names ARE ORDERED
 Qb.sort = function(data, sortOrder, columns){
+	sortOrder = Array.newInstance(sortOrder);
 	if (sortOrder.length==0) return data;
 	var totalSort = Qb.sort.compile(sortOrder, columns, true);
 	try{
@@ -1030,9 +1004,15 @@ Qb.sort.compile=function(sortOrder, columns, useNames){
 		});
 	}else{
 		orderedColumns = sortOrder.map(function(v){
-			for(var i=columns.length;i--;){
-				if (columns[i].name==v && !(columns[i].sortOrder==0)) return columns[i];
-			}//for
+			if (v.value!==undefined){
+				for(var i=columns.length;i--;){
+					if (columns[i].name==v.value && !(columns[i].sortOrder==0)) return {"name": v.value, "sortOrder":nvl(v.sort, 1), "domain":Qb.domain.value};
+				}//for
+			}else{
+				for(var i=columns.length;i--;){
+					if (columns[i].name==v && !(columns[i].sortOrder==0)) return {"name":v, "sortOrder":1, "domain":Qb.domain.value};
+				}//for
+			}
 			Log.error("Sorting can not find column named '"+v+"'");
 		});
 	}//endif
@@ -1044,8 +1024,14 @@ Qb.sort.compile=function(sortOrder, columns, useNames){
 			Log.warning("what?");
 		}//endif
 
-		if (MVEL.isKeyword(col.name)){
-			var index=useNames ? splitField(col.name).map(function(v){return CNV.String2Quote(v);}).join("][") : col.columnIndex;
+
+		var index;
+		if (!useNames){
+			index = col.columnIndex;
+		}else if (MVEL.isKeyword(col.name)){
+			index=splitField(col.name).map(function(v){return CNV.String2Quote(v);}).join("][");
+		}else if (columns.select("name").contains(col.name)){
+			index=CNV.String2Quote(col.name);
 		}else{
 			Log.error("Can not handle");
 		}//endif

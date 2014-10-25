@@ -189,7 +189,7 @@ ProgramFilter.prototype.refresh = function(){
 
 		//CONVERT MULTIPLE EDGES INTO SINGLE LIST OF PROGRAMS
 		var programs=[];
-		forAllKey(data.facets, function(name, edge){
+		Map.forall(data.facets, function(name, edge){
 			if (name=="Programs") return;  //ALL PROGRAMS (NOT ACCURATE COUNTS)
 			programs.push({"term":name, "count":edge.total});
 		});

@@ -42,7 +42,7 @@ var ScrumBugs={};
 		return output;
 	};//method
 
-	var TEST = true;
+	var TEST = false;
 	if (TEST){
 		var white = "[est:4d, p=4][coordination]";
 		ASSERT(ScrumBugs.parse(white).points == 4, "Wrong");

@@ -74,8 +74,10 @@ importScript("../util/aUtil.js");
 	Array.prototype.select=function(attrName){
 		var output=[];
 		if (typeof(attrName)=="string"){
-			for(var i=0;i<this.length;i++) output.push(this[i][attrName]);
-		}else{
+			for(var i=0;i<this.length;i++)
+				output.push(this[i][attrName]);
+		}else if (attrName instanceof Array){
+			//SELECT MANY VALUES INTO NEW OBJECT
 			for(var i=0;i<this.length;i++){
 				var v=this[i];
 				var o={};
@@ -85,6 +87,10 @@ importScript("../util/aUtil.js");
 				}//for
 				output.push(o);
 			}//for
+		}else{
+			//ASSUMING NUMERICAL INDEX
+			for(var i=0;i<this.length;i++)
+				output.push(this[i][attrName]);
 		}//endif
 		return output;
 	};//method

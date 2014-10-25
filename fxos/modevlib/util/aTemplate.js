@@ -26,6 +26,12 @@ var Template = function Template(template){
 	var FUNC = {};
 	FUNC.html = CNV.String2HTML;
 	FUNC.css = CNV.Object2style;
+	FUNC.datetime = function(d, f){
+		if (f===undefined){
+			f="yyyy-MM-dd HH:mm:ss";
+		}//endif
+		return d.format(f);
+	};
 
 
 	function _expand(template, namespaces){
@@ -88,11 +94,15 @@ var Template = function Template(template){
 			var key = path[0];
 			var val = map[key];
 			for (var p = 1; p < path.length; p++) {
-				var func = path[p];
+				var func = path[p].split("(")[0];
 				if (FUNC[func] === undefined) {
 					Log.error(func + " is an unknown string function for template expansion")
 				}//endif
-				val = FUNC[func](val);
+				if (path[p].split("(").length==1){
+					val = FUNC[func](val)
+				}else{
+					val = eval("FUNC[func](val, "+path[p].split("(")[1]);
+				}//endif
 			}//for
 
 			val = "" + val;

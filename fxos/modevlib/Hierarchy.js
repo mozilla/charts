@@ -177,7 +177,7 @@ Hierarchy.topologicalSort = function(args){
 //	var children_field="_EDGES";
 
 	//ADD EDGES SO FOLLOWING ALGORITHM WORKS
-//	forAllKey(graph, function(k, v){
+//	Map.forall(graph, function(k, v){
 //		v[children_field]=[];
 //		v[children_id_field].forall(function(v, i){
 //			v[children_field].push(graph[v]);
@@ -233,7 +233,7 @@ Hierarchy.topologicalSort = function(args){
 
 
 	function populateIndegreesAndUnprocessed(){
-		forAllKey(graph, function(nodeId, node){
+		Map.forall(graph, function(nodeId, node){
 			unprocessed.push(nodeId);
 			if (node.indegrees === undefined) node.indegrees = 0;
 			if (node[children_field] === undefined) node[children_field] = [];

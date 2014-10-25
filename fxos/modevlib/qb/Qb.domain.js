@@ -641,7 +641,7 @@ Qb.domain.duration = function(column, sourceColumns){
 		var i=aMath.floor(key.subtract(this.min).divideBy(this.interval));
 
 		if (i>=this.partitions.length) return this.NULL;
-		if (this.partitions[i].min>key || key>=this.partitions[i].max){
+		if (key.milli<this.partitions[i].min.milli || this.partitions[i].max.milli<=key.milli){
 			i=aMath.floor(key.subtract(this.min, this.interval).divideBy(this.interval));
 			Log.warning("programmer error "+i);
 		}//endif
@@ -1233,7 +1233,7 @@ Qb.domain.set.compileKey=function(domain){
 			var f =
 				"newGetKeyFunction=function(__part){\n"+
 				"	if (__part==this.NULL) return null;\n";
-					forAllKey(partition, function(attrName, value){
+					Map.forall(partition, function(attrName, value){
 						if (key.indexOf(attrName) >= 0) f += "var " + attrName + "=__part." + attrName + ";\n";
 					});
 			f+=	"	return "+key+"\n"+
@@ -1261,8 +1261,20 @@ Qb.domain.compileEnd=function(domain){
 			if (!domain.columns){
 				domain.columns=Qb.getColumnsFromList(domain.partitions);
 			}//endif
+
 			//RECOMPILE SELF WITH NEW INFO
-			domain.end=aCompile.expression(domain.value, domain);
+			if (MVEL.isKeyword(domain.value)){
+				domain.end=function(part){
+					if (part===undefined) return domain.NULL;
+					return Map.get(part, domain.value);
+				};
+			}else{
+				var calcEnd=aCompile.expression(domain.value, domain);
+				domain.end=function(part){
+					if (part===undefined) return domain.NULL;
+					return calcEnd(part);
+				};
+			}//endif
 			return domain.end(part);
 		};//method
 	}else if (domain.end===undefined){

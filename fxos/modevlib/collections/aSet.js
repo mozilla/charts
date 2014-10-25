@@ -9,6 +9,9 @@ importScript("aArray.js");
 
 
 var aSet=function(data){
+	if (this.VERIFY_INSTANCE!=aSet.VERIFY_INSTANCE){
+		Log.error("Expecting to be called using 'new'");
+	}//endif
 	this.map={};
 	if (data!==undefined)
 		this.addArray(data);
@@ -16,6 +19,8 @@ var aSet=function(data){
 
 
 (function(){
+	aSet.VERIFY_INSTANCE={};
+	aSet.prototype.VERIFY_INSTANCE=aSet.VERIFY_INSTANCE;
 
 	aSet.prototype.add=function(v){
 		this.map[v]=v;

@@ -74,7 +74,7 @@ MVEL.compile.setValues=function(expression, constants){
 		if (value instanceof Array) continue;  //DO NOT MESS WITH ARRAYS
 
 		if (typeof value == "object"){
-			forAllKey(value, function(k, v){
+			Map.forall(value, function(k, v){
 				constants.push({"name":n+"."+k, "value":v});
 			});
 		}//endif
@@ -519,7 +519,7 @@ MVEL.compile.addFunctions=function(mvel){
 	var keepAdding=true;
 	while(keepAdding){
 		keepAdding=false;
-		forAllKey(MVEL.FUNCTIONS, function(k, v){
+		Map.forall(MVEL.FUNCTIONS, function(k, v){
 			if (isAdded[k]) return;
 			if (mvel.indexOf(k)==-1) return;
 			keepAdding=true;

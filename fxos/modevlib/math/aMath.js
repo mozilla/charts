@@ -119,6 +119,9 @@ aMath = {};
 		return MIN(arguments);
 	};//method
 
+	aMath.log10 = function(v){
+		return Math.log(v)/Math.log(10);
+	};//method
 
 	//
 	aMath.average = function(array){

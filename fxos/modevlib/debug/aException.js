@@ -46,6 +46,7 @@ importScript("../util/CNV.js");
 
 	function parseStack(stackString){
 		var output = [];
+		if (stackString===undefined || stackString==null) return output;
 		stackString.split("\n").forEach(function(l){
 			var parts=stackPattern.exec(l);
 			if (parts==null) return;

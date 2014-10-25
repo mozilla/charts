@@ -7,11 +7,13 @@ var MozillaPrograms = {
 		"columns": ["projectName", "attributeName", "attributeValue", "esfilter"],
 		"rows": [
 			["e10s Blockers", "cf_tracking_e10s", "+"],
+			["e10s (M2)", "cf_tracking_e10s", "m2+"],
+			["e10s (M3)", "cf_tracking_e10s", "m3+"],
 			["e10s Noms", "cf_tracking_e10s", "?"],
 			["e10s Later", "cf_tracking_e10s", "later"],
 
-			["B2G 2.0", "cf_blocking_b2g", "2.0+"],
-			["B2G 2.0", "cf_blocking_b2g", "1.5+"],
+			["B2G 2.1", "cf_blocking_b2g", "2.1+"],
+			["B2G 2.0", "cf_blocking_b2g", ["2.0+", "1.5+"]],
 			["B2G 1.4", "cf_blocking_b2g", "1.4+"],
 			["B2G 1.3", "cf_blocking_b2g", "1.3+"],
 			["B2G 1.3t", "cf_blocking_b2g", "1.3t+"],

@@ -128,8 +128,8 @@ Dimension.addEdges(false, Mozilla, [
 			]
 		},
 		{"name": "Platform", "field": "test_machine.platform", "type": "set", "limit": 1000},
-//		{"name":"Test", "field":["testrun.suite", "result.test_name"], "type":"set", "limit":1000},
-		{"name":"Test", "field":"result.test_name", "type":"set", "limit":1000},
+		{"name":"TestOnly", "field":"result.test_name", "type":"set", "limit":1000},
+		{"name":"Test", "field":["testrun.suite", "result.test_name"], "type":"set", "limit":1000},
 		{"name": "Revision", "field": "test_build.revision", "type": "uid"}
 	]}
 

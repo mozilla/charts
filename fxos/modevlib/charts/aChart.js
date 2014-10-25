@@ -138,8 +138,6 @@ importScript([
 	"../../lib/ccc/pvc/data/translation/BoxplotChartTranslationOper.js",
 	"../../lib/ccc/pvc/pvcBoxplotPanel.js",
 	"../../lib/ccc/pvc/pvcBoxplotChart.js",
-
-	"../../lib/ccc/data/q01-01.js"
 ]);
 
 
@@ -165,6 +163,22 @@ var CHART_TYPES={
 	"box":"BoxplotChart"
 };
 
+////////////////////////////////////////////////////////////////////////////
+// STYLES
+////////////////////////////////////////////////////////////////////////////
+var DEFAULT_STYLES = [
+	{"color":"#1f77b4"},
+	{"color":"#ff7f0e"},
+	{"color":"#2ca02c"},
+	{"color":"#d62728"},
+	{"color":"#9467bd"},
+	{"color":"#8c564b"},
+	{"color":"#e377c2"},
+	{"color":"#7f7f7f"},
+	{"color":"#bcbd22"},
+	{"color":"#17becf"}
+];
+aChart.DEFAULT_STYLES=DEFAULT_STYLES;
 
 
 function copyParam(fromParam, toParam){
@@ -225,8 +239,12 @@ aChart.showProgress=function(params){
 
 
 
-
+/*
+minPercent = PREVENT SLICES SMALLER THAN GIVEN (minPercent<1.0)
+otherStyle = STYLE FOR THE other SLICE
+ */
 aChart.showPie=function(params){
+
 	var divName=params.id;
 
 	var type=params.type;
@@ -237,6 +255,7 @@ aChart.showPie=function(params){
 		return;
 	}//endif
 	if (chartCube.select instanceof Array) Log.error("Can not chart when select clause is an array");
+
 
 
 	var values = null;
@@ -252,18 +271,18 @@ aChart.showPie=function(params){
 			values = [];
 			chartCube.cube.forall(function(v, i){
 				if (v/total >= params.minPercent){
-					values.append({"name":seriesLabels[i], "value":v})
+					values.append({"name":seriesLabels[i], "value":v, "style":chartCube.edges[0].domain.partitions[i].style})
 				}else{
 					other+=v;
 				}//endif
 			});
-			values = Qb.sort(values, {"value:":"value", "sort":-1});
-			if (other > 0) values.append({"name": "Other", "value": other});
-		}else{
+			values = Qb.sort(values, {"value" : "value", "sort" : -1});
+			if (other > 0) values.append({"name" : "Other", "value" : other, "style":params.otherStyle});
+		} else {
 			values = chartCube.cube.map(function(v, i){
-				values.append({"name":seriesLabels[i], "value":v})
+				return {"name" : seriesLabels[i], "value" : v, "style":chartCube.edges[0].domain.partitions[i].style}
 			});
-			values = Qb.sort(values, {"value:":"value", "sort":-1});
+			values = Qb.sort(values, {"value" : "value", "sort" : -1});
 		}//endif
 	} else if (chartCube.edges.length==2){
 		var aLabels=getAxisLabels(chartCube.edges[0]);
@@ -297,7 +316,7 @@ aChart.showPie=function(params){
 				}//endif
 			});
 			values = Qb.sort(values, {"value":"value", "sort":-1});
-			if (allOther>0) values.append({"name":"Other", "value":allOther});
+			if (allOther>0) values.append({"name":"Other", "value":allOther, "style":params.otherStyle});
 		}else{
 			Log.error("having hierarchical dimension without a minPercent is not implemented");
 		}//endif
@@ -306,6 +325,19 @@ aChart.showPie=function(params){
 	}//endif
 
 
+	var colors = values.map(function(v, i){
+		var c="black";
+		if (v.style && v.style.color) {
+			c = v.style.color;
+		} else {
+			c = DEFAULT_STYLES[i % DEFAULT_STYLES.length].color;
+		}//endif
+		if (c.toHTML){
+			return c.toHTML();
+		}else{
+			return c;
+		}//endif
+	});
 
 
 
@@ -323,6 +355,7 @@ aChart.showPie=function(params){
 		timeSeries: false,
 		valuesVisible:false,
 		showValues: false,
+		"colors":colors,
 		extensionPoints: {
 			noDataMessage_text: "No Data To Chart"
 //			xAxisLabel_textAngle: aMath.PI/4,
@@ -736,6 +769,7 @@ aChart.show=function(params){
 		yAxisPosition: "right",
 		yAxisSize: 50,
 		xAxisSize: 50,
+		"otherStyle":{"color":"lightgray"},
 		tooltip:{
 //			"format":function(){
 //				return "hi there";
@@ -939,7 +973,7 @@ function findDateMarks(part, name){
 			})
 		} else {
 			//EXPECTING <name>:<date> FORMAT
-			forAllKey(mark, function(name, date){
+			Map.forall(mark, function(name, date){
 				output.append({
 					"name": name,
 					"date": Date.newInstance(date),

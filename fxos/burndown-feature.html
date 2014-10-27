@@ -287,6 +287,7 @@ importScript([
 	NEEDED_FIELDS = ["status_whiteboard"];  //FOR GETTING THE SCRUMBUGZ p=N VALUES
 
 	var raw_data = null;   //KEEP RAW DATA FOR RE-CHARTING
+	var daily_data = null;
 	var featureFilter = null;
 
 	var thread;
@@ -306,7 +307,7 @@ importScript([
 	var __createChart = function*(){
 		$("#feature-summary").html("");
 		$("#chart").html("");
-		$("#chart-diff").html("");
+		$("#chart_diff").html("");
 		$("#buglist").html("");
 		$("#info").html("");
 
@@ -400,18 +401,18 @@ importScript([
 
 
 		var currFeatureFilter = GUI.state.hierarchyMode.getSimpleState() != "All dependencies" ? nvl(milestoneFilter, featureFilter) : {"match_all" : {}};
-		yield (getDailyDependencies(raw_data, {"and":[
+		daily_data = yield (getDailyDependencies(raw_data, {"and":[
 			nvl(milestoneFilter, {"match_all" : {}}),
 			nvl(featureFilter, {"match_all" : {}})
 		]}));
 
 		//LAST DAY WILL BE CONSIDERED CURRENT FEATURE LIST
-		var currOpenBugs = raw_data.cube.last().filter({"and" : [
+		var currOpenBugs = daily_data.cube.last().filter({"and" : [
 			{"term" : {"counted" : "Open"}},
 			currFeatureFilter
 		]}).select("bug_id");
 
-		var currTotalBugs = raw_data.cube.last().filter({"and" : [
+		var currTotalBugs = daily_data.cube.last().filter({"and" : [
 			{"not" : {"term" : {"counted" : "none"}}},
 			currFeatureFilter
 		]}).select("bug_id");
@@ -430,7 +431,7 @@ importScript([
 		Thread.run(function*(){
 			$("#feature-summary").html("");
 			$("#chart").html("");
-			$("#chart-diff").html("");
+			$("#chart_diff").html("");
 			$("#buglist").html("");
 			$("#info").html("");
 
@@ -446,17 +447,19 @@ importScript([
 				milestoneFilter = {"or" : milestones.select("esfilter")};
 			}//endif
 
-			yield (getDailyDependencies(raw_data, nvl(milestoneFilter, {"match_all" : {}})));
-
 			var currFeatureFilter = GUI.state.hierarchyMode.getSimpleState() != "All dependencies" ? nvl(milestoneFilter, featureFilter) : {"match_all" : {}};
+			daily_data = yield (getDailyDependencies(raw_data, {"and":[
+				nvl(milestoneFilter, {"match_all" : {}}),
+				nvl(featureFilter, {"match_all" : {}})
+			]}));
 
 			//LAST DAY WILL BE CONSIDERED CURRENT FEATURE LIST
-			var currOpenBugs = raw_data.cube.last().filter({"and" : [
+			var currOpenBugs = daily_data.cube.last().filter({"and" : [
 				{"term" : {"counted" : "Open"}},
 				currFeatureFilter
 			]}).select("bug_id");
 
-			var currTotalBugs = raw_data.cube.last().filter({"and" : [
+			var currTotalBugs = daily_data.cube.last().filter({"and" : [
 				{"not" : {"term" : {"counted" : "none"}}},
 				currFeatureFilter
 			]}).select("bug_id");
@@ -626,7 +629,7 @@ importScript([
 			// CHURN
 			////////////////////////////////////////////////////////////////////////////
 			var chart = yield(Q({
-				"from" : raw_data,
+				"from" : daily_data,
 				"select" : [
 					{"name" : "Opened", "value" : "churn > 0 ? 1 : 0", "aggregate" : "sum", "default" : 0, "style" : {"color" : Color.GREEN.multiply(0.5).hue(20)}},
 					{"name" : "Closed", "value" : "churn < 0 ? -1 : 0", "aggregate" : "sum", "default" : 0, "style" : {"color" : Color.RED.multiply(0.7).hue(10)}}
@@ -656,7 +659,7 @@ importScript([
 							{"term" : {"churn" : series == "Opened" ? 1 : -1}}
 						]};
 
-						var buglist = raw_data.list.filter(where);
+						var buglist = daily_data.list.filter(where);
 						Bugzilla.showBugs(buglist.select("bug_id"));
 					});
 				}//click
@@ -690,7 +693,7 @@ importScript([
 			}))).list[0];
 
 			//CURRENT OPEN BUG COUNT
-			var todayOpenBugs = raw_data.cube[env.TODAY.subtract(START_DATE).divideBy(Duration.DAY)]
+			var todayOpenBugs = daily_data.cube[env.TODAY.subtract(START_DATE).divideBy(Duration.DAY)]
 				.filter({"and":[
 					env.currFeatureFilter,
 					{"term" : {"counted" : "Open"}}
@@ -778,7 +781,7 @@ importScript([
 
 					Thread.run(function*(){
 						var buglist = (yield (Q({
-							"from" : raw_data,
+							"from" : daily_data,
 							"select" : {"value" : "bug_id", "aggregate" : "minimum"},
 							"edges" : [
 								{"name" : "unique", "value" : "bug_id"}

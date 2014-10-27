@@ -89,11 +89,13 @@ Hierarchy.addDescendants = function*addDescendants(args){
 	//REVERSE POINTERS
 	var allParents = new aRelation();
 	var allDescendants = new aRelation();
+	var all = from.select(id);
 	from.forall(function(p){
 		var children = p[fk];
 		if (children) for (var i = children.length; i--;) {
 			var c = children[i];
 			if (c == "") continue;
+			if (! all.contains(c)) continue;
 			allParents.add(c, p[id]);
 			allDescendants.add(p[id], c);
 		}//for
@@ -400,7 +402,7 @@ function* getDailyDependencies(data, topBugFilter){
 		var openTopBugs = [];
 		var openBugs = todayBugs.map(function(detail){
 			if (["new", "assigned", "unconfirmed", "reopened"].contains(detail.bug_status)) {
-				if (topBugFilter(detail)) -openTopBugs.append(detail);
+				if (topBugFilter(detail)) openTopBugs.append(detail);
 				return detail;
 			} else {
 				return undefined;
@@ -417,12 +419,15 @@ function* getDailyDependencies(data, topBugFilter){
 		var openDescendantsForToday = Array.union(openTopBugs.select("dependencies")).union(openTopBugs.select("bug_id")).map(function(v){
 			return v - 0;
 		});
+		var todayTotal = 0;  // FOR DEBUG
+		var todayDiff=0;
 		todayBugs.forall(function(detail, i){
 			var yBug = {};
 			if (yesterdayBugs) yBug = yesterdayBugs[i];
 
 			if (openDescendantsForToday.contains(detail.bug_id) && ["new", "assigned", "unconfirmed", "reopened"].contains(detail.bug_status)) {
 				detail.counted = "Open";
+				todayTotal++;
 				if (yBug.counted == "Open") {
 					yBug.churn = 0;
 				} else {
@@ -435,6 +440,7 @@ function* getDailyDependencies(data, topBugFilter){
 					yBug.churn = -1;
 				}//endif
 			}//endif
+			todayDiff += yBug.churn;
 		});
 
 		yesterdayBugs = todayBugs;

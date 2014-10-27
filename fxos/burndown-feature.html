@@ -287,6 +287,7 @@ importScript([
 	NEEDED_FIELDS = ["status_whiteboard"];  //FOR GETTING THE SCRUMBUGZ p=N VALUES
 
 	var raw_data = null;   //KEEP RAW DATA FOR RE-CHARTING
+	var daily_data = null;
 	var featureFilter = null;
 
 	var thread;
@@ -306,7 +307,7 @@ importScript([
 	var __createChart = function*(){
 		$("#feature-summary").html("");
 		$("#chart").html("");
-		$("#chart-diff").html("");
+		$("#chart_diff").html("");
 		$("#buglist").html("");
 		$("#info").html("");
 
@@ -430,7 +431,7 @@ importScript([
 		Thread.run(function*(){
 			$("#feature-summary").html("");
 			$("#chart").html("");
-			$("#chart-diff").html("");
+			$("#chart_diff").html("");
 			$("#buglist").html("");
 			$("#info").html("");
 
@@ -446,9 +447,11 @@ importScript([
 				milestoneFilter = {"or" : milestones.select("esfilter")};
 			}//endif
 
-			daily_data = yield (getDailyDependencies(raw_data, nvl(milestoneFilter, {"match_all" : {}})));
-
 			var currFeatureFilter = GUI.state.hierarchyMode.getSimpleState() != "All dependencies" ? nvl(milestoneFilter, featureFilter) : {"match_all" : {}};
+			daily_data = yield (getDailyDependencies(raw_data, {"and":[
+				nvl(milestoneFilter, {"match_all" : {}}),
+				nvl(featureFilter, {"match_all" : {}})
+			]}));
 
 			//LAST DAY WILL BE CONSIDERED CURRENT FEATURE LIST
 			var currOpenBugs = daily_data.cube.last().filter({"and" : [

@@ -845,7 +845,7 @@ importScript([
 
 
 function targetDate(m) {
-	return Date.min(Date.newInstance(m.targetDate), Date.newInstance(aChart.findDateMarks(m, "FC")))
+	return Date.max(Date.newInstance(m.targetDate), Date.newInstance(aChart.findDateMarks(m, "FC")))
 }//method
 
 function startDate(m) {

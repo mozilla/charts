@@ -75,8 +75,10 @@ var Log = new function(){
 	};
 
 	try{
-		var id=jQuery.bbq.getState("log");
-		Log.addInvisibleLog(id);
+		$(document).ready(function(){
+			var id=$.bbq.getState("log");
+			Log.addInvisibleLog(id);
+		});
 	}catch(e){
 
 	}//try

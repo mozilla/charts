@@ -63,7 +63,7 @@ class MoDevMetricsDriver(object):
             s = self.find("#status")
             if not s:
                 return None
-            return s.text()
+            return s[0].text
 
         # IF THE MESSAGE KEEPS CHANGING OR THE LOGS KEEP INCREASING WE CAN BE
         # CONFIDENT SOMETHING IMPORTANT IS STILL HAPPENING
@@ -73,7 +73,7 @@ class MoDevMetricsDriver(object):
 
     def check_for_errors(self, logs, path):
         try:
-            errors = [l for l in logs if l.type == "ERROR"]
+            errors = [l for l in logs if l.type in ["ALERT", "ERROR"]]
             if errors:
                 Log.error("Problem found in {{page}}:\n{{error|indent}}", {
                     "page": path,

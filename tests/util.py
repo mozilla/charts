@@ -55,7 +55,10 @@ class MoDevMetricsDriver(object):
         if isLoading:
             Log.error("page still loading: {{page}}", {"page": path})
 
-    def wait_for_logs(self):
+    def wait_for_logs(self, timeout=None):
+        if not timeout:
+            timeout = timedelta(seconds=10)
+
         def logs():
             return self.find("#" + LOG_DIV + " p")
 
@@ -67,7 +70,7 @@ class MoDevMetricsDriver(object):
 
         # IF THE MESSAGE KEEPS CHANGING OR THE LOGS KEEP INCREASING WE CAN BE
         # CONFIDENT SOMETHING IMPORTANT IS STILL HAPPENING
-        self._wait_for_stable(lambda: (status(), len(logs())), timedelta(seconds=10))
+        self._wait_for_stable(lambda: (status(), len(logs())), timeout)
 
         return [CNV.JSON2object(CNV.html2unicode(e.get_attribute('innerHTML'))) for e in logs()]
 
@@ -94,12 +97,13 @@ class MoDevMetricsDriver(object):
         oldValue = "probably never an initial value"
         newValue = detect_function()
         while True:
+            now = Date.now()
             potentialValue = detect_function()
             if potentialValue != newValue:
                 oldValue = newValue
                 newValue = potentialValue
-                detectTime = Date.now()
-            if Date.now() - detectTime > timeout:
+                detectTime = now
+            if now - detectTime > timeout:
                 return
             Thread.sleep(seconds=0.5)
 

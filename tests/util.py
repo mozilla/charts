@@ -9,11 +9,13 @@
 #
 
 from __future__ import unicode_literals
+from datetime import timedelta
 from pyLibrary.cnv import CNV
 from pyLibrary.collections import OR
 from pyLibrary.env.files import File
 from pyLibrary.env.logs import Log
 from pyLibrary.thread.threads import Thread
+from pyLibrary.times.dates import Date
 
 LOG_DIV = "test_logs"
 
@@ -54,14 +56,20 @@ class MoDevMetricsDriver(object):
             Log.error("page still loading: {{page}}", {"page": path})
 
     def wait_for_logs(self):
-        old_length = -1
-        elements = self.find("#" + LOG_DIV + " p")
-        while len(elements) != old_length:
-            Thread.sleep(seconds=10)
-            old_length = len(elements)
-            elements = self.find("#" + LOG_DIV + " p")
+        def logs():
+            return self.find("#" + LOG_DIV + " p")
 
-        return [CNV.JSON2object(CNV.html2unicode(e.get_attribute('innerHTML'))) for e in elements]
+        def status():
+            s = self.find("#status")
+            if not s:
+                return None
+            return s.text()
+
+        # IF THE MESSAGE KEEPS CHANGING OR THE LOGS KEEP INCREASING WE CAN BE
+        # CONFIDENT SOMETHING IMPORTANT IS STILL HAPPENING
+        self._wait_for_stable(lambda: (status(), len(logs())), timedelta(seconds=10))
+
+        return [CNV.JSON2object(CNV.html2unicode(e.get_attribute('innerHTML'))) for e in logs()]
 
     def check_for_errors(self, logs, path):
         try:
@@ -73,3 +81,25 @@ class MoDevMetricsDriver(object):
                 })
         finally:
             self.close()
+
+
+    def _wait_for_stable(self, detect_function, timeout):
+        """
+        WAIT FOR RESULTS OF detect_function TO BE STABLE
+        """
+        if not isinstance(timeout, timedelta):
+            Log.error("Expecting a timeout as a timedelta")
+
+        detectTime = Date.now()
+        oldValue = "probably never an initial value"
+        newValue = detect_function()
+        while True:
+            potentialValue = detect_function()
+            if potentialValue != newValue:
+                oldValue = newValue
+                newValue = potentialValue
+                detectTime = Date.now()
+            if Date.now() - detectTime > timeout:
+                return
+            Thread.sleep(seconds=0.5)
+

@@ -72,7 +72,9 @@ class MoDevMetricsDriver(object):
         # CONFIDENT SOMETHING IMPORTANT IS STILL HAPPENING
         self._wait_for_stable(lambda: (status(), len(logs())), timeout)
 
-        return [CNV.JSON2object(CNV.html2unicode(e.get_attribute('innerHTML'))) for e in logs()]
+        output = [CNV.JSON2object(CNV.html2unicode(e.get_attribute('innerHTML'))) for e in logs()]
+        Log.note("Logs:\n{{logs|indent}}", {"logs": output})
+        return output
 
     def check_for_errors(self, logs, path):
         try:

@@ -78,6 +78,7 @@ ESQuery.DEBUG = false;
 		"raw_telemetry": {"style":{"color":"black","background-color":yellow}, "host": "http://klahnakoski-es.corp.tor1.mozilla.com:9200", "path": "/raw_telemetry/data"},
 
 		"talos": {"style":{"color":"black","background-color":yellow}, "host": "http://klahnakoski-es.corp.tor1.mozilla.com:9200", "path": "/talos/test_results"},
+		"talos2": {"style":{"color":"black","background-color":yellow}, "host": "http://localhost:9200", "path": "/talos2/test_results"},
 		"public_talos": {"style":{"color":"black","background-color":yellow}, "host": "http://67.55.30.33:9201", "path": "/talos/test_results"},
 		"b2g_tests": {"style":{"color":"black","background-color":yellow}, "host": "http://elasticsearch-private.bugs.scl3.mozilla.com:9200", "path": "/b2g_tests/results"},
 		"b2g": {"style":{"color":"black","background-color":yellow}, "host": "http://elasticsearch-private.bugs.scl3.mozilla.com:9200", "path": "/b2g_tests/results"},

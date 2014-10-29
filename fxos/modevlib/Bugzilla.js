@@ -8,7 +8,7 @@ importScript("rest/BugzillaClient.js");
 
 
 Bugzilla={};
-Bugzilla.JSON_URL="https://api-dev.bugzilla.mozilla.org/latest";
+Bugzilla.JSON_URL="https://bugzilla.mozilla.org/bzapi";
 Bugzilla.URL="https://bugzilla.mozilla.org/buglist.cgi";
 //Bugzilla.JSONP_CALLBACK="bz_callback";
 //Bugzilla.numCallback=0;

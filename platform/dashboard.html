@@ -1,0 +1,126 @@
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+<meta http-equiv="refresh" content="3600">
+<!-- This Source Code Form is subject to the terms of the Mozilla Public
+   - License, v. 2.0. If a copy of the MPL was not distributed with this
+   - file, You can obtain one at http://mozilla.org/MPL/2.0/. -->
+<HTML>
+<HEAD >
+	<title>Dashboard - Platform</title>
+	<script type="text/javascript" src="modevlib/imports/import.js"></script>
+</HEAD>
+<BODY style="display: none;">
+<div style="overflow:hidden;">
+	<div id="sidebar">
+		<div id="description" style="width:300px;">
+			Team manager dashboard
+		</div>
+		<hr>
+		<div id="last-updated" style="text-align: center;width:300px;"></div>
+		<hr>
+		<div id="filters" style="width:300px;" class="menu">
+		</div>
+	</div>
+	<div class="sidebar_name">
+		<div>Team Selection</div>
+	</div>
+	<div class="content" style="position:inherit;">
+		<h3 id="title" style="display:inline-block;">Platform Dashboard</h3>
+		<div id="category"></div>
+		<div id="release"></div>
+	</div>
+	<div class="footer">
+		Source at <a href="https://github.com/mozilla/charts/blob/master/fxos/blockers.html">https://github.com/mozilla/charts/blob/master/platform/dashboard.html</a>
+	</div>
+</div>
+
+<script type="application/javascript">
+
+	importScript('js/main_lib.js', function () {
+		heatCommon();
+
+		var thread;
+		function createChart() {
+			if (thread !== undefined)
+				thread.kill(true);
+			thread = Thread.run(__createChart());
+		}
+		refresher(createChart);
+
+		var __createChart = function*() {
+			yield (ESQuery.loadColumns({"from": "bugs"}));
+
+			var team = GUI.state.team.getSimpleState();
+			var teamFilter = {"and": GUI.state.team.getSelectedParts().select("esfilter")};
+			$("#title").html(team);
+
+			$("#category").extend(Mozilla.Platform.Category.forall(function(category){
+				return getCategoryHTML(category, teamFilter)
+			}));
+			$("#release").extend(Mozilla.Platform.Track.forall(function(category){
+				return getCategoryHTML(category, teamFilter)
+			}));
+		};
+
+		$(document).ready(function () {
+			GUI.setup(
+				createChart,
+				[
+					{"id": "team", "name": "Teams", "type": PartitionFilter.newInstance({
+						"id": "Teams",
+						"name": "All Teams",
+						"dimension": Mozilla.Platform.Team,
+						"onlyOne": false,
+						"expandAll": true
+					})}
+				],
+				[],
+				null,
+				false		//SHOW DEFAULT FILTERS?
+			);
+		});
+	});
+
+	function getCategoryHTML(category, teamFilter){
+		var uid = "_dash_"+Util.UID();
+
+		Thread.run(function*(){
+			var all_bugs = yield (ESQuery.run({
+				"from":"bugs",
+				"select":["bug_id","assigned_to"],
+				"esfilter":{"and":[
+					category.esfilter,
+					teamFilter,
+					Mozilla.BugStatus.Open.esfilter
+				]}
+			}));
+
+			var TEMPLATE = new Template(
+				'<div class="category">{{name}}'+
+				'<div class="project {{additionalClass}}"  style="background-color:{{color}}" href="{{bugsURL}}" bugsList="{{bugsList}}" project="{{project}}">' +
+				'<div class="release">{{project}}</div>' +
+				'<div class="count">{{count}}</div>' +
+				(detail.unassignedCount > 0 ? '<div class="unassigned"><a class="count_unassigned" href="{{unassignedURL}}">{{unassignedCount}}</a></div>' : '') +
+				'</div></div>'
+			);
+
+			category.bugs = all_bugs.select("bug_id");
+			category.unassignedBugs = all_bugs.filter(function(b){return b.assigned_to!="nobody@mozilla.org"}).select("bug_id");
+			category.bugsList = category.bugs.join(", ");
+			category.bugsURL = Bugzilla.searchBugsURL(category.bugs);
+			category.unassignedURL = Bugzilla.searchBugsURL(category.unassignedBugs);
+			category.color = "grey";
+
+			$("#"+uid).html(TEMPLATE.replace(category));
+		});
+
+		return '<div id="+uid+"></div>';   //RETURN PLACEHOLDER
+	}//function
+</script>
+
+
+</BODY>
+</HTML>
+
+
+
+

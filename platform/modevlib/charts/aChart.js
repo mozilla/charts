@@ -137,7 +137,7 @@ importScript([
 	"../../lib/ccc/pvc/pvcDataTree.js",
 	"../../lib/ccc/pvc/data/translation/BoxplotChartTranslationOper.js",
 	"../../lib/ccc/pvc/pvcBoxplotPanel.js",
-	"../../lib/ccc/pvc/pvcBoxplotChart.js",
+	"../../lib/ccc/pvc/pvcBoxplotChart.js"
 ]);
 
 
@@ -513,10 +513,29 @@ aChart.showScatter=function(params){
 //			line_strokeStyle:
 		}
 	};
-
-
-
 	copyParam(params, chartParams);
+
+
+	if (xaxis.domain.type=="time"){
+		//LOOK FOR DATES TO MARKUP
+
+		var dateMarks = [];
+		dateMarks.appendArray(findDateMarks(xaxis.domain));  //WE CAN PLUG SOME dateMarks RIGHT INTO TIME DOMAIN FOR DISPLAY
+		if (dateMarks.length>0){
+			chartParams-.renderCallback=function(){
+				var self=this;
+				dateMarks.forall(function(m){
+					try{
+						self.chart.markEvent(Date.newInstance(m.date).format(Qb.domain.time.DEFAULT_FORMAT), m.name, m.style);
+					}catch(e){
+						Log.warning("markEvent failed", e);
+					}
+				});
+				if (params.renderCallback) params.renderCallback();  //CHAIN EXISTING, IF ONE
+			};
+		}//endif
+	}//endif
+
 
 
 	var chart = new pvc[CHART_TYPES[type]](chartParams);

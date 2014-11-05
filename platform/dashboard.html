@@ -8,7 +8,7 @@
 	<title>Dashboard - Platform</title>
 	<script type="text/javascript" src="modevlib/imports/import.js"></script>
 </HEAD>
-<BODY style="display: none;">
+<BODY>
 <div style="overflow:hidden;">
 	<div id="sidebar">
 		<div id="description" style="width:300px;">
@@ -25,8 +25,7 @@
 	</div>
 	<div class="content" style="position:inherit;">
 		<h3 id="title" style="display:inline-block;">Platform Dashboard</h3>
-		<div id="category"></div>
-		<div id="release"></div>
+		<table id="category"></table>
 	</div>
 	<div class="footer">
 		Source at <a href="https://github.com/mozilla/charts/blob/master/fxos/blockers.html">https://github.com/mozilla/charts/blob/master/platform/dashboard.html</a>
@@ -36,7 +35,7 @@
 <script type="application/javascript">
 
 	importScript('js/main_lib.js', function () {
-		heatCommon();
+		sidebarSlider();
 
 		var thread;
 		function createChart() {
@@ -50,15 +49,20 @@
 			yield (ESQuery.loadColumns({"from": "bugs"}));
 
 			var team = GUI.state.team.getSimpleState();
+
 			var teamFilter = {"and": GUI.state.team.getSelectedParts().select("esfilter")};
 			$("#title").html(team);
 
-			$("#category").extend(Mozilla.Platform.Category.forall(function(category){
+			var temp=$("#category");
+			temp.html(Mozilla.Platform.Category.partitions.map(function(category){
 				return getCategoryHTML(category, teamFilter)
-			}));
-			$("#release").extend(Mozilla.Platform.Track.forall(function(category){
+			}).join(""));
+			temp.append(Mozilla.Platform.Track.edges.map(function(category){
 				return getCategoryHTML(category, teamFilter)
-			}));
+			}).join(""));
+			temp.append(Mozilla.Platform.B2GRelease.edges.map(function(category){
+				return getCategoryHTML(category, teamFilter)
+			}).join(""));
 		};
 
 		$(document).ready(function () {
@@ -90,30 +94,39 @@
 				"esfilter":{"and":[
 					category.esfilter,
 					teamFilter,
-					Mozilla.BugStatus.Open.esfilter
+					Mozilla.BugStatus.Open.esfilter,
+					Mozilla.CurrentRecords.esfilter
 				]}
 			}));
 
-			var TEMPLATE = new Template(
-				'<div class="category">{{name}}'+
-				'<div class="project {{additionalClass}}"  style="background-color:{{color}}" href="{{bugsURL}}" bugsList="{{bugsList}}" project="{{project}}">' +
-				'<div class="release">{{project}}</div>' +
-				'<div class="count">{{count}}</div>' +
-				(detail.unassignedCount > 0 ? '<div class="unassigned"><a class="count_unassigned" href="{{unassignedURL}}">{{unassignedCount}}</a></div>' : '') +
-				'</div></div>'
-			);
+			category.bugs = all_bugs.list.select("bug_id");
+			category.bugsCount = category.bugs.length;
 
-			category.bugs = all_bugs.select("bug_id");
-			category.unassignedBugs = all_bugs.filter(function(b){return b.assigned_to!="nobody@mozilla.org"}).select("bug_id");
+			if (category.name =="Security" && category.bugsCount ==0) return;
+
+			category.unassignedBugs = all_bugs.list.filter(function(b){return b.assigned_to!="nobody@mozilla.org"}).select("bug_id");
+			category.unassignedBugsCount = category.unassignedBugs.length;
 			category.bugsList = category.bugs.join(", ");
 			category.bugsURL = Bugzilla.searchBugsURL(category.bugs);
 			category.unassignedURL = Bugzilla.searchBugsURL(category.unassignedBugs);
 			category.color = "grey";
 
-			$("#"+uid).html(TEMPLATE.replace(category));
+			var TEMPLATE = new Template([
+				'<td class="category">{{name}}</td>',
+				'<td><div class="project"  style="background-color:{{color}}" href="{{bugsURL}}" bugsList="{{bugsList}}">' ,
+//				'<div class="release">&nbsp;</div>',
+				'<div class="count">{{bugsCount}}</div>',
+				(category.unassignedBugs.length > 0 ? '<div class="unassigned"><a class="count_unassigned" href="{{unassignedURL}}">{{unassignedBugsCount}}</a></div>' : '') ,
+				'</div></td>'
+			]);
+
+			var node = $("#"+uid);
+			node.html(TEMPLATE.replace(category));
+			addProjectClickers(node);
+
 		});
 
-		return '<div id="+uid+"></div>';   //RETURN PLACEHOLDER
+		return '<tr id="'+uid+'"></tr>';   //RETURN PLACEHOLDER
 	}//function
 </script>
 

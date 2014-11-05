@@ -29,18 +29,19 @@ if (!Mozilla) var Mozilla = {"name": "Mozilla", "edges": []};
 			var period = Duration.newInstance("6week");
 			var today = Date.today();
 
+			var output = undefined;
 			["Nightly", "Aurora", "Beta", "Release"].forall(function(trackName, track){
-				var start = Date.newInstance(release.startDate).add(period.multiply(-track));
+				var start = Date.newInstance(release.startDate).add(period.multiply(track));
 				var end = start.add(period);
 				if (start.getMilli() <= today.getMilli() && today.getMilli() < end.getMilli()) {
-					return {
-						"name": trackName + release.version,
+					output = {
+						"name": trackName + "("+release.version+")",
 						"version": release.version,
 						"esfilter": release.esfilter
 					};
 				}//endif
-				return undefined;
 			});
+			return output;
 		})
 	};
 
@@ -69,15 +70,20 @@ if (!Mozilla) var Mozilla = {"name": "Mozilla", "edges": []};
 						{"name": "Stability", "esfilter": {"and": [
 							{"terms": {"keywords": ["topcrash"]}}
 						]}},
-						{"name": "Priority", "partitions": [
-							{"name": "P1", "esfilter": {"term": {"status_whiteboard.tokenized": "js:p1"}}},
-							{"name": "P2", "esfilter": {"term": {"status_whiteboard.tokenized": "js:p2"}}}
-						]}
+						{"name": "Priority 1", "esfilter": {"term": {"status_whiteboard.tokenized": "js:p1"}}},
+						{"name": "Priority 2", "esfilter": {"term": {"status_whiteboard.tokenized": "js:p2"}}}
 					]
 				},
 
 				releaseTracking,
 				trainTracking,
+
+				{"name":"B2GRelease",
+					"edges":[
+						{"name":"Blocking 2.1", "esfilter":{"term":{"cf_blocking_b2g": "+"}}},
+						{"name":"Blocking 2.2", "esfilter":{"term":{"cf_blocking_b2g": "+"}}}
+					]
+				},
 
 				{"name": "Bug Assignment", "isFacet": true,
 					"partitions": [

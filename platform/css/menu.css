@@ -524,10 +524,10 @@ SIDE BAR
 
 .sidebar_name div{
     position: absolute;
-    top: 50px;
-    left: -2px;
+    top: 40px;
+    right: -73px;
     height: 18px;
-    width: 100%;
+    width: 180px;
     -moz-transform: rotate(270deg);
     /*color: white;*/
     color: #dddddd;

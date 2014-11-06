@@ -69,12 +69,13 @@ function* allOpenDependencies(esfilter, selects) {
 
 	]});
 
-	yield (Hierarchy.addDescendants({
+	Hierarchy.addDescendants({
 		"from": openBugs,
 		"id_field": "bug_id",
 		"fk_field": "dependson",
 		"descendants_field": "dependencies"
-	}));
+	}); yield (Thread.YIELD);
+
 
 	var openDescendantsForToday = Array.union(openTopBugs.select("dependencies")).map(function(v){return v-0;});
 	var shortList = openBugs.filter({"terms":{"bug_id":openDescendantsForToday}});

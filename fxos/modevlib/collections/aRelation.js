@@ -5,11 +5,11 @@
 
 
 //GOOD FOR MANY-MANY RELATIONS
-var aRelation=function(){
+var Relation=function(){
 	this.map={};
 };
 
-aRelation.prototype.add=function(from, to){
+Relation.prototype.add=function(from, to){
 	if (!this.map[from]) this.map[from]={};
 	this.map[from][to]=1;
 	return this;
@@ -17,7 +17,7 @@ aRelation.prototype.add=function(from, to){
 
 
 //RETURN TRUE IF THIS RELATION IS NET-NEW
-aRelation.prototype.testAndAdd=function(from, to){
+Relation.prototype.testAndAdd=function(from, to){
 	var isNew=true;
 	var f=this.map[from];
 	if (!f){
@@ -30,7 +30,7 @@ aRelation.prototype.testAndAdd=function(from, to){
 	return isNew;
 };
 
-aRelation.prototype.addArray=function(from, toArray){
+Relation.prototype.addArray=function(from, toArray){
 	var f=this.map[from];
 	if (!f){
 		f={};
@@ -46,18 +46,18 @@ aRelation.prototype.addArray=function(from, toArray){
 };
 
 //RETURN AN ARRAY OF OBJECTS THAT from MAPS TO
-aRelation.prototype.get=function(from){
+Relation.prototype.get=function(from){
 	var o=this.map[from];
 	if (!o) return [];
 	return Object.keys(o);
 };
 
 //RETURN AN ARRAY OF OBJECTS THAT from MAPS TO
-aRelation.prototype.getMap=function(from){
+Relation.prototype.getMap=function(from){
 	return this.map[from];
 };
 
-aRelation.prototype.forall=function(func){
+Relation.prototype.forall=function(func){
 	var keys=Object.keys(this.map);
 	for(var i=0;i<keys.length;i++){
 		func(keys[i], Object.keys(this.map[keys[i]]), i);

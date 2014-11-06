@@ -9,13 +9,15 @@ ignores: [
   ".git",
   ".idea",
   "*.iml",
+  "platform/.svn",
   "out",
   "docs",
   "html/es/modevlib/etl/_OrgChart.js",
   "html/es/lib/jstree/_lib",
   "html/es/lib/jstree/_docs",
   "html/es/lib/jstree/_demo",
-  "tests"
+  "tests",
+  "platform"
 ]
 url: [
   "charts.paas.mozilla.org",

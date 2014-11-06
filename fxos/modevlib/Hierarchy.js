@@ -76,7 +76,7 @@ Hierarchy.fromList = function(args){
 // id_field - USED TO ID NODE
 // fk_field - NAME OF THE CHILDREN ARRAY, CONTAINING IDs
 //WILL UPDATE ALL BUGS IN from WITH A descendants_field
-Hierarchy.addDescendants = function*addDescendants(args){
+Hierarchy.addDescendants = function addDescendants(args){
 	ASSERT.hasAttributes(args, ["from", "id_field", "fk_field", "descendants_field"]);
 
 	var from = args.from;
@@ -87,8 +87,8 @@ Hierarchy.addDescendants = function*addDescendants(args){
 	var DEBUG_MIN = 1000000;
 
 	//REVERSE POINTERS
-	var allParents = new aRelation();
-	var allDescendants = new aRelation();
+	var allParents = new Relation();
+	var allDescendants = new Relation();
 	var all = from.select(id);
 	from.forall(function(p){
 		var children = p[fk];
@@ -102,12 +102,12 @@ Hierarchy.addDescendants = function*addDescendants(args){
 	});
 
 	//FIND DESCENDANTS
-//	var a=Log.action("Find Descendants", true);
-	yield (Thread.YIELD);
+
+
 	var workQueue = new aQueue(Object.keys(allParents.map));
 
 	while (workQueue.length() > 0) {      //KEEP WORKING WHILE THERE ARE CHANGES
-		yield (Thread.YIELD);
+
 		if (DEBUG) {
 			if (DEBUG_MIN > workQueue.length() && workQueue.length() % Math.pow(10, Math.round(Math.log(workQueue.length()) / Math.log(10)) - 1) == 0) {
 				Log.actionDone(a);
@@ -145,8 +145,7 @@ Hierarchy.addDescendants = function*addDescendants(args){
 		p[descendants_field] = allDescendants.get(p[id]);
 	});
 
-//	Log.actionDone(a);
-	yield (null);
+
 };
 
 
@@ -376,17 +375,17 @@ function* getDailyDependencies(data, topBugFilter){
 	if (typeof(topBugFilter) != "function") topBugFilter = CNV.esFilter2function(topBugFilter);
 
 	//FOR EACH DAY, FIND ALL DEPENDANT BUGS
-	var yesterdayBugs = null;
+	var yesterdayBugs = null; var yesterdayOpenDescendants = null; var yesterdayOpenBugs
 	for (var day = 0; day < data.cube.length; day++) {
 		var todayBugs = data.cube[day];
 		var allTopBugs = todayBugs.filter(topBugFilter);
 
-		yield (Hierarchy.addDescendants({
+		Hierarchy.addDescendants({
 			"from" : todayBugs,
 			"id_field" : "bug_id",
 			"fk_field" : "dependson",
 			"descendants_field" : "dependencies"
-		}));
+		});	//yield (Thread.YIELD);
 
 		var allDescendantsForToday = Array.union(allTopBugs.select("dependencies")).union(allTopBugs.select("bug_id")).map(function(v){
 			return v - 0;
@@ -409,12 +408,12 @@ function* getDailyDependencies(data, topBugFilter){
 			}//endif
 		});
 
-		yield (Hierarchy.addDescendants({
+		Hierarchy.addDescendants({
 			"from" : openBugs,
 			"id_field" : "bug_id",
 			"fk_field" : "dependson",
 			"descendants_field" : "dependencies"
-		}));
+		});	//yield (Thread.YIELD);
 
 		var openDescendantsForToday = Array.union(openTopBugs.select("dependencies")).union(openTopBugs.select("bug_id")).map(function(v){
 			return v - 0;
@@ -444,6 +443,8 @@ function* getDailyDependencies(data, topBugFilter){
 		});
 
 		yesterdayBugs = todayBugs;
+		yesterdayOpenBugs = openBugs;
+		yesterdayOpenDescendants = openDescendantsForToday;
 	}//for
 
 	yield (data);

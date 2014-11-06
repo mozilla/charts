@@ -9,6 +9,7 @@ ignores: [
   ".git",
   ".idea",
   "*.iml",
+  "platform/.svn",
   "out",
   "docs",
   "html/es/modevlib/etl/_OrgChart.js",

@@ -751,11 +751,18 @@ CNV.esFilter2function=function(esFilter){
 		};
 	} else if (op == "terms"){
 		var terms = esFilter[op];
-		return function(row, i, rows){
+		return function(row){
 			var variables = Object.keys(terms);
 			for(var k = 0; k < variables.length; k++){
 				var variable = variables[k];
-				if (!terms[variable].contains(row[variable])) return false;
+				var value = row[variable];
+				if (value===undefined){
+
+				}else if (value instanceof Array){
+					if (terms[variable].intersect(value).length==0) return false;
+				}else{
+					if (!terms[variable].contains(value)) return false;
+				}//endif
 			}//for
 			return true;
 		};

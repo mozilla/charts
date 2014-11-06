@@ -150,34 +150,36 @@ var Log = new function(){
 		$('#log_alert').html(html);
 	};//method
 
-	Log.red=function(message){
-		//GRAY OUT THE BODY, AND SHOW ERRO IN WHITE AT BOTTOM
-		Log.note({
-			"type":"ALERT",
-			"timestamp":Date.now(),
-			"message":message
-		});
+	var red_uid=0;
 
+	Log.red=function(message){
+		//GRAY OUT THE BODY, AND SHOW ERROR IN WHITE AT BOTTOM
 		window.log_alert_till = Date.now().add("20second").getMilli();
 		if (!window.log_alert){
 			window.log_alert = true;
 			$('body').css({"position":"relative"}).append('<div id="log_alert" style="position:fixed;top:0;bottom:0;width:100%;vertical-align:bottom;pointer-events:none;"></div>');
 		}//endif
 
+		var uid = "log_alert"+red_uid;
+		red_uid++;
+
 		function erase() {
+			Log.note("removing "+uid);
 			var diff = window.log_alert_till - Date.now().add("20second").getMilli();
 			if (diff>0){
 				setTimeout(erase, diff);
 			}else{
-				$('#log_alert').html("");
+				$('#'+uid).remove();
 			}//endif
 		}//function
 		setTimeout(erase, 20000);
+		Thread.currentThread.addChild({"kill":erase});
 
 		var template = new Template(
-			'<div style="{{style}}">{{message|html}}</div>'
+			'<div id="{{uid}}" style="{{style}}">{{message|html}}</div>'
 		);
 		var html = template.expand({
+			"uid":uid,
 			"style":CNV.Object2CSS({
 				"width":"100%",
 				"text-align":"center",
@@ -190,6 +192,7 @@ var Log = new function(){
 			}),
 			"message":message.replaceAll("\n", " ").replaceAll("\t", " ").replaceAll("  ", " ")
 		});
+
 		$('#log_alert').html(html);
 	};//method
 

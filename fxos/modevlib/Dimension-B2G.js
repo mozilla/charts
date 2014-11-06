@@ -5,9 +5,9 @@
 importScript("Dimension.js");
 importScript("qb/ESQuery.js");
 
-if (!Mozilla) var Mozilla={"name":"Mozilla", "edges":[]};
+if (!Mozilla) var Mozilla = {"name": "Mozilla", "edges": []};
 
-(function () {
+(function(){
 	//webRTC MARKS BUGS A LITTLE DIFFERENT
 	var webRTCFilter = {"or": [
 		{"and": [
@@ -23,18 +23,18 @@ if (!Mozilla) var Mozilla={"name":"Mozilla", "edges":[]};
 	//ADD PROJECTS AND MILESTAONES HERE
 	//BUT REMEMBER TO ADD DETAILED ENTRIES (AT BOTTOM)
 	var PROJECTS = ["1.3", "1.3t", "1.4", "2.0", "2.1", "2.2"];
-	var NOM_PROJECTS = PROJECTS.map(function (p) {
+	var NOM_PROJECTS = PROJECTS.map(function(p){
 		return p + "?";
 	});
-	var BLOCKER_PROJECTS = PROJECTS.map(function (p) {
+	var BLOCKER_PROJECTS = PROJECTS.map(function(p){
 		return p + "+";
 	});
 
 	var MILESTONES = ["fx30", "fx31", "fx32", "fx33", "fx34", "fx35", "fx36"];
-	var NOM_MILESTONES = MILESTONES.map(function (p) {
+	var NOM_MILESTONES = MILESTONES.map(function(p){
 		return p + "?";
 	});
-	var BLOCKER_MILESTONE = MILESTONES.map(function (p) {
+	var BLOCKER_MILESTONE = MILESTONES.map(function(p){
 		return p + "+";
 	});
 
@@ -49,14 +49,14 @@ if (!Mozilla) var Mozilla={"name":"Mozilla", "edges":[]};
 				webRTCFilter
 			]},
 			"edges": [
-				{"name": "Nominations", "index": "bugs", "esfilter": {"and":[
+				{"name": "Nominations", "index": "bugs", "esfilter": {"and": [
 					Mozilla.BugStatus.Open.esfilter,
 					{"or": [
 						{"terms": {"cf_blocking_b2g": NOM_PROJECTS}},
 						{"terms": {"cf_blocking_loop": NOM_MILESTONES}}
 					]}
 				]}},
-				{"name": "AllNominations", "index": "bugs", "esfilter": {"and":[
+				{"name": "AllNominations", "index": "bugs", "esfilter": {"and": [
 					{"or": [
 						{"terms": {"cf_blocking_b2g": NOM_PROJECTS}},
 						{"terms": {"cf_blocking_loop": NOM_MILESTONES}}
@@ -104,7 +104,7 @@ if (!Mozilla) var Mozilla={"name":"Mozilla", "edges":[]};
 					"esfilter": ESQuery.TrueFilter,
 					"index": "bugs",
 					"limit": 200,
-					"end": function (p) {
+					"end": function(p){
 						return p.name;
 					}
 				},
@@ -138,7 +138,7 @@ if (!Mozilla) var Mozilla={"name":"Mozilla", "edges":[]};
 						{"regexp": {"status_whiteboard": ".*systemsfe.*"}}
 					]}},
 
-					{"name":"Stream3", "esfilter": {"term":{"status_whiteboard.tokenized":"ft:stream3"}}},
+					{"name": "Stream3", "esfilter": {"term": {"status_whiteboard.tokenized": "ft:stream3"}}},
 
 					{"name": "Productivity", "esfilter": {"and": [
 						{"not": {"term": {"keywords": "perf"}}}, //AN UNFORTUNATE REDUNDANCY
@@ -347,8 +347,8 @@ if (!Mozilla) var Mozilla={"name":"Mozilla", "edges":[]};
 //							]}
 //						},
 						{"name": "1.3T",
-							"start_date":"Dec 9, 2013",
-							"targetDate":"Apr 28, 2014",
+							"start_date": "Dec 9, 2013",
+							"targetDate": "Apr 28, 2014",
 							"dateMarks": [
 								{"name": "FL", "date": "Dec 9, 2013", "style": {strokeStyle: "black", verticalOffset: 20}},
 								{"name": "FC", "date": "Mar 17, 2014", "style": {strokeStyle: "black", verticalOffset: 20}}
@@ -359,10 +359,10 @@ if (!Mozilla) var Mozilla={"name":"Mozilla", "edges":[]};
 							]}
 						},
 						{"name": "1.4",
-							"start_date":"Dec 9, 2013",
-							"targetDate":"Jun 9, 2014",
+							"start_date": "Dec 9, 2013",
+							"targetDate": "Jun 9, 2014",
 							"dateMarks": [
-								{"name":"Start", "date": "Dec 9, 2013"},
+								{"name": "Start", "date": "Dec 9, 2013"},
 								{"name": "FL", "date": "Mar 17, 2014", "style": {strokeStyle: "black", verticalOffset: 30}},
 								{"name": "FC", "date": "Apr 28, 2014", "style": {strokeStyle: "black", verticalOffset: 30}},
 								{"name": "CF", "date": "Jun 9, 2014", "style": {strokeStyle: "black", verticalOffset: 30}}
@@ -374,13 +374,13 @@ if (!Mozilla) var Mozilla={"name":"Mozilla", "edges":[]};
 							]}
 						},
 						{"name": "2.0",
-							"start_date":"Apr 28, 2014",
-							"targetDate":"Sep 01, 2014",
+							"start_date": "Apr 28, 2014",
+							"targetDate": "Sep 01, 2014",
 							"dateMarks": [
-								{"name":"Start", "date": "Apr 28, 2014"},
-								{"name":"FL", "date": "Jun 9, 2014"},
-								{"name":"FC", "date": "Jul 21, 2014"},
-								{"name":"CF", "date": "Sep 01, 2014"}
+								{"name": "Start", "date": "Apr 28, 2014"},
+								{"name": "FL", "date": "Jun 9, 2014"},
+								{"name": "FC", "date": "Jul 21, 2014"},
+								{"name": "CF", "date": "Sep 01, 2014"}
 							],
 							"style": {"color": "#1f77b4"},
 							"esfilter": {"or": [
@@ -389,10 +389,10 @@ if (!Mozilla) var Mozilla={"name":"Mozilla", "edges":[]};
 							]}
 						},
 						{"name": "2.1",
-							"start_date":"Jul 21, 2014",
-							"targetDate":"Nov 24, 2014",
+							"start_date": "Jul 21, 2014",
+							"targetDate": "Nov 24, 2014",
 							"dateMarks": [
-								{"Start":"Jul 21, 2014"},
+								{"Start": "Jul 21, 2014"},
 								{"FL": "Sep 01, 2014"},
 								{"FC": "Oct 10, 2014"},
 								{"CS": "Nov 14, 2014"},  //partner delivery
@@ -405,8 +405,8 @@ if (!Mozilla) var Mozilla={"name":"Mozilla", "edges":[]};
 							]}
 						},
 						{"name": "2.2",
-							"start_date":"Oct 10, 2014",
-							"targetDate":"Nov 24, 2014",
+							"start_date": "Oct 10, 2014",
+							"targetDate": "Nov 24, 2014",
 							"dateMarks": [
 							],
 							"style": {"color": "#ff7f0e"},
@@ -423,49 +423,49 @@ if (!Mozilla) var Mozilla={"name":"Mozilla", "edges":[]};
 					]
 				},
 
-			{"name": "Targeted", "index": "bugs", "isFacet": true,
-				"partitions": [
-					//https://wiki.mozilla.org/Release_Management/B2G_Landing
-					{"name": "1.3",
-						"esfilter": {"or":[
-							{"terms": {"cf_blocking_b2g": ["1.3+"]}}
-						]}
-					},
-					{"name": "1.3T",
-						"esfilter": {"or":[
-							{"terms": {"cf_blocking_b2g": ["1.3t+"]}}
-						]}
-					},
-					{"name": "1.4",
-						"esfilter": {"or":[
-							{"terms": {"cf_blocking_b2g": ["1.4+"]}},
-							{"terms": {"cf_blocking_loop": ["fx30+"]}}
-						]}
-					},
-					{"name": "2.0",
-						"esfilter": {"or":[
-							{"terms": {"cf_blocking_b2g": ["2.0+"]}},
-							{"terms": {"cf_blocking_loop": ["fx31+", "fx32+"]}}
-						]}
-					},
-					{"name": "2.1",
-						"esfilter": {"or":[
-							{"terms": {"cf_blocking_b2g": ["2.1+"]}},
-							{"terms": {"cf_blocking_loop": ["fx33+", "fx34+"]}}
-						]}
-					},
-					{"name": "2.2",
-						"esfilter": {"or":[
-							{"terms": {"cf_blocking_b2g": ["2.2+"]}},
-							{"terms": {"cf_blocking_loop": ["fx35+", "fx36+"]}}
-						]}
-					},
-					{"name": "Targeted", "style": {"color": "#9467bd"}, "esfilter": {"and": [
-						{"not": {"terms": {"cf_blocking_b2g": BLOCKER_PROJECTS}}},
-						{"not": {"terms": {"cf_blocking_loop": BLOCKER_MILESTONE}}}
-					]}}
-				]
-			},
+				{"name": "Targeted", "index": "bugs", "isFacet": true,
+					"partitions": [
+						//https://wiki.mozilla.org/Release_Management/B2G_Landing
+						{"name": "1.3",
+							"esfilter": {"or": [
+								{"terms": {"cf_blocking_b2g": ["1.3+"]}}
+							]}
+						},
+						{"name": "1.3T",
+							"esfilter": {"or": [
+								{"terms": {"cf_blocking_b2g": ["1.3t+"]}}
+							]}
+						},
+						{"name": "1.4",
+							"esfilter": {"or": [
+								{"terms": {"cf_blocking_b2g": ["1.4+"]}},
+								{"terms": {"cf_blocking_loop": ["fx30+"]}}
+							]}
+						},
+						{"name": "2.0",
+							"esfilter": {"or": [
+								{"terms": {"cf_blocking_b2g": ["2.0+"]}},
+								{"terms": {"cf_blocking_loop": ["fx31+", "fx32+"]}}
+							]}
+						},
+						{"name": "2.1",
+							"esfilter": {"or": [
+								{"terms": {"cf_blocking_b2g": ["2.1+"]}},
+								{"terms": {"cf_blocking_loop": ["fx33+", "fx34+"]}}
+							]}
+						},
+						{"name": "2.2",
+							"esfilter": {"or": [
+								{"terms": {"cf_blocking_b2g": ["2.2+"]}},
+								{"terms": {"cf_blocking_loop": ["fx35+", "fx36+"]}}
+							]}
+						},
+						{"name": "Targeted", "style": {"color": "#9467bd"}, "esfilter": {"and": [
+							{"not": {"terms": {"cf_blocking_b2g": BLOCKER_PROJECTS}}},
+							{"not": {"terms": {"cf_blocking_loop": BLOCKER_MILESTONE}}}
+						]}}
+					]
+				},
 
 				{"name": "FinalState", "index": "bugs", "isFacet": true,
 					"partitions": [
@@ -478,8 +478,8 @@ if (!Mozilla) var Mozilla={"name":"Mozilla", "edges":[]};
 //							"esfilter": {"term": {"cf_blocking_b2g": "1.3+"}}
 //						},
 						{"name": "1.3T",
-							"start_date":"Dec 9, 2013",
-							"targetDate":"Apr 28, 2014",
+							"start_date": "Dec 9, 2013",
+							"targetDate": "Apr 28, 2014",
 							"dateMarks": [
 								{"name": "FL", "date": "Dec 9, 2013", "style": {strokeStyle: "black", verticalOffset: 20}},
 								{"name": "FC", "date": "Mar 17, 2014", "style": {strokeStyle: "black", verticalOffset: 20}}
@@ -487,28 +487,28 @@ if (!Mozilla) var Mozilla={"name":"Mozilla", "edges":[]};
 							"style": {"color": "#ff7f0e"},
 							"esfilter": {"terms": {"cf_blocking_b2g": ["1.3t+", "1.3t?"]}}},
 						{"name": "1.4",
-							"start_date":"Dec 9, 2013",
-							"targetDate":"Jun 9, 2014",
+							"start_date": "Dec 9, 2013",
+							"targetDate": "Jun 9, 2014",
 							"style": {"color": "#2ca02c"},
 							"esfilter": {"or": [
 								{"terms": {"cf_blocking_b2g": ["1.4+", "1.4?"]}},
 								{"terms": {"cf_blocking_loop": ["fx30+", "fx30?"]}}
 							]},
 							"dateMarks": [
-								{"name":"Start", "date":"Dec 9, 2013"},
+								{"name": "Start", "date": "Dec 9, 2013"},
 								{"name": "FL", "date": "Mar 17, 2014", "style": {strokeStyle: "black", verticalOffset: 30}},
 								{"name": "FC", "date": "Apr 28, 2014", "style": {strokeStyle: "black", verticalOffset: 30}},
 								{"name": "CF", "date": "Jun 9, 2014", "style": {strokeStyle: "black", verticalOffset: 30}}
 							]
 						},
 						{"name": "2.0",
-							"start_date":"Apr 28, 2014",
-							"targetDate":"Sep 01, 2014",
+							"start_date": "Apr 28, 2014",
+							"targetDate": "Sep 01, 2014",
 							"dateMarks": [
-								{"name":"Start", "date": "Apr 28, 2014"},
-								{"name":"FL", "date": "Jun 9, 2014"},
-								{"name":"FC", "date": "Jul 21, 2014"},
-								{"name":"CF", "date": "Sep 01, 2014"}
+								{"name": "Start", "date": "Apr 28, 2014"},
+								{"name": "FL", "date": "Jun 9, 2014"},
+								{"name": "FC", "date": "Jul 21, 2014"},
+								{"name": "CF", "date": "Sep 01, 2014"}
 							],
 							"style": {"color": "#1f77b4"},
 							"esfilter": {"or": [
@@ -517,10 +517,10 @@ if (!Mozilla) var Mozilla={"name":"Mozilla", "edges":[]};
 							]}
 						},
 						{"name": "2.1",
-							"start_date":"Jul 21, 2014",
-							"targetDate":"Nov 24, 2014",
+							"start_date": "Jul 21, 2014",
+							"targetDate": "Nov 24, 2014",
 							"dateMarks": [
-								{"Start":"Jul 21, 2014"},
+								{"Start": "Jul 21, 2014"},
 								{"FL": "Sep 01, 2014"},
 								{"FC": "Oct 10, 2014"},
 								{"CS": "Nov 14, 2014"},
@@ -533,8 +533,8 @@ if (!Mozilla) var Mozilla={"name":"Mozilla", "edges":[]};
 							]}
 						},
 						{"name": "2.2",
-							"start_date":"Oct 10, 2014",
-							"targetDate":"Nov 24, 2014",
+							"start_date": "Oct 10, 2014",
+							"targetDate": "Nov 24, 2014",
 							"dateMarks": [
 							],
 							"style": {"color": "#ff7f0e"},

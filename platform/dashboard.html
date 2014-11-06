@@ -101,7 +101,7 @@ function getCategoryHTML(category, teamFilter){
 			]}
 		}));
 
-		if (category.name == "Security" && allBugs.list.length == 0)
+		if (category == Mozilla.Platform.Security && allBugs.list.length == 0)
 			return "";
 
 		var html = edges.map(function(e, i){
@@ -115,7 +115,7 @@ function getCategoryHTML(category, teamFilter){
 		//ADD THE REMAINDER
 		var info = {
 			"name": "Other",
-			"bugs": allBugs.list.filter({"not": {"or": unionFilter}})
+			"bugs": allBugs.list.filter({"and":[category.esfilter, {"not": {"or": unionFilter}}]})
 		};
 		if (info.bugs.length > 0) {
 			html += tile(info);
@@ -135,7 +135,7 @@ function tile(info){
 	info.bugsList = info.bugs.select("bug_id").join(", ");
 	info.bugsURL = Bugzilla.searchBugsURL(info.bugs.select("bug_id"));
 	info.unassignedBugs = info.bugs.filter(function(b){
-		return b.assigned_to != "nobody@mozilla.org"
+		return b.assigned_to == "nobody@mozilla.org"
 	}).select("bug_id");
 	info.unassignedBugsCount = info.unassignedBugs.length;
 	info.unassignedURL = Bugzilla.searchBugsURL(info.unassignedBugs);

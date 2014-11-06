@@ -26,6 +26,7 @@ if (!Mozilla) var Mozilla = {"name": "Mozilla", "edges": []};
 	}//endif
 
 
+	var otherFilter=[];
 	var trainTracking = {
 		"name": "Release Tracking - Desktop",
 		"esFacet": true,
@@ -36,8 +37,8 @@ if (!Mozilla) var Mozilla = {"name": "Mozilla", "edges": []};
 			var today = Date.today();
 
 			var output = undefined;
-			["Nightly", "Aurora", "Beta", "Release"].forall(function(trackName, track){
-				var start = Date.newInstance(release.startDate).add(period.multiply(track));
+			["Release", "Beta", "Aurora"].forall(function(trackName, track){
+				var start = Date.newInstance(release.startDate).add(period.multiply(3-track));
 				var end = start.add(period);
 				if (start.getMilli() <= today.getMilli() && today.getMilli() < end.getMilli()) {
 					output = {
@@ -47,9 +48,14 @@ if (!Mozilla) var Mozilla = {"name": "Mozilla", "edges": []};
 					};
 				}//endif
 			});
+			if (!output) otherFilter.append(release.esfilter);
 			return output;
 		})
 	};
+	trainTracking.edges.append({
+		"name": "Other",
+		"esfilter": {"or":otherFilter}
+	});
 
 
 	Dimension.addEdges(true, Mozilla, [
@@ -97,11 +103,12 @@ if (!Mozilla) var Mozilla = {"name": "Mozilla", "edges": []};
 				trainTracking,
 
 				{
-					"name":"Release Tracking - FirefoxOS",
+					"name": "Release Tracking - FirefoxOS",
 					"requiredFields": ["cf_blocking_b2g"],
-					"edges":[
-						{"name":"2.1", "esfilter":{"term":{"cf_blocking_b2g": "+"}}},
-						{"name":"2.2", "esfilter":{"term":{"cf_blocking_b2g": "+"}}}
+					"esfilter": {"regexp": {"cf_blocking_b2g": ".*\\+"}},
+					"edges": [
+						{"name": "2.1", "esfilter": {"term": {"cf_blocking_b2g": "2.1+"}}},
+						{"name": "2.2", "esfilter": {"term": {"cf_blocking_b2g": "2.2+"}}}
 					]
 				},
 

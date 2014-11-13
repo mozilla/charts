@@ -40,7 +40,7 @@ Dimension.prototype = {
 					"dateMarks": v.dateMarks,
 					"start_date": v.start_date,
 					"targetDate": v.targetDate,
-					"style": Map.clone(v.style),
+					"style": Map.clone(nvl(v.style, {})),
 					"weight": v.weight //YO! WHAT DO WE *NOT* COPY?
 				};
 			});
@@ -55,7 +55,7 @@ Dimension.prototype = {
 					"fullFilter": v.fullFilter,
 					"dateMarks": v.dateMarks,
 					"targetDate": v.targetDate,
-					"style": Map.clone(v.style),
+					"style": Map.clone(nvl(v.style, {})),
 					"weight": v.weight   //YO!  WHAT DO WE *NOT* COPY?
 				};
 			})
@@ -73,7 +73,7 @@ Dimension.prototype = {
 						"fullFilter": subpart.fullFilter,
 						"dateMarks": subpart.dateMarks,
 						"targetDate": subpart.targetDate,
-						"style": Map.clone(nvl(subpart.style, subpart.parent.style)),
+						"style": Map.setDefault({}, subpart.style, subpart.parent.style),
 						"weight": subpart.weight   //YO!  WHAT DO WE *NOT* COPY?
 					});
 
@@ -194,13 +194,12 @@ Dimension.prototype = {
 				if (lowerCaseOnly) part.esfilter = CNV.JSON2Object(CNV.Object2JSON(part.esfilter).toLowerCase());
 			} else if (part.partitions) {
 				//DEFAULT esfilter IS THE UNION OF ALL CHILD FILTERS
-				if (part.partitions.length > 600) {
-					Log.error("Must define an esfilter on " + part.name + ", there are too many partitions (" + part.partitions.length + ")");
-				} else if (part.esfilter === undefined) {
-					part.esfilter = {"or": part.partitions.select("esfilter")};
-				} else {
-					//DO NOTHING
-				}//endif
+				if (part.partitions.length > 600) Log.error("Must define an esfilter on " + part.name + ", there are too many partitions (" + part.partitions.length + ")");
+				part.esfilter = {"or": part.partitions.select("esfilter")};
+			} else if (part.edges) {
+				//DEFAULT esfilter IS THE UNION OF ALL CHILD FILTERS
+				if (part.edges.length > 600) Log.error("Must define an esfilter on " + part.name + ", there are too many partitions (" + part.partitions.length + ")");
+				part.esfilter = {"or": part.edges.select("esfilter")};
 			}//endif
 		}
 

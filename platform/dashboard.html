@@ -25,7 +25,10 @@
 	</div>
 	<div class="content" style="position:inherit;">
 		<h1 id="title" style="display:inline-block;">Platform Dashboard</h1>
-		<div id="category"></div>
+		<table class="layout"><tr>
+			<td><div id="category"></div></td>
+			<td><div id="bug_list"></div></td>
+		</tr></table>
 	</div>
 	<div class="footer">
 		Source at <a href="https://github.com/mozilla/charts/blob/master/fxos/blockers.html">https://github.com/mozilla/charts/blob/master/platform/dashboard.html</a>
@@ -55,13 +58,37 @@ importScript('js/main_lib.js', function(){
 		var teamFilter = {"and": GUI.state.team.getSelectedParts().select("esfilter")};
 		$("#title").html(team);
 
-		var temp = $("#category");
+		//DEFINE WHAT EVERYTHING IS
+		var allFilter = {"or": [
+			Mozilla.Platform.Release.esfilter,
+			Mozilla.Platform.Security.esfilter,
+			Mozilla.Platform.Stability.esfilter,
+			Mozilla.Platform.Priority.esfilter,
+			Mozilla.Platform["Release Tracking - FirefoxOS"].esfilter
+		]};
 
-		temp.html(getCategoryHTML(Mozilla.Platform.Security, teamFilter));
-		temp.append(getCategoryHTML(Mozilla.Platform.Stability, teamFilter));
-		temp.append(getCategoryHTML(Mozilla.Platform["Release Tracking - Desktop"], teamFilter));
-		temp.append(getCategoryHTML(Mozilla.Platform["Release Tracking - FirefoxOS"], teamFilter));
-		temp.append(getCategoryHTML(Mozilla.Platform.Priority, teamFilter));
+		//PULL IT ALL!!
+		var allBugs = yield (ESQuery.run({
+			"from": "bugs",
+			"select": ["bug_id", "short_desc", "assigned_to"].union(requiredFields(allFilter)),
+			"esfilter": {"and": [
+				allFilter,
+				teamFilter,
+				Mozilla.BugStatus.Open.esfilter,
+				Mozilla.CurrentRecords.esfilter
+			]}
+		}));
+
+		var temp = $("#category");
+		temp.html(getCategoryHTML(Mozilla.Platform.Security, allBugs));
+		temp.append(getCategoryHTML(Mozilla.Platform.Stability, allBugs));
+		temp.append(getCategoryHTML(Mozilla.Platform["Release Tracking - Desktop"], allBugs));
+		temp.append(getCategoryHTML(Mozilla.Platform["Release Tracking - FirefoxOS"], allBugs));
+		temp.append(getCategoryHTML(Mozilla.Platform.Priority, allBugs));
+		temp.updateDynamic();
+		$("#bug_list").html(bugDetails(allBugs.list));
+		addTileClickers();
+		addRowClickers();
 	};
 
 	$(document).ready(function(){
@@ -83,73 +110,6 @@ importScript('js/main_lib.js', function(){
 	});
 });
 
-function getCategoryHTML(category, teamFilter){
-	var uid = "_dash_" + Util.UID();
-
-	Thread.run(function*(){
-		var edges = nvl(category.edges, category.partitions);
-		var unionFilter = edges.select("esfilter");
-
-		var allBugs = yield (ESQuery.run({
-			"from": "bugs",
-			"select": ["bug_id", "assigned_to"].union(category.requiredFields, Mozilla.Platform.Release.requiredFields),
-			"esfilter": {"and": [
-				nvl(category.esfilter, {"or": unionFilter}),
-				teamFilter,
-				Mozilla.BugStatus.Open.esfilter,
-				Mozilla.CurrentRecords.esfilter
-			]}
-		}));
-
-		if (category == Mozilla.Platform.Security && allBugs.list.length == 0)
-			return "";
-
-		var html = edges.map(function(e, i){
-			var info = {
-				"name": e.name,
-				"bugs": allBugs.list.filter(e.esfilter)
-			};
-			return tile(info)
-		}).join("");
-
-		//ADD THE REMAINDER
-		var info = {
-			"name": "Other",
-			"bugs": allBugs.list.filter({"and":[category.esfilter, {"not": {"or": unionFilter}}]})
-		};
-		if (info.bugs.length > 0) {
-			html += tile(info);
-		}//endif
-
-		var node = $("#" + uid);
-		node.html('<div style="padding-top: 10px"><h3>' + category.name + '</h3></div><div style="padding-left: 50px">' + html + '</div>');
-		addProjectClickers(node);
-	});
-
-	return '<tr id="' + uid + '"></tr>';   //RETURN PLACEHOLDER
-}//function
-
-
-function tile(info){
-	info.bugsCount = info.bugs.length;
-	info.bugsList = info.bugs.select("bug_id").join(", ");
-	info.bugsURL = Bugzilla.searchBugsURL(info.bugs.select("bug_id"));
-	info.unassignedBugs = info.bugs.filter(function(b){
-		return b.assigned_to == "nobody@mozilla.org"
-	}).select("bug_id");
-	info.unassignedBugsCount = info.unassignedBugs.length;
-	info.unassignedURL = Bugzilla.searchBugsURL(info.unassignedBugs);
-	info.color = nvl(info.color, "grey");
-
-	var TEMPLATE = new Template([
-		'<div class="project"  style="background-color:{{color}}" href="{{bugsURL}}" bugsList="{{bugsList}}">' ,
-		'<div class="release">{{name}}</div>',
-		'<div class="count">{{bugsCount}}</div>',
-		(info.unassignedBugs.length > 0 ? '<div class="unassigned"><a class="count_unassigned" href="{{unassignedURL}}">{{unassignedBugsCount}}</a></div>' : '') ,
-		'</div>'
-	]);
-	return TEMPLATE.replace(info);
-}//function
 
 </script>
 

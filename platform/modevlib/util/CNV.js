@@ -227,19 +227,22 @@ CNV.Object2URL=function(value){
 
 	CNV.String2HTML = function String2HTML(value) {
 		if (value==null) return "";
-
-		var output=[];
-		for(var i=0;i<value.length;i++){
-			var c= value[i];
-			var d = entityMap[c];
-			if (d===undefined){
-				output.append(c);
-			}else{
-				output.append(d)
-			}//endif
-		}//for
-		return output.join("");
+		return value.translate(entityMap);
 	};//method
+
+	var attrMap = {
+		"&": "&amp;",
+		'"': '&quot;',
+		"\n": "",
+		"\t": ""
+	};
+
+	CNV.value2HTMLAttribute = function(value){
+		if (value==null) return "";
+		if (typeof(value)=="string") return value.translate(attrMap);
+		return CNV.Object2JSON(value).translate(attrMap);
+	};
+
 })();
 
 

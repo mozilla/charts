@@ -522,7 +522,7 @@ aChart.showScatter=function(params){
 		var dateMarks = [];
 		dateMarks.appendArray(findDateMarks(xaxis.domain));  //WE CAN PLUG SOME dateMarks RIGHT INTO TIME DOMAIN FOR DISPLAY
 		if (dateMarks.length>0){
-			chartParams-.renderCallback=function(){
+			chartParams.renderCallback=function(){
 				var self=this;
 				dateMarks.forall(function(m){
 					try{

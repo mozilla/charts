@@ -12,6 +12,10 @@
 }
 
 
+#bug_list {
+    padding: 0 0 0 30px;
+}
+
 .blocker {
     color:white;
     display: inline-block;
@@ -21,6 +25,7 @@
 }
 
 .project {
+    background-color: gray;
     font-size: 14px;
     cursor: pointer;
     position: relative;
@@ -32,8 +37,34 @@
     width: 50px;
     height:60px;
     margin: 2px;
+}
+
+tr.selected {
+    background-color: #fafaba;
+}
+
+.hoverable:hover {
+	background-color: #fafaba;
+    cursor: pointer;
+}
+
+.selected {
+    background-color: #00a1c0;
+}
+
+.selected:hover {
+    background-color: #00c1e6
+}
+
+
+.email {
+    font-size: .7em;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+
 
 }
+
 .component {
     font-family: Arial, Helvetica, sans-serif;
     font-weight: bold;
@@ -90,6 +121,7 @@
 .category {
     font-size: 150%;
 }
+
 
 
 /*for the grid dashboard*/

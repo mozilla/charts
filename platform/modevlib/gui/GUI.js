@@ -149,7 +149,7 @@ GUI = {};
 
 					time = new Date(result.cube.max_date);
 					var tm = $("#testMessage");
-					tm.html(new Template("<div style={{style|css}}>{{name}}</div>").expand(result.index));
+					tm.html(new Template("<div style={{style|style}}>{{name}}</div>").expand(result.index));
 					tm.append("<br>ES Last Updated " + time.addTimezone().format("NNN dd @ HH:mm") + Date.getTimezone());
 				} else if (indexName == "reviews") {
                     var result = yield (ESQuery.run({

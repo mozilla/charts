@@ -101,36 +101,87 @@ function tile(info){
 
 
 
+function getPartIndex(b, domain){
+	var parts = nvl(domain.partitions, domain.edges);
+	for (var i=0;i<parts.length;i++){
+		var part = parts[i];
+		var result = [b].filter(part.esfilter);
+		if (result.length>0){
+			return i;
+		}//endif
+	}//for
+	return "&nbsp;";
+}//function
+
+
+//RETURN true IF b MATCHES esfilter
+function match(b, esfilter){
+	var result = [b].filter(esfilter);
+	if (result.length>0){
+		return 1;
+	}else{
+		return "&nbsp;";
+	}//endif
+}//function
+
 
 function bugDetails(bugs) {
 
-	bugs.forall(function (b) {
+	var desk = Mozilla.Platform["Release Tracking - Desktop"];
+	var b2g =Mozilla.Platform["Release Tracking - FirefoxOS"];
+	bugs.forall(function(b){
 		b.bugLink = Bugzilla.linkToBug(b.bug_id);
-		b.priority = nvl(nvl(b.status_whiteboard, "").between("[js:p", "]"), "").left(1);
-		b.security = 
-
-
+		b.priority = getPartIndex(b, Mozilla.Platform.Priority);
+		b.security = getPartIndex(b, Mozilla.Platform.Security);
+		b.stability =  match(b, Mozilla.Platform.Stability.esfilter);
+		b.release = match(b, desk.Release.esfilter);
+		b.beta = match(b, desk.Beta.esfilter);
+		b.dev = match(b, desk.Dev.esfilter);
+		b.nightly = match(b, desk.Nightly.esfilter);
+		b.b2g21 = match(b, b2g["2.1"].esfilter);
+		b.b2g22 = match(b, b2g["2.2"].esfilter);
 	});
 
-	bugs = Qb.sort(bugs, ["priority"]);
+	//INITIAL ORDERING
+	bugs = Qb.sort(bugs, ["security", "release", "priority"]);
 
 	var output = new Template([
 		"<table class='table' style='width:800px'>",
 		"<thead><tr>",
 		"<th style='width:70px;'>ID</th>",
 		"<th style='width:290px;'>Summary</th>",
-		"<th style='width:70px;'>Status<br><span class='email'>Owner</span></th>",
-		"<th style='width:20px;'>Priority</th>",
+		"<th style='width:180px;'>",
+			'<span class="indicator"><img style="height:20px;width:20px;" src="./images/lock.gif"></span>',
+			'<span class="indicator">S</span>',
+			'<span class="indicator">R</span>',
+			'<span class="indicator">B</span>',
+			'<span class="indicator">D</span>',
+			'<span class="indicator">N</span>',
+			'<span class="indicator">2.1</span>',
+			'<span class="indicator">2.2</span>',
+			'<span class="indicator">P</span>',
+		"</th>",
+		'<th style="width:120px;">Owner</th>',
 		"</tr></thead>",
 		"<tbody>",
 		{
 			"from":".",
 			"template":[
-				'<tr id="{{bug_id}}" class="bug_line hoverable">' +
-				"<td>{{bugLink}}</td>" +
-				"<td><div style='width:290px;word-wrap: break-word'>{{short_desc|html}}</div></td>" +
-				"<td><div style='width:120px;word-wrap: break-word'><b>{{status}}:</b><br><span class='email'>{{assigned_to|html}}</span></div></td>" +
-				"<td><div style='text-align: right;width:20px;'>{{priority}}</div></td>"+
+				'<tr id="{{bug_id}}" class="bug_line hoverable">',
+				"<td>{{bugLink}}</td>" ,
+				"<td><div style='width:290px;word-wrap: break-word'>{{short_desc|html}}</div></td>" ,
+				"<td><div style='width:180px;word-wrap: break-word'>" ,
+					'<span class="indicator">{{security}}</span>',
+					'<span class="indicator">{{stability}}</span>',
+					'<span class="indicator">{{release}}</span>',
+					'<span class="indicator">{{beta}}</span>',
+					'<span class="indicator">{{dev}}</span>',
+					'<span class="indicator">{{nightly}}</span>',
+					'<span class="indicator">{{b2g21}}</span>',
+					'<span class="indicator">{{b2g22}}</span>',
+					'<span class="indicator">{{priority}}</span>',
+				"</div></td>" ,
+				'<td><div class="email">{{assigned_to|html}}</div></td>',
 				"</tr>"
 			]
 		},

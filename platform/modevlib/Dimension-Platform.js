@@ -123,15 +123,14 @@ function requiredFields(esfilter){
 				},
 				{
 					"name": "Security",
-					"requiredFields": ["keywords"],
 					"partitions": [
 						{
-							"name": "Critical",
+							"name": "Sec-Crit",
 							"style":{"color":"#d62728"},
 							"esfilter": {"term": {"keywords": "sec-critical"}}
 						},
 						{
-							"name": "High",
+							"name": "Sec-High",
 							"style":{"color":"#ff7f0e"},
 							"esfilter": {"term": {"keywords": "sec-high"}}
 						}
@@ -139,13 +138,10 @@ function requiredFields(esfilter){
 				},
 				{
 					"name": "Stability",
-					"requiredFields": ["keywords"],
-					"esfilter": {"terms": {"keywords": ["topcrash"]}},
-					"edges": Map.clone(trainTracking.edges.leftBut(1))
+					"esfilter": {"terms": {"keywords": ["topcrash"]}}
 				},
 				{
 					"name": "Priority",
-					"requiredFields": ["status_whiteboard"],
 					"partitions": [
 						{
 							"name": "P1",

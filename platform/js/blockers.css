@@ -101,18 +101,23 @@ tr.selected {
     font-family: Arial, Helvetica, sans-serif;
     display: inline-block;
     color:white;
-    padding: 7px 0 0 0;
+    padding: 0 0 0 0;
     font-size: 250%;
     font-weight: bold;
 }
 
+.indicator {
+    display:inline-block;
+    width:15px;
+}
+
 .unassigned{
     position: absolute;
-    right:0px;
-    bottom:0px;
+    right:0;
+    bottom:0;
 
-    width: 0px;
-    height: 0px;
+    width: 0;
+    height: 0;
     border-style: solid;
     border-width: 0 0 40px 40px;
     border-color: transparent transparent #000000 transparent;

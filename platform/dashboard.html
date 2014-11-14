@@ -48,7 +48,7 @@ importScript('js/main_lib.js', function(){
 		thread = Thread.run(__createChart());
 	}
 
-	refresher(createChart);
+//	refresher(createChart);
 
 	var __createChart = function*(){
 		yield (ESQuery.loadColumns({"from": "bugs"}));
@@ -81,7 +81,7 @@ importScript('js/main_lib.js', function(){
 
 		var temp = $("#category");
 		temp.html(getCategoryHTML(Mozilla.Platform.Security, allBugs));
-		temp.append(getCategoryHTML(Mozilla.Platform.Stability, allBugs));
+//		temp.append(getCategoryHTML(Mozilla.Platform.Stability, allBugs));
 		temp.append(getCategoryHTML(Mozilla.Platform["Release Tracking - Desktop"], allBugs));
 		temp.append(getCategoryHTML(Mozilla.Platform["Release Tracking - FirefoxOS"], allBugs));
 		temp.append(getCategoryHTML(Mozilla.Platform.Priority, allBugs));

@@ -110,7 +110,7 @@ function getPartIndex(b, domain){
 			return i;
 		}//endif
 	}//for
-	return "&nbsp;";
+	return null;
 }//function
 
 
@@ -120,7 +120,7 @@ function match(b, esfilter){
 	if (result.length>0){
 		return 1;
 	}else{
-		return "&nbsp;";
+		return null;
 	}//endif
 }//function
 

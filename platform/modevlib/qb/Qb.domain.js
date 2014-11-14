@@ -98,9 +98,9 @@ Qb.domain.value = {
 	compare:function(a, b){
 		if (a == null){
 			if (b == null) return 0;
-			return -1;
-		} else if (b == null){
 			return 1;
+		} else if (b == null){
+			return -1;
 		}//endif
 
 		return ((a < b) ? -1 : ((a > b) ? +1 : 0));

@@ -109,6 +109,7 @@ tr.selected {
 .indicator {
     display:inline-block;
     width:15px;
+    text-align: center;
 }
 
 .unassigned{

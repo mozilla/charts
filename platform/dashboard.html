@@ -86,9 +86,10 @@ importScript('js/main_lib.js', function(){
 		temp.append(getCategoryHTML(Mozilla.Platform["Release Tracking - FirefoxOS"], allBugs));
 		temp.append(getCategoryHTML(Mozilla.Platform.Priority, allBugs));
 		temp.updateDynamic();
-		$("#bug_list").html(bugDetails(allBugs.list));
+		var table = $("#bug_list").html(bugDetails(allBugs.list)).find("table")[0];
 		addTileClickers();
 		addRowClickers();
+		sorttable.makeSortable(table)
 	};
 
 	$(document).ready(function(){
@@ -105,7 +106,9 @@ importScript('js/main_lib.js', function(){
 			],
 			[],
 			null,
-			false		//SHOW DEFAULT FILTERS?
+			false,		//SHOW DEFAULT FILTERS?
+			false,
+			false        //DISABLE showLastUpdated
 		);
 	});
 });

@@ -315,6 +315,10 @@ table tr th, table tr td {
 
 .table th, .table td {
     border-top: 1px solid rgba(0, 0, 0, 0.2);
+    padding: 0;
+}
+
+.table th div, .table td div, .table th span, .table td span {
     padding: 5px 20px 5px 0;
 }
 

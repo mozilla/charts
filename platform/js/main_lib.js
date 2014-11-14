@@ -14,6 +14,7 @@ importScript([
 
 importScript("../modevlib/math/Stats.js");
 importScript("../modevlib/qb/Qb.js");
+importScript("../lib/sorttable/sorttable.js");
 
 importScript([
 	'../modevlib/Dimension-Bugzilla.js',

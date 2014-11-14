@@ -78,10 +78,12 @@ GUI = {};
 			relations,     //SOME RULES TO APPLY TO PARAMETERS, IN CASE THE HUMAN MAKES SMALL MISTAKES
 			indexName,     //PERFORM CHECKS ON THIS INDEX
 			showDefaultFilters,  //SHOW THE Product/Compoentn/Team FILTERS
-			performChecks           //PERFORM SOME CONSISTENCY CHECKS TOO
+			performChecks,       //PERFORM SOME CONSISTENCY CHECKS TOO
+			checkLastUpdated     //SEND QUERY TO GET THE LAST DATA?
 		) {
 
 			GUI.performChecks=nvl(performChecks, true);
+			GUI.checkLastUpdated=nvl(checkLastUpdated, true);
 
 			if (typeof(refreshChart) != "function") {
 				Log.error("Expecting first parameter to be a refresh (creatChart) function");
@@ -137,6 +139,8 @@ GUI = {};
 
 		//SHOW THE LAST TIME ES WAS UPDATED
 		GUI.showLastUpdated = function(indexName) {
+			if (!GUI.checkLastUpdated) return;
+			
 			Thread.run("show last updated timestamp", function*() {
 				var time;
 

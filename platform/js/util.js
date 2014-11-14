@@ -101,26 +101,32 @@ function tile(info){
 
 
 
+//START COUNTING AT 1 (BECAUSE PRIORITY STARTS AT 1
+//IT IS IMPORTANT FOR THE sorttable LIB THAT ALL ROWS HAVE A VALUE,
+//AND IT IS IMPORTANT THAT THE NULLS ARE SORTED TO THE BOTTOM
 function getPartIndex(b, domain){
 	var parts = nvl(domain.partitions, domain.edges);
 	for (var i=0;i<parts.length;i++){
 		var part = parts[i];
 		var result = [b].filter(part.esfilter);
 		if (result.length>0){
-			return i;
+			return i+1;
 		}//endif
 	}//for
-	return null;
+	return '<span style="color: transparent;">'+(parts.length+1)+'</span>';
 }//function
 
 
-//RETURN true IF b MATCHES esfilter
+//0 IS A POSITIVE INDICATION!!
+//1 IS NEGATIVE INDICATION
+//IT IS IMPORTANT THAT THE NULLS ARE SORTED TO THE BOTTOM
+//IT IS IMPORTANT FOR THE sorttable LIB THAT ALL ROWS HAVE A VALUE
 function match(b, esfilter){
 	var result = [b].filter(esfilter);
 	if (result.length>0){
-		return 1;
+		return "0";
 	}else{
-		return null;
+		return '<span style="color: transparent;">1</span>';
 	}//endif
 }//function
 
@@ -143,45 +149,41 @@ function bugDetails(bugs) {
 	});
 
 	//INITIAL ORDERING
-	bugs = Qb.sort(bugs, ["security", "release", "priority"]);
+	bugs = Qb.sort(bugs, ["release", "beta", "dev", "security", "priority"]);
 
 	var output = new Template([
 		"<table class='table' style='width:800px'>",
 		"<thead><tr>",
-		"<th style='width:70px;'>ID</th>",
-		"<th style='width:290px;'>Summary</th>",
-		"<th style='width:180px;'>",
-			'<span class="indicator"><img style="height:20px;width:20px;" src="./images/lock.gif"></span>',
-			'<span class="indicator">S</span>',
-			'<span class="indicator">R</span>',
-			'<span class="indicator">B</span>',
-			'<span class="indicator">D</span>',
-			'<span class="indicator">N</span>',
-			'<span class="indicator">2.1</span>',
-			'<span class="indicator">2.2</span>',
-			'<span class="indicator">P</span>',
-		"</th>",
-		'<th style="width:120px;">Owner</th>',
+		"<th><div style='width:70px;'>ID</div></th>",
+		"<th><div style='width:290px;'>Summary</div></th>",
+		'<th><span class="indicator"><img style="height:20px;width:20px;" src="./images/lock.gif"></span></th>',
+		'<th><span class="indicator">Stability</span></th>',
+		'<th><span class="indicator">Release</span></th>',
+		'<th><span class="indicator">Beta</span></th>',
+		'<th><span class="indicator">Dev</span></th>',
+		'<th><span class="indicator">NIghtly</span></th>',
+		'<th><span class="indicator">2.1</span></th>',
+		'<th><span class="indicator">2.2</span></th>',
+		'<th><span class="indicator">Priority</span></th>',
+		'<th><span style="width:120px;">Owner</span></th>',
 		"</tr></thead>",
 		"<tbody>",
 		{
 			"from":".",
 			"template":[
 				'<tr id="{{bug_id}}" class="bug_line hoverable">',
-				"<td>{{bugLink}}</td>" ,
+				"<td><div>{{bugLink}}</div></td>" ,
 				"<td><div style='width:290px;word-wrap: break-word'>{{short_desc|html}}</div></td>" ,
-				"<td><div style='width:180px;word-wrap: break-word'>" ,
-					'<span class="indicator">{{security}}</span>',
-					'<span class="indicator">{{stability}}</span>',
-					'<span class="indicator">{{release}}</span>',
-					'<span class="indicator">{{beta}}</span>',
-					'<span class="indicator">{{dev}}</span>',
-					'<span class="indicator">{{nightly}}</span>',
-					'<span class="indicator">{{b2g21}}</span>',
-					'<span class="indicator">{{b2g22}}</span>',
-					'<span class="indicator">{{priority}}</span>',
-				"</div></td>" ,
-				'<td><div class="email">{{assigned_to|html}}</div></td>',
+				'<td><span class="indicator">{{security}}</span></td>',
+				'<td><span class="indicator">{{stability}}</span></td>',
+				'<td><span class="indicator">{{release}}</span></td>',
+				'<td><span class="indicator">{{beta}}</span></td>',
+				'<td><span class="indicator">{{dev}}</span></td>',
+				'<td><span class="indicator">{{nightly}}</span></td>',
+				'<td><span class="indicator">{{b2g21}}</span></td>',
+				'<td><span class="indicator">{{b2g22}}</span></td>',
+				'<td><span class="indicator">{{priority}}</span></td>',
+				'<td><div class="email">{{assigned_to|html}}</div></span></td>',
 				"</tr>"
 			]
 		},

@@ -101,16 +101,35 @@ tr.selected {
     font-family: Arial, Helvetica, sans-serif;
     display: inline-block;
     color:white;
-    padding: 0 0 0 0;
+    padding: 0;
     font-size: 250%;
     font-weight: bold;
 }
 
-.indicator {
+.table thead th div, .table thead th span {
+    display: inline-block;
+}
+
+
+.indicator, .table tbody td .indicator {
     display:inline-block;
     width:15px;
+    padding-right: 0;
     text-align: center;
 }
+
+.table thead th .indicator {
+    display:block;
+    width:15px;
+    padding-right: 0;
+    text-align: center;
+    -moz-transform: rotate(270deg);
+}
+
+#sorttable_sortfwdind, #sorttable_sortrevind {
+    padding-right: 0;
+}
+
 
 .unassigned{
     position: absolute;

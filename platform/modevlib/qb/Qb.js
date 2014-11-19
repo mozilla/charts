@@ -824,22 +824,27 @@ function Tree2Cube(query, cube, tree, depth){
 Qb.getColumnsFromQuery=function*(query){
 	//FROM CLAUSE MAY BE A SUB QUERY
 
-	var sourceColumns;
-	if (query.from instanceof Array){
-		sourceColumns = Qb.getColumnsFromList(query.from);
-		query.from.list = query.from;	//NORMALIZE SO query.from.list ALWAYS POINTS TO AN OBJECT
-	} else if (query.from.list){
-		sourceColumns = query.from.columns;
-	} else if (query.from.cube){
-		query.from.list = Qb.Cube2List(query.from);
-		sourceColumns = query.from.columns;
-	}else if (query.from.from!=undefined){
-		query.from=yield (Qb.calc2List(query.from));
-		sourceColumns=yield (Qb.getColumnsFromQuery(query));
-	}else{
-		Log.error("Do not know how to handle this");
-	}//endif
-	yield (sourceColumns);
+	try{
+		var sourceColumns;
+		if (query.from instanceof Array){
+			sourceColumns = Qb.getColumnsFromList(query.from);
+			query.from.list = query.from;	//NORMALIZE SO query.from.list ALWAYS POINTS TO AN OBJECT
+		} else if (query.from.list){
+			sourceColumns = query.from.columns;
+		} else if (query.from.cube){
+			query.from.list = Qb.Cube2List(query.from);
+			sourceColumns = query.from.columns;
+		}else if (query.from.from!=undefined){
+			query.from=yield (Qb.calc2List(query.from));
+			sourceColumns=yield (Qb.getColumnsFromQuery(query));
+		}else{
+			Log.error("Do not know how to handle this");
+		}//endif
+		yield (sourceColumns);
+	}catch(e){
+		Log.error("not expected", e);
+	}//try
+
 };//method
 
 

@@ -31,7 +31,7 @@
 		</tr></table>
 	</div>
 	<div class="footer">
-		Source at <a href="https://github.com/mozilla/charts/blob/master/fxos/blockers.html">https://github.com/mozilla/charts/blob/master/platform/dashboard.html</a>
+		Source at <a href="https://github.com/mozilla/charts/blob/master/platform/dashboard.html">https://github.com/mozilla/charts/blob/master/platform/dashboard.html</a>
 	</div>
 </div>
 
@@ -67,10 +67,18 @@ importScript('js/main_lib.js', function(){
 			Mozilla.Platform["Release Tracking - FirefoxOS"].esfilter
 		]};
 
-		//PULL IT ALL!!
+		//GET META DATA ON SHORTLIST
+
+		//GET DETAILS ON LONG LIST
+
+		//GET short_desc FROM PUBLIC CLUSTER
+
+
+
+		//PULL ALL METADATA!!
 		var allBugs = yield (ESQuery.run({
 			"from": "bugs",
-			"select": ["bug_id", "short_desc", "assigned_to"].union(requiredFields(allFilter)),
+			"select": ["bug_id", "assigned_to"].union(requiredFields(allFilter)),
 			"esfilter": {"and": [
 				allFilter,
 				teamFilter,
@@ -79,9 +87,37 @@ importScript('js/main_lib.js', function(){
 			]}
 		}));
 
+		Thread.run(function*(){
+			//FILL IN THE DESCRIPTIONS OF THE BUGS, AFTER THE FACT
+			var allDesc = yield (ESQuery.run({
+				"from": "public_bugs",
+				"select": ["bug_id", "short_desc"],
+				"esfilter": {"terms":{"bug_id": allBugs.list.select("bug_id")}}
+			}));
+
+			allDesc.list.forall(function(b){
+				$("#"+ b.bug_id+"_desc").html(CNV.String2HTML(b.short_desc));
+			});
+		});
+
 		var temp = $("#category");
 		temp.html(getCategoryHTML(Mozilla.Platform.Security, allBugs));
-//		temp.append(getCategoryHTML(Mozilla.Platform.Stability, allBugs));
+
+		//BIG HACK: INSERT STABILITY IN WITH SECURITY, IF IT EXISTS
+		if ($("#Security_title").length > 0) {
+			var stabilityBugs = allBugs.list.filter(Mozilla.Platform.Stability.fullFilter);
+			if (stabilityBugs.length > 0) {
+				$("#Security_title").html("Security/Stability");
+				$("#Security_tiles").append(tile({
+					"name": Mozilla.Platform.Stability.name,
+					"bugs": stabilityBugs,
+					"style": nvl(Mozilla.Platform.Stability.style, {})
+				}));
+			}//endif
+		} else {
+			temp.append(getCategoryHTML(Mozilla.Platform.Stability, allBugs));
+		}//endif
+
 		temp.append(getCategoryHTML(Mozilla.Platform["Release Tracking - Desktop"], allBugs));
 		temp.append(getCategoryHTML(Mozilla.Platform["Release Tracking - FirefoxOS"], allBugs));
 		temp.append(getCategoryHTML(Mozilla.Platform.Priority, allBugs));

@@ -13,6 +13,7 @@ var DEFAULT_QUERY_LIMIT = 20;
 
 Dimension.prototype = {
 	"getDomain": function (param) {
+		//param.fullFilter  SET TO true TO HAVE FULL FILTER IN PARTITIONS
 		//param.depth IS MEANT TO REACH INTO SUB-PARTITIONS
 		if (param === undefined) {
 			param = {
@@ -22,6 +23,8 @@ Dimension.prototype = {
 		}//endif
 		param.depth = nvl(param.depth, 0);
 		param.separator = nvl(param.separator, ".");
+
+		var useFullFilter = nvl(param.fullFilter, false);
 
 		var self = this;
 		var partitions = null;
@@ -35,7 +38,7 @@ Dimension.prototype = {
 				return {
 					"name": v.name,
 					"value": v.name,
-					"esfilter": v.esfilter,
+					"esfilter": useFullFilter ? v.fullFilter : v.esfilter,
 					"fullFilter": v.fullFilter,
 					"dateMarks": v.dateMarks,
 					"start_date": v.start_date,
@@ -51,7 +54,7 @@ Dimension.prototype = {
 				return {
 					"name": v.name,
 					"value": v.value,
-					"esfilter": v.esfilter,
+					"esfilter": useFullFilter ? v.fullFilter : v.esfilter,
 					"fullFilter": v.fullFilter,
 					"dateMarks": v.dateMarks,
 					"targetDate": v.targetDate,
@@ -69,7 +72,7 @@ Dimension.prototype = {
 					partitions.append({
 						"name": [subpart.name, subpart.parent.name].join(param.separator),
 						"value": subpart.value,
-						"esfilter": subpart.esfilter,
+						"esfilter": useFullFilter ? subpart.fullFilter : subpart.esfilter,
 						"fullFilter": subpart.fullFilter,
 						"dateMarks": subpart.dateMarks,
 						"targetDate": subpart.targetDate,

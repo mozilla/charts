@@ -117,16 +117,16 @@ function getPartIndex(b, domain){
 }//function
 
 
-//0 IS A POSITIVE INDICATION!!
-//1 IS NEGATIVE INDICATION
+//1 IS POSITIVE INDICATION (MATCHES FILTER)
+//2 IS NEGATIVE INDICATION
 //IT IS IMPORTANT THAT THE NULLS ARE SORTED TO THE BOTTOM
 //IT IS IMPORTANT FOR THE sorttable LIB THAT ALL ROWS HAVE A VALUE
 function match(b, esfilter){
 	var result = [b].filter(esfilter);
 	if (result.length>0){
-		return "0";
+		return "1";
 	}else{
-		return '<span style="color: transparent;">1</span>';
+		return '<span style="color: transparent;">2</span>';
 	}//endif
 }//function
 
@@ -155,7 +155,7 @@ function bugDetails(bugs) {
 		"<table class='table' style='width:800px'>",
 		"<thead><tr>",
 		"<th><div style='width:70px;'>ID</div></th>",
-		"<th><div style='width:290px;'>Summary</div></th>",
+		"<th><div style='width:350px;'>Summary</div></th>",
 		'<th><span class="indicator"><img style="height:20px;width:20px;" src="./images/lock.gif"></span></th>',
 		'<th><span class="indicator">Stability</span></th>',
 		'<th><span class="indicator">Release</span></th>',
@@ -173,7 +173,7 @@ function bugDetails(bugs) {
 			"template":[
 				'<tr id="{{bug_id}}" class="bug_line hoverable">',
 				"<td><div>{{bugLink}}</div></td>" ,
-				"<td><div style='width:290px;word-wrap: break-word'>{{short_desc|html}}</div></td>" ,
+				"<td><div id='{{bug_id}}_desc' style='width:350px;word-wrap: break-word'>[screened]</div></td>" ,
 				'<td><span class="indicator">{{security}}</span></td>',
 				'<td><span class="indicator">{{stability}}</span></td>',
 				'<td><span class="indicator">{{release}}</span></td>',
@@ -218,6 +218,51 @@ function getCategoryHTML(category, allBugs){
 		html += tile(info);
 	}//endif
 
-	return '<div style="padding-top: 10px"><h3>' + category.name + '</h3></div><div style="padding-left: 50px">' + html + '</div>';
+	return '<div style="padding-top: 10px"><h3 id="' + category.name + '_title">' + category.name + '</h3></div><div id="' + category.name + '_tiles" style="padding-left: 50px">' + html + '</div>';
 }//function
 
+
+
+function getReleaseHTML(data){
+
+	var id="release"+Util.newUID();
+
+	Thread.run(function*(){
+		$("#"+id).html()
+
+		aChart.showPie({
+			"id" : id,
+			"type" : "bar",
+			"stacked" : true,
+			"cube" : chart,
+			"xAxisSize" : 100,
+			"clickAction" : function(release, team, d){
+				Thread.run(function*(){
+					var where = {"and" : [
+						Mozilla.Platform["Release Tracking - Desktop"][release].esfilter,
+						Mozilla.Platform.Team[team].esfilter,
+						Mozilla.BugStatus.Open.esfilter,
+						Mozilla.CurrentRecords.esfilter
+					]};
+
+					var bugs=yield (ESQuery.run({
+						"from":"bugs",
+						"select":"bug_id",
+						"esfilter": where
+					}));
+
+					Bugzilla.showBugs(bugs.list.select("bug_id"));
+				});
+			}//click
+		});
+
+	});
+
+
+
+	return new Template('<div id="{{id}}"></div>').replace({"id":id});
+
+
+
+
+}//function

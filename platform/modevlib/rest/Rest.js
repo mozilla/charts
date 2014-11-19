@@ -132,6 +132,7 @@ Rest.send=function*(ajaxParam){
 		);
 	}
 
+	request.name="XMLHttpRequest";  //FOR DEBUGGING
 	request.send(ajaxParam.data);
 	yield (Thread.suspend((ajaxParam.doNotKill) ? undefined : request));
 };//method

@@ -232,21 +232,30 @@ function setReleaseHTML(data){
 	}).join("");
 
 	var betaTemplate = new Template([
-		'<td style="text-align: bottom"><div style="width:20px;height:{{value}}">{{{value}}</div></td>'
+		'<td style="vertical-align:bottom;text-align: bottom"><div style="{{style|css}}"><span>{{value}}</span></div></td>'
 	]);
 	var beta = data.edges[1].domain.partitions.map(function(p, i){
-		return betaTemplate.replace({"value":data.cube[1][i]});
+		var style = {
+			"width":"40px",
+			"height":(data.cube[1][i]*10)+"px",
+			"color":"white",
+			"text-align": "bottom",
+			"align":"center",
+			"background-color": data.edges[0].domain.partitions[1].style.color
+		};
+
+		return betaTemplate.replace({"value":data.cube[1][i], "style":style});
 	}).join("");
 
 	var devTemplate = new Template([
-		'<td style="text-align: top"><div style="width:20px;height:{{value}}">{{{value}}</div></td>'
+		'<td style="text-align: top"><div class="aurora" style="width:20px;height:{{value}}">{{value}}</div></td>'
 	]);
 	var dev = data.edges[1].domain.partitions.map(function(p, i){
 		return devTemplate.replace({"value":data.cube[2][i]});
 	}).join("");
 
 
-	$("#teams").html('<table id="teamsTable"><thead><tr>'+header+'</tr></thead><tr>'+betaTemplate+'</tr><tr>'+devTemplate+'</tr></table>');
+	$("#teams").html('<table id="teamsTable"><thead><tr>'+header+'</tr></thead><tbody><tr>'+beta+'</tr><tr>'+dev+'</tr></tbody></table>');
 
 
 }//function

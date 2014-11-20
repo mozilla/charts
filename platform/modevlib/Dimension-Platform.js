@@ -35,24 +35,26 @@ function requiredFields(esfilter){
 
 (function(){
 
+	var SOLVED = ["fixed", "wontfix", "unaffected", "disabled"];
+
 	var releaseTracking = {
 		"name": "Release",
 		"isFacet": true,
 		"edges": [
 			{"name": "Firefox33", "version": 33, "startDate": "10 JUN 2014", "esfilter": {"and":[
-				{"not": {"terms": {"cf_status_firefox33": ["fixed", "wontfix", "unaffected"]}}},
+				{"not": {"terms": {"cf_status_firefox33": SOLVED}}},
 				{"term": {"cf_tracking_firefox33": "+"}}
 			]}},
 			{"name": "Firefox34", "version": 34, "startDate": "22 JUL 2014", "esfilter": {"and":[
-				{"not": {"terms": {"cf_status_firefox36": ["fixed", "wontfix", "unaffected"]}}},
+				{"not": {"terms": {"cf_status_firefox36": SOLVED}}},
 				{"term": {"cf_tracking_firefox36": "+"}}
 			]}},
 			{"name": "Firefox35", "version": 35, "startDate": " 1 sep 2014", "esfilter": {"and":[
-				{"not": {"terms": {"cf_status_firefox35": ["fixed", "wontfix", "unaffected"]}}},
+				{"not": {"terms": {"cf_status_firefox35": SOLVED}}},
 				{"term": {"cf_tracking_firefox35": "+"}}
 			]}},
 			{"name": "Firefox36", "version": 36, "startDate": "14 oct 2014", "esfilter": {"and":[
-				{"not": {"terms": {"cf_status_firefox36": ["fixed", "wontfix", "unaffected"]}}},
+				{"not": {"terms": {"cf_status_firefox36": SOLVED}}},
 				{"term": {"cf_tracking_firefox36": "+"}}
 			]}}
 		]

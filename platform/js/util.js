@@ -146,6 +146,7 @@ function bugDetails(bugs) {
 		b.nightly = match(b, desk.Nightly.esfilter);
 		b.b2g21 = match(b, b2g["2.1"].esfilter);
 		b.b2g22 = match(b, b2g["2.2"].esfilter);
+		b.assigned_to = b.assigned_to=="nobody@mozilla.org" ? "" : b.assigned_to
 	});
 
 	//INITIAL ORDERING
@@ -155,7 +156,7 @@ function bugDetails(bugs) {
 		"<table class='table' style='width:800px'>",
 		"<thead><tr>",
 		"<th><div style='width:70px;'>ID</div></th>",
-		"<th><div style='width:350px;'>Summary</div></th>",
+		"<th><div style='width:350px'>Summary</div></th>",
 		'<th><span class="indicator"><img style="height:20px;width:20px;" src="./images/lock.gif"></span></th>',
 		'<th><span class="indicator">Stability</span></th>',
 		'<th><span class="indicator">Release</span></th>',
@@ -173,7 +174,7 @@ function bugDetails(bugs) {
 			"template":[
 				'<tr id="{{bug_id}}" class="bug_line hoverable">',
 				"<td><div>{{bugLink}}</div></td>" ,
-				"<td><div id='{{bug_id}}_desc' style='width:350px;word-wrap: break-word'>[screened]</div></td>" ,
+				"<td><div id='{{bug_id}}_desc' style='width:350px;padding-top: 8px;max-height: 3em;word-wrap: break-word;overflow: hidden;line-height: 0.9em;'>[screened]</div></td>" ,
 				'<td><span class="indicator">{{security}}</span></td>',
 				'<td><span class="indicator">{{stability}}</span></td>',
 				'<td><span class="indicator">{{release}}</span></td>',
@@ -229,45 +230,23 @@ function setReleaseHTML(data){
 	var header = data.edges[1].domain.partitions.map(function(p, i){
 		return '<td style="text-align: center"><div>'+ p.name+'</div></td>';
 	}).join("");
-	$("#teams").html('<table id="teamsTable"><thead><tr>'+header+'</tr></thead></table>');
 
-	var rows = $("#teamsTable");
+	var betaTemplate = new Template([
+		'<td style="text-align: bottom"><div style="width:20px;height:{{value}}">{{{value}}</div></td>'
+	]);
+	var beta = data.edges[1].domain.partitions.map(function(p, i){
+		return betaTemplate.replace({"value":data.cube[1][i]});
+	}).join("");
 
-	return data.edges[1].domain.partitions.map(function(p, i){
-		var id = "release"+Util.UID();
-
-		rows.append(new Template(
-			'<td style="vertical-align: middle;text-align: center"><div id="{{id}}" style="vertical-align: middle;"></div></td>'
-		).replace({"id":id}));
-
-		var slice = {
-			"select":data.select,
-			"edges":[data.edges[0]],
-			"cube":data.cube.select(i)
-		};
-		var isZero=false;
-		if (aMath.SUM(slice.cube)==0){
-			slice.cube[3]=1;
-			isZero=true;
-		}//endif
+	var devTemplate = new Template([
+		'<td style="text-align: top"><div style="width:20px;height:{{value}}">{{{value}}</div></td>'
+	]);
+	var dev = data.edges[1].domain.partitions.map(function(p, i){
+		return devTemplate.replace({"value":data.cube[2][i]});
+	}).join("");
 
 
-		aChart.showPie({
-			"cube": slice,
-			"id": id,
-			legend: false,
-			"height" : Math.sqrt(aMath.SUM(slice.cube))*30+20,
-			"width": Math.sqrt(aMath.SUM(slice.cube))*30+20,
-			"minPercent": 0.01,
-			"legendSize": 0,
-			"tooltipFormat": function(_, revision, amount){
-				//FIND THE MATCHING ELEMENT
-				if (isZero) return "<b>None</b>";
-				return "<div><b>"+revision+"</b>: " + amount+"</div>";
-			}
-		});
-
-	});
+	$("#teams").html('<table id="teamsTable"><thead><tr>'+header+'</tr></thead><tr>'+betaTemplate+'</tr><tr>'+devTemplate+'</tr></table>');
 
 
 }//function

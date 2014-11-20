@@ -223,46 +223,51 @@ function getCategoryHTML(category, allBugs){
 
 
 
-function getReleaseHTML(data){
+function setReleaseHTML(data){
 
-	var id="release"+Util.newUID();
 
-	Thread.run(function*(){
-		$("#"+id).html()
+	var header = data.edges[1].domain.partitions.map(function(p, i){
+		return '<td style="text-align: center"><div>'+ p.name+'</div></td>';
+	}).join("");
+	$("#teams").html('<table id="teamsTable"><thead><tr>'+header+'</tr></thead></table>');
+
+	var rows = $("#teamsTable");
+
+	return data.edges[1].domain.partitions.map(function(p, i){
+		var id = "release"+Util.UID();
+
+		rows.append(new Template(
+			'<td style="vertical-align: middle;text-align: center"><div id="{{id}}" style="vertical-align: middle;"></div></td>'
+		).replace({"id":id}));
+
+		var slice = {
+			"select":data.select,
+			"edges":[data.edges[0]],
+			"cube":data.cube.select(i)
+		};
+		var isZero=false;
+		if (aMath.SUM(slice.cube)==0){
+			slice.cube[3]=1;
+			isZero=true;
+		}//endif
+
 
 		aChart.showPie({
-			"id" : id,
-			"type" : "bar",
-			"stacked" : true,
-			"cube" : chart,
-			"xAxisSize" : 100,
-			"clickAction" : function(release, team, d){
-				Thread.run(function*(){
-					var where = {"and" : [
-						Mozilla.Platform["Release Tracking - Desktop"][release].esfilter,
-						Mozilla.Platform.Team[team].esfilter,
-						Mozilla.BugStatus.Open.esfilter,
-						Mozilla.CurrentRecords.esfilter
-					]};
-
-					var bugs=yield (ESQuery.run({
-						"from":"bugs",
-						"select":"bug_id",
-						"esfilter": where
-					}));
-
-					Bugzilla.showBugs(bugs.list.select("bug_id"));
-				});
-			}//click
+			"cube": slice,
+			"id": id,
+			legend: false,
+			"height" : Math.sqrt(aMath.SUM(slice.cube))*30+20,
+			"width": Math.sqrt(aMath.SUM(slice.cube))*30+20,
+			"minPercent": 0.01,
+			"legendSize": 0,
+			"tooltipFormat": function(_, revision, amount){
+				//FIND THE MATCHING ELEMENT
+				if (isZero) return "<b>None</b>";
+				return "<div><b>"+revision+"</b>: " + amount+"</div>";
+			}
 		});
 
 	});
-
-
-
-	return new Template('<div id="{{id}}"></div>').replace({"id":id});
-
-
 
 
 }//function

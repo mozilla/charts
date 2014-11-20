@@ -12,7 +12,7 @@
 <div>
 	<div class="content">
 		<h1 id="title" style="display:block;">Release Management</h1>
-		<div id="chart" class="chart" style="width:800px;height:500px"></div>
+		<div id="teams"></div>
 	</div>
 	<div class="footer">
 		Source at <a href="https://github.com/mozilla/charts/blob/master/platform/release.html">https://github.com/mozilla/charts/blob/master/platform/release.html</a>
@@ -57,32 +57,32 @@ importScript([
 			"esfilter":allFilter
 		}));
 
-
-		aChart.show({
-			"id" : "chart",
-			"type" : "bar",
-			"stacked" : true,
-			"cube" : chart,
-			"xAxisSize" : 100,
-			"clickAction" : function(release, team, d){
-				Thread.run(function*(){
-					var where = {"and" : [
-						Mozilla.Platform["Release Tracking - Desktop"][release].esfilter,
-						Mozilla.Platform.Team[team].esfilter,
-						Mozilla.BugStatus.Open.esfilter,
-						Mozilla.CurrentRecords.esfilter
-					]};
-
-					var bugs=yield (ESQuery.run({
-						"from":"bugs",
-						"select":"bug_id",
-						"esfilter": where
-					}));
-
-					Bugzilla.showBugs(bugs.list.select("bug_id"));
-				});
-			}//click
-		});
+		setReleaseHTML(chart);
+//		aChart.show({
+//			"id" : "chart",
+//			"type" : "bar",
+//			"stacked" : true,
+//			"cube" : chart,
+//			"xAxisSize" : 100,
+//			"clickAction" : function(release, team, d){
+//				Thread.run(function*(){
+//					var where = {"and" : [
+//						Mozilla.Platform["Release Tracking - Desktop"][release].esfilter,
+//						Mozilla.Platform.Team[team].esfilter,
+//						Mozilla.BugStatus.Open.esfilter,
+//						Mozilla.CurrentRecords.esfilter
+//					]};
+//
+//					var bugs=yield (ESQuery.run({
+//						"from":"bugs",
+//						"select":"bug_id",
+//						"esfilter": where
+//					}));
+//
+//					Bugzilla.showBugs(bugs.list.select("bug_id"));
+//				});
+//			}//click
+//		});
 	};
 
 	$(document).ready(function(){

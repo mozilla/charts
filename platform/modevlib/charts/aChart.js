@@ -346,7 +346,7 @@ aChart.showPie=function(params){
 		width: 400,
 		height: 400,
 		animate:false,
-		title: chartCube.name,
+		title: nvl(params.name, chartCube.name),
 		legend: true,
 		legendPosition: "right",
 //		legendAlign: "center",

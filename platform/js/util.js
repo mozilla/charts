@@ -110,10 +110,10 @@ function getPartIndex(b, domain){
 		var part = parts[i];
 		var result = [b].filter(part.esfilter);
 		if (result.length>0){
-			return i+1;
+			return {"style":{}, "order": i+1};
 		}//endif
 	}//for
-	return '<span style="color: transparent;">'+(parts.length+1)+'</span>';
+	return {"style":{"color":"transparent"}, "order": parts.length+1};
 }//function
 
 
@@ -124,9 +124,9 @@ function getPartIndex(b, domain){
 function match(b, esfilter){
 	var result = [b].filter(esfilter);
 	if (result.length>0){
-		return "1";
+		return {"style":{}, "order": 1};
 	}else{
-		return '<span style="color: transparent;">2</span>';
+		return {"style":{"color":"transparent"}, "order": 2};
 	}//endif
 }//function
 
@@ -149,20 +149,19 @@ function bugDetails(bugs) {
 		b.assigned_to = b.assigned_to=="nobody@mozilla.org" ? "" : b.assigned_to
 	});
 
-	//INITIAL ORDERING
-	bugs = Qb.sort(bugs, ["release", "beta", "dev", "security", "priority"]);
+	bugs = Qb.sort(bugs, ["release.order", "beta.order", "dev.order", "security.order", "priority.order"]);
 
 	var output = new Template([
 		"<table class='table' style='width:800px'>",
 		"<thead><tr>",
 		"<th><div style='width:70px;'>ID</div></th>",
 		"<th><div style='width:350px'>Summary</div></th>",
-		'<th><span class="indicator"><img style="height:20px;width:20px;" src="./images/lock.gif"></span></th>',
+		'<th><span class="indicator">Security</span></th>',
 		'<th><span class="indicator">Stability</span></th>',
-		'<th><span class="indicator">Release</span></th>',
+		'<th><span class="indicator">Release</span><span id="sorttable_sortfwdind">&#x25BE;</span></th>',
 		'<th><span class="indicator">Beta</span></th>',
 		'<th><span class="indicator">Dev</span></th>',
-		'<th><span class="indicator">NIghtly</span></th>',
+		'<th><span class="indicator">Nightly</span></th>',
 		'<th><span class="indicator">2.1</span></th>',
 		'<th><span class="indicator">2.2</span></th>',
 		'<th><span class="indicator">Priority</span></th>',
@@ -173,17 +172,17 @@ function bugDetails(bugs) {
 			"from":".",
 			"template":[
 				'<tr id="{{bug_id}}" class="bug_line hoverable">',
-				"<td><div>{{bugLink}}</div></td>" ,
+				"<td><div>{{bugLink}}</div></td>",
 				"<td><div id='{{bug_id}}_desc' style='width:350px;padding-top: 8px;max-height: 3em;word-wrap: break-word;overflow: hidden;line-height: 0.9em;'>[screened]</div></td>" ,
-				'<td><span class="indicator">{{security}}</span></td>',
-				'<td><span class="indicator">{{stability}}</span></td>',
-				'<td><span class="indicator">{{release}}</span></td>',
-				'<td><span class="indicator">{{beta}}</span></td>',
-				'<td><span class="indicator">{{dev}}</span></td>',
-				'<td><span class="indicator">{{nightly}}</span></td>',
-				'<td><span class="indicator">{{b2g21}}</span></td>',
-				'<td><span class="indicator">{{b2g22}}</span></td>',
-				'<td><span class="indicator">{{priority}}</span></td>',
+				'<td><span class="indicator" style="{{security.style|css}}">{{security.order}}</span></td>',
+				'<td><span class="indicator" style="{{stability.style|css}}">{{stability.order}}</span></td>',
+				'<td><span class="indicator" style="{{release.style|css}}">{{release.order}}</span></td>',
+				'<td><span class="indicator" style="{{beta.style|css}}">{{beta.order}}</span></td>',
+				'<td><span class="indicator" style="{{dev.style|css}}">{{dev.order}}</span></td>',
+				'<td><span class="indicator" style="{{nightly.style|css}}">{{nightly.order}}</span></td>',
+				'<td><span class="indicator" style="{{b2g21.style|css}}">{{b2g21.order}}</span></td>',
+				'<td><span class="indicator" style="{{b2g22.style|css}}">{{b2g22.order}}</span></td>',
+				'<td><span class="indicator" style="{{priority.style|css}}">{{priority.order}}</span></td>',
 				'<td><div class="email">{{assigned_to|html}}</div></span></td>',
 				"</tr>"
 			]

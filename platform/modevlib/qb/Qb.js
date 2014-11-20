@@ -987,10 +987,23 @@ Qb.merge=function(query){
 //sortOrder IS THE sort CLAUSE
 //columns ARE OPTIONAL, TO MAP SORT value TO column NAME
 Qb.sort = function(data, sortOrder, columns){
+	if (sortOrder instanceof Function){
+		try{
+			data = data.copy();
+			data.sort(sortOrder);
+			return data;
+		}catch(e){
+			Log.error("bad sort function", e)
+		}//try
+	}//endif
+
+
+
 	sortOrder = Array.newInstance(sortOrder);
 	if (sortOrder.length==0) return data;
 	var totalSort = Qb.sort.compile(sortOrder, columns, true);
 	try{
+		data = data.copy();
 		data.sort(totalSort);
 		return data;
 	}catch(e){

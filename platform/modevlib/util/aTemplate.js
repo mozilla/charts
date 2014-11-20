@@ -95,7 +95,7 @@ var Template = function Template(template){
 			if (e < 0) return output;
 			var path = output.substring(s + 2, e).toLowerCase().split("|");
 			var key = path[0];
-			var val = map[key];
+			var val = Map.get(map, key);
 			for (var p = 1; p < path.length; p++) {
 				var func = path[p].split("(")[0];
 				if (FUNC[func] === undefined) {

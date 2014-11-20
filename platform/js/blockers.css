@@ -124,10 +124,12 @@ tr.selected {
     padding-right: 0;
     text-align: center;
     -moz-transform: rotate(270deg);
+    line-height: 15px;
 }
 
 #sorttable_sortfwdind, #sorttable_sortrevind {
-    padding-right: 0;
+    display: block;
+    padding: 0;
 }
 
 

@@ -9,32 +9,41 @@
 	<script type="text/javascript" src="modevlib/imports/import.js"></script>
 </HEAD>
 <BODY>
-<div style="position: fixed; z-index: -1;overflow: visible;height: 100%;width:100%">
-	<div id="sidebar">
-		<div id="description" style="width:300px;">
-			Team manager dashboard
+<div style="position: fixed; overflow: visible;height: 100%;width:100%">
+	<div style="position: relative;z-index:10 ">
+		<div id="sidebar">
+			<div id="description" style="width:300px;">
+				Team manager dashboard
+			</div>
+			<hr>
+			<div id="last-updated" style="text-align: center;width:300px;"></div>
+			<hr>
+			<div id="filters" style="width:300px;" class="menu">
+			</div>
 		</div>
-		<hr>
-		<div id="last-updated" style="text-align: center;width:300px;"></div>
-		<hr>
-		<div id="filters" style="width:300px;" class="menu">
+		<div class="sidebar_name">
+			<div>Team Selection</div>
 		</div>
-	</div>
-	<div class="sidebar_name">
-		<div>Team Selection</div>
-	</div>
-	<div class="content" style="padding-top: 10px;">
-		<h1 id="title" style="display:inline-block;">Platform Dashboard</h1>
-		<div id="category" style="width:350px"></div>
+		<div class="content" style="padding-top: 10px;">
+			<h1 id="title" style="display:inline-block;">Platform Dashboard</h1>
+
+			<div id="category" style="width:350px"></div>
+		</div>
 	</div>
 </div>
 
 <div style="overflow:hidden;">
 	<div class="content" style="position:inherit;">
-		<table class="layout"><tr>
-			<td><div style="width:350px"></div></td>
-			<td><div id="bug_list"></div></td>
-		</tr></table>
+		<table class="layout">
+			<tr>
+				<td>
+					<div style="width:350px"></div>
+				</td>
+				<td>
+					<div id="bug_list"></div>
+				</td>
+			</tr>
+		</table>
 	</div>
 	<div class="footer">
 		Source at <a href="https://github.com/mozilla/charts/blob/master/platform/dashboard.html">https://github.com/mozilla/charts/blob/master/platform/dashboard.html</a>
@@ -92,16 +101,16 @@ importScript('js/main_lib.js', function(){
 			var allDesc = yield (ESQuery.run({
 				"from": "public_bugs",
 				"select": ["bug_id", "short_desc"],
-				"esfilter": {"terms":{"bug_id": allBugs.list.select("bug_id")}}
+				"esfilter": {"terms": {"bug_id": allBugs.list.select("bug_id")}}
 			}));
 
 			allDesc.list.forall(function(b){
-				$("#"+ b.bug_id+"_desc").html(CNV.String2HTML(b.short_desc));
+				$("#" + b.bug_id + "_desc").html(CNV.String2HTML(b.short_desc));
 			});
 		});
 
 		var temp = $("#category");
-		if (onPrivateCluster){
+		if (onPrivateCluster) {
 			temp.html(getCategoryHTML(Mozilla.Platform.Security, allBugs));
 
 			//BIG HACK: INSERT STABILITY IN WITH SECURITY

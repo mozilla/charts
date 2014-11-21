@@ -28,11 +28,11 @@ function sidebarSlider() {
 		if (self.hasClass("selected")) {
 			self.removeClass("selected");
 			$("#sidebar").animate({"width": "0px"}, 500);
-			$(".content").animate({"padding-left":"60px"}, 500);  //TODO:
+			$(".content").animate({"margin-left":"60px"}, 500);  //TODO:
 		} else {
 			self.addClass("selected");
 			$("#sidebar").animate({"width": "300px"}, 500);
-			$(".content").animate({"padding-left":"360px"}, 500);
+			$(".content").animate({"margin-left":"360px"}, 500);
 		}//endif
 	});
 }
@@ -110,7 +110,15 @@ function getPartIndex(b, domain){
 		var part = parts[i];
 		var result = [b].filter(part.esfilter);
 		if (result.length>0){
-			return {"style":{}, "order": i+1};
+			if (!Map.get(part, "style.color")) return {"style":{}, "order": i+1};
+
+			return {
+				"style":{
+					"color":"transparent",
+					"background-color":Map.get(part, "style.color")
+				},
+				"order": i+1
+			};
 		}//endif
 	}//for
 	return {"style":{"color":"transparent"}, "order": parts.length+1};
@@ -121,13 +129,18 @@ function getPartIndex(b, domain){
 //2 IS NEGATIVE INDICATION
 //IT IS IMPORTANT THAT THE NULLS ARE SORTED TO THE BOTTOM
 //IT IS IMPORTANT FOR THE sorttable LIB THAT ALL ROWS HAVE A VALUE
-function match(b, esfilter){
-	var result = [b].filter(esfilter);
-	if (result.length>0){
-		return {"style":{}, "order": 1};
-	}else{
-		return {"style":{"color":"transparent"}, "order": 2};
-	}//endif
+function match(b, part){
+	var result = [b].filter(part.esfilter);
+	if (result.length==0) return {"style":{"color":"transparent"}, "order": 2};
+	if (!Map.get(part, "style.color")) return {"style":{}, "order": 1};
+
+	return {
+		"style":{
+			"color":"transparent",
+			"background-color":Map.get(part, "style.color")
+		},
+		"order": 1
+	};
 }//function
 
 
@@ -139,23 +152,25 @@ function bugDetails(bugs) {
 		b.bugLink = Bugzilla.linkToBug(b.bug_id);
 		b.priority = getPartIndex(b, Mozilla.Platform.Priority);
 		b.security = getPartIndex(b, Mozilla.Platform.Security);
-		b.stability =  match(b, Mozilla.Platform.Stability.esfilter);
-		b.release = match(b, desk.Release.esfilter);
-		b.beta = match(b, desk.Beta.esfilter);
-		b.dev = match(b, desk.Dev.esfilter);
-		b.nightly = match(b, desk.Nightly.esfilter);
-		b.b2g21 = match(b, b2g["2.1"].esfilter);
-		b.b2g22 = match(b, b2g["2.2"].esfilter);
-		b.assigned_to = b.assigned_to=="nobody@mozilla.org" ? "" : b.assigned_to
+		b.stability =  match(b, Mozilla.Platform.Stability);
+		b.release = match(b, desk.Release);
+		b.beta = match(b, desk.Beta);
+		b.dev = match(b, desk.Dev);
+		b.nightly = match(b, desk.Nightly);
+		b.b2g21 = match(b, b2g["2.1"]);
+		b.b2g22 = match(b, b2g["2.2"]);
+		b.assigned_to = b.assigned_to=="nobody@mozilla.org" ? "" : b.assigned_to;
+		b.overallPriority = -3/ b.release.order-2/ b.beta.order-1/ b.dev.order -2/ b.security.order- 1/ b.priority.order-2/ b.stability.order;
 	});
 
-	bugs = Qb.sort(bugs, ["release.order", "beta.order", "dev.order", "security.order", "priority.order"]);
+	bugs = Qb.sort(bugs, ["release.order", "overallPriority"]);
 
 	var output = new Template([
 		"<table class='table' style='width:800px'>",
 		"<thead><tr>",
 		"<th><div style='width:70px;'>ID</div></th>",
 		"<th><div style='width:350px'>Summary</div></th>",
+//		'<th class="hoverable" style="height:100px; vertical-align: bottom;"><span class="indicator">Security</span></th>',
 		'<th><span class="indicator">Security</span></th>',
 		'<th><span class="indicator">Stability</span></th>',
 		'<th><span class="indicator">Release</span><span id="sorttable_sortfwdind">&#x25BE;</span></th>',
@@ -174,15 +189,15 @@ function bugDetails(bugs) {
 				'<tr id="{{bug_id}}" class="bug_line hoverable">',
 				"<td><div>{{bugLink}}</div></td>",
 				"<td><div id='{{bug_id}}_desc' style='width:350px;padding-top: 8px;max-height: 3em;word-wrap: break-word;overflow: hidden;line-height: 0.9em;'>[screened]</div></td>" ,
-				'<td><span class="indicator" style="{{security.style|css}}">{{security.order}}</span></td>',
-				'<td><span class="indicator" style="{{stability.style|css}}">{{stability.order}}</span></td>',
-				'<td><span class="indicator" style="{{release.style|css}}">{{release.order}}</span></td>',
-				'<td><span class="indicator" style="{{beta.style|css}}">{{beta.order}}</span></td>',
-				'<td><span class="indicator" style="{{dev.style|css}}">{{dev.order}}</span></td>',
-				'<td><span class="indicator" style="{{nightly.style|css}}">{{nightly.order}}</span></td>',
-				'<td><span class="indicator" style="{{b2g21.style|css}}">{{b2g21.order}}</span></td>',
-				'<td><span class="indicator" style="{{b2g22.style|css}}">{{b2g22.order}}</span></td>',
-				'<td><span class="indicator" style="{{priority.style|css}}">{{priority.order}}</span></td>',
+				'<td style="vertical-align: middle"><span class="indicator" style="{{security.style|style}}">{{security.order}}</span></td>',
+				'<td style="vertical-align: middle"><span class="indicator" style="{{stability.style|style}}">{{stability.order}}</span></td>',
+				'<td style="vertical-align: middle"><span class="indicator" style="{{release.style|style}}">{{release.order}}</span></td>',
+				'<td style="vertical-align: middle"><span class="indicator" style="{{beta.style|style}}">{{beta.order}}</span></td>',
+				'<td style="vertical-align: middle"><span class="indicator" style="{{dev.style|style}}">{{dev.order}}</span></td>',
+				'<td style="vertical-align: middle"><span class="indicator" style="{{nightly.style|style}}">{{nightly.order}}</span></td>',
+				'<td style="vertical-align: middle"><span class="indicator" style="{{b2g21.style|style}}">{{b2g21.order}}</span></td>',
+				'<td style="vertical-align: middle"><span class="indicator" style="{{b2g22.style|style}}">{{b2g22.order}}</span></td>',
+				'<td style="vertical-align: middle"><span class="indicator" style="{{priority.style|style}}">{{priority.order}}</span></td>',
 				'<td><div class="email">{{assigned_to|html}}</div></span></td>',
 				"</tr>"
 			]
@@ -197,25 +212,38 @@ function bugDetails(bugs) {
 
 function getCategoryHTML(category, allBugs){
 	var edges = nvl(category.edges, category.partitions);
-	var unionFilter = edges.select("esfilter");
 
-	var html = edges.map(function(e, i){
+	var html;
+
+	if (edges==null){
+		//CATEGORY WITH SINGLE TILE
+		html = tile({
+			"name": category.name,
+			"bugs": allBugs.list.filter(category.esfilter),
+			"style": nvl(category.style, {})
+		});
+
+	}else{
+		var unionFilter = edges.select("esfilter");
+
+		html = edges.map(function(e, i){
+			var info = {
+				"name": e.name,
+				"bugs": allBugs.list.filter(e.fullFilter),
+				"style": nvl(e.style, {})
+			};
+			return tile(info)
+		}).join("");
+
+		//ADD THE REMAINDER
 		var info = {
-			"name": e.name,
-			"bugs": allBugs.list.filter(e.fullFilter),
-			"style": nvl(e.style, {})
+			"name": "Other",
+			"style": {},
+			"bugs": allBugs.list.filter({"and":[category.esfilter, {"not": {"or": unionFilter}}]})
 		};
-		return tile(info)
-	}).join("");
-
-	//ADD THE REMAINDER
-	var info = {
-		"name": "Other",
-		"style": {},
-		"bugs": allBugs.list.filter({"and":[category.esfilter, {"not": {"or": unionFilter}}]})
-	};
-	if (info.bugs.length > 0) {
-		html += tile(info);
+		if (info.bugs.length > 0) {
+			html += tile(info);
+		}//endif
 	}//endif
 
 	return '<div style="padding-top: 10px"><h3 id="' + category.name + '_title">' + category.name + '</h3></div><div id="' + category.name + '_tiles" style="padding-left: 50px">' + html + '</div>';
@@ -231,7 +259,7 @@ function setReleaseHTML(data){
 	}).join("");
 
 	var betaTemplate = new Template([
-		'<td style="vertical-align:bottom;text-align: bottom"><div style="{{style|css}}"><span>{{value}}</span></div></td>'
+		'<td style="vertical-align:bottom;text-align: bottom"><div style="{{style|style}}"><span>{{value}}</span></div></td>'
 	]);
 	var beta = data.edges[1].domain.partitions.map(function(p, i){
 		var style = {

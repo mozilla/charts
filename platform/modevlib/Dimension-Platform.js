@@ -156,6 +156,7 @@ function requiredFields(esfilter){
 				},
 				{
 					"name": "Stability",
+					"style":{"color":"#777777"},
 					"esfilter": {"terms": {"keywords": ["topcrash"]}}
 				},
 				{

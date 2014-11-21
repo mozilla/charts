@@ -87,6 +87,8 @@ Color = function (L, h, s) {
 				return CNV.hex2int(value.substring(i*2+1, i*2+3))
 			});
 			return new ColorSRGB(rgb);
+		}else{
+			return value;  //MAYBE WE ARE LUCKY
 		}//endif
 	};
 

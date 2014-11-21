@@ -9,7 +9,7 @@
 	<script type="text/javascript" src="modevlib/imports/import.js"></script>
 </HEAD>
 <BODY>
-<div style="overflow:hidden;">
+<div style="position: fixed; z-index: -1;overflow: visible;height: 100%;width:100%">
 	<div id="sidebar">
 		<div id="description" style="width:300px;">
 			Team manager dashboard
@@ -23,10 +23,16 @@
 	<div class="sidebar_name">
 		<div>Team Selection</div>
 	</div>
-	<div class="content" style="position:inherit;">
+	<div class="content" style="padding-top: 10px;">
 		<h1 id="title" style="display:inline-block;">Platform Dashboard</h1>
+		<div id="category" style="width:350px"></div>
+	</div>
+</div>
+
+<div style="overflow:hidden;">
+	<div class="content" style="position:inherit;">
 		<table class="layout"><tr>
-			<td><div id="category"></div></td>
+			<td><div style="width:350px"></div></td>
 			<td><div id="bug_list"></div></td>
 		</tr></table>
 	</div>
@@ -53,6 +59,8 @@ importScript('js/main_lib.js', function(){
 	var __createChart = function*(){
 		yield (ESQuery.loadColumns({"from": "bugs"}));
 
+		var onPrivateCluster = !ESQuery.INDEXES["bugs"].path.contains("public_bugs");
+
 		var team = GUI.state.team.getSimpleState();
 
 		var teamFilter = {"and": GUI.state.team.getSelectedParts().select("esfilter")};
@@ -66,14 +74,6 @@ importScript('js/main_lib.js', function(){
 			Mozilla.Platform.Priority.esfilter,
 			Mozilla.Platform["Release Tracking - FirefoxOS"].esfilter
 		]};
-
-		//GET META DATA ON SHORTLIST
-
-		//GET DETAILS ON LONG LIST
-
-		//GET short_desc FROM PUBLIC CLUSTER
-
-
 
 		//PULL ALL METADATA!!
 		var allBugs = yield (ESQuery.run({
@@ -101,10 +101,10 @@ importScript('js/main_lib.js', function(){
 		});
 
 		var temp = $("#category");
-		temp.html(getCategoryHTML(Mozilla.Platform.Security, allBugs));
+		if (onPrivateCluster){
+			temp.html(getCategoryHTML(Mozilla.Platform.Security, allBugs));
 
-		//BIG HACK: INSERT STABILITY IN WITH SECURITY, IF IT EXISTS
-		if ($("#Security_title").length > 0) {
+			//BIG HACK: INSERT STABILITY IN WITH SECURITY
 			var stabilityBugs = allBugs.list.filter(Mozilla.Platform.Stability.fullFilter);
 			if (stabilityBugs.length > 0) {
 				$("#Security_title").html("Security/Stability");
@@ -115,6 +115,7 @@ importScript('js/main_lib.js', function(){
 				}));
 			}//endif
 		} else {
+			//PUBLIC CLUSTER HAS NEW SEC. BUGS, SO GO STRAIT TO SHOWING THE STABILITY BUGS
 			temp.append(getCategoryHTML(Mozilla.Platform.Stability, allBugs));
 		}//endif
 
@@ -136,7 +137,7 @@ importScript('js/main_lib.js', function(){
 					"id": "Teams",
 					"name": "All Teams",
 					"dimension": Mozilla.Platform.Team,
-					"onlyOne": false,
+					"onlyOne": true,
 					"expandAll": true
 				})}
 			],

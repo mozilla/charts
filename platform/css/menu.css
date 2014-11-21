@@ -541,7 +541,10 @@ SIDE BAR
 
 
 .content{
-    display:block;padding-left:60px;top:0;vertical-align: top
+    display:block;
+    padding-left:60px;
+    top:0;
+    vertical-align: top
 }
 
 

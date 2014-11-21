@@ -57,12 +57,47 @@ tr.selected {
 }
 
 
-.email {
-    font-size: .7em;
+.table td {
+    padding: 0;
+}
+
+.table th div, .table td div, .table th span, .table td span {
+    padding: 3px 20px 3px 0;
+    font-size: 0.8em;
+}
+
+.indicator, .table tbody td .indicator {
+    display:inline-block;
+    width:15px;
+    height:15px;
+    padding: 0;
+    text-align: center;
+    vertical-align: middle;
+}
+
+.table td div.email {
     text-overflow: ellipsis;
     white-space: nowrap;
+    vertical-align: middle;
+    overflow: hidden;
+    width: 100px;
+    padding-right: 5px;
+}
 
+.bz_component {
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    vertical-align: middle;
+    width: 80px;
+}
 
+.desc {
+    width: auto;
+    padding-top: 8px;
+    max-height: 3em;
+    word-wrap: break-word;
+    overflow: hidden;
+    line-height: 1em
 }
 
 .component {
@@ -70,7 +105,7 @@ tr.selected {
     font-weight: bold;
     color:black;
     display: inline-block;
-    padding: 10px 10px 0px;
+    padding: 10px 10px 0;
     text-align: center;
 }
 
@@ -120,16 +155,6 @@ tr.selected {
 }
 
 
-
-
-.indicator, .table tbody td .indicator {
-    display:inline-block;
-    width:15px;
-    height:15px;
-    padding: 0;
-    text-align: center;
-    vertical-align: middle;
-}
 
 .table thead th .indicator {
     display:block;

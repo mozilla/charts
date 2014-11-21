@@ -144,11 +144,25 @@ function match(b, part){
 }//function
 
 
+var replacement={
+	"javascript: ":"",
+	"javascript engine:": "engine:",
+	"javascript ": ""
+};
+
+function cleanupComponent(name){
+	Map.forall(replacement, function(find, replace){
+		name=name.replaceAll(find, replace);
+	});
+	return name;
+}
+
 function bugDetails(bugs) {
 
 	var desk = Mozilla.Platform["Release Tracking - Desktop"];
 	var b2g =Mozilla.Platform["Release Tracking - FirefoxOS"];
 	bugs.forall(function(b){
+		b.component = cleanupComponent(b.component);
 		b.bugLink = Bugzilla.linkToBug(b.bug_id);
 		b.priority = getPartIndex(b, Mozilla.Platform.Priority);
 		b.security = getPartIndex(b, Mozilla.Platform.Security);
@@ -166,11 +180,12 @@ function bugDetails(bugs) {
 	bugs = Qb.sort(bugs, ["release.order", "overallPriority"]);
 
 	var output = new Template([
-		"<table class='table' style='width:800px'>",
+		"<table class='table' style='width:auto'>",
 		"<thead><tr>",
 		"<th><div style='width:70px;'>ID</div></th>",
-		"<th><div style='width:350px'>Summary</div></th>",
-//		'<th class="hoverable" style="height:100px; vertical-align: bottom;"><span class="indicator">Security</span></th>',
+		"<th><div>Summary</div></th>",
+		'<th><div>Component</div></th>',
+		'<th><span>Owner</span></th>',
 		'<th><span class="indicator">Security</span></th>',
 		'<th><span class="indicator">Stability</span></th>',
 		'<th><span class="indicator">Release</span><span id="sorttable_sortfwdind">&#x25BE;</span></th>',
@@ -180,7 +195,6 @@ function bugDetails(bugs) {
 		'<th><span class="indicator">2.1</span></th>',
 		'<th><span class="indicator">2.2</span></th>',
 		'<th><span class="indicator">Priority</span></th>',
-		'<th><span style="width:120px;">Owner</span></th>',
 		"</tr></thead>",
 		"<tbody>",
 		{
@@ -188,7 +202,9 @@ function bugDetails(bugs) {
 			"template":[
 				'<tr id="{{bug_id}}" class="bug_line hoverable">',
 				"<td><div>{{bugLink}}</div></td>",
-				"<td><div id='{{bug_id}}_desc' style='width:350px;padding-top: 8px;max-height: 3em;word-wrap: break-word;overflow: hidden;line-height: 0.9em;'>[screened]</div></td>" ,
+				"<td><div id='{{bug_id}}_desc' class='desc'>[screened]</div></td>" ,
+				'<td><div class="bz_component">{{component|html}}</div></span></td>',
+				'<td><div class="email">{{assigned_to|html}}</div></span></td>',
 				'<td style="vertical-align: middle"><span class="indicator" style="{{security.style|style}}">{{security.order}}</span></td>',
 				'<td style="vertical-align: middle"><span class="indicator" style="{{stability.style|style}}">{{stability.order}}</span></td>',
 				'<td style="vertical-align: middle"><span class="indicator" style="{{release.style|style}}">{{release.order}}</span></td>',
@@ -198,7 +214,6 @@ function bugDetails(bugs) {
 				'<td style="vertical-align: middle"><span class="indicator" style="{{b2g21.style|style}}">{{b2g21.order}}</span></td>',
 				'<td style="vertical-align: middle"><span class="indicator" style="{{b2g22.style|style}}">{{b2g22.order}}</span></td>',
 				'<td style="vertical-align: middle"><span class="indicator" style="{{priority.style|style}}">{{priority.order}}</span></td>',
-				'<td><div class="email">{{assigned_to|html}}</div></span></td>',
 				"</tr>"
 			]
 		},

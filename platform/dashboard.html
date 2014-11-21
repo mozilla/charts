@@ -46,7 +46,7 @@
 		</table>
 	</div>
 	<div class="footer">
-		Source at <a href="https://github.com/mozilla/charts/blob/master/platform/dashboard.html">https://github.com/mozilla/charts/blob/master/platform/dashboard.html</a>
+		Source at <a href="https://github.com/mozilla/charts/blob/platform/platform/dashboard.html">https://github.com/mozilla/charts/blob/platform/platform/dashboard.html</a>
 	</div>
 </div>
 
@@ -87,7 +87,7 @@ importScript('js/main_lib.js', function(){
 		//PULL ALL METADATA!!
 		var allBugs = yield (ESQuery.run({
 			"from": "bugs",
-			"select": ["bug_id", "assigned_to"].union(requiredFields(allFilter)),
+			"select": ["bug_id", "assigned_to", "component"].union(requiredFields(allFilter)),
 			"esfilter": {"and": [
 				allFilter,
 				teamFilter,

@@ -73,13 +73,11 @@ function tile(info){
 	var normalColor = nvl(info.style.color, NORMAL);
 	var hoverColor = Color.newInstance(normalColor).lighter().toHTML();
 
-	info.bugsCount = info.bugs.length;
 	info.bugsList = CNV.Object2JSON(info.bugs.select("bug_id"));
 	info.bugsURL = Bugzilla.searchBugsURL(info.bugs.select("bug_id"));
 	info.unassignedBugs = info.bugs.filter(function(b){
 		return b.assigned_to == "nobody@mozilla.org"
 	}).select("bug_id");
-	info.unassignedBugsCount = info.unassignedBugs.length;
 	info.unassignedURL = Bugzilla.searchBugsURL(info.unassignedBugs);
 	info.color = normalColor;
 	info.states = ["normal", "selected"];
@@ -92,8 +90,8 @@ function tile(info){
 	var TEMPLATE = new Template([
 		'<div class="project"  style="background-color:{{color}}" dynamic-style="{{dynamicStyle|css}}" dynamic-state="{{states|attribute}}" href="{{bugsURL}}" bugsList="{{bugsList}}">' ,
 		'<div class="release">{{name}}</div>',
-		'<div class="count">{{bugsCount}}</div>',
-		(info.unassignedBugs.length > 0 ? '<div class="unassigned"><a class="count_unassigned" href="{{unassignedURL}}">{{unassignedBugsCount}}</a></div>' : '') ,
+		'<div class="count">{{bugs.length}}</div>',
+		(info.unassignedBugs.length > 0 ? '<div class="unassigned"><a class="count_unassigned" href="{{unassignedURL}}">{{unassignedBugs.length}}</a></div>' : '') ,
 		'</div>'
 	]);
 	return TEMPLATE.replace(info);
@@ -267,22 +265,56 @@ function getCategoryHTML(category, allBugs){
 
 
 function setReleaseHTML(data){
+	//DEAR SELF:  PLEASE LEARN D3!!
+	//
 
-
-	var header = data.edges[1].domain.partitions.map(function(p, i){
-		return '<td style="text-align: center"><div>'+ p.name+'</div></td>';
+	var header = "<td></td>"+data.edges[1].domain.partitions.map(function(p, i){
+		return '<td style="text-align: center; width:60px;"><div>'+ p.name+'</div></td>';
 	}).join("");
 
+
+
+	var releaseTemplate = new Template([
+		'<td style="vertical-align:middle;text-align: center; width:60px;">',
+		'<div style="{{style|style}}">',
+		'<div style="padding-top:6px;">{{value}}</div>',
+		'</div>',
+		'</td>'
+	]);
+	var release = data.edges[1].domain.partitions.map(function(p, i){
+		var style = {
+			"width":"40px",
+			"height":"40px",
+			"color":"white",
+			"vertical-align":"middle",
+			"text-align": "center",
+			"display":"inline-block",
+			"background-color": data.edges[0].domain.partitions[0].style.color
+		};
+		if (data.cube[0][i]>0){
+			return releaseTemplate.replace({"value":data.cube[0][i], "style":style});
+		}else{
+			return "<td></td>";
+		}//endif
+
+	}).join("");
+
+
 	var betaTemplate = new Template([
-		'<td style="vertical-align:bottom;text-align: bottom"><div style="{{style|style}}"><span>{{value}}</span></div></td>'
+		'<td style="vertical-align:bottom;text-align: center; width:60px;">',
+		'<div style="{{style|style}}">',
+		'<span>{{value}}</span>',
+		'</div>',
+		'</td>'
 	]);
 	var beta = data.edges[1].domain.partitions.map(function(p, i){
 		var style = {
 			"width":"40px",
 			"height":(data.cube[1][i]*10)+"px",
-			"color":"white",
-			"text-align": "bottom",
+			"color": data.cube[1][i]>1 ? "white" : "transparent",
+			"text-align": "center",
 			"align":"center",
+			"display":"inline-block",
 			"background-color": data.edges[0].domain.partitions[1].style.color
 		};
 
@@ -290,14 +322,67 @@ function setReleaseHTML(data){
 	}).join("");
 
 	var devTemplate = new Template([
-		'<td style="text-align: top"><div class="aurora" style="width:20px;height:{{value}}">{{value}}</div></td>'
+		'<td style="width:60px;text-align: center;">',
+		'<div style="{{style|style}}">',
+		'<div style="vertical-align: bottom;">{{value}}</div>',
+		'</div>',
+		'</td>'
 	]);
 	var dev = data.edges[1].domain.partitions.map(function(p, i){
-		return devTemplate.replace({"value":data.cube[2][i]});
+		var style = {
+			"width":"40px",
+			"height":(data.cube[2][i]*10)+"px",
+			"color":data.cube[2][i]>1 ? "white" : "transparent",
+			"vertical-align": "bottom",
+			"text-align": "center",
+			"display":"inline-block",
+			"background-color": data.edges[0].domain.partitions[2].style.color
+		};
+		return devTemplate.replace({"value":data.cube[2][i], "style":style});
 	}).join("");
 
 
-	$("#teams").html('<table id="teamsTable"><thead><tr>'+header+'</tr></thead><tbody><tr>'+beta+'</tr><tr>'+dev+'</tr></tbody></table>');
+	var esrTemplate = new Template([
+		'<td style="vertical-align:middle;text-align: center; width:60px;">',
+		'<div style="{{style|style}}">',
+		'<div style="padding-top:6px;">{{value}}</div>',
+		'</div>',
+		'</td>'
+	]);
+	var esr = data.edges[1].domain.partitions.map(function(p, i){
+		var style = {
+			"width":"40px",
+			"height":"40px",
+			"color":"white",
+			"vertical-align":"middle",
+			"text-align": "center",
+			"display":"inline-block",
+			"background-color": data.edges[0].domain.partitions[3].style.color
+		};
+		if (data.cube[3][i]>0){
+			return esrTemplate.replace({"value":data.cube[3][i], "style":style});
+		}else{
+			return "<td></td>";
+		}//endif
+
+	}).join("");
+
+
+
+
+	$("#teams").html(
+		'<table id="teamsTable">' +
+		'<thead><tr>'+header+'</tr></thead>' +
+		'<tbody>' +
+			(aMath.SUM(data.cube[0])>0 ? '<tr><td class="train_title"><h3>Release</h3></td>'+release+'</tr>' : '') +
+		'<tr><td class="train_title"><h3>Beta</h3></td>'+beta+'</tr>' +
+		'<tr><td class="train_title"><h3>Aurora</h3></td>'+dev+'</tr>' +
+			(aMath.SUM(data.cube[3])>0 ? '<tr><td class="train_title"><h3>ESR 31</h3></td>'+esr+'</tr>' : '') +
+		'</tbody>' +
+		'</table>'
+	);
 
 
 }//function
+
+

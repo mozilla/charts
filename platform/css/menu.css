@@ -378,7 +378,7 @@ table.grid td.vSeperatorA {
 }
 
 
-#chart, .chart {
+.chart {
     width: 800px;
     position: relative;
     border: 1px solid #aaaaaa;

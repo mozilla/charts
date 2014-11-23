@@ -10,11 +10,9 @@
 </HEAD>
 <BODY>
 <div>
-	<div class="content" style="width:100%;text-align: center;">
-		<h1 style="text-align: center;">Release Management</h1>
-		<h2 style="text-align: center;">Tracking Firefox</h2>
-		<br>
-		<div id="teams" style="display: inline-block; width:800px;height:500px"></div>
+	<div class="content">
+		<h1 id="title" style="display:block;">Release Management</h1>
+		<div id="chart" style="width:800px;height:500px"></div>
 	</div>
 	<div class="footer">
 		Source at <a href="https://github.com/mozilla/charts/blob/master/platform/release.html">https://github.com/mozilla/charts/blob/master/platform/release.html</a>
@@ -58,33 +56,41 @@ importScript([
 			],
 			"esfilter":allFilter
 		}));
+		chart.cube[2] = chart.cube[2].map(function(v){ return -v;});
+		var maxx = aMath.niceCeiling(aMath.max(aMath.MAX(chart.cube[1]), aMath.MAX(chart.cube[2])));
 
-		setReleaseHTML(chart);
-//		aChart.show({
-//			"id" : "chart",
-//			"type" : "bar",
-//			"stacked" : true,
-//			"cube" : chart,
-//			"xAxisSize" : 100,
-//			"clickAction" : function(release, team, d){
-//				Thread.run(function*(){
-//					var where = {"and" : [
-//						Mozilla.Platform["Release Tracking - Desktop"][release].esfilter,
-//						Mozilla.Platform.Team[team].esfilter,
-//						Mozilla.BugStatus.Open.esfilter,
-//						Mozilla.CurrentRecords.esfilter
-//					]};
-//
-//					var bugs=yield (ESQuery.run({
-//						"from":"bugs",
-//						"select":"bug_id",
-//						"esfilter": where
-//					}));
-//
-//					Bugzilla.showBugs(bugs.list.select("bug_id"));
-//				});
-//			}//click
-//		});
+		aChart.show({
+			"id" : "chart",
+			"type" : "bar",
+			"stacked" : true,
+			"cube" : chart,
+			"xAxisSize" : 100,
+			"orthoAxisFixedMax" : maxx,
+			"orthoAxisFixedMin" : -maxx,
+			"tooltipFormat": function(revision, team, amount){
+				//FIND THE MATCHING ELEMENT
+				return "<div><b>"+team+"</b><br><b>"+revision+"</b>: " + amount+"</div>";
+			},
+			"clickAction" : function(release, team, d){
+				Thread.run(function*(){
+					var where = {"and" : [
+						Mozilla.Platform["Release Tracking - Desktop"][release].esfilter,
+						Mozilla.Platform.Team[team].fullFilter,
+						Mozilla.BugStatus.Open.esfilter,
+						Mozilla.CurrentRecords.esfilter
+					]};
+
+					var bugs=yield (ESQuery.run({
+						"from":"bugs",
+						"select":"bug_id",
+						"esfilter": where
+					}));
+
+					Bugzilla.showBugs(bugs.list.select("bug_id"));
+				});
+			}//click
+
+		});
 	};
 
 	$(document).ready(function(){

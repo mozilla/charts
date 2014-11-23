@@ -24,15 +24,16 @@ var Template = function Template(template){
 	};
 	Template.prototype.replace = Template.prototype.expand;
 
+	///////////////////////////////////////////////////////////////////////////
+	// DEFINE TEMPLATE FUNCTIONS HERE
+	///////////////////////////////////////////////////////////////////////////
 	var FUNC = {};
 	FUNC.html = CNV.String2HTML;
 	FUNC.style = CNV.Object2style;
 	FUNC.css = CNV.Object2CSS;
 	FUNC.attribute = CNV.value2HTMLAttribute;
 	FUNC.datetime = function(d, f){
-		if (f===undefined){
-			f="yyyy-MM-dd HH:mm:ss";
-		}//endif
+		f = nvl(f, "yyyy-MM-dd HH:mm:ss");
 		return d.format(f);
 	};
 

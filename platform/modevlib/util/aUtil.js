@@ -100,7 +100,12 @@ Map.get=function(obj, fieldName){
 	if (obj===undefined || obj==null) return obj;
 	var path = splitField(fieldName);
 	for (var i=0;i<path.length-1;i++){
-		obj = obj[path[i]];
+		var step = path[i];
+		if (step=="length"){
+			obj = eval("obj.length");
+		}else{
+			obj = obj[step];
+		}//endif
 		if (obj===undefined || obj==null) return undefined;
 	}//endif
 	return obj[path.last()];

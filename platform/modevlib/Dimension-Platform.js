@@ -128,8 +128,14 @@ function requiredFields(esfilter){
 		"style": trains.last().style,
 		"esfilter": {"or":otherFilter}
 	});
-
-
+	trainTrackingRel.partitions.append({
+		"name": "ESR-31",
+		"style": trains.last().style,
+		"esfilter": {"and":[
+			{"regexp":{"cf_tracking_firefox_esr31":".*?\\+"}},
+			{"term":{"cf_status_firefox_esr31":"affected"}}
+		]}
+	});
 
 
 	Dimension.addEdges(true, Mozilla, [

@@ -100,6 +100,18 @@ tr.selected {
     line-height: 1em
 }
 
+
+#teamsTable {
+    margin-left:-140px;  /*100 +20 +20 (see .train_title)*/
+}
+
+.train_title {
+    vertical-align: middle;
+    text-align: right;
+    padding: 10px 20px 10px 0;
+    width: 100px;
+}
+
 .component {
     font-family: Arial, Helvetica, sans-serif;
     font-weight: bold;
@@ -149,7 +161,6 @@ tr.selected {
 .content{
     display:block;
     padding: 50px 0 0 0;
-    margin-left: 60px;
     top:0;
     vertical-align: top
 }

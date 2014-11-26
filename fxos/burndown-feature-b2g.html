@@ -26,6 +26,7 @@
 	<script type="text/javascript" src="modevlib/util/aHTML.js"></script>
 	<script type="text/javascript" src="modevlib/collections/aArray.js"></script>
 	<script type="text/javascript" src="lib/jquery.js"></script>
+	<script type="text/javascript" src="lib/jquery.ba-bbq/jquery.ba-bbq.js"></script>
 	<script type="text/javascript" src="modevlib/util/CNV.js"></script>
 	<script type="text/javascript" src="modevlib/util/aDate.js"></script>
 	<script type="text/javascript" src="modevlib/collections/aQueue.js"></script>
@@ -43,7 +44,6 @@
 	<script type="text/javascript" src="modevlib/gui/TeamFilter.js"></script>
 	<script type="text/javascript" src="lib/ccc/lib/protovis-msie.js"></script>
 	<script type="text/javascript" src="modevlib/debug/aLog.js"></script>
-	<script type="text/javascript" src="lib/jquery.ba-bbq/jquery.ba-bbq.js"></script>
 	<script type="text/javascript" src="lib/ccc/lib/jquery.tipsy.js"></script>
 	<script type="text/javascript" src="modevlib/threads/thread.js"></script>
 	<script type="text/javascript" src="modevlib/gui/ProgramFilter.js"></script>
@@ -310,7 +310,9 @@ importScript([
 			raw_data = yield(getRawDependencyData(featureFilter, timeDomain, Mozilla.Scope["needed_fields"]));
 		}//endif
 
+		var a = Log.action("calculate days", true);
 		var daily = yield (getDailyDependencies(raw_data, currScopeFilter));
+		Log.actionDone(a);
 
 		//LAST DAY WILL BE CONSIDERED CURRENT FEATURE LIST
 		var open = daily.cube.last().filter({"term": {"counted": "Open"}}).select("bug_id");

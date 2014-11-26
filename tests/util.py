@@ -9,11 +9,13 @@
 #
 
 from __future__ import unicode_literals
+from datetime import timedelta
 from pyLibrary.cnv import CNV
 from pyLibrary.collections import OR
 from pyLibrary.env.files import File
 from pyLibrary.env.logs import Log
 from pyLibrary.thread.threads import Thread
+from pyLibrary.times.dates import Date
 
 LOG_DIV = "test_logs"
 
@@ -53,19 +55,30 @@ class MoDevMetricsDriver(object):
         if isLoading:
             Log.error("page still loading: {{page}}", {"page": path})
 
-    def wait_for_logs(self):
-        old_length = -1
-        elements = self.find("#" + LOG_DIV + " p")
-        while len(elements) != old_length:
-            Thread.sleep(seconds=10)
-            old_length = len(elements)
-            elements = self.find("#" + LOG_DIV + " p")
+    def wait_for_logs(self, timeout=None):
+        if not timeout:
+            timeout = timedelta(seconds=10)
 
-        return [CNV.JSON2object(CNV.html2unicode(e.get_attribute('innerHTML'))) for e in elements]
+        def logs():
+            return self.find("#" + LOG_DIV + " p")
+
+        def status():
+            s = self.find("#status")
+            if not s:
+                return None
+            return s[0].text
+
+        # IF THE MESSAGE KEEPS CHANGING OR THE LOGS KEEP INCREASING WE CAN BE
+        # CONFIDENT SOMETHING IMPORTANT IS STILL HAPPENING
+        self._wait_for_stable(lambda: (status(), len(logs())), timeout)
+
+        output = [CNV.JSON2object(CNV.html2unicode(e.get_attribute('innerHTML'))) for e in logs()]
+        Log.note("Logs:\n{{logs|indent}}", {"logs": output})
+        return output
 
     def check_for_errors(self, logs, path):
         try:
-            errors = [l for l in logs if l.type == "ERROR"]
+            errors = [l for l in logs if l.type in ["ALERT", "ERROR"]]
             if errors:
                 Log.error("Problem found in {{page}}:\n{{error|indent}}", {
                     "page": path,
@@ -73,3 +86,26 @@ class MoDevMetricsDriver(object):
                 })
         finally:
             self.close()
+
+
+    def _wait_for_stable(self, detect_function, timeout):
+        """
+        WAIT FOR RESULTS OF detect_function TO BE STABLE
+        """
+        if not isinstance(timeout, timedelta):
+            Log.error("Expecting a timeout as a timedelta")
+
+        detectTime = Date.now()
+        oldValue = "probably never an initial value"
+        newValue = detect_function()
+        while True:
+            now = Date.now()
+            potentialValue = detect_function()
+            if potentialValue != newValue:
+                oldValue = newValue
+                newValue = potentialValue
+                detectTime = now
+            if now - detectTime > timeout:
+                return
+            Thread.sleep(seconds=0.5)
+

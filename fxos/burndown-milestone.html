@@ -42,8 +42,8 @@
 	<link type="text/css" rel="stylesheet" href="lib/jquery-ui/css/start/jquery-ui-1.10.2.custom.css"/>
 	<script type="text/javascript" src="modevlib/gui/TeamFilter.js"></script>
 	<script type="text/javascript" src="lib/ccc/lib/protovis-msie.js"></script>
-	<script type="text/javascript" src="modevlib/debug/aLog.js"></script>
 	<script type="text/javascript" src="lib/jquery.ba-bbq/jquery.ba-bbq.js"></script>
+	<script type="text/javascript" src="modevlib/debug/aLog.js"></script>
 	<script type="text/javascript" src="lib/ccc/lib/jquery.tipsy.js"></script>
 	<script type="text/javascript" src="modevlib/threads/thread.js"></script>
 	<script type="text/javascript" src="modevlib/gui/ProgramFilter.js"></script>
@@ -404,6 +404,7 @@ var __createChart = function*(){
 		////////////////////////////////////////////////////////////////////////////
 		// DAILY CHANGE
 		////////////////////////////////////////////////////////////////////////////
+		var a = Log.action("Request Churn", true);
 		var minMaxBugs=yield(ElasticSearch.getOpenMinMax(teamFilter, churnTimeDomain, ["status_whiteboard", "cf_blocking_loop", "cf_blocking_b2g", "target_milestone", "keywords", "resolution"]));
 
 		var diff = yield(Q({
@@ -435,6 +436,7 @@ var __createChart = function*(){
 				{"name":"date", "value":"date", "domain":Map.copy(churnTimeDomain)}
 			]
 		}));
+		Log.actionDone(a);
 
 		a = Log.action("Make chart", true);
 		aChart.show({
@@ -490,6 +492,7 @@ var __createChart = function*(){
 		///////////////////////////////////////////////////////////////////////
 		// SUMMARY OF MILESTONE
 		///////////////////////////////////////////////////////////////////////
+		var a = Log.action("get summary", true);
 		var currMilestone=yield (ESQuery.run({
 			"from":"bugs",
 			"select":[
@@ -515,7 +518,9 @@ var __createChart = function*(){
 				teamFilter
 			]}
 		}));
+		Log.actionDone(a);
 
+		a = Log.action("calc summary", true);
 		var milestoneTotals=yield(Q({
 			"from":currMilestone,
 			"select":[
@@ -560,6 +565,7 @@ var __createChart = function*(){
 				});
 			})
 		);
+		Log.actionDone(a);
 
 		//ADD BUG CLICKERS
 		milestones.forall(function(m){
@@ -612,9 +618,8 @@ var __createChart = function*(){
 	///////////////////////////////////////////////////////////////////////
 	// BURNDOWN
 	///////////////////////////////////////////////////////////////////////
-	var a = Log.action("Request Bugs", true);
 	var chart;
-
+	var a = Log.action("Request Bugs", true);
 	var milestoneBugs=yield(ESQuery.run({
 		"from":"bugs",
 		"select":[
@@ -634,6 +639,7 @@ var __createChart = function*(){
 	}));
 	Log.actionDone(a);
 
+	var a = Log.action("render history", true);
 	chart = yield(Q({
 		"from": milestoneBugs,
 		"select":[
@@ -665,7 +671,7 @@ var __createChart = function*(){
 			}
 		]
 	}));
-
+	Log.actionDone(a);
 
 	yield (currMilestoneThread.join());
 

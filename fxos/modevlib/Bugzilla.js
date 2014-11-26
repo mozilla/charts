@@ -8,10 +8,7 @@ importScript("rest/BugzillaClient.js");
 
 
 Bugzilla={};
-Bugzilla.JSON_URL="https://api-dev.bugzilla.mozilla.org/latest";
 Bugzilla.URL="https://bugzilla.mozilla.org/buglist.cgi";
-//Bugzilla.JSONP_CALLBACK="bz_callback";
-//Bugzilla.numCallback=0;
 
 Bugzilla.showBugs=function(bugList){
 	var url=Bugzilla.searchBugsURL(bugList);

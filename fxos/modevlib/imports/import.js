@@ -314,6 +314,13 @@ var importScript;
 				DFS(c, [c]);
 			}//while
 
+			if (smallestLoop) return smallestLoop;
+
+			candidates.forEach(function(c){
+				if (graph[c].indegrees < graph[smallestLoop[0]].indegrees) {
+					smallestLoop = [c]
+				}//endif
+			});//for
 			return smallestLoop;
 		}//method
 

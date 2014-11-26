@@ -9,33 +9,34 @@
 #
 
 from __future__ import unicode_literals
+from datetime import timedelta
 import pytest
 
 from selenium import webdriver
 from util import MoDevMetricsDriver, path2fullpath
 
 
-@pytest.mark.parametrize("path", [
-    "fxos/blockers.html",
-    "fxos/nominations.html",
-    "fxos/regressions.html",
-    "fxos/targeted.html#milestone=Milestone.2.1+S6",
-    "fxos/team.html",
-    "fxos/overall.html",
-    "fxos/burndown-feature.html#bugList=1037305",
-    "fxos/burndown-feature-b2g.html#sampleInterval=day&sampleMax=2014-10-26&sampleMin=2014-09-13&scope=Scope.Both+2.1",
-    "fxos/burndown-milestone.html#milestone=Milestone.34+Sprint+1",
-    "fxos/burndown-release.html#release=2.2",
-    "fxos/burndown-release-compare.html#release=2.0,2.1",
-    "fxos/burndown-ucid.html#scope=Scope.Both+2.1"
+@pytest.mark.parametrize(("path", "timeout"), [
+    ("fxos/blockers.html", timedelta(seconds=10)),
+    ("fxos/nominations.html", timedelta(seconds=10)),
+    ("fxos/regressions.html", timedelta(seconds=10)),
+    ("fxos/targeted.html#milestone=Milestone.2.1+S6", timedelta(seconds=10)),
+    ("fxos/team.html", timedelta(seconds=10)),
+    ("fxos/overall.html", timedelta(seconds=10)),
+    ("fxos/burndown-feature.html#bugList=1037305", timedelta(seconds=10)),
+    ("fxos/burndown-feature-b2g.html#sampleInterval=day&sampleMax=2014-10-26&sampleMin=2014-09-13&scope=Scope.Both+2.1", timedelta(seconds=30)),
+    ("fxos/burndown-milestone.html#milestone=Milestone.34+Sprint+1&team=WebRTC+Loop,WebRTC+Platform", timedelta(seconds=10)),
+    ("fxos/burndown-release.html#release=2.2", timedelta(seconds=10)),
+    ("fxos/burndown-release-compare.html#release=2.0,2.1", timedelta(seconds=10)),
+    ("fxos/burndown-ucid.html#scope=Scope.Both+2.1", timedelta(seconds=30))
 ])
-def test_one_page(path):
+def test_one_page(path, timeout):
     fullpath = path2fullpath(path)
 
     driver = MoDevMetricsDriver(webdriver.Firefox())
 
     driver.get(fullpath)
-    logs = driver.wait_for_logs()
+    logs = driver.wait_for_logs(timeout)
     driver.check_if_still_loading(path)# FIND ANY ERRORS IN THE LOGS
 
     driver.check_for_errors(logs, path)

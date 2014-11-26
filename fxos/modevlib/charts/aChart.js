@@ -775,8 +775,8 @@ aChart.show=function(params){
 //				return "hi there";
 //			}
 		},
-		"colors":styles.map(function(s){
-			var c = s.color;
+		"colors":styles.map(function(s, i){
+			var c = nvl(s.color, DEFAULT_STYLES[i%(DEFAULT_STYLES.length)].color);
 			if (c.toHTML){
 				return c.toHTML();
 			}else{

@@ -9,25 +9,24 @@
 	<script type="text/javascript" src="modevlib/imports/import.js"></script>
 </HEAD>
 <BODY>
-<div>
+<div style="min-height:100%;position: relative;">
 	<div class="content" style="width:100%;text-align: center;">
-		<h1 style="text-align: center;">Release Management</h1>
-		<h2 style="text-align: center;">Tracking Firefox</h2>
+		<h1 style="text-align: center;">Tracking Firefox</h1>
 		<br>
-		<div id="teams" style="display: inline-block; width:800px;height:500px"></div>
+		<div id="teams" style="display: inline-block; height:500px"></div>
 	</div>
 	<div class="footer">
+		View at <a id="selfRef" href="releases.html"></a><br>
 		Source at <a href="https://github.com/mozilla/charts/blob/platform/platform/releases.html">https://github.com/mozilla/charts/blob/platform/platform/releases.html</a>
 	</div>
 </div>
-
 <script type="application/javascript">
 
 importScript([
 	'js/main_lib.js',
 	'modevlib/charts/aChart.js'
 ], function(){
-	sidebarSlider();
+	$("#selfRef").html(CNV.String2HTML(window.location.href));
 
 	var thread;
 

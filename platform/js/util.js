@@ -1,38 +1,37 @@
-
 importScript("../modevlib/util/CNV.js");
 importScript("../modevlib/qb/Qb.js");
 importScript("../modevlib/charts/aColor.js");
 
-var NORMAL="#888888";
-var NORMAL_HOVER=Color.newHTML(NORMAL).lighter().toHTML();
-var SELECTED=Color.BLUE.hue(60).multiply(0.6).toHTML();
+var NORMAL = "#888888";
+var NORMAL_HOVER = Color.newHTML(NORMAL).lighter().toHTML();
+var SELECTED = Color.BLUE.hue(60).multiply(0.6).toHTML();
 var SELECTED_HOVER = Color.BLUE.hue(60).multiply(0.6).lighter().toHTML();
 
 function refresher(func){
 	function callMe(){
-		try{
+		try {
 			func()
-		}catch(e){
+		} catch (e) {
 
 		}
 	}//method
-	setInterval(callMe, 5*60*1000);
+	setInterval(callMe, 5 * 60 * 1000);
 }
 
 
-function sidebarSlider() {
+function sidebarSlider(){
 	$("body").css("display", "block");
 
-	$('.sidebar_name').click(function () {
+	$('.sidebar_name').click(function(){
 		var self = $(this);
 		if (self.hasClass("selected")) {
 			self.removeClass("selected");
 			$("#sidebar").animate({"width": "0px"}, 500);
-			$(".content").animate({"margin-left":"60px"}, 500);  //TODO:
+			$(".content").animate({"margin-left": "60px"}, 500);  //TODO:
 		} else {
 			self.addClass("selected");
 			$("#sidebar").animate({"width": "300px"}, 500);
-			$(".content").animate({"margin-left":"360px"}, 500);
+			$(".content").animate({"margin-left": "360px"}, 500);
 		}//endif
 	});
 }
@@ -46,26 +45,26 @@ function addRowClickers(){
 	});
 }
 
-function addTileClickers() {
+function addTileClickers(){
 	$(".project").hover(function(){
-		var bugList ="#"+CNV.JSON2Object($(this).attr("bugsList")).join(",#");
+		var bugList = "#" + CNV.JSON2Object($(this).attr("bugsList")).join(",#");
 		$(bugList).addClass("selected");
 
-	}, function(){
-		var bugList ="#"+CNV.JSON2Object($(this).attr("bugsList")).join(",#");
+	},function(){
+		var bugList = "#" + CNV.JSON2Object($(this).attr("bugsList")).join(",#");
 		$(bugList).removeClass("selected");
-	}).click(function (e){
-		var bugList = $(".selected.project").map(function(){
-			return CNV.JSON2Object($(this).attr("bugsList"));
-		}).get();
-		if (bugList.length==0){
-			$(".bug_line").removeClass("selected").slideDown(300, "swing");
-		}else{
-			bugList = "#"+bugList.join(",#");
-			$(bugList).removeClass("selected").slideDown(1000, "swing");
-			$(".bug_line").not(bugList).slideUp(1000, "swing");
-		}//endif
-	});
+	}).click(function(e){
+			var bugList = $(".selected.project").map(function(){
+				return CNV.JSON2Object($(this).attr("bugsList"));
+			}).get();
+			if (bugList.length == 0) {
+				$(".bug_line").removeClass("selected").slideDown(300, "swing");
+			} else {
+				bugList = "#" + bugList.join(",#");
+				$(bugList).removeClass("selected").slideDown(1000, "swing");
+				$(".bug_line").not(bugList).slideUp(1000, "swing");
+			}//endif
+		});
 }//function
 
 
@@ -81,7 +80,7 @@ function tile(info){
 	info.unassignedURL = Bugzilla.searchBugsURL(info.unassignedBugs);
 	info.color = normalColor;
 	info.states = ["normal", "selected"];
-	info.dynamicStyle={
+	info.dynamicStyle = {
 		":hover": {"background-color": hoverColor},
 		".selected": {"background-color": SELECTED},
 		".selected:hover": {"background-color": SELECTED_HOVER}
@@ -98,28 +97,27 @@ function tile(info){
 }//function
 
 
-
 //START COUNTING AT 1 (BECAUSE PRIORITY STARTS AT 1
 //IT IS IMPORTANT FOR THE sorttable LIB THAT ALL ROWS HAVE A VALUE,
 //AND IT IS IMPORTANT THAT THE NULLS ARE SORTED TO THE BOTTOM
 function getPartIndex(b, domain){
 	var parts = nvl(domain.partitions, domain.edges);
-	for (var i=0;i<parts.length;i++){
+	for (var i = 0; i < parts.length; i++) {
 		var part = parts[i];
 		var result = [b].filter(part.esfilter);
-		if (result.length>0){
-			if (!Map.get(part, "style.color")) return {"style":{}, "order": i+1};
+		if (result.length > 0) {
+			if (!Map.get(part, "style.color")) return {"style": {}, "order": i + 1};
 
 			return {
-				"style":{
-					"color":"transparent",
-					"background-color":Map.get(part, "style.color")
+				"style": {
+					"color": "transparent",
+					"background-color": Map.get(part, "style.color")
 				},
-				"order": i+1
+				"order": i + 1
 			};
 		}//endif
 	}//for
-	return {"style":{"color":"transparent"}, "order": parts.length+1};
+	return {"style": {"color": "transparent"}, "order": parts.length + 1};
 }//function
 
 
@@ -129,50 +127,50 @@ function getPartIndex(b, domain){
 //IT IS IMPORTANT FOR THE sorttable LIB THAT ALL ROWS HAVE A VALUE
 function match(b, part){
 	var result = [b].filter(part.esfilter);
-	if (result.length==0) return {"style":{"color":"transparent"}, "order": 2};
-	if (!Map.get(part, "style.color")) return {"style":{}, "order": 1};
+	if (result.length == 0) return {"style": {"color": "transparent"}, "order": 2};
+	if (!Map.get(part, "style.color")) return {"style": {}, "order": 1};
 
 	return {
-		"style":{
-			"color":"transparent",
-			"background-color":Map.get(part, "style.color")
+		"style": {
+			"color": "transparent",
+			"background-color": Map.get(part, "style.color")
 		},
 		"order": 1
 	};
 }//function
 
 
-var replacement={
-	"javascript: ":"",
+var replacement = {
+	"javascript: ": "",
 	"javascript engine:": "engine:",
 	"javascript ": ""
 };
 
 function cleanupComponent(name){
 	Map.forall(replacement, function(find, replace){
-		name=name.replaceAll(find, replace);
+		name = name.replaceAll(find, replace);
 	});
 	return name;
 }
 
-function bugDetails(bugs) {
+function bugDetails(bugs){
 
 	var desk = Mozilla.Platform["Release Tracking - Desktop"];
-	var b2g =Mozilla.Platform["Release Tracking - FirefoxOS"];
+	var b2g = Mozilla.Platform["Release Tracking - FirefoxOS"];
 	bugs.forall(function(b){
 		b.component = cleanupComponent(b.component);
 		b.bugLink = Bugzilla.linkToBug(b.bug_id);
 		b.priority = getPartIndex(b, Mozilla.Platform.Priority);
 		b.security = getPartIndex(b, Mozilla.Platform.Security);
-		b.stability =  match(b, Mozilla.Platform.Stability);
+		b.stability = match(b, Mozilla.Platform.Stability);
 		b.release = match(b, desk.Release);
 		b.beta = match(b, desk.Beta);
 		b.dev = match(b, desk.Dev);
 		b.nightly = match(b, desk.Nightly);
 		b.b2g21 = match(b, b2g["2.1"]);
 		b.b2g22 = match(b, b2g["2.2"]);
-		b.assigned_to = b.assigned_to=="nobody@mozilla.org" ? "" : b.assigned_to;
-		b.overallPriority = -3/ b.release.order-2/ b.beta.order-1/ b.dev.order -2/ b.security.order- 1/ b.priority.order-2/ b.stability.order;
+		b.assigned_to = b.assigned_to == "nobody@mozilla.org" ? "" : b.assigned_to;
+		b.overallPriority = -3 / b.release.order - 2 / b.beta.order - 1 / b.dev.order - 2 / b.security.order - 1 / b.priority.order - 2 / b.stability.order;
 	});
 
 	bugs = Qb.sort(bugs, ["release.order", "overallPriority"]);
@@ -196,8 +194,8 @@ function bugDetails(bugs) {
 		"</tr></thead>",
 		"<tbody>",
 		{
-			"from":".",
-			"template":[
+			"from": ".",
+			"template": [
 				'<tr id="{{bug_id}}" class="bug_line hoverable">',
 				"<td><div>{{bugLink}}</div></td>",
 				"<td><div id='{{bug_id}}_desc' class='desc'>[screened]</div></td>" ,
@@ -228,7 +226,7 @@ function getCategoryHTML(category, allBugs){
 
 	var html;
 
-	if (edges==null){
+	if (edges == null) {
 		//CATEGORY WITH SINGLE TILE
 		html = tile({
 			"name": category.name,
@@ -236,7 +234,7 @@ function getCategoryHTML(category, allBugs){
 			"style": nvl(category.style, {})
 		});
 
-	}else{
+	} else {
 		var unionFilter = edges.select("esfilter");
 
 		html = edges.map(function(e, i){
@@ -252,7 +250,7 @@ function getCategoryHTML(category, allBugs){
 		var info = {
 			"name": "Other",
 			"style": {},
-			"bugs": allBugs.list.filter({"and":[category.esfilter, {"not": {"or": unionFilter}}]})
+			"bugs": allBugs.list.filter({"and": [category.esfilter, {"not": {"or": unionFilter}}]})
 		};
 		if (info.bugs.length > 0) {
 			html += tile(info);
@@ -263,124 +261,141 @@ function getCategoryHTML(category, allBugs){
 }//function
 
 
-
 function setReleaseHTML(data){
 	//DEAR SELF:  PLEASE LEARN D3!!
-	//
 
-	var header = "<td></td>"+data.edges[1].domain.partitions.map(function(p, i){
-		return '<td style="text-align: center; width:60px;"><div>'+ p.name+'</div></td>';
+	var MAX_VERTICAL_HEIGHT = 300;
+	var FONT_HEIGHT = 20;
+
+	var header = "<td></td>" + data.edges[1].domain.partitions.map(function(p, i){
+		return '<td style="text-align: center; vertical-align: middle; width:60px;"><div>' + p.name + '</div></td>';
 	}).join("");
-
-
-
-	var releaseTemplate = new Template([
-		'<td style="vertical-align:middle;text-align: center; width:60px;">',
-		'<div style="{{style|style}}">',
-		'<div style="padding-top:6px;">{{value}}</div>',
-		'</div>',
-		'</td>'
-	]);
-	var release = data.edges[1].domain.partitions.map(function(p, i){
-		var style = {
-			"width":"40px",
-			"height":"40px",
-			"color":"white",
-			"vertical-align":"middle",
-			"text-align": "center",
-			"display":"inline-block",
-			"background-color": data.edges[0].domain.partitions[0].style.color
-		};
-		if (data.cube[0][i]>0){
-			return releaseTemplate.replace({"value":data.cube[0][i], "style":style});
-		}else{
-			return "<td></td>";
-		}//endif
-
-	}).join("");
-
 
 	var betaTemplate = new Template([
 		'<td style="vertical-align:bottom;text-align: center; width:60px;">',
-		'<div style="{{style|style}}">',
+		'<div id="{{id}}" class="hoverable tracking" style="{{style|style}}" dynamic-style=":hover{background-color:{{lighter}}}">',
 		'<span>{{value}}</span>',
 		'</div>',
 		'</td>'
 	]);
+
+	var scale = aMath.min(10, MAX_VERTICAL_HEIGHT / aMath.MAX(data.cube[1]));
+	var BETA = data.edges[0].domain.partitions[1];
+	var AURORA = data.edges[0].domain.partitions[2];
+	var ESR = data.edges[0].domain.partitions[3];
+
 	var beta = data.edges[1].domain.partitions.map(function(p, i){
 		var style = {
-			"width":"40px",
-			"height":(data.cube[1][i]*10)+"px",
-			"color": data.cube[1][i]>1 ? "white" : "transparent",
+			"width": "40px",
+			"height": (data.cube[1][i] * scale) + "px",
+			"color": data.cube[1][i] * scale > FONT_HEIGHT ? "white" : "transparent",
 			"text-align": "center",
-			"align":"center",
-			"display":"inline-block",
-			"background-color": data.edges[0].domain.partitions[1].style.color
+			"align": "center",
+			"display": "inline-block",
+			"background-color": BETA.style.color
 		};
 
-		return betaTemplate.replace({"value":data.cube[1][i], "style":style});
+		return betaTemplate.replace({
+			"id": "tracking_1_" + i,
+			"value": data.cube[1][i],
+			"style": style,
+			"lighter": Color.newInstance(BETA.style.color).lighter()
+		});
 	}).join("");
 
 	var devTemplate = new Template([
 		'<td style="width:60px;text-align: center;">',
-		'<div style="{{style|style}}">',
+		'<div id="{{id}}" class="hoverable tracking" style="{{style|style}}" dynamic-style=":hover{background-color:{{lighter}}}">',
 		'<div style="vertical-align: bottom;">{{value}}</div>',
 		'</div>',
 		'</td>'
 	]);
 	var dev = data.edges[1].domain.partitions.map(function(p, i){
 		var style = {
-			"width":"40px",
-			"height":(data.cube[2][i]*10)+"px",
-			"color":data.cube[2][i]>1 ? "white" : "transparent",
+			"width": "40px",
+			"height": (data.cube[2][i] * scale) + "px",
+			"color": data.cube[2][i] * scale > FONT_HEIGHT ? "white" : "transparent",
 			"vertical-align": "bottom",
 			"text-align": "center",
-			"display":"inline-block",
-			"background-color": data.edges[0].domain.partitions[2].style.color
+			"display": "inline-block",
+			"background-color": AURORA.style.color
 		};
-		return devTemplate.replace({"value":data.cube[2][i], "style":style});
+		return devTemplate.replace({
+			"id": "tracking_2_" + i,
+			"value": data.cube[2][i],
+			"style": style,
+			"lighter": Color.newInstance(AURORA.style.color).lighter()
+		});
 	}).join("");
 
 
 	var esrTemplate = new Template([
 		'<td style="vertical-align:middle;text-align: center; width:60px;">',
-		'<div style="{{style|style}}">',
+		'<div id="{{id}}" class="hoverable tracking" style="{{style|style}} dynamic-style=":hover{background-color:{{lighter}}}">',
 		'<div style="padding-top:6px;">{{value}}</div>',
 		'</div>',
 		'</td>'
 	]);
 	var esr = data.edges[1].domain.partitions.map(function(p, i){
 		var style = {
-			"width":"40px",
-			"height":"40px",
-			"color":"white",
-			"vertical-align":"middle",
+			"width": "40px",
+			"height": "40px",
+			"color": "white",
+			"vertical-align": "middle",
 			"text-align": "center",
-			"display":"inline-block",
-			"background-color": data.edges[0].domain.partitions[3].style.color
+			"display": "inline-block",
+			"background-color": ESR.style.color
 		};
-		if (data.cube[3][i]>0){
-			return esrTemplate.replace({"value":data.cube[3][i], "style":style});
-		}else{
+		if (data.cube[3][i] > 0) {
+			return esrTemplate.replace({
+				"id": "tracking_3_" + i,
+				"value": data.cube[3][i],
+				"style": style,
+				"lighter": Color.newInstance(ESR.style.color).lighter()
+			});
+		} else {
 			return "<td></td>";
 		}//endif
 
 	}).join("");
 
 
-
-
 	$("#teams").html(
 		'<table id="teamsTable">' +
-		'<thead><tr>'+header+'</tr></thead>' +
-		'<tbody>' +
-			(aMath.SUM(data.cube[0])>0 ? '<tr><td class="train_title"><h3>Release</h3></td>'+release+'</tr>' : '') +
-		'<tr><td class="train_title"><h3>Beta</h3></td>'+beta+'</tr>' +
-		'<tr><td class="train_title"><h3>Aurora</h3></td>'+dev+'</tr>' +
-			(aMath.SUM(data.cube[3])>0 ? '<tr><td class="train_title"><h3>ESR 31</h3></td>'+esr+'</tr>' : '') +
-		'</tbody>' +
-		'</table>'
+			'<tbody>' +
+			'<tr><td class="train_title"><h3>Beta&nbsp;(' + BETA.version + ')</h3></td>' + beta + '</tr>' +
+			'<tr>' + header + '</tr>' +
+			'<tr><td class="train_title"><h3>Aurora&nbsp;(' + AURORA.version + ')</h3></td>' + dev + '</tr>' +
+//			(aMath.SUM(data.cube[0])>0 ? '<tr><td class="train_title"><h3>Release</h3></td>'+release+'</tr>' : '') +
+			(aMath.SUM(data.cube[3]) > 0 ? '<tr><td class="train_title"><h3>ESR 31</h3></td>' + esr + '</tr>' : '') +
+			'</tbody>' +
+			'</table>'
 	);
+
+
+	//ADD CLICKERS
+	$(".tracking").click(function(){
+		var parts = $(this)[0].id.split("_");
+		var release = CNV.String2Integer(parts[1]);
+		var team = CNV.String2Integer(parts[2]);
+
+		Thread.run(function*(){
+			var bugs = yield (ESQuery.run({
+				"select": ["bug_id"],
+				"from": "bugs",
+				"esfilter": {"and": [
+					data.edges[0].domain.partitions[release].fullFilter,
+					data.edges[1].domain.partitions[team].fullFilter,
+					Mozilla.BugStatus.Open.esfilter,
+					Mozilla.CurrentRecords.esfilter
+				]}
+			}));
+
+			Bugzilla.showBugs(bugs.list.select("bug_id"));
+		});
+	});
+
+	$(document).updateDynamicStyle();
 
 
 }//function

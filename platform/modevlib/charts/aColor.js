@@ -73,9 +73,11 @@ Color = function (L, h, s) {
 		}));
 	};
 
-	ColorSRGB.prototype.toHTML=function(){
+	function toHTML(){
 		return hex({"r":this.rgb[0], "g":this.rgb[1], "b":this.rgb[2]});
-	};
+	}
+	ColorSRGB.prototype.toHTML=toHTML;
+	ColorSRGB.prototype.toString=toHTML;
 
 	Color.newInstance=function(value){
 		if (value.startsWith("lhs(")){

@@ -109,10 +109,16 @@ var Template = function Template(template){
 				}//endif
 			}//for
 
-			if (val==null){
-				val="";  //NULL IS NOTHING
+			if (val === undefined) {
+				val = "undefined"
+			} else if (val == null) {
+				val = "";  //NULL IS NOTHING
+			} else if (typeof(val)=="string"){
+				//do nothing
+			}else if (val.toString){
+				val=val.toString()
 			}else{
-				val = "" + val;  //undefined WILL SHOW AS UGLY "undefined"
+				val = "" + val;
 			}//endif
 
 			if (val !== undefined && (val instanceof String || typeof(val) == "string" || (typeof map[key]) != "object")) {

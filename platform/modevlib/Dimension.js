@@ -35,32 +35,25 @@ Dimension.prototype = {
 				if (i >= nvl(self.limit, DEFAULT_QUERY_LIMIT))
 					return undefined;
 				if (v.esfilter === undefined) return;
-				return {
-					"name": v.name,
-					"value": v.name,
-					"esfilter": useFullFilter ? v.fullFilter : v.esfilter,
-					"fullFilter": v.fullFilter,
-					"dateMarks": v.dateMarks,
-					"start_date": v.start_date,
-					"targetDate": v.targetDate,
-					"style": Map.clone(nvl(v.style, {})),
-					"weight": v.weight //YO! WHAT DO WE *NOT* COPY?
-				};
+				v.style = nvl(v.style, {});
+				var temp = v.parent;
+				v.parent=undefined;
+				var output = Map.clone(v);
+				v.parent=temp;
+				output.esfilter = useFullFilter ? v.fullFilter : v.esfilter;
+				return output;
 			});
 			self.isFacet = true;
 		} else if (param.depth == 0) {
 			partitions = this.partitions.map(function (v, i) {
 				if (i >= nvl(self.limit, DEFAULT_QUERY_LIMIT)) return undefined;
-				return {
-					"name": v.name,
-					"value": v.value,
-					"esfilter": useFullFilter ? v.fullFilter : v.esfilter,
-					"fullFilter": v.fullFilter,
-					"dateMarks": v.dateMarks,
-					"targetDate": v.targetDate,
-					"style": Map.clone(nvl(v.style, {})),
-					"weight": v.weight   //YO!  WHAT DO WE *NOT* COPY?
-				};
+				v.style = nvl(v.style, {});
+				var temp = v.parent;
+				v.parent=undefined;
+				var output = Map.clone(v);
+				v.parent=temp;
+				output.esfilter = useFullFilter ? v.fullFilter : v.esfilter;
+				return output;
 			})
 		} else if (param.depth == 1) {
 			partitions = [];
@@ -69,17 +62,15 @@ Dimension.prototype = {
 				if (i >= nvl(self.limit, DEFAULT_QUERY_LIMIT)) return undefined;
 				rownum++;
 				part.partitions.forall(function (subpart, j) {
-					partitions.append({
-						"name": [subpart.name, subpart.parent.name].join(param.separator),
-						"value": subpart.value,
-						"esfilter": useFullFilter ? subpart.fullFilter : subpart.esfilter,
-						"fullFilter": subpart.fullFilter,
-						"dateMarks": subpart.dateMarks,
-						"targetDate": subpart.targetDate,
-						"style": Map.setDefault({}, subpart.style, subpart.parent.style),
-						"weight": subpart.weight   //YO!  WHAT DO WE *NOT* COPY?
-					});
+					var temp = subpart.parent;
+					subpart.parent=undefined;
+					var newPart= Map.clone(subpart);
+					subpart.parent=temp;
 
+					newPart.name = [subpart.name, subpart.parent.name].join(param.separator);
+					newPart.esfilter = useFullFilter ? subpart.fullFilter : subpart.esfilter;
+					newPart.style = Map.setDefault({}, subpart.style, subpart.parent.style);
+					partitions.append(newPart);
 				})
 			})
 		} else {

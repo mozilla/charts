@@ -41,34 +41,71 @@ function requiredFields(esfilter){
 		"name": "Release",
 		"isFacet": true,
 		"edges": [
-			{"name": "Firefox33", "version": 33, "startDate": "10 JUN 2014", "esfilter": {"and":[
-				{"not": {"terms": {"cf_status_firefox33": SOLVED}}},
-				{"term": {"cf_tracking_firefox33": "+"}}
-			]}},
-			{"name": "Firefox34", "version": 34, "startDate": "22 JUL 2014", "esfilter": {"and":[
-				{"not": {"terms": {"cf_status_firefox36": SOLVED}}},
-				{"term": {"cf_tracking_firefox36": "+"}}
-			]}},
-			{"name": "Firefox35", "version": 35, "startDate": " 1 sep 2014", "esfilter": {"and":[
-				{"not": {"terms": {"cf_status_firefox35": SOLVED}}},
-				{"term": {"cf_tracking_firefox35": "+"}}
-			]}},
-			{"name": "Firefox36", "version": 36, "startDate": "14 oct 2014", "esfilter": {"and":[
-				{"not": {"terms": {"cf_status_firefox36": SOLVED}}},
-				{"term": {"cf_tracking_firefox36": "+"}}
-			]}},
-			{"name": "Firefox37", "version": 37, "startDate": "6 jan 2015", "esfilter": {"and":[
-				{"not": {"terms": {"cf_status_firefox37": SOLVED}}},
-				{"term": {"cf_tracking_firefox37": "+"}}
-			]}}
+			{
+				"name": "Firefox33",
+				"version": 33,
+				"releaseDate":"13 oct 2014",  //https://wiki.mozilla.org/Releases
+				"esfilter": {"and":[
+					{"not": {"terms": {"cf_status_firefox33": SOLVED}}},
+					{"term": {"cf_tracking_firefox33": "+"}}
+				]}
+			},
+			{
+				"name": "Firefox34",
+				"version": 34,
+				"releaseDate":"1 dec 2014",  //https://wiki.mozilla.org/Releases
+				"esfilter": {"and":[
+					{"not": {"terms": {"cf_status_firefox36": SOLVED}}},
+					{"term": {"cf_tracking_firefox36": "+"}}
+				]}
+			},
+			{
+				"name": "Firefox35",
+				"version": 35,
+				"releaseDate":"15 jan 2015",  //https://wiki.mozilla.org/Releases
+				"esfilter": {"and":[
+					{"not": {"terms": {"cf_status_firefox35": SOLVED}}},
+					{"term": {"cf_tracking_firefox35": "+"}}
+				]}
+			},
+			{
+				"name": "Firefox36",
+				"version": 36,
+				"esfilter": {"and": [
+					{"not": {"terms": {"cf_status_firefox36": SOLVED}}},
+					{"term": {"cf_tracking_firefox36": "+"}}
+				]}
+			},
+			{
+				"name": "Firefox37",
+				"version": 37,
+				"esfilter": {"and": [
+					{"not": {"terms": {"cf_status_firefox37": SOLVED}}},
+					{"term": {"cf_tracking_firefox37": "+"}}
+				]}},
+			{
+				"name": "Firefox38",
+				"version": 38,
+				"esfilter": {"and": [
+					{"not": {"terms": {"cf_status_firefox38": SOLVED}}},
+					{"term": {"cf_tracking_firefox38": "+"}}
+				]}
+			}
 		]
 	};
 	releaseTracking.requiredFields= Array.union(releaseTracking.edges.select("esfilter").map(requiredFields));
 
-	if (Date.newInstance(releaseTracking.edges.last().startDate).addWeek(6)<Date.today()){
-		Log.error("Ran out of releases!  Please add more to Dimension-Platform.js");
-	}//endif
+	{//FIND CURRENT RELEASE, AND ENSURE WE HAVE ENOUGH RELEASES!
+		var currentRelease=undefined;
+		releaseTracking.edges.forall(function(e, i){
+			e.dataIndex=i;  //SET HERE ONLY BECAUSE WE USE IT BELOW
+			if (e.releaseDate && Date.newInstance(e.releaseDate)<=Date.today()){
+				currentRelease=e;
+			}//endif
+		});
 
+		if (!currentRelease) Log.error("What's the next release!?  Please add more to Dimension-Platform.js");
+	}
 	var trains = [
 		{"name":"Release", "style":{"color":"#E66000"}},
 		{"name":"Beta", "style":{"color":"#FF9500"}},
@@ -77,26 +114,15 @@ function requiredFields(esfilter){
 	];
 
 
-
 	var otherFilter=[];    //NOT IN ANY OF THE THREE TRAINS
 	var trainTrackingAbs = {
 		"name": "Release Tracking - Desktop",
 		"esFacet": true,
 		"requiredFields":releaseTracking.requiredFields,
-		"edges": releaseTracking.edges.map(function(release){
-			//THE TRACK DEPENDS ON THE CURRENT TIME, SO WE DYNAMICALLY ASSIGN IT HERE
-			var period = Duration.newInstance("6week");
-			var today = Date.today();
-
-			var output = undefined;
-			trains.leftBut(1).forall(function(t, track){
-				var start = Date.newInstance(release.startDate).add(period.multiply(3-track));
-				var end = start.add(period);
-				if (start.getMilli() <= today.getMilli() && today.getMilli() < end.getMilli()) {
-					output = Map.setDefault({}, t, release);
-				}//endif
-			});
-			if (!output) otherFilter.append(release.esfilter);
+		"edges": trains.leftBut(1).map(function(t,  track){
+			var release = releaseTracking.edges[currentRelease.dataIndex+track];
+			otherFilter.append(release.esfilter);
+			var output =  Map.setDefault({}, t, release);
 			return output;
 		})
 	};
@@ -111,19 +137,10 @@ function requiredFields(esfilter){
 		"name": "Train",
 		"isFacet": true,
 		"requiredFields":releaseTracking.requiredFields,
-		"partitions": releaseTracking.edges.map(function(release){
-			//THE TRACK DEPENDS ON THE CURRENT TIME, SO WE DYNAMICALLY ASSIGN IT HERE
-			var period = Duration.newInstance("6week");
-			var today = Date.today();
-
-			var output = undefined;
-			trains.leftBut(1).forall(function(t, track){
-				var start = Date.newInstance(release.startDate).add(period.multiply(3-track));
-				var end = start.add(period);
-				if (start.getMilli() <= today.getMilli() && today.getMilli() < end.getMilli()) {
-					output = Map.setDefault({}, t, release);
-				}//endif
-			});
+		"partitions": trains.leftBut(1).map(function(t,  track){
+			var release = releaseTracking.edges[currentRelease.dataIndex+track];
+			otherFilter.append(release.esfilter);
+			var output =  Map.setDefault({}, t, release);
 			return output;
 		})
 	};

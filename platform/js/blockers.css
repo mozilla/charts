@@ -102,14 +102,14 @@ tr.selected {
 
 
 #teamsTable {
-    margin-left:-140px;  /*100 +20 +20 (see .train_title)*/
+    margin-left:-160px;  /*100 +20 +20 (see .train_title)*/
 }
 
 .train_title {
     vertical-align: middle;
     text-align: right;
     padding: 10px 20px 10px 0;
-    width: 100px;
+    width: 120px;
 }
 
 .component {

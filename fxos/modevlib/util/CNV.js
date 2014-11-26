@@ -227,19 +227,22 @@ CNV.Object2URL=function(value){
 
 	CNV.String2HTML = function String2HTML(value) {
 		if (value==null) return "";
-
-		var output=[];
-		for(var i=0;i<value.length;i++){
-			var c= value[i];
-			var d = entityMap[c];
-			if (d===undefined){
-				output.append(c);
-			}else{
-				output.append(d)
-			}//endif
-		}//for
-		return output.join("");
+		return value.translate(entityMap);
 	};//method
+
+	var attrMap = {
+		"&": "&amp;",
+		'"': '&quot;',
+		"\n": "",
+		"\t": ""
+	};
+
+	CNV.value2HTMLAttribute = function(value){
+		if (value==null) return "";
+		if (typeof(value)=="string") return value.translate(attrMap);
+		return CNV.Object2JSON(value).translate(attrMap);
+	};
+
 })();
 
 
@@ -751,11 +754,18 @@ CNV.esFilter2function=function(esFilter){
 		};
 	} else if (op == "terms"){
 		var terms = esFilter[op];
-		return function(row, i, rows){
+		return function(row){
 			var variables = Object.keys(terms);
 			for(var k = 0; k < variables.length; k++){
 				var variable = variables[k];
-				if (!terms[variable].contains(row[variable])) return false;
+				var value = row[variable];
+				if (value===undefined){
+
+				}else if (value instanceof Array){
+					if (terms[variable].intersect(value).length==0) return false;
+				}else{
+					if (!terms[variable].contains(value)) return false;
+				}//endif
 			}//for
 			return true;
 		};

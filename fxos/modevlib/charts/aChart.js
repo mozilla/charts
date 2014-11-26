@@ -959,6 +959,7 @@ function fixClickAction(chartParams){
 
 function fixAction(chartParams, actionName){
 	var action = chartParams[actionName];
+	if (action===undefined) return;
 	chartParams[actionName] = function(series, x, d, elem){
 		if (series.atoms !== undefined){
 			//CCC VERSION 2

@@ -8,13 +8,20 @@
 
 importScript("../../lib/jquery.js");
 
-//ADD DYNAMIC STYLING TO NODES!
-//dynamicStyle="<add some css styles>"
+// ADD DYNAMIC STYLING TO NODES!
 //
-//EVERY NODE IS GIVEN AN ID (IF NONE EXIST) AND
-//A NEW STYLES ARE MADE FOR EACH ID BY PREFIXING EACH SELECTOR WITH "#<id>"
+// Example:
+// <div dynamicStyle=":hover {background_color: black}">Hello World</div>
 //
-// $().updateDynamicStyle() CAN BE USED IN THE EVENT MORE NODES ARE CREATED USING THIS MARKUP
+// This is useful when using HTML templates; you can specify the dynamic
+// styles (:hover, :visited) specific to the element, and not a general
+// class
+//
+// Dynamic styles are implemented by assigning an <id> (if none already exist)
+// to each element.  New styles are made for each element, prefixing the
+// dynamic styles with "#<id>" and adding them to the style sheet.
+//
+// $().updateDynamicStyle() can be used to update the added nodes
 
 $(document).ready(function () {
 	var UID = 0;

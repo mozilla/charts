@@ -56,6 +56,10 @@ function requiredFields(esfilter){
 			{"name": "Firefox36", "version": 36, "startDate": "14 oct 2014", "esfilter": {"and":[
 				{"not": {"terms": {"cf_status_firefox36": SOLVED}}},
 				{"term": {"cf_tracking_firefox36": "+"}}
+			]}},
+			{"name": "Firefox37", "version": 37, "startDate": "6 jan 2015", "esfilter": {"and":[
+				{"not": {"terms": {"cf_status_firefox37": SOLVED}}},
+				{"term": {"cf_tracking_firefox37": "+"}}
 			]}}
 		]
 	};

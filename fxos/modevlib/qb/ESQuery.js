@@ -399,6 +399,7 @@ ESQuery.INDEXES = Settings.indexes;
 		if (this.query.essize === undefined) this.query.essize = 200000;
 		if (ESQuery.DEBUG) this.query.essize = 100;
 
+		this.query.esfilter = ESFilter.simplify(this.query.esfilter);
 		this.columns = Qb.compile(this.query, ESQuery.INDEXES[splitField(this.query.from)[0]].columns, true);
 
 		var esFacets;
@@ -1544,8 +1545,14 @@ ESQuery.INDEXES = Settings.indexes;
 var ESFilter = {};
 
 ESFilter.simplify = function(esfilter){
-
-	return esfilter;
+	var output = ESFilter.fastAndDirtyNormalize(esfilter);
+	if (output===undefined){
+		return ESFilter.TrueFilter;
+	}else if (output===false){
+		return {"not": ESFilter.TrueFilter}
+	}else{
+		return output;
+	}//endif
 
 	//THIS DOES NOT WORK BECAUSE "[and] filter does not support [product]"
 	//THIS DOES NOT WORK BECAUSE "[and] filter does not support [component]"
@@ -1692,5 +1699,44 @@ ESFilter.normalize = function(esfilter){
 	Log.note("  to: " + CNV.Object2JSON(esfilter));
 
 	esfilter.isNormal = true;
+	return esfilter;
+};//method
+
+
+//REPLACE {"and":[]} AND true WITH {"match_all":{}}
+//RETURN undefined FOR true
+//RETURN False FOR NO MATCH POSSIBLE
+ESFilter.fastAndDirtyNormalize = function(esfilter){
+	if (esfilter===undefined){
+		return undefined;
+	}else if (esfilter==true){
+		return undefined;
+	}else if (esfilter.match_all){
+		return undefined;
+	}else if (esfilter.not){
+		if (esfilter.not.or && esfilter.not.or.length==0) {
+			return undefined;  //UNLIKELY TO EVER HAPPEN, BUT JUST IN CASE
+		}else{
+			var inverse = ESFilter.fastAndDirtyNormalize(esfilter.not);
+			if (inverse===undefined){
+				return false;
+			}else if (inverse===false){
+				return undefined;
+			}//endif
+			return {"not": inverse};
+		}//endif
+	} else if (esfilter.and){
+		var conditions = esfilter.and.map(ESFilter.fastAndDirtyNormalize);
+		if (conditions.length==0) {
+			return undefined;
+		}else if (conditions.filter(function(v){return v===false;}).length>0){
+			return false;
+		}else if (conditions.length==1){
+			return conditions[0];
+		}else{
+			return {"and": conditions}
+		}//endif
+	}//endif
+
 	return esfilter;
 };//method

@@ -215,6 +215,8 @@ Map.getValues=function getValues(map){
 	return output;
 };
 
+Map.getKeys = Object.keys;
+
 
 //USE THE MAP FOR REVERSE LOOKUP ON codomain VALUES PROVIDED
 //SINCE THE MAP CODOMAIN IS A VALUE, === IS USED FOR COMPARISION

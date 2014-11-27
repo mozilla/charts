@@ -49,22 +49,39 @@ function addTileClickers(){
 	$(".project").hover(function(){
 		var bugList = "#" + CNV.JSON2Object($(this).attr("bugsList")).join(",#");
 		$(bugList).addClass("selected");
-
 	},function(){
 		var bugList = "#" + CNV.JSON2Object($(this).attr("bugsList")).join(",#");
 		$(bugList).removeClass("selected");
 	}).click(function(e){
-			var bugList = $(".selected.project").map(function(){
-				return CNV.JSON2Object($(this).attr("bugsList"));
-			}).get();
-			if (bugList.length == 0) {
-				$(".bug_line").removeClass("selected").slideDown(300, "swing");
-			} else {
-				bugList = "#" + bugList.join(",#");
-				$(bugList).removeClass("selected").slideDown(1000, "swing");
-				$(".bug_line").not(bugList).slideUp(1000, "swing");
-			}//endif
-		});
+		var bugList = $(".selected.project").map(function(){
+			return CNV.JSON2Object($(this).attr("bugsList"));
+		}).get();
+		if (bugList.length == 0) {
+			$(".bug_line").removeClass("selected");
+		} else {
+			bugList = "#" + bugList.join(",#");
+			$(bugList).removeClass("selected").show();
+			$(".bug_line").not(bugList).hide();
+		}//endif
+	});
+
+	$("#show-bugs").click(function(){
+		var bugList = $(".selected.project").map(function(){
+			return CNV.JSON2Object($(this).attr("bugsList"));
+		}).get();
+
+		if (bugList.length == 0) {
+			var allBugs= $.makeArray($(".bug_line")).map(function(v, i){
+				return $(v)[0].id;
+			});
+			Bugzilla.showBugs(allBugs);
+		}else{
+			Bugzilla.showBugs(bugList);
+		}//endif
+
+	});
+
+
 }//function
 
 
@@ -165,7 +182,7 @@ function bugDetails(bugs){
 		b.stability = match(b, Mozilla.Platform.Stability);
 		b.release = match(b, desk.Release);
 		b.beta = match(b, desk.Beta);
-		b.dev = match(b, desk.Dev);
+		b.dev = match(b, desk.Aurora);
 		b.nightly = match(b, desk.Nightly);
 		b.b2g21 = match(b, b2g["2.1"]);
 		b.b2g22 = match(b, b2g["2.2"]);
@@ -231,7 +248,7 @@ function getCategoryHTML(category, allBugs){
 		html = tile({
 			"name": category.name,
 			"bugs": allBugs.list.filter(category.esfilter),
-			"style": nvl(category.style, {})
+			"style": {} //nvl(category.style, {})
 		});
 
 	} else {
@@ -239,9 +256,10 @@ function getCategoryHTML(category, allBugs){
 
 		html = edges.map(function(e, i){
 			var info = {
-				"name": e.name,
+				"name": e.version && e.name!="Release" ? e.name+"-"+e.version : e.name,
 				"bugs": allBugs.list.filter(e.fullFilter),
-				"style": nvl(e.style, {})
+				"version": e.version,
+				"style": {} //nvl(e.style, {})
 			};
 			return tile(info)
 		}).join("");

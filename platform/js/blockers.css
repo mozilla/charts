@@ -24,20 +24,7 @@
     text-align: center
 }
 
-.project {
-    background-color: gray;
-    font-size: 14px;
-    cursor: pointer;
-    position: relative;
-    color:white;
-    display: inline-block;
-    font-weight: normal;
-    padding: 5px 10px 5px 10px;
-    text-align: center;
-    width: 50px;
-    height:60px;
-    margin: 2px;
-}
+
 
 tr.selected {
     background-color: #fafaba;
@@ -137,9 +124,24 @@ tr.selected {
     padding: 0 10px 0px;
 }
 
+.project {
+    background-color: gray;
+    font-size: 14px;
+    cursor: pointer;
+    position: relative;
+    color:white;
+    display: inline-block;
+    font-weight: normal;
+    padding: 5px 0 5px 0;
+    text-align: center;
+    width: 70px;
+    height:60px;
+    margin: 2px;
+}
 
 .release{
     margin-top: -3px;
+    width:100%;
     padding: 0 0 0 0;
     white-space: nowrap;
 }
@@ -160,6 +162,7 @@ tr.selected {
 
 .content{
     display:block;
+    margin-left: 60px;
     padding: 50px 0 0 0;
     top:0;
     vertical-align: top
@@ -284,6 +287,23 @@ table.grid td div.small_unassigned {
     font-weight: bold;
 }
 
+
+.go-to-bugzilla {
+    background-color: #5cb85c;
+    border-color: #4cae4c;
+    color: #fff;
+    /*border: 1px solid transparent;*/
+    position: absolute;
+
+    border-radius: 4px;
+    right: 20px;
+    bottom: 5px;
+    cursor: pointer;
+    display: inline-block;
+    font-size: 14px;
+    line-height: 1.42857;
+    padding: 6px 12px;
+}
 
 
 #noms {

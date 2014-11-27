@@ -106,30 +106,35 @@ function requiredFields(esfilter){
 
 		if (!currentRelease) Log.error("What's the next release!?  Please add more to Dimension-Platform.js");
 	}
+
+	//NOT IN ANY OF THE THREE TRAINS
+	var otherFilter = {"or": releaseTracking.edges.map(function(r, i){
+		if (currentRelease.version <= r.version && r.version<=currentRelease.version+2) return undefined;
+		return r.esfilter;
+	})};
+
 	var trains = [
 		{"name":"Release", "style":{"color":"#E66000"}},
 		{"name":"Beta", "style":{"color":"#FF9500"}},
-		{"name":"Dev", "style":{"color":"#0095DD"}},
+		{"name":"Aurora", "style":{"color":"#0095DD"}},
 		{"name":"Nightly", "style":{"color":"#002147"}}
 	];
 
 
-	var otherFilter=[];    //NOT IN ANY OF THE THREE TRAINS
 	var trainTrackingAbs = {
 		"name": "Release Tracking - Desktop",
 		"esFacet": true,
 		"requiredFields":releaseTracking.requiredFields,
 		"edges": trains.leftBut(1).map(function(t,  track){
 			var release = releaseTracking.edges[currentRelease.dataIndex+track];
-			otherFilter.append(release.esfilter);
-			var output =  Map.setDefault({}, t, release);
-			return output;
+			return Map.setDefault({}, t, release);
 		})
 	};
 	trainTrackingAbs.edges.append({
 		"name": trains.last().name,
+		"version": trains.last().version,
 		"style": trains.last().style,
-		"esfilter": {"or":otherFilter}
+		"esfilter": otherFilter
 	});
 
 	//SHOW TRAINS AS PARTIITONS SO THERE IS NO DOUBLE COUNTING
@@ -139,7 +144,6 @@ function requiredFields(esfilter){
 		"requiredFields":releaseTracking.requiredFields,
 		"partitions": trains.leftBut(1).map(function(t,  track){
 			var release = releaseTracking.edges[currentRelease.dataIndex+track];
-			otherFilter.append(release.esfilter);
 			var output =  Map.setDefault({}, t, release);
 			return output;
 		})
@@ -147,7 +151,7 @@ function requiredFields(esfilter){
 	trainTrackingRel.partitions.append({
 		"name": trains.last().name,
 		"style": trains.last().style,
-		"esfilter": {"or":otherFilter}
+		"esfilter": otherFilter
 	});
 	trainTrackingRel.partitions.append({
 		"name": "ESR-31",

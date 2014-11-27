@@ -57,7 +57,7 @@ function addTileClickers(){
 			return CNV.JSON2Object($(this).attr("bugsList"));
 		}).get();
 		if (bugList.length == 0) {
-			$(".bug_line").removeClass("selected");
+			$(".bug_line").removeClass("selected").show();
 		} else {
 			bugList = "#" + bugList.join(",#");
 			$(bugList).removeClass("selected").show();

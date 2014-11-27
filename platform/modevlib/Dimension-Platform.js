@@ -35,7 +35,7 @@ function requiredFields(esfilter){
 
 (function(){
 
-	var SOLVED = ["fixed", "wontfix", "unaffected", "disabled"];
+	var SOLVED = ["fixed", "wontfix", "unaffected", "disabled", "verified"];
 
 	var releaseTracking = {
 		"name": "Release",
@@ -55,8 +55,8 @@ function requiredFields(esfilter){
 				"version": 34,
 				"releaseDate":"1 dec 2014",  //https://wiki.mozilla.org/Releases
 				"esfilter": {"and":[
-					{"not": {"terms": {"cf_status_firefox36": SOLVED}}},
-					{"term": {"cf_tracking_firefox36": "+"}}
+					{"not": {"terms": {"cf_status_firefox34": SOLVED}}},
+					{"term": {"cf_tracking_firefox34": "+"}}
 				]}
 			},
 			{

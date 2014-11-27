@@ -297,7 +297,7 @@ function setReleaseHTML(data){
 		'</td>'
 	]);
 
-	var scale = aMath.min(10, MAX_VERTICAL_HEIGHT / aMath.MAX(data.cube[1]));
+	var scale = aMath.min(10, MAX_VERTICAL_HEIGHT / aMath.MAX(data.cube[1]), MAX_VERTICAL_HEIGHT / aMath.MAX(data.cube[2]));
 	var BETA = data.edges[0].domain.partitions[1];
 	var AURORA = data.edges[0].domain.partitions[2];
 	var ESR = data.edges[0].domain.partitions[3];
@@ -349,7 +349,7 @@ function setReleaseHTML(data){
 
 	var esrTemplate = new Template([
 		'<td style="vertical-align:middle;text-align: center; width:60px;">',
-		'<div id="{{id}}" class="hoverable tracking" style="{{style|style}} dynamic-style=":hover{background-color:{{lighter}}}">',
+		'<div id="{{id}}" class="hoverable tracking" style="{{style|style}}" dynamic-style=":hover{background-color:{{lighter}}}">',
 		'<div style="padding-top:6px;">{{value}}</div>',
 		'</div>',
 		'</td>'

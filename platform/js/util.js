@@ -385,7 +385,7 @@ function setReleaseHTML(data){
 			'<tr>' + header + '</tr>' +
 			'<tr><td class="train_title"><h3>Aurora&nbsp;(' + AURORA.version + ')</h3></td>' + dev + '</tr>' +
 //			(aMath.SUM(data.cube[0])>0 ? '<tr><td class="train_title"><h3>Release</h3></td>'+release+'</tr>' : '') +
-			(aMath.SUM(data.cube[3]) > 0 ? '<tr><td class="train_title"><h3>ESR 31</h3></td>' + esr + '</tr>' : '') +
+//			(aMath.SUM(data.cube[3]) > 0 ? '<tr><td class="train_title"><h3>ESR 31</h3></td>' + esr + '</tr>' : '') +
 			'</tbody>' +
 			'</table>'
 	);

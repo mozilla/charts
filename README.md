@@ -38,7 +38,7 @@ At a bare minimum:
 
 Extra appreciation is granted if you also
 
-  * update the corresponding bugzilla bug with an attchment pointing to the
+  * update the corresponding bugzilla bug with an attachment pointing to the
   pull request
 
 Using Github pull requests for code submission, and Bugzilla for issue

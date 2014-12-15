@@ -27,7 +27,7 @@ There are three main branches
 
   * [master](https://github.com/mozilla/charts/tree/master) - deployed to production: charts.mozilla.org
   * [allizom](https://github.com/mozilla/charts/tree/allizom) - deployed to staging: charts.paas.allizom.org
-  * [dev](https://github.com/mozilla/charts/tree/adev) - active development: **add you pull requests here**
+  * [dev](https://github.com/mozilla/charts/tree/dev) - active development: **add you pull requests here**
 
 ###Submitting a Patch
 At a bare minimum:

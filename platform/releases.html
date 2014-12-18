@@ -1,0 +1,87 @@
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+<meta http-equiv="refresh" content="3600">
+<!-- This Source Code Form is subject to the terms of the Mozilla Public
+   - License, v. 2.0. If a copy of the MPL was not distributed with this
+   - file, You can obtain one at http://mozilla.org/MPL/2.0/. -->
+<HTML>
+<HEAD>
+	<title>Dashboard - Release Management</title>
+	<script type="text/javascript" src="modevlib/imports/import.js"></script>
+</HEAD>
+<BODY>
+<div style="min-height:100%;position: relative;">
+	<div class="content" style="width:100%;text-align: center;">
+		<h1 style="text-align: center;">Tracking Firefox</h1>
+		<br>
+		<div id="teams" style="padding-left:50px;margin-left: 60px;display: inline-block; height:500px"></div>
+	</div>
+	<div class="footer">
+		View at <a id="selfRef" href="releases.html"></a><br>
+		Source at <a href="https://github.com/mozilla/charts/blob/platform/platform/releases.html">https://github.com/mozilla/charts/blob/platform/platform/releases.html</a>
+	</div>
+</div>
+<script type="application/javascript">
+
+importScript([
+	'js/main_lib.js',
+	'modevlib/charts/aChart.js'
+], function(){
+	$("#selfRef").html(CNV.String2HTML(window.location.href));
+
+	var thread;
+
+	function createChart(){
+		if (thread !== undefined)
+			thread.kill(true);
+		thread = Thread.run(__createChart());
+	}
+
+//	refresher(createChart);
+
+	var __createChart = function*(){
+		yield (ESQuery.loadColumns({"from": "bugs"}));
+
+		//ONLY INTERESTED IN RELEASE TRACKING BUGS
+		var allFilter = {"and":[
+			Mozilla.BugStatus.Open.esfilter,
+			Mozilla.CurrentRecords.esfilter,
+			Mozilla.Platform.Train.esfilter
+		]};
+
+		var chart = yield (ESQuery.run({
+			"from":"bugs",
+			"select":{"value":"bug_id", "aggregate":"count"},
+			"edges":[
+				{"name":"release", "domain":Mozilla.Platform.Train.getDomain({"fullFilter":true})},
+				{"name":"team", "domain":Mozilla.Platform.Team.getDomain({"fullFilter":true})}
+			],
+			"esfilter":allFilter
+		}));
+
+		setReleaseHTML(chart);
+	};
+
+	$(document).ready(function(){
+		GUI.setup(
+			createChart,
+			[
+			],
+			[],
+			null,
+			false,		//SHOW DEFAULT FILTERS?
+			false,
+			false        //DISABLE showLastUpdated
+		);
+	});
+});
+
+
+</script>
+
+
+</BODY>
+</HTML>
+
+
+
+

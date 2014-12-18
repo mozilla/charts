@@ -528,13 +528,12 @@ SIDE BAR
     left: -2px;
     height: 18px;
     width: 100%;
-    -moz-transform: rotate(270deg);
+    transform: rotate(270deg);
     /*color: white;*/
     color: #dddddd;
 
     font-size: 18px;
 }
-
 
 .content{
     display:block;padding-left:40px;top:0;vertical-align: top

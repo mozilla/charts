@@ -118,8 +118,6 @@ Rest.send=function*(ajaxParam){
 		}catch(e){
 			//IGNORE
 		}//try
-		//WE DO NOT CALL THE CALLBACK BECAUSE THE THREAD WILL BE CALLING INTERRUPT SHORTLY
-		//callback(new Exception("Aborted"));
 	};
 
 	if (ajaxParam.timeout!==undefined){

@@ -18,7 +18,7 @@ function showOpenCount(args) {
 				"aggregate": "count"
 			},
 			"edges": [
-				{"name": "type", "domain": Mozilla.B2G.FinalState.getDomain()},
+				{"name": "type", "domain": Mozilla.Devices.FinalState.getDomain()},
 				{"name": "date",
 					"range": {
 						"min": "modified_ts",
@@ -117,7 +117,7 @@ function showChurn(args) {
 			"name": "Activity History",
 			"select": {"name": "count", "value": "bug_id", "aggregate": "count"},
 			"edges": [
-				{"name": "Category", "domain": Mozilla.B2G.FinalState.getDomain()},
+				{"name": "Category", "domain": Mozilla.Devices.FinalState.getDomain()},
 				{"name": "date", "value": "closeDate", "domain": Map.copy(args.timeDomain)}
 			]
 		}));
@@ -182,7 +182,7 @@ function showAges(args) {
 				"esfilter": {"and": [
 					GUI.getFilters("bugs"),
 					Mozilla.CurrentRecords.esfilter,
-					Mozilla.B2G.Blockers.esfilter,
+					Mozilla.Devices.Blockers.esfilter,
 					{"or": [
 						{"range": {"expires_on": {"gte": timeDomain.min.getMilli()}}},
 						Mozilla.BugStatus.Open.esfilter
@@ -193,7 +193,7 @@ function showAges(args) {
 
 		var blockers = yield (ElasticSearch.getMinMax({"and": [
 			GUI.getFilters("bugs"),
-			Mozilla.B2G.Blockers.esfilter,
+			Mozilla.Devices.Blockers.esfilter,
 			Mozilla.BugStatus.Open.esfilter
 		]}));
 
@@ -209,7 +209,7 @@ function showAges(args) {
 			});
 		}
 
-		var projectDomain = Mozilla.B2G.FinalState.getDomain();
+		var projectDomain = Mozilla.Devices.FinalState.getDomain();
 		projectDomain.partitions.pop();  //DO NOT SHOW THE Untargeted
 
 		var a = Log.action("Request Bugs", true);

@@ -96,7 +96,7 @@ function showSummary(type, team, detail, grandTotal, specialBugs, showTYPE) {
 	if (numSummary<2) component.projectDetail="";
 
 	if (specialBugs){
-		component.specialDetail = showTYPE(specialBugs);
+		component.specialDetail = Array.newInstance(specialBugs).map(function(s){return showTYPE(s);}).join("");
 	}else{
 		component.specialDetail = "";
 	}//endif

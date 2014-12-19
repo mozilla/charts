@@ -94,10 +94,7 @@ body {
     width: 100%;
     height: 15px;
     padding-top: 15px;
-    padding-bottom: 5px;
     display: block;
-    position: relative;
-    z-index:100;
 
 }
 
@@ -318,10 +315,6 @@ table tr th, table tr td {
 
 .table th, .table td {
     border-top: 1px solid rgba(0, 0, 0, 0.2);
-    padding: 0;
-}
-
-.table th div, .table td div, .table th span, .table td span {
     padding: 5px 20px 5px 0;
 }
 
@@ -378,7 +371,7 @@ table.grid td.vSeperatorA {
 }
 
 
-.chart {
+#chart, .chart {
     width: 800px;
     position: relative;
     border: 1px solid #aaaaaa;
@@ -532,7 +525,7 @@ SIDE BAR
 .sidebar_name div{
     position: absolute;
     top: 50px;
-    /*left: -2px;*/
+    left: -2px;
     height: 18px;
     width: 100%;
     transform: rotate(270deg);
@@ -542,12 +535,8 @@ SIDE BAR
     font-size: 18px;
 }
 
-
 .content{
-    display:block;
-    padding-left:60px;
-    top:0;
-    vertical-align: top
+    display:block;padding-left:40px;top:0;vertical-align: top
 }
 
 

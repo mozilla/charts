@@ -5,7 +5,7 @@
    - file, You can obtain one at http://mozilla.org/MPL/2.0/. -->
 <HTML>
 <HEAD >
-	<title>Devices - FxOS</title>
+	<title>Blockers - Devices</title>
 	<script type="text/javascript">function importScript(dep, func){if (func!==undefined) func();}</script>
 	<script type="text/javascript" src="modevlib/rest/BugzillaClient.js"></script>
 	<link type="text/css" rel="stylesheet" href="js/blockers.css"/>
@@ -63,6 +63,7 @@
 	<script type="text/javascript" src="modevlib/qb/ESQuery.js"></script>
 	<script type="text/javascript" src="modevlib/Dimension.js"></script>
 	<script type="text/javascript" src="modevlib/Dimension-Bugzilla.js"></script>
+	<script type="text/javascript" src="modevlib/Dimension-B2G.js"></script>
 	<script type="text/javascript" src="modevlib/Dimension-Devices.js"></script>
 	<script type="text/javascript" src="modevlib/gui/ProductFilter.js"></script>
 	<script type="text/javascript" src="modevlib/gui/GUI.js"></script>
@@ -129,10 +130,37 @@
 		}
 		refresher(createChart);
 
-		var __createChart = function*(){
+		var __createChart = function*() {
 			yield (ESQuery.loadColumns({"from": "bugs"}));
 
+			//SPECIAL BLOCKERS
+			var allSpecial;
+			var specialThread=Thread.run(function*(){
+				allSpecial = (yield(ESQuery.run({
+					"from": "bugs",
+					"select": [
+						"bug_id",
+						{"name":"blocked_by", "value":"blocked"}
+					],
+					"esfilter":	{"and": [
+						{"or":Mozilla.Devices.Partners.edges.select("esfilter")},
+						Mozilla.BugStatus.Open.esfilter,
+						Mozilla.CurrentRecords.esfilter
+					]}
+				}))).list;
+
+				allSpecial = (yield (Qb.calc2List({
+					"from":allSpecial,
+					"select":[{"name":"bug_list", "value":"bug_id", "aggregate":"list"}],
+					"edges":[
+						{"name":"Partner", "domain":Mozilla.Devices.Partners.getDomain()}
+					]
+				}))).list;
+			});
+
 			a = Log.action("Get Bug Details", true);
+			//PULL THE RAW DATA, AND THEN OPERATE ON IT 112K, 2.17sec time
+			//THE AGGREGATES ARE SPENDING ABOUT 2/3 THE TIME TRANSMITTING THE QUERY
 			var allDetails = yield(ESQuery.run({
 				"from": "bugs",
 				"select": [
@@ -142,14 +170,12 @@
 					"assigned_to",
 					"component",
 					"product",
-					"blocked_by",
 					"cf_blocking_b2g"
 				],
 				"esfilter":	{"and": [
 					{"or":[
 						Mozilla.Devices.Blockers.esfilter,
-						Mozilla.Devices.Nominations.esfilter,
-						Mozilla.Devices.Partners.esfilter
+						{"or":Mozilla.Devices.Partners.edges.select("esfilter")},
 					]},
 					Mozilla.BugStatus.Open.esfilter,
 					Mozilla.CurrentRecords.esfilter,
@@ -170,7 +196,7 @@
 				],
 				"edges": [
 					{"name":"component", "value":'component=="general" ? component+" ("+product+")" : component'},
-					{"name": "partner", "domain": Mozilla.Devices.Partners.getDomain()}
+					{"name": "project", "domain": Mozilla.Devices.Release.getDomain()}
 				]
 			}));
 
@@ -179,25 +205,25 @@
 			components.cube.forall(function (component, i) {
 				var total = aMath.SUM( component.select("count"));
 				if (total > 0) {
-					component.forall(function (partner, j) {
-						partner.component = components.edges[0].domain.partitions[i].name;
-						partner.partner = components.edges[1].domain.partitions[j].name;
-						partner.total = total;
-						partner.additionalClass = "";
+					component.forall(function (project, j) {
+						project.component = components.edges[0].domain.partitions[i].name;
+						project.project = components.edges[1].domain.partitions[j].name;
+						project.total = total;
+						project.additionalClass = "";
 					});
 					var blockerHTML = showComponent(component, showBlocker);
 					$("#blockers").append(blockerHTML);
 				}//endif
 			});
 
-			var partnerDomain=Mozilla.Devices.Partners.getDomain();
-			partnerDomain.name="partner";
-			partnerDomain.end=function(p){return p.name;};
+			var projectDomain=Mozilla.Devices.Release.getDomain();
+			projectDomain.name="project";
+			projectDomain.end=function(p){return p.name;};
 			var totals = yield(Q({
 				"from": allDetails,
 				"select": [
 					{"name": "show", "value": "bug_id", "aggregate": "exists"},
-					{"name": "additionalClass", "value": '"partner-summary"', "aggregate": "one"},
+					{"name": "additionalClass", "value": '"project-summary"', "aggregate": "one"},
 					{"name": "count", "value": "bug_id", "aggregate": "count"},
 					{"name": "bugs", "value": "bug_id", "aggregate": "array"},
 					{"name": "age", "value": "Date.now().subtract(Date.newInstance(modified_ts)).divideBy(Duration.DAY)", "aggregate": "maximum"},
@@ -205,21 +231,34 @@
 					{"name": "unassignedBugs", "value": '(assigned_to=="nobody@mozilla.org" ? bug_id : null)', "aggregate": "array"}
 				],
 				"edges": [
-					{"name": "partner", "domain": partnerDomain}
+					{"name": "project", "domain": projectDomain}
 				]
 			}));
+
+			yield (Thread.join(specialThread));
 
 			var specialBlockers = (yield(Qb.calc2List({
 				"from": allDetails,
 				"select": [
-					{"name": "additionalClass", "value":'"partner-summary"', "aggregate":"one"},
+					{"name": "additionalClass", "value":'"project-summary"', "aggregate":"one"},
 					{"name": "count", "value": "bug_id", "aggregate": "count"},
 					{"name": "bugs", "value": "bug_id", "aggregate": "array"},
 					{"name": "bugsList", "value": "bug_id", "aggregate": "join", "separator": ","},
 					{"name": "age", "value": "Date.now().subtract(Date.newInstance(modified_ts)).divideBy(Duration.DAY)", "aggregate": "maximum"},
 					{"name": "unassignedCount", "value": '(assigned_to=="nobody@mozilla.org" ? 1 : 0)', "aggregate": "sum"}
 				],
-				"edges": [{"name": "partner", "domain": partnerDomain}]
+				"edges":[
+					{"name":"project",
+						"domain":{
+							"type":"set",
+							"key":"name",
+							"value":"name",
+							"partitions": allSpecial.map(function(p){
+								return {"name": p.Partner.name, "value": p.Partner.name, "esfilter":{"terms":{"bug_id":p.bug_list}}}
+							})
+						}
+					}
+				]
 			}))).list;
 
 			var grandTotal={
@@ -232,7 +271,7 @@
 				"additionalClass": "project-summary"
 			};
 
-			var blockerHTML = showSummary("Blockers", [], totals, grandTotal, specialBlockers, showBlocker);
+			var blockerHTML = showSummary("Blockers", GUI.state.team.getSelectedParts(), totals, grandTotal, specialBlockers, showBlocker);
 			$("#totals").html(blockerHTML);
 
 			addProjectClickers(components);
@@ -243,10 +282,24 @@
 			GUI.setup(
 				createChart,
 				[
-					{"id": "partner", "name": "Partners", "default":"1.3T,1.4,2.0,2.1,2.2", "type": PartitionFilter.newInstance({
-						"id": "Partners",
-						"name": "All Partners",
-						"dimension": Mozilla.Devices.Partners,
+					{"id": "project", "name": "Releases", "default":"1.3T,1.4,2.0,2.1,2.2", "type": PartitionFilter.newInstance({
+						"id": "Projects",
+						"name": "All Projects",
+						"dimension": Mozilla.Devices.Release,
+						"onlyOne": false,
+						"expandAll": true
+					})},
+					{"id": "team", "name": "Teams", "type": PartitionFilter.newInstance({
+						"id": "Teams",
+						"name": "All Teams",
+						"dimension": Mozilla.B2G.Team,
+						"onlyOne": false,
+						"expandAll": true
+					})},
+					{"id": "component", "name": "Components", "type": PartitionFilter.newInstance({
+						"id": "Components",
+						"name": "All Components",
+						"dimension": Mozilla.B2G.Component,
 						"onlyOne": false,
 						"expandAll": true
 					})},

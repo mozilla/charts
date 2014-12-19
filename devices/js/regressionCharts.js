@@ -21,7 +21,7 @@ function showRegressionAge(args) {
 				"esfilter": {"and": [
 					GUI.getFilters("bugs"),
 					Mozilla.CurrentRecords.esfilter,
-					Mozilla.B2G.Regressions.esfilter,
+					Mozilla.Devices.Regressions.esfilter,
 					{"or": [
 						{"range": {"expires_on": {"gte": timeDomain.min.getMilli()}}},
 						Mozilla.BugStatus.Open.esfilter
@@ -32,7 +32,7 @@ function showRegressionAge(args) {
 
 		var blockers = yield (ElasticSearch.getMinMax({"and": [
 			GUI.getFilters("bugs"),
-			Mozilla.B2G.Regressions.esfilter,
+			Mozilla.Devices.Regressions.esfilter,
 			Mozilla.BugStatus.Open.esfilter
 		]}));
 
@@ -48,7 +48,7 @@ function showRegressionAge(args) {
 			});
 		}
 
-		var projectDomain = Mozilla.B2G.FinalState.getDomain();
+		var projectDomain = Mozilla.Devices.FinalState.getDomain();
 		projectDomain.partitions.pop();  //DO NOT SHOW THE Untargeted
 
 		var a = Log.action("Request Bugs", true);

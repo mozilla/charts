@@ -13,7 +13,7 @@ Color = function (L, h, s) {
 	//
 	// EVERY COLOUR LIBRARY I HAVE TRIED BARELY DOES ONE OF THESE, NEVER MIND
 	// TWO OF THEM:
-	// * LINEAR AMPLIFICATION OF LIGHTNESS
+	// * LINEAR AMPLIFICATION OF LIGHTNESS (linear defined by cie)
 	// * NATURAL ROTATION IN HUE
 	// * VARY SATURATION WITHOUT CONTORTING THE HUE
 	// * REASONABLE APPROXIMATIONS FOR COLOUR OUTSIDE THE sRGB GAMUT!!!
@@ -58,25 +58,39 @@ Color = function (L, h, s) {
 	Color.BLUE = new Color(1.0, 0.0, 1.0);
 
 
-	var ColorSRGB = function (r, g, b) {
-		this.r = r;
-		this.g = g;
-		this.b = b;
+	ColorSRGB = function (r, g, b) {
+
+		if (r instanceof Array && g===undefined && b===undefined){
+			this.rgb=r
+		}else{
+			this.rgb=[r, g, b];
+		}
 	};//function
 
 	ColorSRGB.prototype.lighter=function(){
-		return new ColorSRGB(this.r*1.2, this.g*1.2, this.b*1.2);
+		return new ColorSRGB(this.rgb.map(function(v){
+			return Math.min(Math.round(v+30), 255);
+		}));
 	};
 
-	ColorSRGB.prototype.toHTML=function(){
-		return hex(this);
-	};
+	function toHTML(){
+		return hex({"r":this.rgb[0], "g":this.rgb[1], "b":this.rgb[2]});
+	}
+	ColorSRGB.prototype.toHTML=toHTML;
+	ColorSRGB.prototype.toString=toHTML;
 
 	Color.newInstance=function(value){
 		if (value.startsWith("lhs(")){
 			value=value.between("lhs(", ")");
 			var lhs = value.split(",").map(function(v){return v.trim()-0;});
 			return new Color(lhs[0], lhs[1], lhs[2]);
+		}else if (value.startsWith("#")){
+			var rgb = Array.newRange(0, 3).map(function(i){
+				return CNV.hex2int(value.substring(i*2+1, i*2+3))
+			});
+			return new ColorSRGB(rgb);
+		}else{
+			return value;  //MAYBE WE ARE LUCKY
 		}//endif
 	};
 

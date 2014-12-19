@@ -19,7 +19,7 @@ Bugzilla.showBugs=function(bugList){
 Bugzilla.searchBugsURL=function(bugList){
 	if (bugList instanceof Array){
 		return Bugzilla.URL+"?quicksearch="+bugList.join('%2C');
-	}else if (typeof(buglist)=="string"){
+	}else if (typeof(bugList)=="string"){
 		return Bugzilla.URL+"?quicksearch="+bugList.replaceAll(", ", "%2C");
 	}else{
 		return Bugzilla.URL+"?quicksearch="+bugList;

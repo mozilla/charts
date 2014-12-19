@@ -5,9 +5,8 @@
    - file, You can obtain one at http://mozilla.org/MPL/2.0/. -->
 <HTML>
 <HEAD >
-	<title>Blockers - FxOS</title>
+	<title>Devices - FxOS</title>
 	<script type="text/javascript">function importScript(dep, func){if (func!==undefined) func();}</script>
-	<script type="text/javascript" src="modevlib/Settings.js"></script>
 	<script type="text/javascript" src="modevlib/rest/BugzillaClient.js"></script>
 	<link type="text/css" rel="stylesheet" href="js/blockers.css"/>
 	<script type="text/javascript" src="modevlib/util/aUtil.js"></script>
@@ -29,6 +28,7 @@
 	<script type="text/javascript" src="modevlib/MozillaPrograms.js"></script>
 	<script type="text/javascript" src="modevlib/util/CNV.js"></script>
 	<script type="text/javascript" src="modevlib/charts/aColor.js"></script>
+	<script type="text/javascript" src="modevlib/Settings.js"></script>
 
 	<script type="text/javascript" src="modevlib/util/aTemplate.js"></script>
 	<script type="text/javascript" src="lib/jquery.js"></script>
@@ -63,7 +63,7 @@
 	<script type="text/javascript" src="modevlib/qb/ESQuery.js"></script>
 	<script type="text/javascript" src="modevlib/Dimension.js"></script>
 	<script type="text/javascript" src="modevlib/Dimension-Bugzilla.js"></script>
-	<script type="text/javascript" src="modevlib/Dimension-B2G.js"></script>
+	<script type="text/javascript" src="modevlib/Dimension-Devices.js"></script>
 	<script type="text/javascript" src="modevlib/gui/ProductFilter.js"></script>
 	<script type="text/javascript" src="modevlib/gui/GUI.js"></script>
 	<script type="text/javascript" src="modevlib/Hierarchy.js"></script>
@@ -129,25 +129,10 @@
 		}
 		refresher(createChart);
 
-		var __createChart = function*() {
+		var __createChart = function*(){
 			yield (ESQuery.loadColumns({"from": "bugs"}));
 
-			//SPECIAL BLOCKERS
-			var allSpecial = (yield(ESQuery.run({
-				"from": "bugs",
-				"select": "bug_id",
-				"esfilter":	{"and": [
-					{"terms":{"blocked": [984663, 1041241]}},
-					Mozilla.BugStatus.Open.esfilter,
-					Mozilla.CurrentRecords.esfilter
-				]}
-			}))).list;
-
-			var CABlockers = allSpecial;
-
 			a = Log.action("Get Bug Details", true);
-			//PULL THE RAW DATA, AND THEN OPERATE ON IT 112K, 2.17sec time
-			//THE AGGREGATES ARE SPENDING ABOUT 2/3 THE TIME TRANSMITTING THE QUERY
 			var allDetails = yield(ESQuery.run({
 				"from": "bugs",
 				"select": [
@@ -157,13 +142,14 @@
 					"assigned_to",
 					"component",
 					"product",
-					"cf_blocking_b2g",
-					"cf_blocking_loop"
+					"blocked_by",
+					"cf_blocking_b2g"
 				],
 				"esfilter":	{"and": [
 					{"or":[
-						Mozilla.B2G.Blockers.esfilter,
-						{"terms":{"bug_id":CABlockers}}
+						Mozilla.Devices.Blockers.esfilter,
+						Mozilla.Devices.Nominations.esfilter,
+						Mozilla.Devices.Partners.esfilter
 					]},
 					Mozilla.BugStatus.Open.esfilter,
 					Mozilla.CurrentRecords.esfilter,
@@ -184,7 +170,7 @@
 				],
 				"edges": [
 					{"name":"component", "value":'component=="general" ? component+" ("+product+")" : component'},
-					{"name": "project", "domain": Mozilla.B2G.Project.getDomain()}
+					{"name": "partner", "domain": Mozilla.Partners.getDomain()}
 				]
 			}));
 
@@ -193,25 +179,25 @@
 			components.cube.forall(function (component, i) {
 				var total = aMath.SUM( component.select("count"));
 				if (total > 0) {
-					component.forall(function (project, j) {
-						project.component = components.edges[0].domain.partitions[i].name;
-						project.project = components.edges[1].domain.partitions[j].name;
-						project.total = total;
-						project.additionalClass = "";
+					component.forall(function (partner, j) {
+						partner.component = components.edges[0].domain.partitions[i].name;
+						partner.partner = components.edges[1].domain.partitions[j].name;
+						partner.total = total;
+						partner.additionalClass = "";
 					});
 					var blockerHTML = showComponent(component, showBlocker);
 					$("#blockers").append(blockerHTML);
 				}//endif
 			});
 
-			var projectDomain=Mozilla.B2G.Project.getDomain();
-			projectDomain.name="project";
-			projectDomain.end=function(p){return p.name;};
+			var partnerDomain=Mozilla.Partners.getDomain();
+			partnerDomain.name="partner";
+			partnerDomain.end=function(p){return p.name;};
 			var totals = yield(Q({
 				"from": allDetails,
 				"select": [
 					{"name": "show", "value": "bug_id", "aggregate": "exists"},
-					{"name": "additionalClass", "value": '"project-summary"', "aggregate": "one"},
+					{"name": "additionalClass", "value": '"partner-summary"', "aggregate": "one"},
 					{"name": "count", "value": "bug_id", "aggregate": "count"},
 					{"name": "bugs", "value": "bug_id", "aggregate": "array"},
 					{"name": "age", "value": "Date.now().subtract(Date.newInstance(modified_ts)).divideBy(Duration.DAY)", "aggregate": "maximum"},
@@ -219,15 +205,15 @@
 					{"name": "unassignedBugs", "value": '(assigned_to=="nobody@mozilla.org" ? bug_id : null)', "aggregate": "array"}
 				],
 				"edges": [
-					{"name": "project", "domain": projectDomain}
+					{"name": "partner", "domain": partnerDomain}
 				]
 			}));
 
 			var specialBlockers = (yield(Q({
 				"from": allDetails,
 				"select": [
-					{"name": "project", "value": '"CAF"', "aggregate": "one"},
-					{"name": "additionalClass", "value":'"project-summary"', "aggregate":"one"},
+					{"name": "partner", "value": '"CAF"', "aggregate": "one"},
+					{"name": "additionalClass", "value":'"partner-summary"', "aggregate":"one"},
 					{"name": "count", "value": "bug_id", "aggregate": "count"},
 					{"name": "bugs", "value": "bug_id", "aggregate": "array"},
 					{"name": "bugsList", "value": "bug_id", "aggregate": "join", "separator": ","},
@@ -236,8 +222,6 @@
 				],
 				"where": {"terms":{"bug_id":CABlockers}}
 			}))).cube;
-
-			if (specialBlockers.count==0) specialBlockers.project="CAF";
 
 			var grandTotal={
 				"project":"Total",
@@ -260,31 +244,17 @@
 			GUI.setup(
 				createChart,
 				[
-					{"id": "project", "name": "Releases", "default":"1.3T,1.4,2.0,2.1,2.2", "type": PartitionFilter.newInstance({
-						"id": "Projects",
-						"name": "All Projects",
-						"dimension": Mozilla.B2G.Project,
-						"onlyOne": false,
-						"expandAll": true
-					})},
-					{"id": "team", "name": "Teams", "type": PartitionFilter.newInstance({
-						"id": "Teams",
-						"name": "All Teams",
-						"dimension": Mozilla.B2G.Team,
-						"onlyOne": false,
-						"expandAll": true
-					})},
-					{"id": "component", "name": "Components", "type": PartitionFilter.newInstance({
-						"id": "Components",
-						"name": "All Components",
-						"dimension": Mozilla.B2G.Component,
+					{"id": "partner", "name": "Partners", "default":"1.3T,1.4,2.0,2.1,2.2", "type": PartitionFilter.newInstance({
+						"id": "Partners",
+						"name": "All Partners",
+						"dimension": Mozilla.Partners,
 						"onlyOne": false,
 						"expandAll": true
 					})},
 					{"id": "responsibility", "name": "Responsibility", "default": "FxOS_Team", "type": PartitionFilter.newInstance({
 						"id": "Responsibility",
 						"name": "All Bugs",
-						"dimension": Mozilla.B2G.Responsibility,
+						"dimension": Mozilla.Devices.Responsibility,
 						"onlyOne": true,
 						"expandAll": true
 					})}

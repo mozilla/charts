@@ -78,10 +78,12 @@ GUI = {};
 			relations,     //SOME RULES TO APPLY TO PARAMETERS, IN CASE THE HUMAN MAKES SMALL MISTAKES
 			indexName,     //PERFORM CHECKS ON THIS INDEX
 			showDefaultFilters,  //SHOW THE Product/Compoentn/Team FILTERS
-			performChecks           //PERFORM SOME CONSISTENCY CHECKS TOO
+			performChecks,       //PERFORM SOME CONSISTENCY CHECKS TOO
+			checkLastUpdated     //SEND QUERY TO GET THE LAST DATA?
 		) {
 
 			GUI.performChecks=nvl(performChecks, true);
+			GUI.checkLastUpdated=nvl(checkLastUpdated, true);
 
 			if (typeof(refreshChart) != "function") {
 				Log.error("Expecting first parameter to be a refresh (creatChart) function");
@@ -137,6 +139,8 @@ GUI = {};
 
 		//SHOW THE LAST TIME ES WAS UPDATED
 		GUI.showLastUpdated = function(indexName) {
+			if (!GUI.checkLastUpdated) return;
+			
 			Thread.run("show last updated timestamp", function*() {
 				var time;
 
@@ -149,7 +153,7 @@ GUI = {};
 
 					time = new Date(result.cube.max_date);
 					var tm = $("#testMessage");
-					tm.html(new Template("<div style={{style|css}}>{{name}}</div>").expand(result.index));
+					tm.html(new Template("<div style={{style|style}}>{{name}}</div>").expand(result.index));
 					tm.append("<br>ES Last Updated " + time.addTimezone().format("NNN dd @ HH:mm") + Date.getTimezone());
 				} else if (indexName == "reviews") {
                     var result = yield (ESQuery.run({

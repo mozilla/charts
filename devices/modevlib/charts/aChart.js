@@ -346,7 +346,7 @@ aChart.showPie=function(params){
 		width: 400,
 		height: 400,
 		animate:false,
-		title: chartCube.name,
+		title: nvl(params.name, chartCube.name),
 		legend: true,
 		legendPosition: "right",
 //		legendAlign: "center",
@@ -522,7 +522,7 @@ aChart.showScatter=function(params){
 		var dateMarks = [];
 		dateMarks.appendArray(findDateMarks(xaxis.domain));  //WE CAN PLUG SOME dateMarks RIGHT INTO TIME DOMAIN FOR DISPLAY
 		if (dateMarks.length>0){
-			chartParams-.renderCallback=function(){
+			chartParams.renderCallback=function(){
 				var self=this;
 				dateMarks.forall(function(m){
 					try{

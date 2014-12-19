@@ -824,22 +824,27 @@ function Tree2Cube(query, cube, tree, depth){
 Qb.getColumnsFromQuery=function*(query){
 	//FROM CLAUSE MAY BE A SUB QUERY
 
-	var sourceColumns;
-	if (query.from instanceof Array){
-		sourceColumns = Qb.getColumnsFromList(query.from);
-		query.from.list = query.from;	//NORMALIZE SO query.from.list ALWAYS POINTS TO AN OBJECT
-	} else if (query.from.list){
-		sourceColumns = query.from.columns;
-	} else if (query.from.cube){
-		query.from.list = Qb.Cube2List(query.from);
-		sourceColumns = query.from.columns;
-	}else if (query.from.from!=undefined){
-		query.from=yield (Qb.calc2List(query.from));
-		sourceColumns=yield (Qb.getColumnsFromQuery(query));
-	}else{
-		Log.error("Do not know how to handle this");
-	}//endif
-	yield (sourceColumns);
+	try{
+		var sourceColumns;
+		if (query.from instanceof Array){
+			sourceColumns = Qb.getColumnsFromList(query.from);
+			query.from.list = query.from;	//NORMALIZE SO query.from.list ALWAYS POINTS TO AN OBJECT
+		} else if (query.from.list){
+			sourceColumns = query.from.columns;
+		} else if (query.from.cube){
+			query.from.list = Qb.Cube2List(query.from);
+			sourceColumns = query.from.columns;
+		}else if (query.from.from!=undefined){
+			query.from=yield (Qb.calc2List(query.from));
+			sourceColumns=yield (Qb.getColumnsFromQuery(query));
+		}else{
+			Log.error("Do not know how to handle this");
+		}//endif
+		yield (sourceColumns);
+	}catch(e){
+		Log.error("not expected", e);
+	}//try
+
 };//method
 
 
@@ -978,12 +983,27 @@ Qb.merge=function(query){
 ////////////////////////////////////////////////////////////////////////////////
 // ORDERING
 ////////////////////////////////////////////////////////////////////////////////
-//TAKE data LIST OF OBJECTS AND ENSURE names ARE ORDERED
+//TAKE data LIST OF OBJECTS
+//sortOrder IS THE sort CLAUSE
+//columns ARE OPTIONAL, TO MAP SORT value TO column NAME
 Qb.sort = function(data, sortOrder, columns){
+	if (sortOrder instanceof Function){
+		try{
+			data = data.copy();
+			data.sort(sortOrder);
+			return data;
+		}catch(e){
+			Log.error("bad sort function", e)
+		}//try
+	}//endif
+
+
+
 	sortOrder = Array.newInstance(sortOrder);
 	if (sortOrder.length==0) return data;
 	var totalSort = Qb.sort.compile(sortOrder, columns, true);
 	try{
+		data = data.copy();
 		data.sort(totalSort);
 		return data;
 	}catch(e){
@@ -1029,7 +1049,7 @@ Qb.sort.compile=function(sortOrder, columns, useNames){
 		if (!useNames){
 			index = col.columnIndex;
 		}else if (MVEL.isKeyword(col.name)){
-			index=splitField(col.name).map(function(v){return CNV.String2Quote(v);}).join("][");
+			index=splitField(col.name).map(CNV.String2Quote).join("][");
 		}else if (columns.select("name").contains(col.name)){
 			index=CNV.String2Quote(col.name);
 		}else{

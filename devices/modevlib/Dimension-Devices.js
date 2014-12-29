@@ -40,8 +40,8 @@ if (!Mozilla) var Mozilla = {"name": "Mozilla", "edges": []};
 				{"name": "Partners",
 					"edges": [
 						{"name": "WD", "value":"WD", "esfilter": {"term": {"blocked_by": 1054172}}},
-						{"name": "P1", "value":"P1", "esfilter": {"term": {"blocked_by": 1107999}}},
-						{"name": "P2", "value":"P2", "esfilter": {"term": {"blocked_by": 1080337}}}
+						{"name": "P1", "value":"P1", "esfilter": {"term": {"blocked_by": 1080337}}},
+						{"name": "P2", "value":"P2", "esfilter": {"term": {"blocked_by": 1107999}}}
 					]
 				}
 			]

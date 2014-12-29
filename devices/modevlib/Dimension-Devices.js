@@ -41,8 +41,7 @@ if (!Mozilla) var Mozilla = {"name": "Mozilla", "edges": []};
 					"edges": [
 						{"name": "P1", "value":"P1", "esfilter": {"term": {"blocked_by": 1107999}}},
 						{"name": "P2", "value":"P2", "esfilter": {"term": {"blocked_by": 1080337}}},
-						{"name": "devices", "value":"devices", "esfilter": {"term": {"blocked_by": 1054172}}}
-
+						{"name": "Woodduck", "value":"Woodduck", "esfilter": {"term": {"blocked_by": 1054172}}}
 					]
 				}
 			]

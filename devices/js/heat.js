@@ -44,9 +44,9 @@ function getComponentDetails(comp) {
 // SHOW COUNT FOR ONE COMPONENT
 function showComponent(detail, showTYPE) {
 	var TEMPLATE = new Template('<div class="blocker">' +
-		'<div class="component">{{component}}</div>' +
 		'<div class="componentmanager">{{manager}}</div>' +
 		'<div class="componentowner">{{owner}}</div>' +
+		'<div class="component">{{component}}</div>' +
 		'{{projectDetail}}' +
 		'</div>');
 

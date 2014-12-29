@@ -35,27 +35,29 @@
 }
 .component {
     font-family: Arial, Helvetica, sans-serif;
-    font-weight: bold;
+    /*font-weight: bold;*/
+    font-style: italic;
+    font-size: 70%;
     color:black;
-    display: inline-block;
-    padding: 10px 10px 0px;
+    /*display: inline-block;*/
+    padding: 0 10px 0;
     text-align: center;
 }
 
 .componentowner {
     color:black;
     font-weight: bold;
-    font-size: 70%;
-    font-style: italic;
-    padding: 0 10px 0px;
+    /*font-size: 70%;*/
+    /*font-style: italic;*/
+    padding: 0 10px 0;
 }
 
 .componentmanager {
     color:black;
     font-weight: bold;
-    font-size: 70%;
-    font-style: italic;
-    padding: 0 10px 0px;
+    /*font-size: 70%;*/
+    /*font-style: italic;*/
+    padding: 0 10px 0;
 }
 
 
@@ -155,7 +157,7 @@ table.grid td div.small_unassigned {
 
 
 #noms {
-    background-color: #56C5FF;
+
 }
 #triage {
     background-color: #008287;

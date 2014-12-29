@@ -110,6 +110,8 @@
 			Age: <div style="vertical-align:middle;height:15px; width:150px; background: -moz-linear-gradient(left, #009F00,#699B00,  #CA7900,#954000, #A50303);position: relative;display:inline-block;"><div style="top:-3px;left:1px;color:white;position: absolute;font-size: 15px">New</div><div style="top:-3px;right:1px;color:white;position: absolute;font-size: 15px">7days+</div></div><br>
 			Unassigned Bugs:<div style="display:inline-block;bottom:0;width: 0;height: 0; border-style: solid; border-width: 0 0 15px 15px; border-color: transparent transparent #000000 transparent;"></div>
 		</div>
+		<div id="noms"></div>
+		<hr>
 		<div id="blockers"></div>
 	</div>
 	<div class="footer">
@@ -140,22 +142,26 @@
 					"from": "bugs",
 					"select": [
 						"bug_id",
+						"cf_blocking_b2g",
 						{"name":"blocked_by", "value":"blocked"}
 					],
 					"esfilter":	{"and": [
 						{"or":Mozilla.Devices.Partners.edges.select("esfilter")},
+						Mozilla.Devices.Blockers.esfilter,
 						Mozilla.BugStatus.Open.esfilter,
 						Mozilla.CurrentRecords.esfilter
 					]}
 				}))).list;
 
-				allSpecial = (yield (Qb.calc2List({
-					"from":allSpecial,
-					"select":[{"name":"bug_list", "value":"bug_id", "aggregate":"list"}],
-					"edges":[
-						{"name":"Partner", "domain":Mozilla.Devices.Partners.getDomain()}
-					]
-				}))).list;
+				allSpecial = Mozilla.Devices.Partners.edges.map(function(e){
+					return {
+						"Partner": e,
+						"bug_list": allSpecial.filter({"and":[
+							Mozilla.Devices.Blockers.esfilter,
+							e.esfilter
+						]}).select("bug_id")
+					}
+				})
 			});
 
 			a = Log.action("Get Bug Details", true);
@@ -175,6 +181,7 @@
 				"esfilter":	{"and": [
 					{"or":[
 						Mozilla.Devices.Blockers.esfilter,
+						Mozilla.Devices.Nominations.esfilter,
 						{"or":Mozilla.Devices.Partners.edges.select("esfilter")},
 					]},
 					Mozilla.BugStatus.Open.esfilter,
@@ -184,7 +191,7 @@
 			}));
 			Log.actionDone(a);
 
-			var components = yield(Q({
+			var blocker_components = yield(Q({
 				"from": allDetails,
 				"select": [
 					{"name": "show", "value": 'bug_id', "aggregate": "exists"},
@@ -197,22 +204,56 @@
 				"edges": [
 					{"name":"component", "value":'component=="general" ? component+" ("+product+")" : component'},
 					{"name": "project", "domain": Mozilla.Devices.Release.getDomain()}
-				]
+				],
+				"where": Mozilla.Devices.Blockers.esfilter
 			}));
 
 
 			$("#blockers").html("");
-			components.cube.forall(function (component, i) {
+			blocker_components.cube.forall(function (component, i) {
 				var total = aMath.SUM( component.select("count"));
 				if (total > 0) {
 					component.forall(function (project, j) {
-						project.component = components.edges[0].domain.partitions[i].name;
-						project.project = components.edges[1].domain.partitions[j].name;
+						project.component = blocker_components.edges[0].domain.partitions[i].name;
+						project.project = blocker_components.edges[1].domain.partitions[j].name;
 						project.total = total;
 						project.additionalClass = "";
 					});
 					var blockerHTML = showComponent(component, showBlocker);
 					$("#blockers").append(blockerHTML);
+				}//endif
+			});
+
+			var noms_components = yield(Q({
+				"from": allDetails,
+				"select": [
+					{"name": "show", "value": 'bug_id', "aggregate": "exists"},
+					{"name": "count", "value": "bug_id", "aggregate": "count"},
+					{"name": "bugs", "value": "bug_id", "aggregate": "array"},
+					{"name": "age", "value": "Date.now().subtract(Date.newInstance(modified_ts)).divideBy(Duration.DAY)", "aggregate": "maximum"},
+					{"name": "unassignedCount", "value": '(assigned_to=="nobody@mozilla.org" ? 1 : 0)', "aggregate": "sum"},
+					{"name": "unassignedBugs", "value": '(assigned_to=="nobody@mozilla.org" ? bug_id : null)', "aggregate": "array"}
+				],
+				"edges": [
+					{"name":"component", "value":'component=="general" ? component+" ("+product+")" : component'},
+					{"name": "project", "domain": Mozilla.Devices.Release.getDomain()}
+				],
+				"where": Mozilla.Devices.Nominations.esfilter
+			}));
+
+
+			$("#noms").html("");
+			noms_components.cube.forall(function (component, i) {
+				var total = aMath.SUM( component.select("count"));
+				if (total > 0) {
+					component.forall(function (project, j) {
+						project.component = blocker_components.edges[0].domain.partitions[i].name;
+						project.project = blocker_components.edges[1].domain.partitions[j].name;
+						project.total = total;
+						project.additionalClass = "";
+					});
+					var blockerHTML = showComponent(component, showBlocker);
+					$("#noms").append(blockerHTML);
 				}//endif
 			});
 
@@ -274,7 +315,7 @@
 			var blockerHTML = showSummary("Blockers", GUI.state.team.getSelectedParts(), totals, grandTotal, specialBlockers, showBlocker);
 			$("#totals").html(blockerHTML);
 
-			addProjectClickers(components);
+			addProjectClickers(blocker_components);
 			showLastUpdated();
 		};
 

@@ -179,31 +179,33 @@ function* calc2Tree(query){
 			var edge = edges[f];
 
 
-			if (edge.test || edge.range){
+			if (edge.test || edge.range) {
 				//MULTIPLE MATCHES EXIST
-				var matches= edge.domain.getMatchingParts(row);
+				var matches = edge.domain.getMatchingParts(row);
 
-				if (matches.length == 0){
+				if (matches.length == 0) {
 					edge.outOfDomainCount++;
-					if (edge.allowNulls){
-						for(t = results.length; t--;){
+					if (edge.allowNulls) {
+						for (t = results.length; t--;) {
 							results[t][f] = edge.domain.NULL;
 						}//for
-					} else{
+					} else {
 						continue FROM;
 					}//endif
-				} else{
+				} else {
 					//WE MULTIPLY THE NUMBER OF MATCHES TO THE CURRENT NUMBER OF RESULTS (SQUARING AND CUBING THE RESULT-SET)
-					for(t = results.length; t--;){
+					for (t = results.length; t--;) {
 						result = results[t];
 						result[f] = matches[0];
-						for(var p = 1; p < matches.length; p++){
+						for (var p = 1; p < matches.length; p++) {
 							result = result.copy();
 							results.push(result);
 							result[f] = matches[p];
 						}//for
 					}//for
 				}//endif
+//			}else if (edge.domain.isFacet){
+//
 			} else{
 				var v = edge.calc(row, null);
 

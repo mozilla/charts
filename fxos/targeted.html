@@ -6,7 +6,6 @@
 <HEAD>
 	<title>Targeted - FxOS</title>
 	<script type="text/javascript">function importScript(dep, func){if (func!==undefined) func();}</script>
-	<script type="text/javascript" src="modevlib/Settings.js"></script>
 	<script type="text/javascript" src="modevlib/rest/BugzillaClient.js"></script>
 	<link type="text/css" rel="stylesheet" href="js/blockers.css"/>
 	<script type="text/javascript" src="modevlib/util/aUtil.js"></script>
@@ -26,8 +25,9 @@
 	<script type="text/javascript" src="modevlib/collections/aRelation.js"></script>
 	<script type="text/javascript" src="modevlib/math/aMath.js"></script>
 	<script type="text/javascript" src="modevlib/MozillaPrograms.js"></script>
-	<script type="text/javascript" src="modevlib/util/CNV.js"></script>
+	<script type="text/javascript" src="modevlib/util/convert.js"></script>
 	<script type="text/javascript" src="modevlib/charts/aColor.js"></script>
+	<script type="text/javascript" src="modevlib/Settings.js"></script>
 
 	<script type="text/javascript" src="modevlib/util/aTemplate.js"></script>
 	<script type="text/javascript" src="lib/jquery.js"></script>
@@ -172,7 +172,7 @@
 			var milestoneFilter ={"and":GUI.state.milestone.getSelectedParts().map(function(p){
 				return p.Targeted.esfilter;
 			})};
-			var milestoneFunc = CNV.esFilter2function(milestoneFilter);
+			var milestoneFunc = convert.esFilter2function(milestoneFilter);
 			allDetails.list.forall(function(v){
 				v.isTargeted = milestoneFunc(v);
 			});

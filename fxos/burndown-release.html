@@ -6,7 +6,6 @@
 <HEAD>
 	<title>Release Burndown</title>
 	<script type="text/javascript">function importScript(dep, func){if (func!==undefined) func();}</script>
-	<script type="text/javascript" src="modevlib/Settings.js"></script>
 	<script type="text/javascript" src="modevlib/MozillaPrograms.js"></script>
 	<script type="text/javascript" src="modevlib/rest/BugzillaClient.js"></script>
 	<script type="text/javascript" src="modevlib/util/aUtil.js"></script>
@@ -26,7 +25,7 @@
 	<script type="text/javascript" src="modevlib/util/aHTML.js"></script>
 	<script type="text/javascript" src="modevlib/collections/aArray.js"></script>
 	<script type="text/javascript" src="lib/jquery.js"></script>
-	<script type="text/javascript" src="modevlib/util/CNV.js"></script>
+	<script type="text/javascript" src="modevlib/util/convert.js"></script>
 	<script type="text/javascript" src="modevlib/util/aDate.js"></script>
 	<script type="text/javascript" src="modevlib/collections/aQueue.js"></script>
 	<script type="text/javascript" src="modevlib/collections/aSet.js"></script>
@@ -188,6 +187,7 @@
 	<script type="text/javascript" src="modevlib/main.js"></script>
 	<script type="text/javascript" src="modevlib/Dimension.js"></script>
 	<script type="text/javascript" src="modevlib/charts/aColor.js"></script>
+	<script type="text/javascript" src="modevlib/Settings.js"></script>
 	<script type="text/javascript" src="modevlib/qb/ESQuery.js"></script>
 	<script type="text/javascript" src="modevlib/gui/GUI.js"></script>
 	<script type="text/javascript" src="modevlib/charts/aChart.js"></script>
@@ -573,7 +573,7 @@ importScript([
 			releases.forall(function (m) {
 				var i = releaseTotals.edges[0].domain.getPartByKey(m.name).dataIndex;
 
-				var totalButton = $("#" + CNV.String2JQuery(m.name + "Total"));
+				var totalButton = $("#" + convert.String2JQuery(m.name + "Total"));
 				totalButton.click(function () {
 					Thread.run(function*() {
 						var buglist = (yield (ESQuery.run({
@@ -593,7 +593,7 @@ importScript([
 				});
 
 				releaseTotals.edges[1].domain.partitions.forall(function (t, i) {
-					$("#" + CNV.String2JQuery(m.name + t.name)).click(function () {
+					$("#" + convert.String2JQuery(m.name + t.name)).click(function () {
 						Thread.run(function*() {
 							var buglist = (yield (ESQuery.run({
 								"from": "bugs",

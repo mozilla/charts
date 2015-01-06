@@ -608,13 +608,13 @@ aChart.showScatter=function(params){
 
 
 		var sheetButtonID=divName+"-showSheet";
-		var html='<div id='+CNV.String2Quote(sheetButtonID)+' class="toolbutton" style="right:3;bottom:3" title="Show Table"><img src="'+Settings.imagePath+'/Spreadsheet.png"></div>';
+		var html='<div id='+convert.String2Quote(sheetButtonID)+' class="toolbutton" style="right:3;bottom:3" title="Show Table"><img src="'+Settings.imagePath+'/Spreadsheet.png"></div>';
 
 
 		$("#"+divName).append(html);
 		$("#"+sheetButtonID).click(function(){
 			var oldHtml=$("#"+params.sheetDiv).html();
-			var newHtml=CNV.Cube2HTMLTable(chartCube);
+			var newHconvert=CNV.Cube2HTMLTable(chartCube);
 
 			if (oldHtml!=""){
 				$("#"+params.sheetDiv).html("");
@@ -929,13 +929,13 @@ aChart.show=function(params){
 
 
 		var sheetButtonID=divName+"-showSheet";
-		var html='<div id='+CNV.String2Quote(sheetButtonID)+' class="toolbutton" style="right:3;bottom:3" title="Show Table"><img src="'+Settings.imagePath+'/Spreadsheet.png"></div>';
+		var html='<dconvertid='+CNV.String2Quote(sheetButtonID)+' class="toolbutton" style="right:3;bottom:3" title="Show Table"><img src="'+Settings.imagePath+'/Spreadsheet.png"></div>';
 
 
 		$("#"+divName).append(html);
 		$("#"+sheetButtonID).click(function(){
 			var oldHtml=$("#"+params.sheetDiv).html();
-			var newHtml=CNV.Cube2HTMLTable(chartCube);
+			convert newHtml=CNV.Cube2HTMLTable(chartCube);
 
 			if (oldHtml!=""){
 				$("#"+params.sheetDiv).html("");

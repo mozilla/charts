@@ -6,7 +6,7 @@
 
 importScript("../MozillaPrograms.js");
 importScript("../debug/aLog.js");
-importScript("../util/CNV.js");
+importScript("../util/convert.js");
 
 
 ProgramFilter = function(indexName){
@@ -17,7 +17,7 @@ ProgramFilter = function(indexName){
 	this.isFilter=true;
 };
 
-ProgramFilter.allPrograms = CNV.Table2List(MozillaPrograms);
+ProgramFilter.allProgramconvert CNV.Table2List(MozillaPrograms);
 
 ProgramFilter.prototype.makeFilter = function(indexName, selectedPrograms){
 	indexName=nvl(indexName, this.indexName);

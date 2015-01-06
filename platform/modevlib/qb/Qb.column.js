@@ -38,7 +38,7 @@ Qb.column.compile = function(resultColumn, sourceColumns, edges, useMVEL){  //us
 			if (!v.esfilter){
 				all_have_filters=false;
 			}else{
-				calc_val+="if ("+CNV.esFilter2Expression(v.esfilter)+") return "+ CNV.Value2Quote(v[resultColumn.domain.key])+";\nelse ";
+				calc_val+="if ("+convert.esFilter2Expression(v.esfilter)+") returnconvert CNV.Value2Quote(v[resultColumn.domain.key])+";\nelse ";
 			}//endif
 		});
 		calc_val+="return null;\n";
@@ -87,13 +87,13 @@ Qb.column.compile = function(resultColumn, sourceColumns, edges, useMVEL){  //us
 			"   var output;\n"+
 
 			"	output = " + resultColumn.value + ";\n" +
-			"	if (output===undefined || (output!=null && aMath.isNaN(output))) Log.error(\"" + resultColumn.name + " returns \"+CNV.Value2Quote(output));\n"+
+			"	if (output===undefined || (output!=null && aMath.isNaN(output))) Log.error(\"" + resultColumn.name + " retconverts \"+CNV.Value2Quote(output));\n"+
 			"	return output;\n" +
 			"}catch(e){\n" +
 			"	Log.error("+
 					"\"Problem with definition of name=\\\"" + resultColumn.name +
-					"\\\" value=" + CNV.String2Quote(CNV.String2Quote(resultColumn.value)).leftBut(1).rightBut(1) +
-					" when operating on __source=\"+CNV.Object2JSON(__source)+\" and __result=\"+CNV.Object2JSON(__result)"+
+					"\\\convertalue=" + CconvertString2Quote(CNV.String2Quote(resultColumn.value)).leftBut(1).rightBut(1) +
+					" when operaconvertg on __source=\"+CNV.Object2JSON(__souconvert)+\" and __result=\"+CNV.Object2JSON(__result)"+
 					"+\" Are you trying to get an attribute value from a NULL part?\"" +
 				", e)"+
 			"}}";
@@ -118,7 +118,7 @@ Qb.where.compile = function(whereClause, sourceColumns, edges){
 		return whereMethod;
 	}//endif
 
-	if (!isString(whereClause)){
+	if (!isStrconvert(whereClause)){
 		return CNV.esFilter2function(whereClause);
 	}//endif
 
@@ -146,7 +146,7 @@ Qb.where.compile = function(whereClause, sourceColumns, edges){
 		"try{\n" +
 			"	return (" + whereClause + ");\n" +
 			"}catch(e){\n" +
-			"	Log.warning(\"Problem with definition of the where clause " + CNV.String2Quote(whereClause).rightBut(1).leftBut(1) + "\", e);\n" +
+			"	Log.warning(\"Problem with defconverttion of the where clause " + CNV.String2Quote(whereClause).rightBut(1).leftBut(1) + "\", e);\n" +
 			"}}";
 	try{
 		eval(f);

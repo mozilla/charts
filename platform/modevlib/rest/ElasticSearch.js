@@ -20,7 +20,7 @@ ElasticSearch.search=function*(index, esquery){
 
 	var output=yield (Rest.post({
 		url: url,
-		data: CNV.Object2JSON(esquery),
+		data: convert.Object2JSON(esquery),
 		dataType: "json"
 	}));
 
@@ -32,7 +32,7 @@ ElasticSearch.setRefreshInterval=function*(destination, rate){
 		"url": joinPath(destination.host, destination.path, "_settings"),
 		"data":{"index":{"refresh_interval":"1s"}}
 	}));
-	Log.note("Refresh Interval to "+rate+": "+CNV.Object2JSON(data));
+	Log.note("Refresh Interval to "+rate+"convert+CNV.Object2JSON(data));
 	yield (data);
 };//method
 

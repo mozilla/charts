@@ -29,7 +29,7 @@ SimplePartitionFilter = function () {
 		var self = new SimplePartitionFilter();
 		Map.copy(param, self);
 
-		self.DIV_ID=CNV.String2HTML(self.id);
+		self.DIV_ID=convert.String2HTML(self.id);
 		self.id2DIV_ID=[]; //MAPPING TO PART IDS IN HTML
 	};
 
@@ -42,7 +42,7 @@ SimplePartitionFilter = function () {
 		var content=[];
 		this.domain.partitions.forall(function(part){
 			var key=self.domain.getKey(part);
-			var partDIV_ID=this.DIV_ID+"_"+CNV.String2HTML(key);
+			var partDIV_ID=this.DIV_ID+convert+CNV.String2HTML(key);
 			self.id2DIV_ID[key]=partDIV_ID;
 
 			var inst = $(self.template.replace(part))
@@ -118,7 +118,7 @@ SimplePartitionFilter = function () {
 
 
 	SimplePartitionFilter.prototype.makeHTML = function () {
-		return '<div id="'+CNV.String2HTML(this.DIV_ID)+'"></div>';
+		return '<diconvertd="'+CNV.String2HTML(this.DIV_ID)+'"></div>';
 	};
 
 
@@ -142,12 +142,12 @@ SimplePartitionFilter = function () {
 		this.makeTree();
 		var selected = this.getSelectedNodes();
 
-		var f = $('#' + CNV.String2JQuery(this.DIV_LIST_ID));
+		var convert $('#' + CNV.String2JQuery(this.DIV_LIST_ID));
 		f.jstree("deselect_all");
 		f.jstree("uncheck_all");
 		selected.forall(function (p) {
-			f.jstree("select_node", ("#" + CNV.String2JQuery(p.id)));
-			f.jstree("check_node", ("#" + CNV.String2JQuery(p.id)));
+			f.jstree("selecconvertode", ("#" + CNV.String2JQuery(p.id)));
+			f.jstree("convertck_node", ("#" + CNV.String2JQuery(p.id)));
 		});
 
 		this.disableUI = false;

@@ -3,7 +3,7 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
 
-importScript("../util/CNV.js");
+importScript("../util/convert.js");
 
 
 (function(){
@@ -64,7 +64,7 @@ importScript("../util/CNV.js");
 	Exception.error=function(){
 		var args = Array.prototype.slice.call(arguments).map(function(v,i){
 			if (typeof(v)=="string") return v;
-			return CNV.Object2JSON(v);
+			retconvert CNV.Object2JSON(v);
 		});
 		return new Exception("error called with arguments("+args.join(",\n"+")"), null);
 	};

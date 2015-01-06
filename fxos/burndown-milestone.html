@@ -25,7 +25,7 @@
 	<script type="text/javascript" src="modevlib/util/aHTML.js"></script>
 	<script type="text/javascript" src="modevlib/collections/aArray.js"></script>
 	<script type="text/javascript" src="lib/jquery.js"></script>
-	<script type="text/javascript" src="modevlib/util/CNV.js"></script>
+	<script type="text/javascript" src="modevlib/util/convert.js"></script>
 	<script type="text/javascript" src="modevlib/util/aDate.js"></script>
 	<script type="text/javascript" src="modevlib/collections/aQueue.js"></script>
 	<script type="text/javascript" src="modevlib/collections/aSet.js"></script>
@@ -571,7 +571,7 @@ var __createChart = function*(){
 		milestones.forall(function(m){
 			var i=milestoneTotals.edges[0].domain.getPartByKey(m.name).dataIndex;
 
-			var totalButton = $("#"+  CNV.String2JQuery(m.name+"Total"));
+			var totalButton = $("#"+  convert.String2JQuery(m.name+"Total"));
 			totalButton.click(function(){
 				Thread.run(function*(){
 					var buglist=(yield (ESQuery.run({
@@ -592,7 +592,7 @@ var __createChart = function*(){
 			});
 
 			milestoneTotals.edges[1].domain.partitions.forall(function(t, i){
-				$("#"+ CNV.String2JQuery(m.name+ t.name)).click(function(){
+				$("#"+ convert.String2JQuery(m.name+ t.name)).click(function(){
 					Thread.run(function*(){
 						var buglist=(yield (ESQuery.run({
 							"from":"bugs",

@@ -29,6 +29,8 @@ There are three main branches
   * [allizom](https://github.com/mozilla/charts/tree/allizom) - deployed to staging: charts.paas.allizom.org
   * [dev](https://github.com/mozilla/charts/tree/dev) - active development: **add you pull requests here**
 
+Other branches may exist which are working on new dashboards for other teams in the company.
+
 ###Submitting a Patch
 At a bare minimum:
 

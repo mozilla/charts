@@ -44,7 +44,7 @@ $(document).ready(function () {
 
 	function dynamicStyle() {
 		var styles = [];
-		$(this).find("." + INDICATOR_CLASS).each(function () {
+		$(this).find("[dynamic-style]").each(function () {
 			var self = $(this);
 			var rules = parseCSS(self.attr("dynamic-style"));
 			var defaultStyle = CNV.style2Object(self.attr("style"));
@@ -60,9 +60,7 @@ $(document).ready(function () {
 			});
 
 			//CLEANUP
-			self.removeClass(INDICATOR_CLASS);
-			self.attr("style", "");
-			self.attr("dynamic-style", "");
+			self.removeClass(INDICATOR_CLASS).removeAttr("style").removeAttr("dynamic-style");
 		});
 		$("head").append('"<style type="text/css">' + styles.join("\n") + "</style>");
 		return this;
@@ -70,6 +68,37 @@ $(document).ready(function () {
 
 	$.fn.updateDynamicStyle = dynamicStyle;
 	dynamicStyle.apply($("body"));
+
+
+	function dynamicState(){
+		$(this).find("[dynamic-state]").each(function(){
+			//DO NOT PROCESS MORE THAN ONCE
+			$(this).attr("dynamic-state-cycle", $(this).attr("dynamic-state")).removeAttr("dynamic-state");
+		}).click(function(e){
+			//FIND THE STATE LOOP
+			var states = CNV.JSON2Object($(this).attr("dynamic-state-cycle"));
+
+			//FIND THE CURRENT STATE
+			var curr = $(this).attr("class").split(" ");
+			for (var i = 0; i < states.length; i++) {
+				if (curr.contains(states[i])) break;
+			}//for
+			i = i % states.length;
+			var j = (i+1)% states.length;
+
+			$(this).removeClass(states[i]).addClass(states[j]);
+		});
+	}
+
+	$.fn.updateDynamicState = dynamicState;
+	dynamicState.apply($("body"));
+
+
+	$.fn.updateDynamic = function updateDynamic(){
+		dynamicStyle.apply(this);
+		dynamicState.apply(this)
+	};
+
+
+
 });
-
-

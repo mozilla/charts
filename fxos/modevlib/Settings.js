@@ -57,6 +57,7 @@ importScript("charts/aColor.js");
 			"raw_telemetry" : {"style" : {"color" : "black", "background-color" : yellow}, "host" : "http://klahnakoski-es.corp.tor1.mozilla.com:9200", "path" : "/raw_telemetry/data"},
 
 			"talos" : {"style" : {"color" : "black", "background-color" : yellow}, "host" : "http://klahnakoski-es.corp.tor1.mozilla.com:9200", "path" : "/talos/test_results"},
+			"kyle_talos" : {"style" : {"color" : "black", "background-color" : yellow}, "host" : "http://192.168.0.98:9200", "path" : "/talos/test_results"},
 			"local_talos" : {"style" : {"color" : "black", "background-color" : yellow}, "host" : "http://localhost:9200", "path" : "/talos/test_results"},
 			"public_talos" : {"style" : {"color" : "black", "background-color" : yellow}, "host" : "http://67.55.30.33:9201", "path" : "/talos/test_results"},
 

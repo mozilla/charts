@@ -152,6 +152,20 @@ String.prototype.ltrim=function(c){
 	return this.substring(0, e);
 };//method
 
+//RETURN STRING WITH GIVEN CHARACTERS MAPPED
+String.prototype.translate=function translate(mapper){
+	var output=[];
+	for(var i=0;i<this.length;i++){
+		var c= this[i];
+		var d = mapper[c];
+		if (d===undefined){
+			output.append(c);
+		}else{
+			output.append(d)
+		}//endif
+	}//for
+	return output.join("");
+};
 
 function isString(value){
 	return (typeof value)=="string";

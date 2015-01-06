@@ -1,6 +1,7 @@
 importScript("../collections/aArray.js");
 importScript("aUtil.js");
 importScript("aString.js");
+importScript("CNV.js");
 
 
 var Template = function Template(template){
@@ -23,13 +24,16 @@ var Template = function Template(template){
 	};
 	Template.prototype.replace = Template.prototype.expand;
 
+	///////////////////////////////////////////////////////////////////////////
+	// DEFINE TEMPLATE FUNCTIONS HERE
+	///////////////////////////////////////////////////////////////////////////
 	var FUNC = {};
 	FUNC.html = CNV.String2HTML;
-	FUNC.css = CNV.Object2style;
+	FUNC.style = CNV.Object2style;
+	FUNC.css = CNV.Object2CSS;
+	FUNC.attribute = CNV.value2HTMLAttribute;
 	FUNC.datetime = function(d, f){
-		if (f===undefined){
-			f="yyyy-MM-dd HH:mm:ss";
-		}//endif
+		f = nvl(f, "yyyy-MM-dd HH:mm:ss");
 		return d.format(f);
 	};
 
@@ -92,7 +96,7 @@ var Template = function Template(template){
 			if (e < 0) return output;
 			var path = output.substring(s + 2, e).toLowerCase().split("|");
 			var key = path[0];
-			var val = map[key];
+			var val = Map.get(map, key);
 			for (var p = 1; p < path.length; p++) {
 				var func = path[p].split("(")[0];
 				if (FUNC[func] === undefined) {
@@ -105,9 +109,20 @@ var Template = function Template(template){
 				}//endif
 			}//for
 
-			val = "" + val;
+			if (val === undefined) {
+				val = "undefined"
+			} else if (val == null) {
+				val = "";  //NULL IS NOTHING
+			} else if (typeof(val)=="string"){
+				//do nothing
+			}else if (val.toString){
+				val=val.toString()
+			}else{
+				val = "" + val;
+			}//endif
+
 			if (val !== undefined && (val instanceof String || typeof(val) == "string" || (typeof map[key]) != "object")) {
-				output = output.replaceAll(output.substring(s, e + 2), val);
+				output = output.substring(0, s) + val + output.substring(e + 2);
 				e = s + val.length;
 			} else {
 				//Log.debug()

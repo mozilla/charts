@@ -248,6 +248,8 @@ ESQuery.INDEXES = Settings.indexes;
 			Array.newInstance(query.select).length == 1 &&  //ONLY ONE select
 				Array.newInstance(query.select)[0].aggregate == "count" &&  //IT MUST BE COUNTING ONLY
 				Array.newInstance(query.edges).length == 2 &&
+				query.edges[0].value!==undefined &&
+				query.edges[1].value!==undefined &&
 				MVEL.isKeyword(query.edges[0].value) &&
 				MVEL.isKeyword(query.edges[1].value) &&
 				(query.edges[0].domain === undefined || query.edges[0].domain.type == "default") &&
@@ -1547,9 +1549,9 @@ var ESFilter = {};
 ESFilter.simplify = function(esfilter){
 	var output = ESFilter.fastAndDirtyNormalize(esfilter);
 	if (output===undefined){
-		return ESFilter.TrueFilter;
+		return ESQuery.TrueFilter;
 	}else if (output===false){
-		return {"not": ESFilter.TrueFilter}
+		return {"not": ESQuery.TrueFilter}
 	}else{
 		return output;
 	}//endif
@@ -1735,6 +1737,17 @@ ESFilter.fastAndDirtyNormalize = function(esfilter){
 			return conditions[0];
 		}else{
 			return {"and": conditions}
+		}//endif
+	} else if (esfilter.or){
+		var conditions = esfilter.or.map(ESFilter.fastAndDirtyNormalize);
+		if (conditions.length==0) {
+			return false;
+		}else if (conditions.filter(function(v){return v===undefined;}).length>0){
+			return undefined;
+		}else if (conditions.length==1){
+			return conditions[0];
+		}else{
+			return {"or": conditions}
 		}//endif
 	}//endif
 

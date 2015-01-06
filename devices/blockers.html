@@ -332,8 +332,8 @@ importScript('js/main_lib.js', function(){
 			"count": aMath.SUM(totals.cube.select("count")),
 			"unassignedCount": aMath.SUM(totals.cube.select("unassignedCount")),
 			"age": aMath.MAX(totals.cube.select("age")),
-			"bugs": totals.from.list.select("bug_id"),
-			"unassignedBugs": totals.from.list.filter(Mozilla.Devices.Unassigned.esfilter).select("bug_id"),
+			"bugs": Array.union(totals.cube.select("bugs")),
+			"unassignedBugs": 0,//totals.from.list.filter(Mozilla.Devices.Unassigned.esfilter).select("bug_id"),
 			"additionalClass": "project-summary"
 		};
 

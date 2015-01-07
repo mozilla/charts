@@ -6,7 +6,7 @@
 
 importScript("../MozillaPrograms.js");
 importScript("../debug/aLog.js");
-importScript("../util/convert.js");
+importScript("../util/CNV.js");
 
 
 ProgramFilter = function(indexName){

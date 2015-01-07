@@ -1,4 +1,4 @@
-importScript("../util/convert.js");
+importScript("../util/CNV.js");
 
 
 Color = function (L, h, s) {

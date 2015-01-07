@@ -573,7 +573,7 @@ importScript([
 			releases.forall(function (m) {
 				var i = releaseTotals.edges[0].domain.getPartByKey(m.name).dataIndex;
 
-				var totalButton = $("#" + convert.String2JQuery(m.name + "Total"));
+				var totalButton = $("#" + CNV.String2JQuery(m.name + "Total"));
 				totalButton.click(function () {
 					Thread.run(function*() {
 						var buglist = (yield (ESQuery.run({
@@ -593,7 +593,7 @@ importScript([
 				});
 
 				releaseTotals.edges[1].domain.partitions.forall(function (t, i) {
-					$("#" + convert.String2JQuery(m.name + t.name)).click(function () {
+					$("#" + CNV.String2JQuery(m.name + t.name)).click(function () {
 						Thread.run(function*() {
 							var buglist = (yield (ESQuery.run({
 								"from": "bugs",

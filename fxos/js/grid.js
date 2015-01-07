@@ -15,7 +15,7 @@ function addNumberClickers(cube, mainFilter) {
 	}).click(function (e) {
 			var id = $(this).attr("id");
 			var coord = id.rightBut(prefix.length).split("x").map(function (v) {
-				return convert.String2Integer(v);
+				return CNV.String2Integer(v);
 			});
 			var filter = {"and": cube.edges.map(function (edge, i) {
 				var part = edge.domain.partitions[coord[i]];

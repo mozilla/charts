@@ -317,7 +317,7 @@ importScript([
 		var sampleInterval = Duration.newInstance(GUI.state.sampleInterval);
 		var sampleMax = Date.newInstance(GUI.state.sampleMax).addDay();
 		var bug_ids = GUI.state.bugList.trim() == "" ? [] : GUI.state.bugList.split(",").map(function(v){
-			return convert.String2Integer(v.trim());
+			return CNV.String2Integer(v.trim());
 		});
 
 		var timeDomain = null;
@@ -387,9 +387,9 @@ importScript([
 				}));
 
 				if (milestones.length > 0) {
-					$("#title").html(r.list.map(convert.String2HTML).join("<br>") + "Milestone " + milestones.select("name").join(" and "));
+					$("#title").html(r.list.map(CNV.String2HTML).join("<br>") + "Milestone " + milestones.select("name").join(" and "));
 				} else {
-					$("#title").html(r.list.map(convert.String2HTML).join("<br>"));
+					$("#title").html(r.list.map(CNV.String2HTML).join("<br>"));
 				}//endif
 			});
 

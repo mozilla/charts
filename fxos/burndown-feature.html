@@ -316,6 +316,12 @@ importScript([
 		var sampleMin = Date.newInstance(GUI.state.sampleMin);
 		var sampleInterval = Duration.newInstance(GUI.state.sampleInterval);
 		var sampleMax = Date.newInstance(GUI.state.sampleMax).addDay();
+		var userFilter;
+		try {
+			userFilter = GUI.state.filter == "" ? {"match_all": {}} : CNV.JSON2Object(GUI.state.filter);
+		}catch(e){
+			userFilter =  {"match_all": {}};
+		}//try
 		var bug_ids = GUI.state.bugList.trim() == "" ? [] : GUI.state.bugList.split(",").map(function(v){
 			return CNV.String2Integer(v.trim());
 		});
@@ -423,7 +429,8 @@ importScript([
 			"timeDomain" : timeDomain,
 			"currOpenBugs" : currOpenBugs,
 			"currTotalBugs" : currTotalBugs,
-			"currFeatureFilter" : currFeatureFilter
+			"currFeatureFilter" : currFeatureFilter,
+			"userFilter" : userFilter
 		});
 	};
 
@@ -438,6 +445,12 @@ importScript([
 			var sampleMin = Date.newInstance(GUI.state.sampleMin);
 			var sampleInterval = Duration.newInstance(GUI.state.sampleInterval);
 			var sampleMax = Date.newInstance(GUI.state.sampleMax).addDay();
+			var userFilter;
+			try {
+				userFilter = GUI.state.filter == "" ? {"match_all": {}} : CNV.JSON2Object(GUI.state.filter);
+			}catch(e){
+				userFilter =  {"match_all": {}};
+			}//try
 
 			var milestones = GUI.state.milestone.getSelectedParts();
 			var milestoneFilter = null;
@@ -470,7 +483,8 @@ importScript([
 				"timeDomain" : {"type" : "time", "min" : sampleMin, "max" : sampleMax, "interval" : sampleInterval},
 				"currOpenBugs" : currOpenBugs,
 				"currTotalBugs" : currTotalBugs,
-				"currFeatureFilter" : currFeatureFilter
+				"currFeatureFilter" : currFeatureFilter,
+				"userFilter" : userFilter
 			})
 
 		});
@@ -579,7 +593,10 @@ importScript([
 						"domain" : env.timeDomain
 					}
 				],
-				"where" : env.currFeatureFilter
+				"where" : {"and":[
+					env.currFeatureFilter,
+					env.userFilter
+				]}
 			}));
 
 			//CONVERT EDGE TO ATTRIBUTES
@@ -640,7 +657,10 @@ importScript([
 						"domain" : churnTimeDomain
 					}
 				],
-				"where" : env.currFeatureFilter
+				"where" : {"and":[
+					env.currFeatureFilter,
+					env.userFilter
+				]}
 			}));
 
 			a = Log.action("Make chart", true);
@@ -806,6 +826,7 @@ importScript([
 			{"id" : "sampleMin", "name" : "Start Date", "type" : "time", "default" : Date.eod().add("-6week")},
 			{"id" : "sampleMax", "name" : "End Date", "type" : "time", "default" : Date.today().ceilingWeek()},
 			{"id" : "sampleInterval", "name" : "Interval", "type" : "duration", "default" : "day"},
+			{"id" : "filter", "name" : "Filter", "type" : "string", "default" : ""},
 			{"id" : "hierarchyMode", "name" : "Dependencies", "type" : RadioFilter.newInstance({
 				"id" : "hierarchyMode",
 				"name" : "Dependencies",

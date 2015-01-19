@@ -1222,8 +1222,5 @@ Qb.drill=function(query, parts){
 
 	Q=calc2Cube;
 
-
-
-
 })();
 

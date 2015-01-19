@@ -825,6 +825,7 @@ importScript([
 							],
 							"esfilter" : {"and" : [
 								series2filter[series],
+								env.userFilter,
 								{"term" : {"date" : x}}
 							]}
 						})));

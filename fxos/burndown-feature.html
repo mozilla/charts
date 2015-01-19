@@ -370,7 +370,12 @@ importScript([
 
 			featureFilter = {"or" : features.select("esfilter")};
 			if (bug_ids.length > 0) featureFilter.or.append({"terms" : {"bug_id" : bug_ids}});
-			needed_fields = Array.union([NEEDED_FIELDS].appendArray(features.select("needed_fields")).appendArray(milestones.select("needed_fields")));
+			needed_fields = Array.union(
+				NEEDED_FIELDS,
+				features.select("needed_fields"),
+				milestones.select("needed_fields"),
+				CNV.esFilter2properties(userFilter)
+			);
 			timeDomain = {"type" : "time", "min" : sampleMin, "max" : sampleMax, "interval" : sampleInterval, "dateMarks" : dateMarks};
 			raw_data = yield(getRawDependencyData(featureFilter, timeDomain, needed_fields));
 		} else {
@@ -400,7 +405,12 @@ importScript([
 			});
 
 			featureFilter = {"terms" : {"bug_id" : bug_ids}};
-			needed_fields = Array.union([NEEDED_FIELDS].appendArray(features.select("needed_fields")).appendArray(milestones.select("needed_fields")));
+			needed_fields = Array.union(
+				NEEDED_FIELDS,
+				features.select("needed_fields"),
+				milestones.select("needed_fields"),
+				CNV.esFilter2properties(userFilter)
+			);
 			timeDomain = {"type" : "time", "min" : sampleMin, "max" : sampleMax, "interval" : sampleInterval, "dateMarks" : dateMarks};
 			raw_data = yield(getRawDependencyData(featureFilter, timeDomain, needed_fields));
 		}//endif
@@ -409,13 +419,15 @@ importScript([
 		var currFeatureFilter = GUI.state.hierarchyMode.getSimpleState() != "All dependencies" ? nvl(milestoneFilter, featureFilter) : {"match_all" : {}};
 		daily_data = yield (getDailyDependencies(raw_data, {"and":[
 			nvl(milestoneFilter, {"match_all" : {}}),
-			nvl(featureFilter, {"match_all" : {}})
+			nvl(featureFilter, {"match_all" : {}}),
+			userFilter
 		]}));
 
 		//LAST DAY WILL BE CONSIDERED CURRENT FEATURE LIST
 		var currOpenBugs = daily_data.cube.last().filter({"and" : [
 			{"term" : {"counted" : "Open"}},
-			currFeatureFilter
+			currFeatureFilter,
+			userFilter
 		]}).select("bug_id");
 
 		var currTotalBugs = daily_data.cube.last().filter({"and" : [
@@ -463,18 +475,21 @@ importScript([
 			var currFeatureFilter = GUI.state.hierarchyMode.getSimpleState() != "All dependencies" ? nvl(milestoneFilter, featureFilter) : {"match_all" : {}};
 			daily_data = yield (getDailyDependencies(raw_data, {"and":[
 				nvl(milestoneFilter, {"match_all" : {}}),
-				nvl(featureFilter, {"match_all" : {}})
+				nvl(featureFilter, {"match_all" : {}}),
+				userFilter
 			]}));
 
 			//LAST DAY WILL BE CONSIDERED CURRENT FEATURE LIST
 			var currOpenBugs = daily_data.cube.last().filter({"and" : [
 				{"term" : {"counted" : "Open"}},
-				currFeatureFilter
+				currFeatureFilter,
+				userFilter
 			]}).select("bug_id");
 
 			var currTotalBugs = daily_data.cube.last().filter({"and" : [
 				{"not" : {"term" : {"counted" : "none"}}},
-				currFeatureFilter
+				currFeatureFilter,
+				userFilter
 			]}).select("bug_id");
 
 			restOfCharting({
@@ -547,7 +562,8 @@ importScript([
 				"esfilter" : {"and" : [
 					Mozilla.BugStatus.Open.esfilter,
 					Mozilla.CurrentRecords.esfilter,
-					{"terms" : {"bug_id" : env.currOpenBugs}}
+					{"terms" : {"bug_id" : env.currOpenBugs}},
+					env.userFilter
 				]}
 			}));
 			Log.actionDone(a);
@@ -716,6 +732,7 @@ importScript([
 			var todayOpenBugs = daily_data.cube[env.TODAY.subtract(START_DATE).divideBy(Duration.DAY)]
 				.filter({"and":[
 					env.currFeatureFilter,
+					env.userFilter,
 					{"term" : {"counted" : "Open"}}
 				]})
 				.length;

@@ -44,6 +44,11 @@ var aSet=function(data){
 		return Map.getValues(this.map);
 	};
 
+	aSet.prototype.toArray=function(){
+		return Map.getValues(this.map);
+	};
+
+
 	aSet.prototype.contains=function(v){
 		return this.map[v]!==undefined;
 	};

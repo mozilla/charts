@@ -10,3 +10,4 @@ html/es/lib/jstree/_demo
 /docs/2.1 vs 2.0.xlsx
 /tests/__pycache__
 /tests/*.pyc
+/.env

@@ -115,6 +115,7 @@ importScript('js/main_lib.js', function(){
 		});
 
 		var temp = $("#category");
+		fillDevices(temp, allBugs, onPrivateCluster);
 		if (onPrivateCluster) {
 			temp.html(getCategoryHTML(Mozilla.Platform.Security, allBugs));
 
@@ -133,11 +134,8 @@ importScript('js/main_lib.js', function(){
 			temp.append(getCategoryHTML(Mozilla.Platform.Stability, allBugs));
 		}//endif
 
-		temp.append(getCategoryHTML(Mozilla.Platform["Release Tracking - Desktop"], allBugs));
-		temp.append(getCategoryHTML(Mozilla.Platform["Release Tracking - FirefoxOS"], allBugs));
-		temp.append(getCategoryHTML(Mozilla.Platform.Priority, allBugs));
 		temp.updateDynamic();
-		var table = $("#bug_list").html(bugDetails(allBugs.list)).find("table")[0];
+		var table = $("#bug_list").html(bugDetails(allBugs.list, Mozilla.Platform.Categories)).find("table")[0];
 		addTileClickers();
 		addRowClickers();
 		sorttable.makeSortable(table)

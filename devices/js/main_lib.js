@@ -18,7 +18,7 @@ importScript("../lib/sorttable/sorttable.js");
 
 importScript([
 	'../modevlib/Dimension-Bugzilla.js',
-	"../modevlib/Dimension-Platform.js",
+	"../modevlib/Dimension-Devices.js",
 	"../modevlib/charts/aColor.js",
 	"../modevlib/gui/dynamic.js",
 	"./util.js"

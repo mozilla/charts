@@ -170,27 +170,67 @@ function cleanupComponent(name){
 	return name;
 }
 
-function bugDetails(bugs){
+function bugDetails(bugs, categories){
+	// categories IS THE DIMENSION DEFINTION
 
-	var desk = Mozilla.Platform["Release Tracking - Desktop"];
-	var b2g = Mozilla.Platform["Release Tracking - FirefoxOS"];
+
 	bugs.forall(function(b){
 		b.component = cleanupComponent(b.component);
 		b.bugLink = Bugzilla.linkToBug(b.bug_id);
-		b.priority = getPartIndex(b, Mozilla.Platform.Priority);
-		b.security = getPartIndex(b, Mozilla.Platform.Security);
-		b.stability = match(b, Mozilla.Platform.Stability);
-		b.release = match(b, desk.Release);
-		b.beta = match(b, desk.Beta);
-		b.dev = match(b, desk.Aurora);
-		b.nightly = match(b, desk.Nightly);
-		b.b2g21 = match(b, b2g["2.1"]);
-		b.b2g22 = match(b, b2g["2.2"]);
 		b.assigned_to = b.assigned_to == "nobody@mozilla.org" ? "" : b.assigned_to;
-		b.overallPriority = -3 / b.release.order - 2 / b.beta.order - 1 / b.dev.order - 2 / b.security.order - 1 / b.priority.order - 2 / b.stability.order;
+
+		categories.edges.map(function(c){
+			if (c.edges){
+				c.edges.forall(function(e){
+					b[e.columnName] = match(b, e);
+				});
+
+			}else if (c.partitions){
+				b[c.columnName] = getPartIndex(b, c)				;
+			}else{
+				b[c.columnName] = match(b, c);
+			}//endif
+		});
 	});
 
-	bugs = Qb.sort(bugs, ["release.order", "overallPriority"]);
+
+
+	var header="";
+	var rows="";
+
+	//EXTRA COLUMNS
+	if (categories.extraColumns){
+		categories.extraColumns.forall(function(c){
+			header+='<th><div>'+c.name+'</div></th>';
+			rows+='<td><div class="bz_component">{{'+c.value+'|html}}</div></span></td>';
+		})
+	}//endif
+
+	//PARAMETERIZED INDICATOR COLUMNS
+	categories.edges.map(function(c){
+		if (c.edges){
+			c.edges.forall(function(e){
+				if (!e.columnName){
+					Log.error("Expecting a columnName field in dimension description.  (Used to add markup to bug records)")
+				}//endif
+				header+='<th><span class="indicator">'+e.name+'</span></th>';
+				rows +=	'<td style="vertical-align: middle"><span class="indicator" style="{{'+e.columnName+'.style|style}}">{{'+e.columnName+'.order}}</span></td>';
+			});
+
+		}else if (c.partitions){
+			if (!c.columnName){
+				Log.error("Expecting a columnName field in dimension description.  (Used to add markup to bug records)")
+			}//endif
+			header+='<th><span class="indicator">'+c.name+'</span></th>';
+			rows +=	'<td style="vertical-align: middle"><span class="indicator" style="{{'+c.columnName+'.style|style}}">{{'+c.columnName+'.order}}</span></td>';
+		}else{
+			if (!c.columnName){
+				Log.error("Expecting a columnName field in dimension description.  (Used to add markup to bug records)")
+			}//endif
+			header+='<th><span class="indicator">'+c.name+'</span></th>';
+			rows +=	'<td style="vertical-align: middle"><span class="indicator" style="{{'+c.columnName+'.style|style}}">{{'+c.columnName+'.order}}</span></td>';
+		}//endif
+	});
 
 	var output = new Template([
 		"<table class='table' style='width:auto'>",
@@ -199,15 +239,7 @@ function bugDetails(bugs){
 		"<th><div>Summary</div></th>",
 		'<th><div>Component</div></th>',
 		'<th><span>Owner</span></th>',
-		'<th><span class="indicator">Security</span></th>',
-		'<th><span class="indicator">Stability</span></th>',
-		'<th><span class="indicator">Release</span><span id="sorttable_sortfwdind">&#x25BE;</span></th>',
-		'<th><span class="indicator">Beta</span></th>',
-		'<th><span class="indicator">Dev</span></th>',
-		'<th><span class="indicator">Nightly</span></th>',
-		'<th><span class="indicator">2.1</span></th>',
-		'<th><span class="indicator">2.2</span></th>',
-		'<th><span class="indicator">Priority</span></th>',
+		header,
 		"</tr></thead>",
 		"<tbody>",
 		{
@@ -218,15 +250,7 @@ function bugDetails(bugs){
 				"<td><div id='{{bug_id}}_desc' class='desc'>[screened]</div></td>" ,
 				'<td><div class="bz_component">{{component|html}}</div></span></td>',
 				'<td><div class="email">{{assigned_to|html}}</div></span></td>',
-				'<td style="vertical-align: middle"><span class="indicator" style="{{security.style|style}}">{{security.order}}</span></td>',
-				'<td style="vertical-align: middle"><span class="indicator" style="{{stability.style|style}}">{{stability.order}}</span></td>',
-				'<td style="vertical-align: middle"><span class="indicator" style="{{release.style|style}}">{{release.order}}</span></td>',
-				'<td style="vertical-align: middle"><span class="indicator" style="{{beta.style|style}}">{{beta.order}}</span></td>',
-				'<td style="vertical-align: middle"><span class="indicator" style="{{dev.style|style}}">{{dev.order}}</span></td>',
-				'<td style="vertical-align: middle"><span class="indicator" style="{{nightly.style|style}}">{{nightly.order}}</span></td>',
-				'<td style="vertical-align: middle"><span class="indicator" style="{{b2g21.style|style}}">{{b2g21.order}}</span></td>',
-				'<td style="vertical-align: middle"><span class="indicator" style="{{b2g22.style|style}}">{{b2g22.order}}</span></td>',
-				'<td style="vertical-align: middle"><span class="indicator" style="{{priority.style|style}}">{{priority.order}}</span></td>',
+				rows,
 				"</tr>"
 			]
 		},
@@ -418,4 +442,66 @@ function setReleaseHTML(data){
 
 }//function
 
+
+function fillPlatform(temp, allBugs, onPrivateCluster){
+	if (onPrivateCluster) {
+		temp.html(getCategoryHTML(Mozilla.Platform.Security, allBugs));
+
+		//BIG HACK: INSERT STABILITY IN WITH SECURITY
+		var stabilityBugs = allBugs.list.filter(Mozilla.Platform.Stability.fullFilter);
+		if (stabilityBugs.length > 0) {
+			$("#Security_title").html("Security/Stability");
+			$("#Security_tiles").append(tile({
+				"name": Mozilla.Platform.Stability.name,
+				"bugs": stabilityBugs,
+				"style": nvl(Mozilla.Platform.Stability.style, {})
+			}));
+		}//endif
+	} else {
+		//PUBLIC CLUSTER HAS NO SEC. BUGS, SO GO STRAIGHT TO SHOWING THE STABILITY BUGS
+		temp.append(getCategoryHTML(Mozilla.Platform.Stability, allBugs));
+	}//endif
+
+	temp.append(getCategoryHTML(Mozilla.Platform["Release Tracking - Desktop"], allBugs));
+	temp.append(getCategoryHTML(Mozilla.Platform["Release Tracking - FirefoxOS"], allBugs));
+	temp.append(getCategoryHTML(Mozilla.Platform.Priority, allBugs));
+}
+
+function fillDevices(temp, allBugs, onPrivateCluster){
+	Mozilla.Devices.Categories.edges.forall(function(category){
+		temp.append(getCategoryHTML(category, allBugs));
+	});
+}
+
+
+function requiredFields(esfilter){
+	//THIS LOOKS INTO DIMENSION DEFINITIONS, AS WELL AS ES FILTERS
+
+	if (esfilter===undefined) return [];
+
+	var parts = nvl(esfilter.edges, esfilter.partitions, esfilter.and, esfilter.or);
+	if (parts){
+		var rf = requiredFields(esfilter.esfilter);
+		//A DIMENSION! - USE IT ANYWAY
+		return Array.union(parts.map(requiredFields).append(rf));
+	}//endif
+
+	if (esfilter.esfilter){
+		return requiredFields(esfilter.esfilter);
+	}else if (esfilter.not){
+		return requiredFields(esfilter.not);
+	}else if (esfilter.term){
+		return Object.keys(esfilter.term)
+	}else if (esfilter.terms){
+		return Object.keys(esfilter.terms)
+	}else if (esfilter.regexp){
+		return Object.keys(esfilter.regexp)
+	}else if (esfilter.missing){
+		return [esfilter.missing.field]
+	}else if (esfilter.exists){
+		return [esfilter.missing.field]
+	}else{
+		return []
+	}//endif
+}//method
 

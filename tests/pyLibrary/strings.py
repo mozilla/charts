@@ -280,9 +280,9 @@ def toString(val):
     if val == None:
         return ""
     elif isinstance(val, (dict, list, set)):
-        from pyLibrary.jsons import json_encoder
+        from pyLibrary.jsons.encoder import encode
 
-        return json_encoder(val, pretty=True)
+        return encode(val, pretty=True)
     elif hasattr(val, "__json__"):
         return val.__json__()
     elif isinstance(val, timedelta):

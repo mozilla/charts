@@ -12,14 +12,14 @@ from __future__ import division
 
 import json
 from math import floor
-import re
 import time
 import sys
 from datetime import datetime, date, timedelta
 from decimal import Decimal
+
 from pyLibrary.strings import utf82unicode
-from pyLibrary.dot.dicts import Dict
-from pyLibrary.dot.lists import DictList
+from pyLibrary.dot import Dict, DictList
+from pyLibrary.jsons import quote, ESCAPE_DCT, scrub
 
 json_decoder = json.JSONDecoder().decode
 
@@ -105,7 +105,7 @@ class cPythonJSONEncoder(object):
             return pretty_json(value)
 
         try:
-            scrubbed = json_scrub(value)
+            scrubbed = scrub(value)
             return unicode(self.encoder.encode(scrubbed))
         except Exception, e:
             from pyLibrary.debugs.logs import Log
@@ -210,74 +210,6 @@ def _dict2json(value, _buffer):
         _value2json(v, _buffer)
     append(_buffer, u"}")
 
-
-ESCAPE_DCT = {
-    u"\\": u"\\\\",
-    u"\"": u"\\\"",
-    u"\b": u"\\b",
-    u"\f": u"\\f",
-    u"\n": u"\\n",
-    u"\r": u"\\r",
-    u"\t": u"\\t",
-}
-for i in range(0x20):
-    ESCAPE_DCT.setdefault(chr(i), u'\\u{0:04x}'.format(i))
-
-
-def json_scrub(value):
-    """
-    REMOVE/REPLACE VALUES THAT CAN NOT BE JSON-IZED
-    """
-    return _scrub(value)
-
-
-def _scrub(value):
-    if value == None:
-        return None
-
-    type = value.__class__
-
-    if type in (date, datetime):
-        return datetime2milli(value, type)
-    elif type is timedelta:
-        return unicode(value.total_seconds()) + "second"
-    elif type is str:
-        return utf82unicode(value)
-    elif type is Decimal:
-        return float(value)
-    elif isinstance(value, dict):
-        output = {}
-        for k, v in value.iteritems():
-            v = _scrub(v)
-            output[k] = v
-        return output
-    elif type in (list, DictList):
-        output = []
-        for v in value:
-            v = _scrub(v)
-            output.append(v)
-        return output
-    elif type.__name__ == "bool_":  # DEAR ME!  Numpy has it's own booleans (value==False could be used, but 0==False in Python.  DOH!)
-        if value == False:
-            return False
-        else:
-            return True
-    elif hasattr(value, '__json__'):
-        try:
-            output=json._default_decoder.decode(value.__json__())
-            return output
-        except Exception, e:
-            from pyLibrary.debugs.logs import Log
-
-            Log.error("problem with calling __json__()", e)
-    elif hasattr(value, '__iter__'):
-        output = []
-        for v in value:
-            v = _scrub(v)
-            output.append(v)
-        return output
-    else:
-        return value
 
 
 ARRAY_ROW_LENGTH = 80
@@ -441,14 +373,6 @@ def problem_serializing(value, e=None):
         }, e)
 
 
-
-ESCAPE = re.compile(ur'[\x00-\x1f\\"\b\f\n\r\t]')
-def replace(match):
-    return ESCAPE_DCT[match.group(0)]
-def quote(value):
-    return "\""+ESCAPE.sub(replace, value)+"\""
-
-
 def indent(value, prefix=INDENT):
     try:
         content = value.rstrip()
@@ -496,3 +420,6 @@ if use_pypy:
     json_encoder = encode
 else:
     json_encoder = cPythonJSONEncoder().encode
+
+
+

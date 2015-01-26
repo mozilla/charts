@@ -161,13 +161,12 @@ class Math(object):
 
 
     @staticmethod
-    def floor(value, mod=None):
+    def floor(value, mod=1):
         """
         x == floor(x, a) + mod(x, a)  FOR ALL a
         """
         if value == None:
             return None
-        mod = nvl(mod, 1)
         v = int(math.floor(value))
         return v - (v % mod)
 
@@ -191,7 +190,13 @@ class Math(object):
 
     @staticmethod
     def ceiling(value, mod=1):
-        return int(math.ceil(value/mod))*mod
+        """
+        RETURN SMALLEST INTEGER GREATER THAN value
+        """
+        if value == None:
+            return None
+        v = int(math.floor(value+mod))
+        return v - (v % mod)
 
     @staticmethod
     def count(values):

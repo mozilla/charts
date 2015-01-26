@@ -97,10 +97,17 @@ def _normalize_edge(edge, schema=None):
         if schema:
             e = schema[edge]
             if e:
-                return Dict(
-                    name=edge,
-                    domain=e.getDomain()
-                )
+                if isinstance(e.fields, list) and len(e.fields) == 1:
+                    return Dict(
+                        name=e.name,
+                        value=e.fields[0],
+                        domain=e.getDomain()
+                    )
+                else:
+                    return Dict(
+                        name=e.name,
+                        domain=e.getDomain()
+                    )
         return Dict(
             name=edge,
             value=edge,

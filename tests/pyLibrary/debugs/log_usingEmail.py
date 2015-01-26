@@ -14,6 +14,7 @@ from __future__ import division
 from pyLibrary.debugs.logs import BaseLog, Log
 
 from pyLibrary.env.emailer import Emailer
+from pyLibrary.meta import use_settings
 from pyLibrary.strings import expand_template
 from pyLibrary.thread.threads import Lock
 from pyLibrary.times.dates import Date
@@ -26,12 +27,25 @@ WAIT_TO_SEND_MORE = Duration.HOUR
 
 class Log_usingEmail(BaseLog):
 
-    def __init__(self, settings):
+    @use_settings
+    def __init__(
+        self,
+        from_address,
+        to_address,
+        subject,
+        host,
+        username,
+        password,
+        port=465,
+        use_ssl=1,
+        log_type="email",
+        settings=None
+    ):
         """
         SEND WARNINGS AND ERRORS VIA EMAIL
 
         settings = {
-            "type":"email",
+            "log_type":"email",
             "from_address": "klahnakoski@mozilla.com",
             "to_address": "klahnakoski@mozilla.com",
             "subject": "Problem in Pulse Logger",
@@ -66,7 +80,7 @@ class Log_usingEmail(BaseLog):
             with Emailer(self.settings) as emailer:
                 emailer.send_email(
                     from_address=self.settings.from_address,
-                    to_addrs=self.settings.to_address,
+                    to_address=self.settings.to_address,
                     subject=self.settings.subject,
                     text_data="\n\n".join(self.accumulation)
                 )

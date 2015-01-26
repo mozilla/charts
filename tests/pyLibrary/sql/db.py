@@ -17,8 +17,9 @@ import subprocess
 
 from pymysql import connect, InterfaceError
 
-from pyLibrary.jsons import json_scrub
+from pyLibrary import jsons
 from pyLibrary.maths import Math
+from pyLibrary.meta import use_settings
 from pyLibrary.strings import expand_template
 from pyLibrary.dot import nvl, wrap, listwrap, unwrap
 from pyLibrary import convert
@@ -40,8 +41,19 @@ class DB(object):
     Parameterize SQL by name rather than by position.  Return records as objects
     rather than tuples.
     """
-
-    def __init__(self, settings, schema=None, preamble=None, readonly=False):
+    @use_settings
+    def __init__(
+        self,
+        host,
+        port,
+        username,
+        password,
+        debug=False,
+        schema=None,
+        preamble=None,
+        readonly=False,
+        settings=None
+    ):
         """
         OVERRIDE THE settings.schema WITH THE schema PARAMETER
         preamble WILL BE USED TO ADD COMMENTS TO THE BEGINNING OF ALL SQL
@@ -55,18 +67,11 @@ class DB(object):
         USE IN with CLAUSE, YOU CAN STILL SEND UPDATES, BUT MUST OPEN A
         TRANSACTION BEFORE YOU DO
         """
-        settings = wrap(settings)
-
-        if settings == None:
-            Log.warning("No settings provided")
-            return
-
         all_db.append(self)
 
         if isinstance(settings, DB):
             settings = settings.settings
 
-        self.settings = settings.copy()
         self.settings.schema = nvl(schema, self.settings.schema, self.settings.database)
 
         preamble = nvl(preamble, self.settings.preamble)
@@ -347,9 +352,17 @@ class DB(object):
         self.execute(content, param)
 
     @staticmethod
-    def execute_sql(settings, sql, param=None):
+    @use_settings
+    def execute_sql(
+        host,
+        username,
+        password,
+        sql,
+        schema=None,
+        param=None,
+        settings=None
+    ):
         """EXECUTE MANY LINES OF SQL (FROM SQLDUMP FILE, MAYBE?"""
-        settings = wrap(settings)
         settings.schema = nvl(settings.schema, settings.database)
 
         if param:
@@ -391,13 +404,22 @@ class DB(object):
             })
 
     @staticmethod
-    def execute_file(settings, filename, param=None, ignore_errors=False):
+    def execute_file(
+        filename,
+        host,
+        username,
+        password,
+        schema=None,
+        param=None,
+        ignore_errors=False,
+        settings=None
+    ):
         # MySQLdb provides no way to execute an entire SQL file in bulk, so we
         # have to shell out to the commandline client.
         sql = File(filename).read()
         if ignore_errors:
             try:
-                DB.execute_sql(settings, sql, param)
+                DB.execute_sql(sql=sql, param=param, settings=settings)
             except Exception, e:
                 pass
         else:
@@ -727,5 +749,5 @@ def json_encode(value):
     FOR PUTTING JSON INTO DATABASE (sort_keys=True)
     dicts CAN BE USED AS KEYS
     """
-    return unicode(json_encoder.encode(json_scrub(value)))
+    return unicode(json_encoder.encode(jsons.scrub(value)))
 

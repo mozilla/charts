@@ -9,41 +9,27 @@
 #
 from __future__ import unicode_literals
 from __future__ import division
-from boto import sqs
 
+from boto import sqs
 from boto.sqs.message import Message
+
 from pyLibrary import convert
 from pyLibrary.debugs.logs import Log
-from pyLibrary.dot import unwrap, nvl
-
-
-def cleanup(settings):
-    settings.aws_access_key_id = nvl(
-        settings.aws_access_key_id,
-        settings.access_key_id,
-        settings.username,
-        settings.user
-    )
-    settings.aws_secret_access_key = nvl(
-        settings.aws_secret_access_key,
-        settings.secret_access_key,
-        settings.password
-    )
-    settings.region = nvl(
-        settings.region,
-        settings.region_name
-    )
-
-    if settings.aws_access_key_id == None or settings.aws_secret_access_key == None:
-        Log.error("require aws_access_key_id and aws_secret_access_key to connect to aws")
-
-    return unwrap(settings)
+from pyLibrary.maths import Math
+from pyLibrary.meta import use_settings
+from pyLibrary.times.durations import Duration
 
 
 class Queue(object):
-    def __init__(self, settings):
-
-        cleanup(settings)
+    @use_settings
+    def __init__(
+        self,
+        name,
+        region,
+        aws_access_key_id,
+        aws_secret_access_key,
+        settings=None
+    ):
         self.settings = settings
         self.pending = []
 
@@ -70,10 +56,11 @@ class Queue(object):
         m.set_body(convert.value2json(message))
         self.queue.write(m)
 
-    def pop(self):
-        m = self.queue.read(wait_time_seconds=1)
-        if m == None:
+    def pop(self, wait=Duration.SECOND):
+        m = self.queue.read(wait_time_seconds=Math.floor(wait.total_seconds))
+        if not m:
             return None
+
         self.pending.append(m)
         return convert.json2value(m.get_body())
 

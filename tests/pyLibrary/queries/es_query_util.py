@@ -21,7 +21,7 @@ from pyLibrary.debugs.logs import Log
 from pyLibrary.maths import Math
 from pyLibrary.queries import domains, MVEL, filters
 from pyLibrary.dot.dicts import Dict
-from pyLibrary.dot import set_default, split_field, join_field, nvl
+from pyLibrary.dot import set_default, split_field, join_field, nvl, Null
 from pyLibrary.dot.lists import DictList
 from pyLibrary.dot import wrap
 from pyLibrary.times import durations
@@ -81,7 +81,7 @@ def loadColumns(es, frum):
 
 
 def post(es, esQuery, limit):
-    if not esQuery.facets and esQuery.size == 0:
+    if not esQuery.facets and esQuery.size == 0 and not esQuery.aggs:
         Log.error("ESQuery is sending no facets")
         # DO NOT KNOW WHY THIS WAS HERE
     # if isinstance(query.select, list) or len(query.edges) and not esQuery.facets.keys and esQuery.size == 0:
@@ -91,11 +91,11 @@ def post(es, esQuery, limit):
     try:
         postResult = es.search(esQuery)
 
-        for facetName, f in postResult.facets:
+        for facetName, f in postResult.facets.items():
             if f._type == "statistical":
-                return None
+                continue
             if not f.terms:
-                return None
+                continue
 
             if not DEBUG and not limit and len(f.terms) == limit:
                 Log.error("Not all data delivered (" + str(len(f.terms)) + "/" + str(f.total) + ") try smaller range")

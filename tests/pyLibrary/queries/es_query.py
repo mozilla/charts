@@ -13,6 +13,7 @@ from __future__ import division
 from pyLibrary import convert
 from pyLibrary.queries import MVEL, Q
 from pyLibrary.queries.es_query_aggop import is_aggop, es_aggop
+from pyLibrary.queries.es_query_aggs import es_aggsop, is_aggsop
 from pyLibrary.queries.es_query_setop import is_fieldop, is_setop, is_deep, es_setop, es_deepop, es_fieldop
 from pyLibrary.queries.es_query_terms import es_terms, is_terms
 from pyLibrary.queries.es_query_terms_stats import es_terms_stats, is_terms_stats
@@ -71,6 +72,8 @@ class ESQuery(object):
         frum = loadColumns(self.es, query["from"])
         mvel = _MVEL(frum)
 
+        if is_aggsop(self.es, query):
+            return es_aggsop(self.es, mvel, query)
         if is_fieldop(query):
             return es_fieldop(self.es, query)
         elif is_deep(query):
@@ -99,10 +102,7 @@ class ESQuery(object):
             self.edges[d.full_name] = d
 
     def __getitem__(self, item):
-        f = split_field(item)
-        e = self.edges[f[0]]
-        for i in f[1::]:
-            e = e[i]
+        e = self.edges[item]
         return e
 
     def __getattr__(self, item):

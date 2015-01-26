@@ -227,6 +227,9 @@ def unicode2datetime(value, format=None):
     if value == None:
         return None
 
+    if value.lower() == "now":
+        return Date.now()
+
     if format != None:
         try:
             return datetime.strptime(value, format)

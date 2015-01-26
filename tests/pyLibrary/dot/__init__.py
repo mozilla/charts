@@ -9,7 +9,7 @@
 
 from __future__ import unicode_literals
 from __future__ import division
-from types import GeneratorType, NoneType
+from types import GeneratorType, NoneType, ModuleType
 
 _get = object.__getattribute__
 _set = object.__setattr__
@@ -40,6 +40,8 @@ def zip(keys, values):
     """
     output = Dict()
     for i, k in enumerate(keys):
+        if i >= len(values):
+            break
         output[k] = values[i]
     return output
 
@@ -118,10 +120,11 @@ def _all_default(d, default):
     if default is None:
         return
     for k, default_value in default.items():
-        existing_value = d.get(k, None)
-        if existing_value is None:
-            d[k] = default_value
-        elif isinstance(existing_value, dict) and isinstance(default_value, dict):
+        # existing_value = d.get(k, None)
+        existing_value = _get_attr(d, [k])
+        if existing_value == None:
+            _set_attr(d, [k], default_value)
+        elif (hasattr(existing_value, "__setattr__") or isinstance(existing_value, dict)) and isinstance(default_value, dict):
             _all_default(existing_value, default_value)
 
 
@@ -152,6 +155,107 @@ def _getdefault(obj, key):
 
     return NullType(obj, key)
 
+
+PATH_NOT_FOUND = "Path not found"
+AMBIGUOUS_PATH_FOUND = "Path is ambiguous"
+
+
+def set_attr(obj, path, value):
+    """
+    SAME AS object.__setattr__(), BUT USES DOT-DELIMITED path
+    RETURN OLD VALUE
+    """
+    try:
+        return _set_attr(obj, split_field(path), value)
+    except Exception, e:
+        from pyLibrary.debugs.logs import Log
+        if e.contains(PATH_NOT_FOUND):
+            Log.error(PATH_NOT_FOUND+": {{path}}", {"path":path})
+        else:
+            Log.error("Problem setting value", e)
+
+
+def get_attr(obj, path):
+    """
+    SAME AS object.__getattr__(), BUT USES DOT-DELIMITED path
+    """
+    try:
+        return _get_attr(obj, split_field(path))
+    except Exception, e:
+        from pyLibrary.debugs.logs import Log
+        if e.contains(PATH_NOT_FOUND):
+            Log.error(PATH_NOT_FOUND+": {{path}}", {"path":path})
+        else:
+            Log.error("Problem setting value", e)
+
+
+def _get_attr(obj, path):
+    if not path:
+        return obj
+
+    attr_name = path[0]
+
+    if isinstance(obj, ModuleType):
+        if attr_name in obj.__dict__:
+            return _get_attr(obj.__dict__[attr_name], path[1:])
+        elif attr_name in dir(obj):
+            return _get_attr(obj[attr_name], path[1:])
+        else:
+            # TRY A CASE-INSENSITIVE MATCH
+            attr_name = lower_match(attr_name, dir(obj))
+            if not attr_name:
+                from pyLibrary.debugs.logs import Log
+                Log.error(PATH_NOT_FOUND)
+            elif len(attr_name)>1:
+                from pyLibrary.debugs.logs import Log
+                Log.error(AMBIGUOUS_PATH_FOUND+" {{paths}}", {"paths":attr_name})
+            else:
+                return _get_attr(obj[attr_name[0]], path[1:])
+    try:
+        obj = _get(obj, attr_name)
+        return _get_attr(obj, path[1:])
+    except Exception, e:
+        try:
+            obj = obj[attr_name]
+            return _get_attr(obj, path[1:])
+        except Exception, f:
+            return None
+
+
+def _set_attr(obj, path, value):
+    obj = _get_attr(obj, path[:-1])
+    if obj is None:  # DELIBERATE, WE DO NOT WHAT TO CATCH Null HERE (THEY CAN BE SET)
+        from pyLibrary.debugs.logs import Log
+        Log.error(PATH_NOT_FOUND)
+
+    attr_name = path[-1]
+
+    # ACTUAL SETTING OF VALUE
+    try:
+        old_value = _get_attr(obj, [attr_name])
+        if old_value == None:
+            old_value = None
+            new_value = value
+        else:
+            new_value = old_value.__class__(value)  # TRY TO MAKE INSTANCE OF SAME CLASS
+    except Exception, e:
+        old_value = None
+        new_value = value
+
+    try:
+        _set(obj, attr_name, new_value)
+        return old_value
+    except Exception, e:
+        try:
+            obj[attr_name] = new_value
+            return old_value
+        except Exception, f:
+            from pyLibrary.debugs.logs import Log
+            Log.error(PATH_NOT_FOUND)
+
+
+def lower_match(value, candidates):
+    return [v for v in candidates if v.lower()==value.lower()]
 
 
 def wrap(v):

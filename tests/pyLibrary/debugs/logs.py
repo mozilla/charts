@@ -13,16 +13,13 @@ from __future__ import unicode_literals
 from __future__ import division
 
 from datetime import datetime
-import os
 import sys
-from types import ModuleType
 
-from pyLibrary.jsons import json_encoder
-from pyLibrary.thread import threads
-from pyLibrary.dot import nvl, Dict, split_field, join_field, set_default
-from pyLibrary.dot import listwrap, wrap, wrap_dot
+from pyLibrary.debugs import constants
+from pyLibrary.dot import nvl, Dict, set_default, listwrap, wrap
+from pyLibrary.jsons.encoder import encode
+from pyLibrary.thread.threads import Thread, Lock
 from pyLibrary.strings import indent, expand_template
-from pyLibrary.thread.threads import Thread
 
 
 DEBUG_LOGGING = False
@@ -42,7 +39,6 @@ class Log(object):
     profiler = None   # simple pypy-friendly profiler
     cprofiler = None  # screws up with pypy, but better than nothing
     error_mode = False  # prevent error loops
-    please_setup_constants = False  # we intend to manipulate module-level constants for debugging
 
     @classmethod
     def start(cls, settings=None):
@@ -94,49 +90,7 @@ class Log(object):
                 profiles.ON = True
 
         if settings.constants:
-            cls.please_setup_constants = True
-
-        if cls.please_setup_constants:
-            sys_modules = sys.modules
-            # ONE MODULE IS MISSING, THE CALLING MODULE
-            caller_globals = sys._getframe(1).f_globals
-            caller_file = caller_globals["__file__"]
-            if not caller_file.endswith(".py"):
-                raise Exception("do not know how to handle non-python caller")
-            caller_module = caller_file[:-3].replace("/", ".")
-
-            for k, v in wrap_dot(settings.constants).leaves():
-                module_name = join_field(split_field(k)[:-1])
-                attribute_name = split_field(k)[-1].lower()
-                if module_name in sys_modules and isinstance(sys_modules[module_name], ModuleType):
-                    mod = sys_modules[module_name]
-                    all_names = dir(mod)
-                    for name in all_names:
-                        if attribute_name == name.lower():
-                            setattr(mod, name, v)
-                    continue
-                elif caller_module.endswith(module_name):
-                    for name in caller_globals.keys():
-                        if attribute_name == name.lower():
-                            old_value = caller_globals[name]
-                            try:
-                                new_value = old_value.__class__(v)  # TRY TO MAKE INSTANCE OF SAME CLASS
-                            except Exception, e:
-                                new_value = v
-                            caller_globals[name] = new_value
-                            Log.note("Changed {{module}}[{{attribute}}] from {{old_value}} to {{new_value}}", {
-                                "module": module_name,
-                                "attribute": name,
-                                "old_value": old_value,
-                                "new_value": new_value
-                            })
-                            break
-                else:
-                    Log.note("Can not change {{module}}[{{attribute}}] to {{new_value}}", {
-                        "module": module_name,
-                        "attribute": k,
-                        "new_value": v
-                    })
+            constants.set(settings.constants)
 
     @classmethod
     def stop(cls):
@@ -246,6 +200,12 @@ class Log(object):
             }
         )
 
+    @classmethod
+    def alarm(cls, template, params=None, stack_depth=0):
+        # USE replace() AS POOR MAN'S CHILD TEMPLATE
+
+        template = ("*" * 80) + "\n" + indent(template, prefix="** ").strip() + "\n" + ("*" * 80)
+        Log.note(template, params=params, stack_depth=stack_depth + 1)
 
     @classmethod
     def warning(
@@ -504,7 +464,7 @@ class Except(Exception):
         return unicode(str(self))
 
     def __json__(self):
-        return json_encoder(Dict(
+        return encode(Dict(
             type=self.type,
             template=self.template,
             params=self.params,
@@ -532,7 +492,7 @@ class Log_usingFile(BaseLog):
             self.file.backup()
             self.file.delete()
 
-        self.file_lock = threads.Lock("file lock for logging")
+        self.file_lock = Lock("file lock for logging")
 
     def write(self, template, params):
         with self.file_lock:

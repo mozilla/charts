@@ -9,6 +9,7 @@
 #
 from __future__ import unicode_literals
 from __future__ import division
+from pyLibrary import dot
 from pyLibrary.collections import SUM
 from pyLibrary.queries.domains import Domain, ALGEBRAIC, KNOWN
 from pyLibrary.dot import Null, nvl, join_field, split_field, Dict
@@ -27,17 +28,8 @@ class Dimension(object):
         self.name = dim.name
         self.parent = parent
         self.full_name = join_field(split_field(self.parent.full_name)+[self.name])
-        self.min = dim.min
-        self.max = dim.max
-        self.interval = dim.interval
-        self.value = dim.value
-        self.label = dim.label
-        self.end = dim.end
-        self.esfilter = dim.esfilter
-        self.weight = dim.weight
-        self.style = dim.style
-        self.isFacet = dim.isFacet
-
+        dot.set_default(self, dim)
+        self.esfilter = nvl(dim.esfilter, None)
         self.type = nvl(dim.type, "set")
         self.limit = nvl(dim.limit, DEFAULT_QUERY_LIMIT)
         self.index = nvl(dim.index, nvl(parent, Null).index, qb.es.settings.name)
@@ -46,7 +38,7 @@ class Dimension(object):
             Log.error("Expecting an index name")
 
         # ALLOW ACCESS TO SUB-PART BY NAME (IF ONLY THERE IS NO NAME COLLISION)
-        self.edges = {}
+        self.edges = Dict()
         for e in listwrap(dim.edges):
             new_e = Dimension(e, self, qb)
             self.edges[new_e.full_name] = new_e
@@ -77,6 +69,7 @@ class Dimension(object):
                 "esfilter": self.esfilter,
                 "limit": self.limit
             })
+            Log.note("{{name}} has {{num}} parts", {"name": self.name, "num": len(parts)})
 
         d = parts.edges[0].domain
 
@@ -172,6 +165,7 @@ class Dimension(object):
         """
         RETURN CHILD EDGE OR PARTITION BY NAME
         """
+        #TODO: IGNORE THE STANDARD DIMENSION PROPERTIES TO AVOID ACCIDENTAL SELECTION OF EDGE OR PART
         e = self.edges[key]
         if e:
             return e
@@ -334,4 +328,5 @@ def parse_partition(part):
             })
 
         # DEFAULT esfilter IS THE UNION OF ALL CHILD FILTERS
-        part.esfilter = {"or": part.partitions.esfilter}
+        if part.partitions:
+            part.esfilter = {"or": part.partitions.esfilter}

@@ -139,53 +139,14 @@ class File(object):
                 return content
 
     def read_json(self, encoding="utf8"):
+        from pyLibrary.jsons import ref
+
         content = self.read(encoding=encoding)
         value = convert.json2value(content, flexible=True, paths=True)
-        return wrap(self._replace_ref(value, [value]))
-
-    def _replace_ref(self, node, path):
-        if isinstance(node, dict):
-            ref = node["$ref"]
-            node["$ref"] = None
-            if not ref:
-                return_value = node
-                candidate = {}
-                for k, v in node.items():
-                    new_v = self._replace_ref(v, [v] + path)
-                    candidate[k] = new_v
-                    if new_v is not v:
-                        return_value = candidate
-                return return_value
-
-            if ref.startswith("http://"):
-                import requests
-
-                return set_default({}, node, convert.json2value(requests.get(ref), flexible=True, paths=True))
-            elif ref.startswith("file://"):
-                ref = ref[7::]
-                if ref.startswith("/"):
-                    return set_default({}, node, File(ref).read_json(ref))
-                else:
-                    return set_default({}, node, File.new_instance(self.parent, ref).read_json())
-            else:
-                # REFER TO SELF
-                if ref[0] == ".":
-                    # RELATIVE
-                    for i, p in enumerate(ref):
-                        if p != ".":
-                            ref_node = path[i][ref[i::]]
-                            return set_default({}, node, ref_node)
-                    return set_default({}, node, path[len(ref) - 1])
-                else:
-                    # ABSOLUTE
-                    return set_default({}, node, path[-1][ref])
-        elif isinstance(node, list):
-            candidate = [self._replace_ref(n, [n] + path) for n in node]
-            if all(p[0] is p[1] for p in zip(candidate, node)):
-                return node
-            return candidate
-
-        return node
+        abspath = self.abspath
+        if os.sep == "\\":
+            abspath = "/" + abspath.replace(os.sep, "/")
+        return ref.expand(value, "file://" + abspath)
 
     def is_directory(self):
         return os.path.isdir(self._filename)

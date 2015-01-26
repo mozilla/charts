@@ -197,9 +197,9 @@ DictList Dot (.) Operator
 
 The dot operator on a `DictList` will return a list of property values
 
-    `python
+```python
     myList.name == [x["name"] for x in myList]
-    `
+```
 
 
 Motivation for DictList

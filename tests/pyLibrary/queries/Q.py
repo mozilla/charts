@@ -432,7 +432,7 @@ def sort(data, fieldnames=None):
         if len(fieldnames) == 1:
             fieldnames = fieldnames[0]
             # SPECIAL CASE, ONLY ONE FIELD TO SORT BY
-            if isinstance(fieldnames, basestring):
+            if isinstance(fieldnames, (basestring, int)):
                 def comparer(left, right):
                     return cmp(nvl(left, Dict())[fieldnames], nvl(right, Dict())[fieldnames])
 
@@ -870,7 +870,7 @@ def intervals(_min, _max=None, size=1):
     """
     RETURN (min, max) PAIRS OF GIVEN SIZE, WHICH COVER THE _min, _max RANGE
     THE LAST PAIR MAY BE SMALLER
-    (Yes!  It's just like range(), only cooler!
+    Yes!  It's just like range(), only cooler!
     """
     if _max == None:
         _max = _min

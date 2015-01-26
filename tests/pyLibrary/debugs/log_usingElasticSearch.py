@@ -21,8 +21,6 @@ from .logs import BaseLog, Log
 
 class Log_usingElasticSearch(BaseLog):
 
-
-
     def __init__(self, settings):
         """
         settings ARE FOR THE ELASTICSEARCH INDEX

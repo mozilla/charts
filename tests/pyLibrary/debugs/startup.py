@@ -14,10 +14,12 @@ import argparse
 import os
 import tempfile
 import sys
+from pyLibrary.jsons import ref
+
 from pyLibrary.dot import listwrap, wrap, unwrap
-from pyLibrary import convert
 from pyLibrary.debugs.logs import Log
 from pyLibrary.env.files import File
+
 
 
 # PARAMETERS MATCH argparse.ArgumentParser.add_argument()
@@ -56,7 +58,7 @@ def read_settings(filename=None, defs=None):
             Log.error("Can not file settings file {{filename}}", {
                 "filename": settings_file.abspath
             })
-        settings = settings_file.read_json()
+        settings = ref.get("file://"+settings_file.abspath)
         if defs:
             settings.args = _argparse(defs)
         return settings
@@ -78,7 +80,11 @@ def read_settings(filename=None, defs=None):
             })
             settings = Dict()
         else:
-            settings = settings_file.read_json()
+            abspath = settings_file.abspath
+            if os.sep=="\\":
+                abspath = "/"+abspath.replace(os.sep, "/")
+
+            settings = ref.get("file://"+abspath)
 
         settings.args = args
         return settings
@@ -101,7 +107,7 @@ class SingleInstance:
     def __init__(self, flavor_id=""):
         self.initialized = False
         appname = os.path.splitext(os.path.abspath(sys.argv[0]))[0]
-        basename = ((appname + '-%s') % flavor_id).replace("/", "-").replace(":", "").replace("\\", "-") + '.lock'
+        basename = ((appname + '-%s') % flavor_id).replace("/", "-").replace(":", "").replace("\\", "-").replace("-.-", "-") + '.lock'
         self.lockfile = os.path.normpath(tempfile.gettempdir() + '/' + basename)
 
 
@@ -114,11 +120,7 @@ class SingleInstance:
                     os.unlink(self.lockfile)
                 self.fd = os.open(self.lockfile, os.O_CREAT | os.O_EXCL | os.O_RDWR)
             except Exception, e:
-                Log.note("\n"+
-                    "**********************************************************************\n"+
-                    "** Another instance is already running, quitting.\n"+
-                    "**********************************************************************\n"
-                )
+                Log.alarm("Another instance is already running, quitting.")
                 sys.exit(-1)
         else: # non Windows
             import fcntl

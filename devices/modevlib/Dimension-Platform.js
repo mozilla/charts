@@ -7,35 +7,9 @@ importScript("qb/ESQuery.js");
 
 if (!Mozilla) var Mozilla = {"name": "Mozilla", "edges": []};
 
-function requiredFields(esfilter){
-	if (esfilter===undefined){
-		return [];
-	}else if (esfilter.and){
-		return Array.union(esfilter.and.map(requiredFields));
-	}else if (esfilter.or){
-		return Array.union(esfilter.or.map(requiredFields));
-	}else if (esfilter.not){
-			return requiredFields(esfilter.not);
-	}else if (esfilter.term){
-		return Object.keys(esfilter.term)
-	}else if (esfilter.terms){
-		return Object.keys(esfilter.terms)
-	}else if (esfilter.regexp){
-		return Object.keys(esfilter.regexp)
-	}else if (esfilter.missing){
-		return [esfilter.missing.field]
-	}else if (esfilter.exists){
-		return [esfilter.missing.field]
-	}else{
-		return []
-	}//endif
-}//method
-
-
-
 (function(){
 
-	var SOLVED = ["fixed", "wontfix", "unaffected", "disabled"];
+	var SOLVED = ["fixed", "wontfix", "unaffected", "disabled", "verified"];
 
 	var releaseTracking = {
 		"name": "Release",
@@ -55,8 +29,8 @@ function requiredFields(esfilter){
 				"version": 34,
 				"releaseDate":"1 dec 2014",  //https://wiki.mozilla.org/Releases
 				"esfilter": {"and":[
-					{"not": {"terms": {"cf_status_firefox36": SOLVED}}},
-					{"term": {"cf_tracking_firefox36": "+"}}
+					{"not": {"terms": {"cf_status_firefox34": SOLVED}}},
+					{"term": {"cf_tracking_firefox34": "+"}}
 				]}
 			},
 			{
@@ -106,30 +80,35 @@ function requiredFields(esfilter){
 
 		if (!currentRelease) Log.error("What's the next release!?  Please add more to Dimension-Platform.js");
 	}
+
+	//NOT IN ANY OF THE THREE TRAINS
+	var otherFilter = {"or": releaseTracking.edges.map(function(r, i){
+		if (currentRelease.version <= r.version && r.version<=currentRelease.version+2) return undefined;
+		return r.esfilter;
+	})};
+
 	var trains = [
 		{"name":"Release", "style":{"color":"#E66000"}},
 		{"name":"Beta", "style":{"color":"#FF9500"}},
-		{"name":"Dev", "style":{"color":"#0095DD"}},
+		{"name":"Aurora", "style":{"color":"#0095DD"}},
 		{"name":"Nightly", "style":{"color":"#002147"}}
 	];
 
 
-	var otherFilter=[];    //NOT IN ANY OF THE THREE TRAINS
 	var trainTrackingAbs = {
 		"name": "Release Tracking - Desktop",
 		"esFacet": true,
 		"requiredFields":releaseTracking.requiredFields,
 		"edges": trains.leftBut(1).map(function(t,  track){
 			var release = releaseTracking.edges[currentRelease.dataIndex+track];
-			otherFilter.append(release.esfilter);
-			var output =  Map.setDefault({}, t, release);
-			return output;
+			return Map.setDefault({}, t, release);
 		})
 	};
 	trainTrackingAbs.edges.append({
 		"name": trains.last().name,
+		"version": trains.last().version,
 		"style": trains.last().style,
-		"esfilter": {"or":otherFilter}
+		"esfilter": otherFilter
 	});
 
 	//SHOW TRAINS AS PARTIITONS SO THERE IS NO DOUBLE COUNTING
@@ -139,7 +118,6 @@ function requiredFields(esfilter){
 		"requiredFields":releaseTracking.requiredFields,
 		"partitions": trains.leftBut(1).map(function(t,  track){
 			var release = releaseTracking.edges[currentRelease.dataIndex+track];
-			otherFilter.append(release.esfilter);
 			var output =  Map.setDefault({}, t, release);
 			return output;
 		})
@@ -147,7 +125,7 @@ function requiredFields(esfilter){
 	trainTrackingRel.partitions.append({
 		"name": trains.last().name,
 		"style": trains.last().style,
-		"esfilter": {"or":otherFilter}
+		"esfilter": otherFilter
 	});
 	trainTrackingRel.partitions.append({
 		"name": "ESR-31",

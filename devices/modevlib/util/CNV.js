@@ -760,7 +760,7 @@ CNV.esFilter2function=function(esFilter){
 				var variable = variables[k];
 				var value = row[variable];
 				if (value===undefined){
-
+					return false;
 				}else if (value instanceof Array){
 					if (terms[variable].intersect(value).length==0) return false;
 				}else{

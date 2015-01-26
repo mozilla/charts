@@ -8,18 +8,19 @@ importScript("../modevlib/qb/ESQuery.js");
 importScript("../modevlib/Bugzilla.js");
 importScript([
 	"../modevlib/gui/GUI.js",
-	"../css/menu.css"
+	"../css/menu.css",
+	"./blockers.css"
 ]);
 
 importScript("../modevlib/math/Stats.js");
 importScript("../modevlib/qb/Qb.js");
+importScript("../lib/sorttable/sorttable.js");
 
 importScript([
-	'blockers.css',
 	'../modevlib/Dimension-Bugzilla.js',
-	"../modevlib/Dimension-B2G.js",
+	"../modevlib/Dimension-Devices.js",
 	"../modevlib/charts/aColor.js",
-	"hierarchy.js",
-	"heat.js"
+	"../modevlib/gui/dynamic.js",
+	"./util.js"
 ]);
 

@@ -641,7 +641,6 @@ Qb.aggregate.array = function(select){
 		}
 	};
 };
-Qb.aggregate.list=Qb.aggregate.array;
 
 Qb.aggregate.union = function(select){
 	select.defaultValue = function(){

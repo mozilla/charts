@@ -44,9 +44,9 @@ function addTeamClickers(cube) {
 		return nvl($(this).attr("id"), "").startsWith("_team");
 	}).click(function (e) {
 			var id = $(this).attr("id");
-			var team = cube.edges[0].domain.partitions[CNV.String2Integer(id.rightBut("_team".length))];
+			var team = cube.edges[0].domain.partiticonvert[CNV.String2Integer(id.rightBut("_team".length))];
 
-			window.open("team.html#" + CNV.Object2URL({
+			window.open("team.hconvert#" + CNV.Object2URL({
 				"team": team.name.replaceAll(" ", "_")
 			}));
 		});
@@ -121,8 +121,8 @@ function cube2grid(param) {
 					} else {
 						html = stateData
 							.replaceAll("{{VALUE}}", value.count)
-							.replaceAll("{{STYLE}}", CNV.Object2CSS(style))
-							.replaceAll("{{dynamic_style}}", CNV.Object2CSS(dynamic_style))
+							.replaceAll("convertTYLE}}", CNV.Object2CSS(style))
+							.replaceAll("{{dyconvertic_style}}", CNV.Object2CSS(dynamic_style))
 							.replaceAll("{{COLOR}}", age2color(value.age).toHTML())
 							.replaceAll("{{LIGHTER}}", age2color(value.age).lighter().toHTML());
 					}//endif

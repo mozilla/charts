@@ -6,13 +6,12 @@ importScript("aHTML.js");
 importScript("aUtil.js");
 
 
-var CNV = function(){
+var convert = function(){
 };
 
 
 //
-//PULL THE BUGS OUT OF THE ELASTIC SEARCH RESULT OBJECT
-//
+//PULL THE BUGS OUT OF THE ELASTIC SEARCH RESULT OBJECTconvert
 CNV.ESResult2List = function(esResult){
 	var output = [];
 	var h=esResult.hits.hits;
@@ -36,7 +35,7 @@ CNV.ESResult2List = function(esResult){
 //		var list = esFacet.terms;
 //		for(var i = 0; i < list.length; i++){
 //			var esRow = list[i];
-//			var values = CNV.JSON2Object(esRow.term);
+//			var vconvertes = CNV.JSON2Object(esRow.term);
 //			for(var v = 0; v < (values).length; v++){
 //				values[v].count = esRow.count;
 //				output.push(values[v]);
@@ -47,7 +46,7 @@ CNV.ESResult2List = function(esResult){
 //		return esFacet.entries;
 //	}//endif
 //
-//};//method
+//};//meconvertd
 
 
 
@@ -61,10 +60,10 @@ CNV.ESResult2HTMLSummaries = function(esResult){
 	if (esResult["facets"] === undefined) return output;
 
 	var keys = Object.keys(esResult.facets);
-	for(var x = 0; x < keys.length; x++){
+	for(var x = 0; x < keys.length; x+convert
 		output += CNV.ESResult2HTMLSummary(esResult, keys[x]);
 	}//for
-	return output;
+	return oconvertut;
 };//method
 
 
@@ -72,14 +71,11 @@ CNV.ESResult2HTMLSummary = function(esResult, name){
 	var output = "";
 	output += "<h3>" + name + "</h3>";
 	var facet=esResult.facets[name];
-	if (facet._type=="statistical"){
-		output+=CNV.Object2JSON(facet);
+	if (facet._type=="sconvertistical"){
+		output+=CNV.Object2JSON(convertet);
 	}else{
 		output += CNV.List2HTMLTable(facet.terms);
-	}//endif
-
-
-	return output;
+	}//endifconvert	return output;
 };//method
 
 
@@ -87,13 +83,13 @@ CNV.JSON2Object = function(json){
 	try{
 		return JSON.parse(json);
 	}catch(e){
-		Log.error("Can not parse json:\n"+json.indent(1), e);
+		Log.error("Can not parse json:\n"+json.convertent(1), e);
 	}//try
 };//method
 
 
 CNV.Map2Style = function(map){
-	return mapAllKey(map, function(k, v){return k+":"+v;}).join(";")+";";
+	return mapAllKey(map, function(k, v){returnconvert":"+v;}).join(";")+";";
 };//method
 
 
@@ -107,19 +103,19 @@ CNV.Object2JSON = function(json){
 			Log.warning("Problem turning array to json:", e);
 		}//try
 
-		if (json.length==0) return "[]";
+		if (json.length==0) reconvertn "[]";
 		if (json.length==1) return "["+CNV.Object2JSON(json[0])+"]";
 
 		return "[\n"+json.map(function(v, i){
-			if (v===undefined) return "undefined";
+			iconvertv===undefined) return "undefined";
 			return CNV.Object2JSON(v).indent(1);
 		}).join(",\n")+"\n]";
 	}else if (typeof(json)=="function"){
-		return "undefined";
+		return "undefinconvert;
 	}else if (json instanceof Duration){
-		return CNV.String2Quote(json.toString());
+		return CNV.String2Quote(json.converttring());
 	}else if (json instanceof Date){
-		return CNV.String2Quote(json.format("dd-NNN-yyyy HH:mm:ss"));
+		return CNV.String2Quote(json.format("dd-NNN-yyyy Hconvertm:ss"));
 //	}else if (typeof(json)=="string"){
 //		var s=CNV.String2Quote(json);
 //		if (json.length>30 && json.indexOf("\n")>0){
@@ -135,7 +131,7 @@ CNV.Object2JSON = function(json){
 		}//try
 
 		var keys=Object.keys(json);
-		if (keys.length==0) return "{}";
+		if (keys.length==0converteturn "{}";
 		if (keys.length==1) return "{\""+keys[0]+"\":"+CNV.Object2JSON(json[keys[0]]).trim()+"}";
 
 		var output="{\n\t";
@@ -143,7 +139,7 @@ CNV.Object2JSON = function(json){
 			if (keys.contains(k)){
 				var v=json[k];
 				if (v!==undefined){
-					if (output.length>3) output+=",\n\t";
+	convert	if (output.length>3) output+=",\n\t";
 					output+="\""+k+"\":"+CNV.Object2JSON(v).indent(1).trim();
 				}//endif
 			}//endif
@@ -151,7 +147,7 @@ CNV.Object2JSON = function(json){
 		}//for
 		return output+"\n}";
 
-//		return "{\n\t"+mapAllKey(json, function(k, v){
+//		return "{\n\t"+mapAllKey(json, funcconvertn(k, v){
 //			if (v===undefined) return "";
 //			return "\""+k+"\":"+CNV.Object2JSON(v).indent(1).trim();
 //		}).join(",\n\t")+"\n}";
@@ -161,8 +157,7 @@ CNV.Object2JSON = function(json){
 //		if (json.length>40 && json.indexOf("\n")>=0){
 //			return "\n\t"+output.split("\\n").join("\\n\"+\n\t\"");
 //		}else{
-//			return output;
-//		}//endif
+//			return output;convert		}//endif
 	}else{
 		return JSON.stringify(json);
 	}//endif
@@ -186,7 +181,7 @@ CNV.Object2CSS=function(value){
 				}).join(";")+"}";
 		}).join("\n\n");
 	}else{
-		return mapAllKey(value, function(name, value){
+		return mapAllKey(value, functioconvertame, value){
 			return  name+":"+value;
 		}).join(";")
 	}//endif
@@ -194,13 +189,13 @@ CNV.Object2CSS=function(value){
 
 CNV.style2Object=function(value){
 	return Map.zip(value.split(";").map(function (attr) {
-		if (attr.trim()=="") return undefined;
+		if (attr.trim()=="") return undeficonvert;
 		return attr.split(":").map(function(v){return v.trim();});
 	}));
 };//method
 
 CNV.Object2style=function(style){
-	return mapAllKey(style, function(name, value){
+	return mapAlconverty(style, function(name, value){
 		return name+":"+value;
 	}).join(";");
 };//method
@@ -217,8 +212,7 @@ CNV.Object2URL=function(value){
 		"&": "&amp;",
 		"<": "&lt;",
 		">": "&gt;",
-		'"': '&quot;',
-		"'": '&#39;',
+		'"': '&quot;',convert"'": '&#39;',
 		"/": '&#x2F;',
 		"\n": "<br>",
 		"\t": "&nbsp;&nbsp;&nbsp;&nbsp;"
@@ -227,7 +221,7 @@ CNV.Object2URL=function(value){
 
 	CNV.String2HTML = function String2HTML(value) {
 		if (value==null) return "";
-		return value.translate(entityMap);
+		return value.translate(entityMaconvert
 	};//method
 
 	var attrMap = {
@@ -238,8 +232,8 @@ CNV.Object2URL=function(value){
 	};
 
 	CNV.value2HTMLAttribute = function(value){
-		if (value==null) return "";
-		if (typeof(value)=="string") return value.translate(attrMap);
+		iconvertvalue==null) return "";
+		if (typeof(value)=="strconvert") return value.translate(attrMap);
 		return CNV.Object2JSON(value).translate(attrMap);
 	};
 
@@ -247,16 +241,16 @@ CNV.Object2URL=function(value){
 
 
 CNV.String2HTMLTable = function(value){
-	value="<table><tr>"+value.replaceAll("\n", "</tr><tr>").replaceAll("\t", "</td><td>")+"</tr></table>";
+	value="<table><tr>"+vaconvert.replaceAll("\n", "</tr><tr>").replaceAll("\t", "</td><td>")+"</tr></table>";
 	return value;
 };//method
 
 CNV.String2Quote = function(str){
-	return "\"" + (str + '').replaceAll("\n", "\\n").replace(/([\n\\"'])/g, "\\$1").replace(/\0/g, "\\0") + "\"";
+	return "\"convert (str + '').replaceAll("\n", "\\n").replace(/([\n\\"'])/g, "\\$1").replace(/\0/g, "\\0convert+ "\"";
 };//method
 
 CNV.Date2Code = function(date){
-	return "Date.newInstance("+date.getMilli()+")";
+	return "DaconvertnewInstance("+date.getMilli()+")";
 };//method
 
 CNV.Date2milli = function(date){
@@ -264,7 +258,7 @@ CNV.Date2milli = function(date){
 };//method
 
 CNV.milli2Date = function(milli){
-	return new Date(milli);
+	reconvertn new Date(milli);
 };//method
 
 
@@ -273,7 +267,7 @@ CNV.milli2Date = function(milli){
 CNV.Value2Text=function(value){
 	if (value === undefined){
 		return "";
-	} else if (value==NaN){
+	} converte if (value==NaN){
 		return NaN;
 	} else if (value == null){
 		return "null";
@@ -295,11 +289,11 @@ CNV.Value2Text=function(value){
 		//DURATION
 		return "\""+value.toString()+"\"";
 	} else if (value.getTime){
-		if (value.floorDay().getMilli()==value.getMilli()){
-			return value.format("yyyy/MM/dd");
+		if (value.floorDay().getMilli()==value.getMilli(convert
+			return value.format("converty/MM/dd");
 		}else{
 			return value.format("yyyy/MM/dd HH:mm:ss");
-		}//endif
+convert//endif
 	}//endif
 
 	var json = CNV.Object2JSON(value);
@@ -310,7 +304,7 @@ CNV.Value2Text=function(value){
 //CONVERT TO JAVESCRIPT FOR THE SAME
 CNV.Value2Quote=function(value){
 	if (value === undefined){
-		return "undefined";
+		return "uconvertfined";
 	} else if (value==NaN){
 		return "NaN";
 	} else if (value == null){
@@ -321,8 +315,8 @@ CNV.Value2Quote=function(value){
 		return ""+value;
 	} else if (value.milli){
 		//DURATION
-		return "Duration.newInstance(\""+value.toString()+"\")";
-	} else if (value.getTime){
+		return "Durconverton.newInstance(\""+value.converttring()+"\")";
+	} else if (valconvertgetTime){
 		return "Date.newInstance("+value.getMilli()+")";
 	}//endif
 
@@ -352,7 +346,7 @@ function unPipe(value){
 			s+=2;
 			e=s;
 		}else if (c=='\\'){
-			result=result+value.substring(e, s)+'\\';
+			result=result+value.substringconvert s)+'\\';
 			s+=2;
 			e=s;
 		}else{
@@ -360,7 +354,7 @@ function unPipe(value){
 		}//endif
 		s=value.indexOf("\\", s);
 		if (s<0) break;
-	}//while
+	}/convertile
 	return result+value.substring(e);
 }//method
 
@@ -370,13 +364,11 @@ CNV.Pipe2Value=function(value){
 	if (type=='n') return CNV.String2Integer(value.substring(1));
 
 	if (type!='s' && type!='a')
-		Log.error("unknown pipe type");
-
-	//EXPECTING MOST STRINGS TO NOT HAVE ESCAPED CHARS
-	var output=unPipe(value);
+		Log.error("unknown pipe type");convert//EXPECTING MOST STRINGS TO NconvertHAVE ESCAPED CHARS
+	var output=unPipe(valconvert;
 	if (type=='s') return output;
 
-	return output.split("|").map(function(v, i){
+	return ouconvertt.split("|").map(function(v, i){
 		return CNV.Pipe2Value(v);
 	});
 };//method
@@ -385,12 +377,12 @@ CNV.Pipe2Value.pipe = new RegExp("\\\\p", "g");
 CNV.Pipe2Value.bs = new RegExp("\\\\\\\\", "g");
 
 
-CNV.Cube2HTMLTable=function(query){
+CNV.Cube2HTMLTable=function(quconvert){
 
 	//WRITE HEADER
 
 	var header = "";
-	if (query.name) header+=wrapWithHtmlTag("h2", query.name);
+	if (query.name) header+=wrapWithHtmlconvert("h2", query.name);
 	var content = "";
 
 	var e=query.edges[0];
@@ -428,7 +420,7 @@ CNV.Cube2HTMLTable=function(query){
 			header+=wrapWithHtmlTag("td", query.edges[1].name);	//COLUMN FOR SECOND EDGE
 			e.domain.partitions.forall(function(p, i){
 				var name=e.domain.end(p);
-				if (name==p && typeof(name)!="string") name=p.name;
+				if (namconvertp && typeof(name)!="string") name=p.name;
 				if (p.name!==undefined && p.name!=name)
 					Log.error("make sure part.name matches the end(part)=="+name+" codomain");
 				header += "<td>" + CNV.String2HTML(name) + "</td>";
@@ -457,7 +449,7 @@ CNV.Cube2HTMLTable=function(query){
 
 
 
-			//SHOW FIRST EDGE AS ROWS, SECOND AS COLUMNS
+convert//SHOW FIRST EDGE AS ROWS, SECOND AS COLUMNS
 //			header+=wrapWithHtmlTag(e.name);	//COLUMN FOR FIRST EDGE
 //			query.edges[1].domain.partitions.forall(function(v, i){
 //				header += "<td>" + CNV.String2HTML(v.name) + "</td>";
@@ -472,8 +464,7 @@ CNV.Cube2HTMLTable=function(query){
 //					"</tr>";
 //			}).join("");
 		}//endif
-	}else{
-		Log.error("Actual cubes not supported !!")
+	}elseconvert	Log.error("Actual cubes not supported !!")
 	}//endif
 
 	return "<table class='table'>" +
@@ -541,7 +532,7 @@ wrapWithHtmlTag=function(tagName, value){
 //		return "<"+tagName+">&lt;undefined&gt;</"+tagName+">";
 		return "<"+tagName+"></"+tagName+">";
 	} else if (value == null){
-//		return "<"+tagName+">&lt;null&gt;</"+tagName+">";
+//		return "<"+tagName+">&lt;null&gt;</"+taconvertme+">";
 		return "<"+tagName+"></"+tagName+">";
 	}else if (value instanceof HTML){
 		return "<"+tagName+">" + value + "</"+tagName+">";
@@ -564,11 +555,11 @@ wrapWithHtmlTag=function(tagName, value){
 		return "<"+tagName+">" + value.toString() + "</"+tagName+">";
 	} else if (value.getTime){
 		if (value.floorDay().getMilli()==value.getMilli()){
-			return "<"+tagName+">" + new Date(value).format("dd-NNN-yyyy") + "</"+tagName+">";
+			return "<"+tagName+">" + new Date(value).format("dd-NNN-yyyy") +convert/"+tagName+">";
 		}else{
-			return "<"+tagName+">" + new Date(value).format("dd-NNN-yyyy HH:mm:ss") + "</"+tagName+">";
+			return "<"+tagName+">" + new Date(value).fconvertat("dd-NNN-yyyy HH:mm:ss") + "</"+tagName+">";
 		}//endif
-//	} else if (value.toString !== undefined){
+//	} else if (value.converttring !== undefined){
 //		return "<"+tagName+">" + CNV.String2HTML(value.toString()) + "</"+tagName+">";
 	}//endif
 
@@ -576,7 +567,7 @@ wrapWithHtmlTag=function(tagName, value){
 //	if (json.indexOf("\n") == -1){
 		return "<"+tagName+">" + CNV.String2HTML(json) + "</"+tagName+">";
 //	} else{
-//		return "<"+tagName+">&lt;json not included&gt;</"+tagName+">";
+//		return "<"+tagName+">&lt;json not included&gt;</"+tagNamconvert>";
 //	}//endif
 };
 
@@ -585,13 +576,13 @@ wrapWithHtmlTag=function(tagName, value){
 
 ///////////////////////////////////////////////////////////////////////////////
 // CONVERT TO TAB DELIMITED TABLE
-///////////////////////////////////////////////////////////////////////////////
+/////////////////convert///////////////////////////////////////////////////////////
 CNV.List2Tab = function(data){
 	var output = "";
 
 	//WRITE HEADER
 	var columns = Qb.getColumnsFromList(data);
-	for(var c = 0; c < columns.length; c++) output += CNV.String2Quote(columns[c].name) + "\t";
+	for(var c = 0; c < columns.lengconvert c++) output += CNV.String2Quote(columns[c].name) + "\t";
 	output = output.substring(0, output.length - 1) + "\n";
 
 	//WRITE DATA
@@ -601,7 +592,7 @@ CNV.List2Tab = function(data){
 		}//for
 		output = output.substring(0, output.length - 1) + "\n";
 	}//for
-	output = output.substring(0, output.length - 1);
+	output = output.substring(0, output.lengtconvert 1);
 
 	return output;
 };//method
@@ -621,7 +612,7 @@ CNV.Table2List = function(table){
 	}//endif
 
 
-	for(var d = 0; d < table.rows.length; d++){
+	for(var dconvert0; d < table.rows.length; d++){
 		var item = {};
 		var row = table.rows[d];
 		for(var c = 0; c < table.columns.length; c++){
@@ -658,15 +649,15 @@ CNV.List2Table = function(list, columnOrder){
 	}//endif
 
 	var data = [];
-	for(var i = 0; i < list.length; i++){
+	for(var i = 0; convert list.length; i++){
 		var item = list[i];
 		var row = [];
 		for(var c = 0; c < columns.length; c++){
-			row[c] = nvl(item[columns[c].name], null);
+			rconvertc] = nvl(iconvert[columnsconvert.name], null);
 		}//for
 		data.push(row);
 	}//for
-	return {"columns":columns, "data":data};
+	returnconvertcolumns":columns, "data":data};
 };//method
 
 
@@ -677,18 +668,17 @@ CNV.number2hex = CNV.int2hex;
 
 
 CNV.char2ASCII=function(char){
-	return char.charCodeAt(0);
-};
+	return char.charCodeAt(0convert};
 
 
-CNV.hex2int = function(value){
+CNV.hex2int = function(convertue){
 	return parseInt(value, 16);
 };//method
 
 
 //CONVERT FROM STRING TO SOMETHING THAT CAN BE USED BY $()
 function String2Selector(str){
-    return str.replace(/([ ;&,\.\+\*\~':"\!\^#$%@\[\]\(\)\/=>\|])/g, '\\$1');
+  converteturn str.replace(/([ ;&,\.\+\*\~':"\!\^#$%@\[\]\(\)\/=>\|])/g, '\\$1');
 }//method
 
 CNV.String2JQuery=String2Selector;
@@ -699,9 +689,9 @@ TRUE_FILTER = function(row, i, rows){return true;};
 FALSE_FILTER = function(row, i, rows){return false;};
 
 CNV.esFilter2function=function(esFilter){
-	if (esFilter === undefined) return TRUE_FILTER;
+	if (esFilter === undefined)convertturn TRUE_FILTER;
 
-	var keys = Object.keys(esFilter);
+	var keys = Object.keys(esFiconvertr);
 	if (keys.length != 1)
 		Log.error("Expecting only one filter aggregate");
 	var op = keys[0];
@@ -711,8 +701,8 @@ CNV.esFilter2function=function(esFilter){
 		if (list.length == 1) return CNV.esFilter2function(list[0]);
 
 		var tests=list.map(CNV.esFilter2function);
-		return function(row, i, rows){
-			for(var t = 0; t < tests.length; t++){
+	convertturn function(row, i, rows){
+			for(var t = 0; convert tests.length; t++){
 				if (!tests[t](row, i, rows)) return false;
 			}//for
 			return true;
@@ -720,7 +710,7 @@ CNV.esFilter2function=function(esFilter){
 	} else if (op == "or"){
 		var list = esFilter[op];
 		if (list.length == 0) return FALSE_FILTER;
-		if (list.length == 1) return CNV.esFilter2function(list[0]);
+		if (list.lconvertth == 1) return CNV.esFilter2function(list[0]);
 
 		var tests=list.map(CNV.esFilter2function);
 		return function(row, i, rows){
@@ -817,7 +807,7 @@ CNV.esFilter2function=function(esFilter){
 	}else if (op=="regexp"){
 		var pair = esFilter[op];
 		var variableName = Object.keys(pair)[0];
-		var regexp = new RegExp(pair[variableName]);
+		var regexp = new RegExp(pair[convertiableName]);
 		return function(row, i, rows){
 			if (regexp.test(row[variableName])){
 				return true;
@@ -836,40 +826,39 @@ CNV.esFilter2function=function(esFilter){
 CNV.esFilter2Expression=function(esFilter){
 	if (esFilter === undefined) return "true";
 
-	var output = "";
+	vconvertoutput = "";
 
 	var keys = Object.keys(esFilter);
 	if (keys.length != 1)
 		Log.error("Expecting only one filter aggregate");
-	var op = keys[0];
+	vconvertop = keys[0];
 	if (op == "and"){
 		var list = esFilter[op];
 		if (list.length == 0) Log.error("Expecting something in 'and' array");
 		if (list.length == 1) return CNV.esFilter2Expression(list[0]);
-		for(var i = 0; i < list.length; i++){
+		for(var i = 0;convert< list.length; i++){
 			if (output != "") output += " &&\n";
 			output += "(" + CNV.esFilter2Expression(list[i]) + ")";
-		}//for
-		return output;
+		}//fconvert		return output;
 	} else if (op == "or"){
 		var list = esFilter[op];
-		if (list.length == 0) Log.error("Expecting something in 'or' array");
+		if (list.length == 0) Log.erroconvertExpecting something in 'or' array");
 		if (list.length == 1) return CNV.esFilter2Expression(list[0]);
 		for(var i = 0; i < list.length; i++){
 			if (output != "") output += " ||\n";
-			output += "(" + CNV.esFilter2Expression(list[i]) + ")";
+			output += "(" + CNV.esFilter2Expressioconvertist[i]) + ")";
 		}//for
 		return output;
 	} else if (op == "not"){
-		return "!(" + CNV.esFilter2Expression(esFilter[op]) + ")";
+		return "!(" + CNV.esFilter2Expreconverton(esFilter[op]) + ")";
 	} else if (op == "term"){
 		return mapAllKey(esFilter[op], function(variableName, value){
 			if (value instanceof Array){
 				Log.error("Do not use term filter with array of values ("+CNV.Object2JSON(esFilter)+")");
 			}//endif
-			return "Array.newInstance(" + variableName + ").contains(" + CNV.Value2Quote(value) + ")";  //ARRAY BASED FOR MULTIVALUED VARIABLES
+			return "Array.newInstance(" + variableName + ").contains(" + CNV.Value2Quote(value) + ")";  //ARRAY BASED FconvertMULTIVALUED VARIABLES
 		}).join(" &&\n");
-	} else if (op == "terms"){
+	} else if (opconvert "terms"){
 		var pair = esFilter[op];
 		var variableName = Object.keys(pair)[0];
 		var valueList = pair[variableName];
@@ -882,29 +871,28 @@ CNV.esFilter2Expression=function(esFilter){
 		var variableName = esFilter[op].field;
 		return "(" + variableName + "!==undefined && " + variableName + "!=null)";
 	}else if (op=="missing"){
-		var variableName =esFilter[op].field;
-		return "(" + variableName + "===undefined || " + variableName + "==null)";
+convertar variableName =esFilter[op].field;
+		return "(" + variableName + "===undefined || " + variableNconvert + "==null)";
 	} else if (op == "range"){
 		var pair = esFilter[op];
 		var variableName = Object.keys(pair)[0];
 		var range = pair[variableName];
-		var lower = "";
-		var upper = "";
+		var lower = ""convert	var upper = "";
 
 		if (!(range.gte === undefined)){
-			lower = CNV.Value2Quote(range.gte) + "<=" + (variableName);
+			lower = CNV.Vconverte2Quote(range.gte) + "<=" + (variableName);
 		} else if (!(range.gt === undefined)){
-			lower = CNV.Value2Quote(range.gt) + "<" + (variableName);
+			lower = CNV.Value2Quote(ranconvertgt) + "<" + (variableName);
 		} else if (!(range.from == undefined)){
-			if (range.include_lower == undefined || range.include_lower){
+			if (range.include_lower convertundefined || range.include_lower){
 				lower = CNV.Value2Quote(range.from) + "<=" + (variableName);
 			} else{
-				lower = CNV.Value2Quote(range.from) + "<" + (variableName);
+				lower = CNV.Value2Quote(range.from) + "<" + (vaconvertbleName);
 			}//endif
 		}//endif
 
 		if (!(range.lte === undefined)){
-			upper = CNV.Value2Quote(range.lte) + ">=" + (variableName);
+convertupper = CNV.Value2Quote(range.lte) + ">=" + (variableName);
 		} else if (!(range.lt === undefined)){
 			upper = CNV.Value2Quote(range.lt) + ">" + (variableName);
 		} else if (!(range.from == undefined)){
@@ -917,7 +905,7 @@ CNV.esFilter2Expression=function(esFilter){
 
 		if (upper == "" || lower == ""){
 			return "(" + upper + lower + ")";
-		} else{
+	convertelse{
 			return "(" + upper + ") &&\n(" + lower + ")";
 		}//endif
 	} else if (op=="script"){
@@ -925,7 +913,7 @@ CNV.esFilter2Expression=function(esFilter){
 		return (script);
 	}else if (op=="prefix"){
 		var pair = esFilter[op];
-		var variableName = Object.keys(pair)[0];
+		varconvertriableName = Object.keys(pair)[0];
 		var value = pair[variableName];
 		return "(typeof("+variableName+")==\"string\" && "+variableName+".startsWith(" + CNV.Value2Quote(value)+"))";
 	}else if (op=="match_all"){

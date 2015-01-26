@@ -10,10 +10,10 @@
 
 from __future__ import unicode_literals
 from datetime import timedelta
-from pyLibrary.cnv import CNV
+from pyLibrary import convert
 from pyLibrary.collections import OR
 from pyLibrary.env.files import File
-from pyLibrary.env.logs import Log
+from pyLibrary.debugs.logs import Log
 from pyLibrary.thread.threads import Thread
 from pyLibrary.times.dates import Date
 
@@ -72,7 +72,7 @@ class MoDevMetricsDriver(object):
         # CONFIDENT SOMETHING IMPORTANT IS STILL HAPPENING
         self._wait_for_stable(lambda: (status(), len(logs())), timeout)
 
-        output = [CNV.JSON2object(CNV.html2unicode(e.get_attribute('innerHTML'))) for e in logs()]
+        output = [convert.json2value(convert.html2unicode(e.get_attribute('innerHTML'))) for e in logs()]
         Log.note("Logs:\n{{logs|indent}}", {"logs": output})
         return output
 
@@ -105,7 +105,7 @@ class MoDevMetricsDriver(object):
                 oldValue = newValue
                 newValue = potentialValue
                 detectTime = now
-            if now - detectTime > timeout:
+            if now > detectTime + timeout:
                 return
             Thread.sleep(seconds=0.5)
 

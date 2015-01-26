@@ -29,6 +29,7 @@ from util import MoDevMetricsDriver, path2fullpath
     ("fxos/burndown-release.html#release=2.2", timedelta(seconds=10)),
     ("fxos/burndown-release-compare.html#release=2.0,2.1", timedelta(seconds=10)),
     ("fxos/burndown-ucid.html#scope=Scope.Both+2.1", timedelta(seconds=30))
+    # file:///C:/Users/kyle/code/charts/fxos/burndown-feature.html#sampleInterval=day&sampleMax=2015-02-23&sampleMin=2014-09-06&bugList=778617&hierarchyMode=All+dependencies
 ])
 def test_one_page(path, timeout):
     fullpath = path2fullpath(path)

@@ -4,9 +4,9 @@
 //Please keep the owner names consistent with phonebook names
 
 var OWNERS = {
-  "AudioChannel": "Eric Chou", // Firefox OS
+  "AudioChannel": "Steven Lee", // Firefox OS
   // "BetaTriage": "?", // Firefox OS
-  "Bluetooth": "Eric Chou", // Firefox OS
+  "Bluetooth": "Ben Tian (Shawn Huang)", // Firefox OS
   "Build Config": "Dylan Oliver", // Core
   "Canvas: 2D": "Milan Sreckovic (Benoit Jacob, Jeff Muizelaar)",
   "Canvas: WebGL": "Milan Sreckovic (Benoit Jacob, Jeff Gilbert)",
@@ -71,6 +71,7 @@ var OWNERS = {
   "JavaScript Engine": "Naveed Ihsanullah", // Core
   "JavaScript: GC": "Naveed Ihsanullah", // Core
   "Layout": "Jet Villegas", // Core
+  "MTP/UMS": "Ben Tian", // Firefox OS
   "MFBT": "Naveed Ihsanullah",
   "Networking": "Jason Duell", // Core
   "NFC": "Vincent Chang", // Firefox OS

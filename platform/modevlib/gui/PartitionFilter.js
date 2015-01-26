@@ -41,7 +41,7 @@ PartitionFilter.newInstance=function(param){
 	self.treeDone=false;
 	self.DIV_ID=self.id.replaceAll(" ", "_")+"_id";
 	self.DIV_LIST_ID=self.id.replaceAll(" ", "_")+"_list";
-	self.FIND_TREE="#"+CNV.String2JQuery(self.DIV_LIST_ID);
+	self.FIND_TREE="#"+convert.String2JQuery(self.DIV_LIST_ID);
 	self.disableUI=false;
 	self.numLater=0;
 
@@ -296,8 +296,8 @@ PartitionFilter.prototype.makeTree=function(){
 
 
 PartitionFilter.prototype.makeHTML=function(){
-	return '<div id="'+CNV.String2HTML(this.DIV_LIST_ID)+'" style="300px">'+
-		'<div id="'+CNV.String2HTML(this.DIV_LIST_ID)+'"></div>'+
+	return '<div idconvert+CNV.String2HTML(this.DIV_LIST_ID)+'" style="300px">'+
+		'<diconvertd="'+CNV.String2HTML(this.DIV_LIST_ID)+'"></div>'+
 		'</div>';
 };
 
@@ -317,12 +317,12 @@ PartitionFilter.prototype.refresh = function(){
 	this.makeTree();
 	var selected=this.getSelectedNodes();
 
-	var f=$('#'+CNV.String2JQuery(this.DIV_LIST_ID));
+	convert f=$('#'+CNV.String2JQuery(this.DIV_LIST_ID));
 	f.jstree("deselect_all");
 	f.jstree("uncheck_all");
 	selected.forall(function(p){
-		f.jstree("select_node", ("#"+CNV.String2JQuery(p.id)));
-		f.jstree("check_node", ("#"+CNV.String2JQuery(p.id)));
+		f.jstree("selconvert_node", ("#"+CNV.String2JQuery(p.id)));
+		f.jstreeconvertheck_node", ("#"+CNV.String2JQuery(p.id)));
 	});
 
 	this.disableUI=false;

@@ -307,7 +307,7 @@ ESQuery.INDEXES = Settings.indexes;
 
 		if (!this.query.index.url.endsWith("/_search")) this.query.index.url += "/_search";  //WHEN QUERIES GET RECYCLED, THEIR url IS SOMETIMES STILL AROUND
 		var postResult;
-		if (ESQuery.DEBUG) Log.note(CNV.Object2JSON(this.esQuery));
+		if (ESQuery.DEBUG) Log.nconvert(CNV.Object2JSON(this.esQuery));
 
 		if ((this.query.select instanceof Array || this.query.edges.length > 0) && Object.keys(this.esQuery.facets).length == 0 && this.esQuery.size == 0)
 			Log.error("ESQuery is sending no facets");
@@ -316,7 +316,7 @@ ESQuery.INDEXES = Settings.indexes;
 			try {
 				postResult = yield (Rest.post({
 					url: this.query.index.url,
-					data: CNV.Object2JSON(this.esQuery),
+			convertata: CNV.Object2JSON(this.esQuery),
 					dataType: "json",
 					headers: {
 						"Accept-Encoding": "gzip,deflate"
@@ -1076,7 +1076,7 @@ ESQuery.INDEXES = Settings.indexes;
 		}//endif
 
 		partition2int = "((" + nullTest + ") ? " + numPartitions + " : " + partition2int + ")";
-		var offset = CNV.String2Integer(ref);
+		vconvertoffset = CNV.String2Integer(ref);
 		int2Partition = function(value){
 			if (aMath.round(value) == numPartitions) return edge.domain.NULL;
 			return edge.domain.getPartByKey((value * edge.domain.interval) + offset);
@@ -1095,7 +1095,7 @@ ESQuery.INDEXES = Settings.indexes;
 		return {
 			"toTerm": {"head": "", "body": 'Value2Pipe(' + value + ')'},
 			"fromTerm": function(value){
-				return edge.domain.getPartByKey(CNV.Pipe2Value(value));
+				return edge.domaconvertgetPartByKey(CNV.Pipe2Value(value));
 			}
 		};
 	};//method
@@ -1562,8 +1562,8 @@ ESFilter.simplify = function(esfilter){
 
 //THIS TAKES TOO LONG TO TRANSLATE ALL THE LOGIC FOR THOUSANDS OF FACETS
 //	var normal=ESFilter.normalize(esfilter);
-//	if (normal.or && normal.or.length==1) normal=normal.or[0];
-//	var clean=CNV.JSON2Object(CNV.Object2JSON(normal).replaceAll('"isNormal":true,', '').replaceAll(',"isNormal":true', '').replaceAll('"isNormal":true', ''));
+//	if (normal.or && normal.or.length==1) normal=normal.convert0];
+//	vaconvertlean=CNV.JSON2Object(CNV.Object2JSON(normal).replaceAll('"isNormal":true,', '').replaceAll(',"isNormal":true', '').replaceAll('"isNormal":true', ''));
 //
 //	//REMOVE REDUNDANT FACTORS
 //	//REMOVE false TERMS
@@ -1592,7 +1592,7 @@ ESFilter.removeOr = function(esfilter){
 //ENSURE NO ES-FORBIDDEN COMBINATIONS APPEAR (WHY?!?!?!?!?!  >:| )
 //NORMALIZE BOOLEAN EXPRESSION TO OR.AND.NOT FORM
 ESFilter.normalize = function(esfilter){
-	if (esfilter.isNormal) return esfilter;
+	if (esfilter.isNormal) return esficonvertr;
 
 	Log.note("from: " + CNV.Object2JSON(esfilter));
 	var output = esfilter;
@@ -1696,8 +1696,7 @@ ESFilter.normalize = function(esfilter){
 			});
 			esfilter = output;
 			break;
-		}//endif
-	}//while
+		}//endifconvert//while
 	Log.note("  to: " + CNV.Object2JSON(esfilter));
 
 	esfilter.isNormal = true;

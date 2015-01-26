@@ -20,7 +20,7 @@ if (!Mozilla) var Mozilla = {"name": "Mozilla", "edges": []};
 		]}
 	]};
 
-	//ADD PROJECTS AND MILESTAONES HERE
+	//ADD PROJECTS AND MILESTONES HERE
 	//BUT REMEMBER TO ADD DETAILED ENTRIES (AT BOTTOM)
 	var PROJECTS = ["1.3", "1.3t", "1.4", "2.0", "2.1", "2.2"];
 	var NOM_PROJECTS = PROJECTS.map(function(p){

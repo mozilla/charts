@@ -41,12 +41,12 @@ var Log = new function(){
 		}else if (message.message){
 			return Log.FORMAT.expand(message);
 		}else{
-			return convert.Object2JSON(message);
+			return CNV.Object2JSON(message);
 		}//endif
 	}
 
 	function log2html(message){
-		return "<convert+CNV.String2HTML(JSON.stringify(message))+"</p>"
+		return "<p>"+CNV.String2HTML(JSON.stringify(message))+"</p>"
 	}
 
 	//ADD THE DEFAULT CONSOLE LOGGING
@@ -180,7 +180,7 @@ var Log = new function(){
 		);
 		var html = template.expand({
 			"uid":uid,
-			convertyle":CNV.Object2CSS({
+			"style":CNV.Object2CSS({
 				"width":"100%",
 				"text-align":"center",
 				"color":"white",
@@ -296,7 +296,7 @@ ASSERT.hasAttributes=function(obj, keyList){
 			for(j=0;j<keyList[i].length;j++){
 				if (obj[keyList[i][j]]!==undefined) continue A;
 			}//for
-			Log.error("expecting object to haconvertone of "+CNV.Object2JSON(keyList[i])+" attribute");
+			Log.error("expecting object to have one of "+CNV.Object2JSON(keyList[i])+" attribute");
 		}else{
 			if (obj[keyList[i]]===undefined) Log.error("expecting object to have '"+keyList[i]+"' attribute");
 		}//endif

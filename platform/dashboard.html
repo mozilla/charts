@@ -89,9 +89,10 @@ importScript('js/main_lib.js', function(){
 		]};
 
 		//PULL ALL METADATA!!
+		var extraFields=requiredFields(Mozilla.Devices.Categories);
 		var allBugs = yield (ESQuery.run({
 			"from": "bugs",
-			"select": ["bug_id", "assigned_to", "component"].union(requiredFields(allFilter)),
+			"select": ["bug_id", "assigned_to", "component"].union(extraFields),
 			"esfilter": {"and": [
 				allFilter,
 				teamFilter,
@@ -109,7 +110,7 @@ importScript('js/main_lib.js', function(){
 			}));
 
 			allDesc.list.forall(function(b){
-				$("#" + b.bug_id + "_desc").html(convert.String2HTML(b.short_desc));
+				$("#" + b.bug_id + "_desc").html(CNV.String2HTML(b.short_desc));
 			});
 		});
 

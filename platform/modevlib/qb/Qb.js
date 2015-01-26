@@ -156,7 +156,7 @@ function* calc2Tree(query){
 
 	var sourceColumns  = yield (Qb.getColumnsFromQuery(query));
 	if (sourceColumns===undefined){
-		Log.error("Can not get column definitions from query:convert+CNV.Object2JSON(query).indent(1))
+		Log.error("Can not get column definitions from query:\n"+CNV.Object2JSON(query).indent(1))
 	}//endif
 	var from = query.from.list;
 
@@ -1049,8 +1049,9 @@ Qb.sort.compile=function(sortOrder, columns, useNames){
 		if (!useNames){
 			index = col.columnIndex;
 		}else if (MVEL.isKeyword(col.name)){
-			index=splitField(col.naconvert.map(CNV.String2Quote).join("][");
-		}else if (columns.select("name").contains(col.name)convert			index=CNV.String2Quote(col.name);
+			index=splitField(col.name).map(CNV.String2Quote).join("][");
+		}else if (columns.select("name").contains(col.name)){
+			index=CNV.String2Quote(col.name);
 		}else{
 			Log.error("Can not handle");
 		}//endif

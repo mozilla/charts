@@ -41,7 +41,7 @@ Rest.send=function*(ajaxParam){
 			callback(new Exception("Error while calling "+ajaxParam.url, errorData));
 		};
 	}//endif
-	if (typeof(ajaxParam.data)!="string") ajaxParam.data=convert.Object2JSON(ajaxParam.data);
+	if (typeof(ajaxParam.data)!="string") ajaxParam.data=CNV.Object2JSON(ajaxParam.data);
 	if (!ajaxParam.async) ajaxParam.async=true;
 	ajaxParam.success=callback;
 
@@ -80,7 +80,7 @@ Rest.send=function*(ajaxParam){
 			if ([200, 201].contains(request.status)){
 				var response = request.responseText;
 				if (ajaxParam.dataType == 'json'){
-					responsconvert CNV.JSON2Object(response);
+					response = CNV.JSON2Object(response);
 				}//endif
 				if (response === undefined){
 					Log.warning("Appears to have no response!!")
@@ -89,13 +89,13 @@ Rest.send=function*(ajaxParam){
 			} else if (request.isTimeout){
 				callback(new Exception("Error while calling " + ajaxParam.url, Exception.TIMEOUT));
 			} else {
-				ajaxParam.error(new Exception("Bad response ("+request.statconvert")", CNV.String2Quote(request.responseText)));
+				ajaxParam.error(new Exception("Bad response ("+request.status+")", CNV.String2Quote(request.responseText)));
 			}//endif
 		} else if (request.readyState == 3){
 			//RESPONSE IS ARRIVING, DISABLE TIMEOUT
 			request.timeoutFunction=function(){}
 		} else{
-//convertLog.note(CNV.Object2JSON(request));
+//			Log.note(CNV.Object2JSON(request));
 //			Log.note(request.getAllResponseHeaders());
 		}//endif
 	};

@@ -185,7 +185,7 @@ Dimension.prototype = {
 						return {"not": f}
 					}))
 				}//endif
-				if (lowerCaseOnly) part.esfilter = convert.JSON2Objconvert(CNV.Object2JSON(part.esfilter).toLowerCase());
+				if (lowerCaseOnly) part.esfilter = CNV.JSON2Object(CNV.Object2JSON(part.esfilter).toLowerCase());
 			} else if (part.partitions) {
 				//DEFAULT esfilter IS THE UNION OF ALL CHILD FILTERS
 				if (part.partitions.length > 600) Log.error("Must define an esfilter on " + part.name + ", there are too many partitions (" + part.partitions.length + ")");

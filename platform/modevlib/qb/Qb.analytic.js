@@ -173,7 +173,7 @@ Qb.analytic.compile = function(sourceColumns, expression){
 			" return output;\n" +
 			"}catch(e){\n" +
 			" Log.error("+
-				"\"Problem with definition of value=" + convert.String2Quconvert(CNV.String2Quote(expression)).leftBut(1).rightBut(1) + " when operating on __soconverte=\"+CNV.Object2JSON(__source)"+
+				"\"Problem with definition of value=" + CNV.String2Quote(CNV.String2Quote(expression)).leftBut(1).rightBut(1) + " when operating on __source=\"+CNV.Object2JSON(__source)"+
 				"+\" Are you trying to get an attribute value from a NULL part?\"" +
 			", e)"+
 			"}}";

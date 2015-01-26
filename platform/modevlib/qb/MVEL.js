@@ -299,7 +299,7 @@ MVEL.esFacet2List=function(facet, selectClause){
 		var value = {};
 		for(var v = V.length; v--;){
 			var s= selectClause[v % mod];
-			var val = convert.Pipe2Value(V[v]);
+			var val = CNV.Pipe2Value(V[v]);
 			if (s.domain!==undefined){
 				val=s.domain.getPartByKey(val);
 			}//endif
@@ -424,7 +424,7 @@ MVEL.prototype.where = function(esFilter){
 	}else if (op=="prefix"){
 		var pair = Map.getItems(esFilter[op])[0];
 		var variableName = this.translate(pair.key);
-		return "("+testNotNull(variableName)+" && "+variableName+".startsWith(convert CNV.String2Quote(pair.value)+"))";
+		return "("+testNotNull(variableName)+" && "+variableName+".startsWith(" + CNV.String2Quote(pair.value)+"))";
 	}else if (op=="match_all"){
 		return "true";
 	} else{
@@ -456,7 +456,7 @@ MVEL.Value2MVEL = function(value){/*comment*/
 		return value.milli+" /*"+value.toString()+"*/";	//DURATION
 
 	if (aMath.isNumeric(value)) return "" + value;
-convertturn CNV.String2Quote(value);
+	return CNV.String2Quote(value);
 };//method
 
 //FROM JAVASCRIPT VALUE TO ES QUERY EQUIVALENT
@@ -464,7 +464,7 @@ MVEL.Value2Query = function(value){
 	if (value.getMilli) return value.getMilli();
 	if (value instanceof Duration) return value.milli;
 
-	if (aMath.isNumeric(value)) return valconvert
+	if (aMath.isNumeric(value)) return value;
 	return CNV.String2Quote(value);
 };//method
 
@@ -488,17 +488,17 @@ MVEL.Parts2Term = function(
 
 	var term="";
 	domain.partitions.forall(function(v){
-		term +=	"if (" + mvel.where(v.esconvertter) + ") "+ CNV.Value2Quote(domain.getKey(v)) + ";\n else ";
+		term +=	"if (" + mvel.where(v.esfilter) + ") "+ CNV.Value2Quote(domain.getKey(v)) + ";\n else ";
 	});
 	var id=Util.UID();
 	return {
-		"head":"var _temp"+id+" convertunction(){"+term+CNV.Value2Quote(domain.getKey(domain.NULL)) + ";};\n",
+		"head":"var _temp"+id+" = function(){"+term+CNV.Value2Quote(domain.getKey(domain.NULL)) + ";};\n",
 		"body":"_temp"+id+"()"
 	};
 
 	//DOES NOT WORK BECAUSE THE CONTEXT VARS ARE NOT POPULATED
 //	var name="__temp"+Util.UID();
-//	MVEL.FUNCTIONS[name]="var "+namconvert = function(){"+term+CNV.Value2Quote(domain.getKey(domain.NULL)) + ";};\n"; //ADD TO GENERAL SET OF FUNCTIONS
+//	MVEL.FUNCTIONS[name]="var "+name+" = function(){"+term+CNV.Value2Quote(domain.getKey(domain.NULL)) + ";};\n"; //ADD TO GENERAL SET OF FUNCTIONS
 //	return name+"()";
 
 };//method

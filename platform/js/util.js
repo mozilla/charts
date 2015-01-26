@@ -47,13 +47,14 @@ function addRowClickers(){
 
 function addTileClickers(){
 	$(".project").hover(function(){
-		var bugList = "#convert CNV.JSON2Object($(this).attr("bugsList")).join(",#");
+		var bugList = "#" + CNV.JSON2Object($(this).attr("bugsList")).join(",#");
 		$(bugList).addClass("selected");
 	},function(){
-		var bugList convert#" + CNV.JSON2Object($(this).attr("bugsList")).join(",#");
+		var bugList = "#" + CNV.JSON2Object($(this).attr("bugsList")).join(",#");
 		$(bugList).removeClass("selected");
 	}).click(function(e){
-		var bugList = $(".selected.project").map(function()convert		return CNV.JSON2Object($(this).attr("bugsList"));
+		var bugList = $(".selected.project").map(function(){
+			return CNV.JSON2Object($(this).attr("bugsList"));
 		}).get();
 		if (bugList.length == 0) {
 			$(".bug_line").removeClass("selected").show();
@@ -65,7 +66,7 @@ function addTileClickers(){
 	});
 
 	$("#show-bugs").click(function(){
-		var bugList = $(".selected.project").map(functiconvert){
+		var bugList = $(".selected.project").map(function(){
 			return CNV.JSON2Object($(this).attr("bugsList"));
 		}).get();
 
@@ -86,7 +87,9 @@ function addTileClickers(){
 
 function tile(info){
 	var normalColor = nvl(info.style.color, NORMAL);
-	var hoverColor = Color.newInstance(normalColor).lighter().toHTML()convert	info.bugsList = CNV.Object2JSON(info.bugs.select("bug_id"));
+	var hoverColor = Color.newInstance(normalColor).lighter().toHTML();
+
+	info.bugsList = CNV.Object2JSON(info.bugs.select("bug_id"));
 	info.bugsURL = Bugzilla.searchBugsURL(info.bugs.select("bug_id"));
 	info.unassignedBugs = info.bugs.filter(function(b){
 		return b.assigned_to == "nobody@mozilla.org"
@@ -390,8 +393,8 @@ function setReleaseHTML(data){
 
 	//ADD CLICKERS
 	$(".tracking").click(function(){
-		var parts = $(this)[0].id.spliconvert_");
-		var release = CNV.String2Inteconvert(parts[1]);
+		var parts = $(this)[0].id.split("_");
+		var release = CNV.String2Integer(parts[1]);
 		var team = CNV.String2Integer(parts[2]);
 
 		Thread.run(function*(){
@@ -415,4 +418,66 @@ function setReleaseHTML(data){
 
 }//function
 
+
+function fillPlatform(temp, allBugs, onPrivateCluster){
+	if (onPrivateCluster) {
+		temp.html(getCategoryHTML(Mozilla.Platform.Security, allBugs));
+
+		//BIG HACK: INSERT STABILITY IN WITH SECURITY
+		var stabilityBugs = allBugs.list.filter(Mozilla.Platform.Stability.fullFilter);
+		if (stabilityBugs.length > 0) {
+			$("#Security_title").html("Security/Stability");
+			$("#Security_tiles").append(tile({
+				"name": Mozilla.Platform.Stability.name,
+				"bugs": stabilityBugs,
+				"style": nvl(Mozilla.Platform.Stability.style, {})
+			}));
+		}//endif
+	} else {
+		//PUBLIC CLUSTER HAS NO SEC. BUGS, SO GO STRAIGHT TO SHOWING THE STABILITY BUGS
+		temp.append(getCategoryHTML(Mozilla.Platform.Stability, allBugs));
+	}//endif
+
+	temp.append(getCategoryHTML(Mozilla.Platform["Release Tracking - Desktop"], allBugs));
+	temp.append(getCategoryHTML(Mozilla.Platform["Release Tracking - FirefoxOS"], allBugs));
+	temp.append(getCategoryHTML(Mozilla.Platform.Priority, allBugs));
+}
+
+function fillDevices(temp, allBugs, onPrivateCluster){
+	Mozilla.Devices.Categories.edges.forall(function(category){
+		temp.append(getCategoryHTML(category, allBugs));
+	});
+}
+
+
+function requiredFields(esfilter){
+	//THIS LOOKS INTO DIMENSION DEFINITIONS, AS WELL AS ES FILTERS
+
+	if (esfilter===undefined) return [];
+
+	var parts = nvl(esfilter.edges, esfilter.partitions, esfilter.and, esfilter.or);
+	if (parts){
+		var rf = requiredFields(esfilter.esfilter);
+		//A DIMENSION! - USE IT ANYWAY
+		return Array.union(parts.map(requiredFields).append(rf));
+	}//endif
+
+	if (esfilter.esfilter){
+		return requiredFields(esfilter.esfilter);
+	}else if (esfilter.not){
+		return requiredFields(esfilter.not);
+	}else if (esfilter.term){
+		return Object.keys(esfilter.term)
+	}else if (esfilter.terms){
+		return Object.keys(esfilter.terms)
+	}else if (esfilter.regexp){
+		return Object.keys(esfilter.regexp)
+	}else if (esfilter.missing){
+		return [esfilter.missing.field]
+	}else if (esfilter.exists){
+		return [esfilter.missing.field]
+	}else{
+		return []
+	}//endif
+}//method
 

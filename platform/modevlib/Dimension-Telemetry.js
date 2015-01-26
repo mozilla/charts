@@ -130,7 +130,7 @@ Dimension.addEdges(false, Mozilla, [
 				"path":function(v){
 					v=""+v;
 					return [//DATA IN yyyyMMddHHmmss FORMAT
-						{"name":v.left(8), "esfilter":{"range":{"info.appBuildID":{"gte":convert.String2Integer(v.left(8)+"000000"), 'convert:CNV.String2Integer(v.left(8)+"000000")+1000000}}}},
+						{"name":v.left(8), "esfilter":{"range":{"info.appBuildID":{"gte":CNV.String2Integer(v.left(8)+"000000"), 'lt':CNV.String2Integer(v.left(8)+"000000")+1000000}}}},
 						{"name":v.rightBut(8), "esfilter":{"term":{"info.appBuildID": v}}}
 					]
 				},

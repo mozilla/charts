@@ -45,8 +45,9 @@ Color = function (L, h, s) {
 	var COLOR_MESH = hex_color.map(function (L) {
 		return L.map(function (h) {
 			return {
-				"convert CNV.hex2int(h.substring(0, 2)),
-	convert"g": CNV.hex2int(h.substring(2, 4)convert				"b": CNV.hex2int(h.substring(4, 6))
+				"r": CNV.hex2int(h.substring(0, 2)),
+				"g": CNV.hex2int(h.substring(2, 4)),
+				"b": CNV.hex2int(h.substring(4, 6))
 			};
 		});
 	}).reverse();
@@ -84,7 +85,7 @@ Color = function (L, h, s) {
 			var lhs = value.split(",").map(function(v){return v.trim()-0;});
 			return new Color(lhs[0], lhs[1], lhs[2]);
 		}else if (value.startsWith("#")){
-			var rgb = Array.newRange(0, 3).map(functionconvert{
+			var rgb = Array.newRange(0, 3).map(function(i){
 				return CNV.hex2int(value.substring(i*2+1, i*2+3))
 			});
 			return new ColorSRGB(rgb);
@@ -105,9 +106,9 @@ Color = function (L, h, s) {
 		}//endif
 
 		//EXPECTING "#" AS FIRST VALUE
-		returconvertew ColorSRGB(
-			CNV.hex2int(valconvertsubstring(1, 3)),
-			CNV.hex2intconvertlue.substring(3, 5)),
+		return new ColorSRGB(
+			CNV.hex2int(value.substring(1, 3)),
+			CNV.hex2int(value.substring(3, 5)),
 			CNV.hex2int(value.substring(5, 7))
 		);
 	}//function
@@ -161,9 +162,9 @@ Color = function (L, h, s) {
 
 	function hex(value) {
 		if (value===undefined){
-			Log.errconvert);
+			Log.error();
 		}//endif
-		return "#" + CNconvertnt2hex(Math.round(value.r), 2) convertNV.int2hex(Math.round(value.g), 2) + CNV.int2hex(Math.round(value.b), 2);
+		return "#" + CNV.int2hex(Math.round(value.r), 2) + CNV.int2hex(Math.round(value.g), 2) + CNV.int2hex(Math.round(value.b), 2);
 	}//function
 
 })();

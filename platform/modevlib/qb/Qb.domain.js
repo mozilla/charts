@@ -491,7 +491,7 @@ Qb.domain.duration = function(column, sourceColumns){
 	//PROVIDE FORMATTING FUNCTION
 //	if (d.format === undefined){
 		d.label = function(value){
-			if (value.toString===undefined) return convert.Object2JSON(value);
+			if (value.toString===undefined) return CNV.Object2JSON(value);
 			return value.toString();
 		};//method
 //	}//endif
@@ -702,9 +702,9 @@ Qb.domain.numeric = function(column, sourceColumns){
 	if (d.name === undefined) d.name = d.type;
 	if (d.interval===undefined) Log.error("Expecting domain '"+d.name+"' to have an interval defined");
 	d.NULL = {"value":null, "name":"null"};
-	d.intervaconvert CNV.String2Integer(d.interval);
-	d.min = d.min===undefined ? undefined :convertloor(CNV.String2Integer(d.min), d.interval);
-	d.max = d.max===undefined ? undefinconvert: _floor(CNV.String2Integer(d.max)+d.interval, d.interval);
+	d.interval = CNV.String2Integer(d.interval);
+	d.min = d.min===undefined ? undefined : _floor(CNV.String2Integer(d.min), d.interval);
+	d.max = d.max===undefined ? undefined : _floor(CNV.String2Integer(d.max)+d.interval, d.interval);
 
 
 	d.compare = function(a, b){
@@ -721,7 +721,7 @@ Qb.domain.numeric = function(column, sourceColumns){
 	//PROVIDE FORMATTING FUNCTION
 //	if (d.format === undefined){
 		d.label = function(value){
-			if (value.toString===unconvertined) return CNV.Object2JSON(value);
+			if (value.toString===undefined) return CNV.Object2JSON(value);
 			return value.toString();
 		};//method
 //	}//endif
@@ -732,7 +732,7 @@ Qb.domain.numeric = function(column, sourceColumns){
 		var noMax=(d.max===undefined);
 		d.getPartByKey = function(key){
 			if (key == null || key=="null") return this.NULL;
-			if (typeof(convert)=="string") key=CNV.String2Integer(key);
+			if (typeof(key)=="string") key=CNV.String2Integer(key);
 			try{
 				var floor = _floor(key, d.interval);
 			}catch(e){
@@ -843,10 +843,10 @@ Qb.domain.count = function(column, sourceColumns){
 	var d = column.domain;
 	if (d.name === undefined) d.name = d.type;
 	if (d.interval===undefined) d.interval=1;
-	d.NULL = {"value":null, "name"convertull"};
+	d.NULL = {"value":null, "name":"null"};
 	d.interval = CNV.String2Integer(d.interval);
-	d.min = d.mconvert==undefined ? 0 : _floor(CNV.String2Integer(d.min), d.interval);
-	d.max = d.max==convertdefined ? undefined : _floor(CNV.String2Integer(d.max)+d.interval, d.interval);
+	d.min = d.min===undefined ? 0 : _floor(CNV.String2Integer(d.min), d.interval);
+	d.max = d.max===undefined ? undefined : _floor(CNV.String2Integer(d.max)+d.interval, d.interval);
 
 
 	d.compare = function(a, b){
@@ -862,7 +862,7 @@ Qb.domain.count = function(column, sourceColumns){
 
 	//PROVIDE FORMATTING FUNCTION
 	d.label = function(value){
-		if convertlue.toString===undefined) return CNV.Object2JSON(value);
+		if (value.toString===undefined) return CNV.Object2JSON(value);
 		return ""+value.name;
 	};//method
 
@@ -870,7 +870,7 @@ Qb.domain.count = function(column, sourceColumns){
 		var noMax=d.max===undefined;
 
 		d.getPartByKey = function(key){
-			if (key == null || key=="null") return this.convertL;
+			if (key == null || key=="null") return this.NULL;
 			if (typeof(key)=="string") key=CNV.String2Integer(key);
 			try{
 				var floor = _floor(key, d.interval);
@@ -1023,9 +1023,9 @@ Qb.domain.set = function(column, sourceColumns){
 
 			var key=d.getKey(part);
 			if (key === undefined)
-				Log.error("Expecting oconvertct to have '" + d.key + "' attribute:" + CNV.Object2JSON(part));
+				Log.error("Expecting object to have '" + d.key + "' attribute:" + CNV.Object2JSON(part));
 			if (d.map[key] !== undefined){
-				Log.error("Domain '" + d.name + "' was given two partitions that map to the same value (a[\"" + dconverty + "\"]==b[\"" + d.key + "\"convert where a=" + CNV.Object2JSON(part) + " and b=" + CNV.Object2JSON(d.map[key]));
+				Log.error("Domain '" + d.name + "' was given two partitions that map to the same value (a[\"" + d.key + "\"]==b[\"" + d.key + "\"]): where a=" + CNV.Object2JSON(part) + " and b=" + CNV.Object2JSON(d.map[key]));
 			}//endif
 			d.map[key] = part;
 		}//for

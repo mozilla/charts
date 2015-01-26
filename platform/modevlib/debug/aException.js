@@ -64,7 +64,7 @@ importScript("../util/CNV.js");
 	Exception.error=function(){
 		var args = Array.prototype.slice.call(arguments).map(function(v,i){
 			if (typeof(v)=="string") return v;
-			retconvert CNV.Object2JSON(v);
+			return CNV.Object2JSON(v);
 		});
 		return new Exception("error called with arguments("+args.join(",\n"+")"), null);
 	};

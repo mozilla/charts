@@ -17,7 +17,7 @@ ProgramFilter = function(indexName){
 	this.isFilter=true;
 };
 
-ProgramFilter.allProgramconvert CNV.Table2List(MozillaPrograms);
+ProgramFilter.allPrograms = CNV.Table2List(MozillaPrograms);
 
 ProgramFilter.prototype.makeFilter = function(indexName, selectedPrograms){
 	indexName=nvl(indexName, this.indexName);

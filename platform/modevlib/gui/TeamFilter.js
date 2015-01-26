@@ -108,7 +108,7 @@ TeamFilter.newInstance=function(field_name){
 		//HOPEFULLY IT WILL EXIST WHEN THE HEAD EXISTS
 //		'#' + myid.replace(/(:|\.)/g,'\\$1');
 
-		while($("#"+convert.String2JQuery("other@mozilla.com")).length==0){
+		while($("#"+CNV.String2JQuery("other@mozilla.com")).length==0){
 			yield (Thread.sleep(100));
 		}//while
 
@@ -236,8 +236,8 @@ TeamFilter.prototype.refresh = function*()
 	var f = $('#teamList');
 	f.jstree("deselect_all");
 	selected.forall(function(p){
-		f.jstree("select_node", "#convert CNV.String2JQuery(p.id));
-		f.jstree("check_node"convert#" + CNV.String2JQuery(p.id));
+		f.jstree("select_node", "#" + CNV.String2JQuery(p.id));
+		f.jstree("check_node", "#" + CNV.String2JQuery(p.id));
 	});
 
 	this.disableUI = false;

@@ -18,32 +18,97 @@ if (!Mozilla) var Mozilla = {"name": "Mozilla", "edges": []};
 	});
 
 	Dimension.addEdges(true, Mozilla, [
-		{"name": "Devices", "index":"bugs",
+		{"name": "Devices", "index": "bugs",
 			"edges": [
-				{"name": "Nominations", "esfilter": {"and": [
-					{"terms": {"cf_blocking_b2g": NOM_PROJECTS}}
-				]}},
-				{"name": "Blockers", "index": "bugs", "esfilter": {"or": [
-					{"terms": {"cf_blocking_b2g": BLOCKER_PROJECTS}}
-				]}},
-				{"name": "Unassigned", "index": "bugs", "esfilter": {"term": {"assigned_to": "nobody@mozilla.org"}}},
-				{"name": "Responsibility", "index": "bugs", "isFacet": true, "partitions": [
-					{"name": "FxOS Team", "esfilter": {"not": {"terms": {"status_whiteboard.tokenized": ["NPOTB", "POVB"]}}}},
-					{"name": "Vendor (POVB)", "esfilter": {"term": {"status_whiteboard.tokenized": "POVB"}}},
-					{"name": "Not Part of the Build (NPOTB)", "esfilter": {"term": {"status_whiteboard.tokenized": "NPOTB"}}}
-				]},
-				{"name": "Release",
-					"edges":PROJECTS.map(function(v){
-						return {"name": v, "value":v, "esfilter": {"terms": {"cf_blocking_b2g": [v + "+", v + "?"]}}}
-					})
-				},
-				{"name": "Partners",
+				{"name": "Categories",
+					"extraColumns": [
+						{
+							"name": "FxOS",
+							"value": "cf_blocking_b2g"
+						}
+					],
 					"edges": [
-						{"name": "WD", "value":"WD", "esfilter": {"term": {"blocked_by": 1054172}}},
-						{"name": "P1", "value":"P1", "esfilter": {"term": {"blocked_by": 1080337}}},
-						{"name": "P2", "value":"P2", "esfilter": {"term": {"blocked_by": 1107999}}}
+						{
+							"name": "WD",
+							"value": "WD",
+							"esfilter": {"and": [
+								{"terms": {"cf_blocking_b2g": BLOCKER_PROJECTS}},
+								{"or": [
+									{"term": {"blocked_by": 1054172}},
+									{"term": {"blocked": 1054172}}
+								]}
+							]},
+							"columnName": "wd",
+							"partitions": [
+								{
+									"name": "WD?",
+									"columnValue": "?",
+									"esfilter": {"terms": {"cf_blocking_b2g": NOM_PROJECTS}}
+								},
+								{
+									"name": "WD+",
+									"columnValue": "+",
+									"esfilter": {"terms": {"cf_blocking_b2g": BLOCKER_PROJECTS}}
+								}
+							]
+						},
+						{
+							"name": "P1",
+							"value": "P1",
+							"esfilter": {"and": [
+								{"terms": {"cf_blocking_b2g": BLOCKER_PROJECTS}},
+								{"or": [
+									{"term": {"blocked_by": 1080337}},
+									{"term": {"blocked": 1080337}}
+								]}
+							]},
+							"columnName": "p1",
+							"partitions": [
+								{
+									"name": "P1?",
+									"columnValue": "?",
+									"esfilter": {"terms": {"cf_blocking_b2g": NOM_PROJECTS}}
+								},
+								{
+									"name": "P1+",
+									"columnValue": "+",
+									"esfilter": {"terms": {"cf_blocking_b2g": BLOCKER_PROJECTS}}
+								}
+							]
+						},
+						{
+							"name": "P2",
+							"value": "P2",
+							"columnName": "p2",
+							"esfilter": {"and": [
+								{"terms": {"cf_blocking_b2g": BLOCKER_PROJECTS}},
+								{"or": [
+									{"term": {"blocked_by": 1107999}},
+									{"term": {"blocked": 1107999}}
+								]}
+							]},
+							"partitions": [
+								{
+									"name": "P2?",
+									"columnValue": "?",
+									"esfilter": {"terms": {"cf_blocking_b2g": NOM_PROJECTS}}
+								},
+								{
+									"name": "P2+",
+									"columnValue": "+",
+									"esfilter": {"terms": {"cf_blocking_b2g": BLOCKER_PROJECTS}}
+								}
+							]
+						}
+					]
+				},
+				{
+					"name": "Teams",
+					"edges": [
+
 					]
 				}
+
 			]
 		}
 	]);

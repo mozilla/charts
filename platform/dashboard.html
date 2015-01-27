@@ -34,7 +34,7 @@
 	<div style="position:absolute;bottom:0;height:40px;text-align: center;padding: 5px 0 5px 0;width:100%;background-color: #fff;z-index: 12;">
 		Etherpad for feature requests <a href="https://etherpad.mozilla.org/PlatformOpsDashboards">https://etherpad.mozilla.org/PlatformOpsDashboards</a><br>
 		Source at <a href="https://github.com/mozilla/charts/blob/platform/platform/dashboard.html">https://github.com/mozilla/charts/blob/platform/platform/dashboard.html</a>
-		<div id="show-bugs" class="go-to-bugzilla">Show Bugs in Bugzilla</div>"
+		<div id="show-bugs" class="go-to-bugzilla">Show Bugs in Bugzilla</div>
 	</div>
 </div>
 
@@ -81,15 +81,11 @@ importScript('js/main_lib.js', function(){
 
 		//DEFINE WHAT EVERYTHING IS
 		var allFilter = {"or": [
-			Mozilla.Platform.Release.esfilter,
-			Mozilla.Platform.Security.esfilter,
-			Mozilla.Platform.Stability.esfilter,
-			Mozilla.Platform.Priority.esfilter,
-			Mozilla.Platform["Release Tracking - FirefoxOS"].esfilter
+			Mozilla.Platform.Categories.esfilter
 		]};
 
 		//PULL ALL METADATA!!
-		var extraFields=requiredFields(Mozilla.Devices.Categories);
+		var extraFields=requiredFields(Mozilla.Platform.Categories);
 		var allBugs = yield (ESQuery.run({
 			"from": "bugs",
 			"select": ["bug_id", "assigned_to", "component"].union(extraFields),
@@ -115,24 +111,7 @@ importScript('js/main_lib.js', function(){
 		});
 
 		var temp = $("#category");
-		fillDevices(temp, allBugs, onPrivateCluster);
-		if (onPrivateCluster) {
-			temp.html(getCategoryHTML(Mozilla.Platform.Security, allBugs));
-
-			//BIG HACK: INSERT STABILITY IN WITH SECURITY
-			var stabilityBugs = allBugs.list.filter(Mozilla.Platform.Stability.fullFilter);
-			if (stabilityBugs.length > 0) {
-				$("#Security_title").html("Security/Stability");
-				$("#Security_tiles").append(tile({
-					"name": Mozilla.Platform.Stability.name,
-					"bugs": stabilityBugs,
-					"style": nvl(Mozilla.Platform.Stability.style, {})
-				}));
-			}//endif
-		} else {
-			//PUBLIC CLUSTER HAS NO SEC. BUGS, SO GO STRAIT TO SHOWING THE STABILITY BUGS
-			temp.append(getCategoryHTML(Mozilla.Platform.Stability, allBugs));
-		}//endif
+		fillPlatform(temp, allBugs, onPrivateCluster);
 
 		temp.updateDynamic();
 		var table = $("#bug_list").html(bugDetails(allBugs.list, Mozilla.Platform.Categories)).find("table")[0];

@@ -106,7 +106,7 @@ function tile(info){
 	var TEMPLATE = new Template([
 		'<div class="project"  style="background-color:{{color}}" dynamic-style="{{dynamicStyle|css}}" dynamic-state="{{states|attribute}}" href="{{bugsURL}}" bugsList="{{bugsList}}">' ,
 		'<div class="release">{{name}}</div>',
-		'<div class="count">{{bugs.length}}</div>',
+		'<div class="count">'+(info.disabled ? 'N/A' : '{{bugs.length}}')+'</div>',
 		(info.unassignedBugs.length > 0 ? '<div class="unassigned"><a class="count_unassigned" href="{{unassignedURL}}">{{unassignedBugs.length}}</a></div>' : '') ,
 		'</div>'
 	]);
@@ -174,27 +174,6 @@ function bugDetails(bugs, categories){
 	// categories IS THE DIMENSION DEFINTION
 
 
-	bugs.forall(function(b){
-		b.component = cleanupComponent(b.component);
-		b.bugLink = Bugzilla.linkToBug(b.bug_id);
-		b.assigned_to = b.assigned_to == "nobody@mozilla.org" ? "" : b.assigned_to;
-		b.overallPriority = -3 / b.release.order - 2 / b.beta.order - 1 / b.dev.order - 2 / b.security.order - 1 / b.priority.order - 2 / b.stability.order;
-		categories.edges.map(function(c){
-			if (c.edges){
-				c.edges.forall(function(e){
-					b[e.columnName] = match(b, e);
-				});
-
-			}else if (c.partitions){
-				b[c.columnName] = getPartIndex(b, c)				;
-			}else{
-				b[c.columnName] = match(b, c);
-			}//endif
-		});
-	});
-
-	bugs = Qb.sort(bugs, ["release.order", "overallPriority"]);
-
 	var header="";
 	var rows="";
 
@@ -231,6 +210,32 @@ function bugDetails(bugs, categories){
 			rows +=	'<td style="vertical-align: middle"><span class="indicator" style="{{'+c.columnName+'.style|style}}">{{'+c.columnName+'.order}}</span></td>';
 		}//endif
 	});
+
+
+
+	//PROCESS BUGS
+	bugs.forall(function(b){
+		b.component = cleanupComponent(b.component);
+		b.bugLink = Bugzilla.linkToBug(b.bug_id);
+		b.assigned_to = b.assigned_to == "nobody@mozilla.org" ? "" : b.assigned_to;
+		categories.edges.map(function(c){
+			if (c.edges){
+				c.edges.forall(function(e){
+					b[e.columnName] = match(b, e);
+				});
+
+			}else if (c.partitions){
+				b[c.columnName] = getPartIndex(b, c)				;
+			}else{
+				b[c.columnName] = match(b, c);
+			}//endif
+		});
+
+		b.overallPriority = -3 / b.release.order - 2 / b.beta.order - 1 / b.nightly.order - 2 / b.security.order - 1 / b.priority.order - 2 / b.stability.order;
+
+	});
+
+	bugs = Qb.sort(bugs, ["release.order", "overallPriority"]);
 
 	var output = new Template([
 		"<table class='table' style='width:auto'>",
@@ -283,7 +288,8 @@ function getCategoryHTML(category, allBugs){
 				"name": e.version && e.name!="Release" ? e.name+"-"+e.version : e.name,
 				"bugs": allBugs.list.filter(e.fullFilter),
 				"version": e.version,
-				"style": {} //nvl(e.style, {})
+				"style": {}, //nvl(e.style, {})
+				"disabled": e.disabled
 			};
 			return tile(info)
 		}).join("");
@@ -444,27 +450,25 @@ function setReleaseHTML(data){
 
 
 function fillPlatform(temp, allBugs, onPrivateCluster){
-	if (onPrivateCluster) {
-		temp.html(getCategoryHTML(Mozilla.Platform.Security, allBugs));
+	Mozilla.Platform.Categories.Security.partitions.forall(function(p){
+		p.disabled=!onPrivateCluster;
+	});
+	temp.html(getCategoryHTML(Mozilla.Platform.Categories.Security, allBugs));
 
-		//BIG HACK: INSERT STABILITY IN WITH SECURITY
-		var stabilityBugs = allBugs.list.filter(Mozilla.Platform.Stability.fullFilter);
-		if (stabilityBugs.length > 0) {
-			$("#Security_title").html("Security/Stability");
-			$("#Security_tiles").append(tile({
-				"name": Mozilla.Platform.Stability.name,
-				"bugs": stabilityBugs,
-				"style": nvl(Mozilla.Platform.Stability.style, {})
-			}));
-		}//endif
-	} else {
-		//PUBLIC CLUSTER HAS NO SEC. BUGS, SO GO STRAIGHT TO SHOWING THE STABILITY BUGS
-		temp.append(getCategoryHTML(Mozilla.Platform.Stability, allBugs));
+	//BIG HACK: INSERT STABILITY IN WITH SECURITY
+	var stabilityBugs = allBugs.list.filter(Mozilla.Platform.Categories.Security.fullFilter);
+	if (stabilityBugs.length > 0) {
+		$("#Security_title").html("Security/Stability");
+		$("#Security_tiles").append(tile({
+			"name": Mozilla.Platform.Categories.Security.name,
+			"bugs": stabilityBugs,
+			"style": nvl(Mozilla.Platform.Categories.Security.style, {})
+		}));
 	}//endif
 
-	temp.append(getCategoryHTML(Mozilla.Platform["Release Tracking - Desktop"], allBugs));
-	temp.append(getCategoryHTML(Mozilla.Platform["Release Tracking - FirefoxOS"], allBugs));
-	temp.append(getCategoryHTML(Mozilla.Platform.Priority, allBugs));
+	Mozilla.Platform.Categories.edges.rightBut(2).forall(function(category){
+		temp.append(getCategoryHTML(category, allBugs));
+	});
 }
 
 function fillDevices(temp, allBugs, onPrivateCluster){

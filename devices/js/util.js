@@ -285,7 +285,7 @@ function getCategoryHTML(category, allBugs){
 				"version": e.version,
 				"style": {} //nvl(e.style, {})
 			};
-			return tile(info)
+			return tile(info);
 		}).join("");
 
 		//ADD THE REMAINDER
@@ -448,18 +448,18 @@ function fillPlatform(temp, allBugs, onPrivateCluster){
 		temp.html(getCategoryHTML(Mozilla.Platform.Security, allBugs));
 
 		//BIG HACK: INSERT STABILITY IN WITH SECURITY
-		var stabilityBugs = allBugs.list.filter(Mozilla.Platform.Stability.fullFilter);
+		var stabilityBugs = allBugs.list.filter(Mozilla.Platform.Categories.Security.fullFilter);
 		if (stabilityBugs.length > 0) {
 			$("#Security_title").html("Security/Stability");
 			$("#Security_tiles").append(tile({
-				"name": Mozilla.Platform.Stability.name,
+				"name": Mozilla.Platform.Categories.Security.name,
 				"bugs": stabilityBugs,
-				"style": nvl(Mozilla.Platform.Stability.style, {})
+				"style": nvl(Mozilla.Platform.Categories.Security.style, {})
 			}));
 		}//endif
 	} else {
 		//PUBLIC CLUSTER HAS NO SEC. BUGS, SO GO STRAIGHT TO SHOWING THE STABILITY BUGS
-		temp.append(getCategoryHTML(Mozilla.Platform.Stability, allBugs));
+		temp.append(getCategoryHTML(Mozilla.Platform.Categories.Security, allBugs));
 	}//endif
 
 	temp.append(getCategoryHTML(Mozilla.Platform["Release Tracking - Desktop"], allBugs));

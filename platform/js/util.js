@@ -456,13 +456,13 @@ function fillPlatform(temp, allBugs, onPrivateCluster){
 	temp.html(getCategoryHTML(Mozilla.Platform.Categories.Security, allBugs));
 
 	//BIG HACK: INSERT STABILITY IN WITH SECURITY
-	var stabilityBugs = allBugs.list.filter(Mozilla.Platform.Categories.Security.fullFilter);
+	var stabilityBugs = allBugs.list.filter(Mozilla.Platform.Categories.Stability.fullFilter);
 	if (stabilityBugs.length > 0) {
 		$("#Security_title").html("Security/Stability");
 		$("#Security_tiles").append(tile({
-			"name": Mozilla.Platform.Categories.Security.name,
+			"name": Mozilla.Platform.Categories.Stability.name,
 			"bugs": stabilityBugs,
-			"style": nvl(Mozilla.Platform.Categories.Security.style, {})
+			"style": nvl(Mozilla.Platform.Categories.Stability.style, {})
 		}));
 	}//endif
 

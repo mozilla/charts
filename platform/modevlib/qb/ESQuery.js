@@ -1484,7 +1484,7 @@ ESQuery.INDEXES = Settings.indexes;
 		var o = [];
 		var T = data.hits.hits;
 
-		if (!this.query.select instanceof Array && this.select.length == 1) {
+		if (!(this.query.select instanceof Array) && this.select.length == 1) {
 			//NOT ARRAY MEANS OUTPUT IS LIST OF VALUES, NOT OBJECTS
 			var n = this.query.select.name;
 			if (this.query.select.value == "_source") {

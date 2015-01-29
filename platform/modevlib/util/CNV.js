@@ -754,19 +754,19 @@ CNV.esFilter2function=function(esFilter){
 		};
 	} else if (op == "terms"){
 		var terms = esFilter[op];
+		var variables = Object.keys(terms);
+		if (variables.length>1) Log.error("not allowed");
+		var variable = variables[0];
 		return function(row){
-			var variables = Object.keys(terms);
-			for(var k = 0; k < variables.length; k++){
-				var variable = variables[k];
-				var value = row[variable];
-				if (value===undefined){
+			var value = row[variable];
+			if (value===undefined){
+				return false;
+			}else if (value instanceof Array){
+				if (terms[variable].intersect(value).length==0) return false;
+			}else{
+				if (!terms[variable].contains(value)) return false;
+			}//endif
 					return false;
-				}else if (value instanceof Array){
-					if (terms[variable].intersect(value).length==0) return false;
-				}else{
-					if (!terms[variable].contains(value)) return false;
-				}//endif
-			}//for
 			return true;
 		};
 	}else if (op=="exists"){
@@ -814,17 +814,37 @@ CNV.esFilter2function=function(esFilter){
 		}
 	}else if (op=="match_all"){
 		return TRUE_FILTER;
-	}else if (op=="regexp"){
+	}else if (op=="regexp") {
 		var pair = esFilter[op];
 		var variableName = Object.keys(pair)[0];
 		var regexp = new RegExp(pair[variableName]);
 		return function(row, i, rows){
-			if (regexp.test(row[variableName])){
+			if (regexp.test(row[variableName])) {
 				return true;
-			}else{
+			} else {
 				return false;
 			}//endif
 		}
+	}else if (op=="contains") {
+		var pair = esFilter[op];
+		var variableName = Object.keys(pair)[0];
+		var substr = pair[variableName];
+		return function(row, i, rows){
+			var v = row[variableName];
+			if (v === undefined) {
+				return false;
+			} else if (v instanceof Array) {
+				return v.contains(substr);
+			} else if (typeof(v) == "string") {
+				return v.indexOf(substr) >= 0;
+			} else {
+				Log.error("Do not know how to handle")
+			}//endif
+		}
+	}else if (op=="nested"){
+		//REACH INTO THE NESTED TEMPLATE FOR THE filter
+		return CNV.esFilter2function(esFilter[op].query.filtered.filter);
+
 	} else{
 		Log.error("'" + op + "' is an unknown operation");
 	}//endif

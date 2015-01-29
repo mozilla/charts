@@ -88,10 +88,10 @@ if (!Mozilla) var Mozilla = {"name": "Mozilla", "edges": []};
 	})};
 
 	var trains = [
-		{"name": "Release", "columnName":"release", "style": {"color": "#E66000"}},
-		{"name": "Beta", "columnName":"beta", "style": {"color": "#FF9500"}},
-		{"name": "Aurora", "columnName":"aurora", "style": {"color": "#0095DD"}},
-		{"name": "Nightly", "columnName":"nightly", "style": {"color": "#002147"}}
+		{"name": "Release", "columnName": "release", "style": {"color": "#E66000"}},
+		{"name": "Beta", "columnName": "beta", "style": {"color": "#FF9500"}},
+		{"name": "Aurora", "columnName": "aurora", "style": {"color": "#0095DD"}},
+		{"name": "Nightly", "columnName": "nightly", "style": {"color": "#002147"}}
 	];
 
 
@@ -106,7 +106,7 @@ if (!Mozilla) var Mozilla = {"name": "Mozilla", "edges": []};
 	};
 	trainTrackingAbs.edges.append({
 		"name": trains.last().name,
-		"columnName":"nightly",
+		"columnName": "nightly",
 		"version": trains.last().version,
 		"style": trains.last().style,
 		"esfilter": otherFilter
@@ -150,7 +150,7 @@ if (!Mozilla) var Mozilla = {"name": "Mozilla", "edges": []};
 					"edges": [
 						{
 							"name": "Security",
-							"columnName":"security",
+							"columnName": "security",
 							"partitions": [
 								{
 									"name": "Sec-Crit",
@@ -166,13 +166,13 @@ if (!Mozilla) var Mozilla = {"name": "Mozilla", "edges": []};
 						},
 						{
 							"name": "Stability",
-							"columnName":"stability",
+							"columnName": "stability",
 							"style": {"color": "#777777"},
 							"esfilter": {"terms": {"keywords": ["topcrash"]}}
 						},
 						{
 							"name": "Priority",
-							"columnName":"priority",
+							"columnName": "priority",
 							"partitions": [
 								{
 									"name": "P1",
@@ -196,13 +196,13 @@ if (!Mozilla) var Mozilla = {"name": "Mozilla", "edges": []};
 							"edges": [
 								{
 									"name": "2.1",
-									"columnName":"b2g2_1",
+									"columnName": "b2g2_1",
 									"style": {"color": "#00539F"},
 									"esfilter": {"term": {"cf_blocking_b2g": "2.1+"}}
 								},
 								{
 									"name": "2.2",
-									"columnName":"b2g2_2",
+									"columnName": "b2g2_2",
 									"style": {"color": "#0095DD"},
 									"esfilter": {"term": {"cf_blocking_b2g": "2.2+"}}
 								}
@@ -210,40 +210,44 @@ if (!Mozilla) var Mozilla = {"name": "Mozilla", "edges": []};
 						},
 
 						{
-							"name":"Pending",
-							"columnName":"pending",
-							"edges":[
+							"name": "Pending",
+							"columnName": "pending",
+							"edges": [
 								{
-									"name":"needinfo",
-									"columnName":"needinfo",
-									"esfilter":{"nested": {
-							            "path": nested_path,
-							            "query": {"filtered": {
-							                "query": {"match_all": {}},
-							                "filter": {"and": [
-							                    {"term": {k: v}}
-							                ]}
-							            }}
-							        }}
+									"name": "needinfo",
+									"columnName": "needinfo",
+									"esfilter": { "nested": {
+										"path": "flags",
+										"query": {
+											"filtered": {
+												"query": {
+													"match_all": {}
+												},
+												"filter": {"and": [
+													{"term": { "flags.request_type": "needinfo"}},
+													{"term": { "flags.request_status": "?"}}
+												]}
+											}
+										}
+									}},
+									"where":{"and":[
+										{"term":{"flags.request_type":"needinfo"}},
+										{"term":{"flags.request_status":"?"}}
+									]}
 								},
 								{
-									"name":"review?",
-									"columnName":"review",
-									"esfilter":{}
-										"nested": {
-								            "path": "attachments.flags",
-								            "query": {"filtered": {
-								                "query": {"match_all": {}},
-								                "filter": {"and": [
-									                {""}
-								                ]}
-								            }}
-								        }
-									}
-
-
-
-
+									"name": "review?",
+									"columnName": "review",
+									"esfilter": {"nested": {
+										"path": "attachments.flags",
+										"query": {"filtered": {
+											"query": {"match_all": {}},
+											"filter": {"term": { "flags.request_status": "?"}}
+										}}
+									}},
+									"where":{"and":[
+										{"term":{"attachments.flags.request_status":"?"}}
+									]}
 								}
 							]
 

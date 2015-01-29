@@ -52,6 +52,7 @@ importScript("../util/aUtil.js");
 		for(var i=0;i<this.length;i++){
 			func(this[i], i, this);
 		}//for
+		return this;
 	};//method
 
 	Array.prototype.insert=function(index, value){

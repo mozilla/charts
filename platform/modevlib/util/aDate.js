@@ -160,7 +160,7 @@ Date.diffWeekday=function(endTime, startTime){
 	var output=((startWeek.getMilli()-startTime.getMilli())+((endWeek.getMilli()-startWeek.getMilli())/7)*5+(endTime.getMilli()-endWeek.addDay(2).getMilli()))/Duration.DAY.milli;
 
 
-	if (out!=aMath.ceil(output))
+	if (out!=aMath.sign(output)*aMath.ceil(aMath.abs(output)))
 		Log.error("Weekday calculation failed internal test");
 
 

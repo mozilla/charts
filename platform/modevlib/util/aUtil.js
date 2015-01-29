@@ -239,7 +239,15 @@ var reverseMap=function(map, codomain){
 
 //RETURN FIRST NOT NULL, AND DEFINED VALUE
 function nvl(){
-	var args = arguments.length == 1 ? arguments[0] : arguments;
+	var args=arguments;
+	if (args instanceof Array && args.length == 1) {
+		if (arguments[0] == undefined) {
+			return null;
+		}else{
+			args=arguments[0]; //ASSUME IT IS AN ARRAY
+		}//endif
+	}//endif
+
 	var a;
 	for(var i=0;i<args.length;i++){
 		a=args[i];

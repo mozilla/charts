@@ -420,7 +420,7 @@ if (!Mozilla) var Mozilla={"name":"Mozilla", "edges":[]};
 							"targetDate":"Nov 24, 2014",
 							"dateMarks": [
 							],
-							"style": {"color": "#ff7f0e"},
+							"style": {"color": "#2ca02c"},
 							"esfilter": {"or": [
 								{"terms": {"cf_blocking_b2g": ["3.0+", "3.0?"]}},
 								{"terms": {"cf_blocking_loop": ["fx37?", "fx38?", "fx37+", "fx38+"]}}
@@ -565,7 +565,7 @@ if (!Mozilla) var Mozilla={"name":"Mozilla", "edges":[]};
 							"targetDate":"Nov 24, 2014",
 							"dateMarks": [
 							],
-							"style": {"color": "#ff7f0e"},
+							"style": {"color": "#2ca02c"},
 							"esfilter": {"or": [
 								{"terms": {"cf_blocking_b2g": ["3.0+", "3.0?"]}},
 								{"terms": {"cf_blocking_loop": ["fx37?", "fx38?", "fx37+", "fx38+"]}}

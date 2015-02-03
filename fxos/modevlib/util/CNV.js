@@ -935,3 +935,34 @@ CNV.esFilter2Expression=function(esFilter){
 
 
 };//method
+
+
+CNV.esFilter2properties=function(filter){
+	function f2p(filter){
+		if (filter.and){
+			return filter.and.map(function(f){
+				return f2p(f);
+			});
+		}else if (filter.or) {
+			return filter.or.map(function(f){
+				return f2p(f);
+			});
+		}else if (filter.not) {
+			return f2p(filter.not)
+		}else if (filter.match_all){
+			return [];
+		}else if (filter.term){
+			return Object.keys(filter.term);
+		}else if (filter.terms){
+			return Object.keys(filter.terms);
+		}else if (filter.regexp){
+			return Object.keys(filter.term);
+		}else if (filter.range) {
+			return Object.keys(filter.range);
+		}else{
+			Log.error("do not know how to handle filter "+CNV.Object2JSON(filter))
+		}//endif
+	}//function
+
+	return new aSet(f2p(filter)).toArray();
+};

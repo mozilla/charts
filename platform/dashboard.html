@@ -20,6 +20,10 @@
 			<div id="last-updated" style="text-align: center;width:300px;"></div>
 			<hr>
 			<div id="filters" style="width:300px;" class="menu">
+
+
+			</div>
+			<div id="parameters" style="display:none;">
 			</div>
 		</div>
 		<div class="sidebar_name">
@@ -116,7 +120,7 @@ importScript('js/main_lib.js', function(){
 
 		temp.updateDynamic();
 		var table = $("#bug_list").html(bugDetails(allBugs.list, Mozilla.Platform.Categories)).find("table")[0];
-		addTileClickers();
+		addTileClickers(GUI.state.show);
 		addRowClickers();
 		sorttable.makeSortable(table)
 	};
@@ -131,7 +135,8 @@ importScript('js/main_lib.js', function(){
 					"dimension": Mozilla.Platform.Team,
 					"onlyOne": true,
 					"expandAll": true
-				})}
+				})},
+				{"id":"show", "name":"Categories", "type":"set", "default":[]}
 			],
 			[],
 			null,

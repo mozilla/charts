@@ -1,6 +1,7 @@
 importScript("../modevlib/util/CNV.js");
 importScript("../modevlib/qb/Qb.js");
 importScript("../modevlib/charts/aColor.js");
+importScript("../modevlib/gui/GUI.js");
 
 var NORMAL = "#888888";
 var NORMAL_HOVER = Color.newHTML(NORMAL).lighter().toHTML();
@@ -45,7 +46,22 @@ function addRowClickers(){
 	});
 }
 
-function addTileClickers(){
+
+function highlightBugs(){
+	var selectedCats = $(".selected.project");
+	var bugList = selectedCats.map(function(){
+		return CNV.JSON2Object($(this).attr("bugsList"));
+	}).get();
+	if (bugList.length == 0) {
+		$(".bug_line").removeClass("selected").show();
+	} else {
+		bugList = "#" + bugList.join(",#");
+		$(bugList).removeClass("selected").show();
+		$(".bug_line").not(bugList).hide();
+	}//endif
+}
+
+function addTileClickers(selectedToShow){
 	$(".project").hover(function(){
 		var bugList = "#" + CNV.JSON2Object($(this).attr("bugsList")).join(",#");
 		$(bugList).addClass("selected");
@@ -53,17 +69,22 @@ function addTileClickers(){
 		var bugList = "#" + CNV.JSON2Object($(this).attr("bugsList")).join(",#");
 		$(bugList).removeClass("selected");
 	}).click(function(e){
-		var bugList = $(".selected.project").map(function(){
-			return CNV.JSON2Object($(this).attr("bugsList"));
+		highlightBugs();
+
+		var selectedCats = $(".selected.project");
+		GUI.state.show=selectedCats.map(function(){
+			return $(this).attr("name");
 		}).get();
-		if (bugList.length == 0) {
-			$(".bug_line").removeClass("selected").show();
-		} else {
-			bugList = "#" + bugList.join(",#");
-			$(bugList).removeClass("selected").show();
-			$(".bug_line").not(bugList).hide();
+		GUI.State2URL();
+		GUI.State2Parameter();
+	}).each(function(){
+		var self=$(this);
+		if (selectedToShow.contains(self.attr("name"))) {
+			self.addClass("selected")
 		}//endif
 	});
+
+	highlightBugs();
 
 	$("#show-bugs").click(function(){
 		var bugList = $(".selected.project").map(function(){
@@ -104,7 +125,7 @@ function tile(info){
 	};
 
 	var TEMPLATE = new Template([
-		'<div class="project"  style="background-color:{{color}}" dynamic-style="{{dynamicStyle|css}}" dynamic-state="{{states|attribute}}" href="{{bugsURL}}" bugsList="{{bugsList}}">' ,
+		'<div class="project" name="{{name}}"  style="background-color:{{color}}" dynamic-style="{{dynamicStyle|css}}" dynamic-state="{{states|attribute}}" href="{{bugsURL}}" bugsList="{{bugsList}}">' ,
 		'<div class="release">{{name}}</div>',
 		'<div class="count">'+(info.disabled ? 'N/A' : '{{bugs.length}}')+'</div>',
 		(info.unassignedBugs.length > 0 ? '<div class="unassigned"><a class="count_unassigned" href="{{unassignedURL}}">{{unassignedBugs.length}}</a></div>' : '') ,
@@ -164,6 +185,7 @@ var replacement = {
 };
 
 function cleanupComponent(name){
+	if (!name) return "<none>";
 	Map.forall(replacement, function(find, replace){
 		name = name.replaceAll(find, replace);
 	});
@@ -476,38 +498,4 @@ function fillDevices(temp, allBugs, onPrivateCluster){
 		temp.append(getCategoryHTML(category, allBugs));
 	});
 }
-
-
-function requiredFields(esfilter){
-	//THIS LOOKS INTO DIMENSION DEFINITIONS, AS WELL AS ES FILTERS
-
-	if (esfilter===undefined) return [];
-
-	var parts = nvl(esfilter.edges, esfilter.partitions, esfilter.and, esfilter.or);
-	if (parts){
-		var rf = requiredFields(esfilter.esfilter);
-		//A DIMENSION! - USE IT ANYWAY
-		return Array.union(parts.map(requiredFields).append(rf));
-	}//endif
-
-	if (esfilter.esfilter){
-		return requiredFields(esfilter.esfilter);
-	}else if (esfilter.not){
-		return requiredFields(esfilter.not);
-	}else if (esfilter.term){
-		return Object.keys(esfilter.term)
-	}else if (esfilter.terms){
-		return Object.keys(esfilter.terms)
-	}else if (esfilter.regexp){
-		return Object.keys(esfilter.regexp)
-	}else if (esfilter.missing){
-		return [esfilter.missing.field]
-	}else if (esfilter.exists) {
-		return [esfilter.missing.field]
-	}else if (esfilter.nested){
-		 return [splitField(esfilter.nested.path)[0]]
-	}else{
-		return []
-	}//endif
-}//method
 

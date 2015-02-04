@@ -225,15 +225,12 @@ if (!Mozilla) var Mozilla = {"name": "Mozilla", "edges": []};
 												},
 												"filter": {"and": [
 													{"term": { "flags.request_type": "needinfo"}},
-													{"term": { "flags.request_status": "?"}}
+													{"term": { "flags.request_status": "?"}},
+													{"range": { "flags.modified_ts": {"gte": Date.today().subtract(Duration.MONTH).milli(), "lt": Date.today().subtract(Duration.WEEK).milli()}}}
 												]}
 											}
 										}
-									}},
-									"where":{"and":[
-										{"term":{"flags.request_type":"needinfo"}},
-										{"term":{"flags.request_status":"?"}}
-									]}
+									}}
 								},
 								{
 									"name": "review?",
@@ -242,12 +239,13 @@ if (!Mozilla) var Mozilla = {"name": "Mozilla", "edges": []};
 										"path": "attachments.flags",
 										"query": {"filtered": {
 											"query": {"match_all": {}},
-											"filter": {"term": { "flags.request_status": "?"}}
+											"filter": {"and":[
+												{"term": {"attachments.flags.request_status": "?"}},
+												{"terms": {"attachments.flags.request_type": ["review", "sec_review"]}},
+												{"range": { "attachments.flags.modified_ts": {"gte": Date.today().subtract(Duration.MONTH).milli(), "lt": Date.today().subtract(Duration.WEEK).milli()}}}
+											]}
 										}}
-									}},
-									"where":{"and":[
-										{"term":{"attachments.flags.request_status":"?"}}
-									]}
+									}}
 								}
 							]
 

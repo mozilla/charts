@@ -99,16 +99,20 @@ Map.expecting=function(obj, keyList){
 Map.get=function(obj, fieldName){
 	if (obj===undefined || obj==null) return obj;
 	var path = splitField(fieldName);
-	for (var i=0;i<path.length-1;i++){
+	for (var i=0;i<path.length;i++){
 		var step = path[i];
+
 		if (step=="length"){
-			obj = eval("obj.length");
-		}else{
+			obj = obj.length;
+		}else if (obj instanceof Array){
+			obj = obj.select(step)
+		}else {
 			obj = obj[step];
 		}//endif
+
 		if (obj===undefined || obj==null) return undefined;
 	}//endif
-	return obj[path.last()];
+	return obj;
 };//method
 
 

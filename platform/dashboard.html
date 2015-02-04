@@ -4,7 +4,7 @@
    - file, You can obtain one at http://mozilla.org/MPL/2.0/. -->
 <HTML>
 <head>
-  <meta charset="utf-8">
+	<meta charset="utf-8">
 
 	<title>Dashboard - Platform</title>
 	<script type="text/javascript" src="modevlib/imports/import.js"></script>
@@ -34,6 +34,7 @@
 	<div style="position:absolute;bottom:0;height:40px;text-align: center;padding: 5px 0 5px 0;width:100%;background-color: #fff;z-index: 12;">
 		Etherpad for feature requests <a href="https://etherpad.mozilla.org/PlatformOpsDashboards">https://etherpad.mozilla.org/PlatformOpsDashboards</a><br>
 		Source at <a href="https://github.com/mozilla/charts/blob/platform/platform/dashboard.html">https://github.com/mozilla/charts/blob/platform/platform/dashboard.html</a>
+
 		<div id="show-bugs" class="go-to-bugzilla">Show Bugs in Bugzilla</div>
 	</div>
 </div>
@@ -85,7 +86,7 @@ importScript('js/main_lib.js', function(){
 		]};
 
 		//PULL ALL METADATA!!
-		var extraFields=requiredFields(Mozilla.Platform.Categories);
+		var extraFields = requiredFields(Mozilla.Platform.Categories);
 		var allBugs = yield (ESQuery.run({
 			"from": "bugs",
 			"select": ["bug_id", "assigned_to", "component"].union(extraFields),

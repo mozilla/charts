@@ -9,11 +9,13 @@ if (!Mozilla) var Mozilla = {"name": "Mozilla", "edges": []};
 
 (function(){
 
-	var PROJECTS = ["2.0m", "2.1s"];
-	var NOM_PROJECTS = PROJECTS.map(function(p){
+	var RELEASE = ["2.0m", "2.1s"];
+	var PROJECT = ["Woodduck", "Dolphin"];
+
+	var NOM_PROJECTS = RELEASE.map(function(p){
 		return p + "?";
 	});
-	var BLOCKER_PROJECTS = PROJECTS.map(function(p){
+	var BLOCKER_PROJECTS = RELEASE.map(function(p){
 		return p + "+";
 	});
 
@@ -29,74 +31,71 @@ if (!Mozilla) var Mozilla = {"name": "Mozilla", "edges": []};
 					],
 					"edges": [
 						{
-							"name": "WD",
-							"value": "WD",
+							"name": "Woodduck",
+							"value": "Woodduck",
 							"esfilter": {"and": [
-								{"terms": {"cf_blocking_b2g": BLOCKER_PROJECTS}},
+								{"term": {"blocked": 1054172}},
 								{"or": [
-									{"term": {"blocked_by": 1054172}},
-									{"term": {"blocked": 1054172}}
+									{"term": {"cf_blocking_b2g": "2.0m?"}},
+									{"term": {"cf_blocking_b2g": "2.0m+"}}
 								]}
 							]},
-							"columnName": "wd",
+							"columnName": "Woodduck",
 							"partitions": [
 								{
-									"name": "WD?",
+									"name": "2.0m?",
 									"columnValue": "?",
-									"esfilter": {"terms": {"cf_blocking_b2g": NOM_PROJECTS}}
+									"esfilter": {"term": {"cf_blocking_b2g": "2.0m?"}}
 								},
 								{
-									"name": "WD+",
+									"name": "2.0m+",
 									"columnValue": "+",
-									"esfilter": {"terms": {"cf_blocking_b2g": BLOCKER_PROJECTS}}
+									"esfilter": {"term": {"cf_blocking_b2g": "2.0m+"}}
 								}
 							]
 						},
 						{
-							"name": "P1",
+							"name": "Woodduck_Blocker",
 							"value": "P1",
 							"esfilter": {"and": [
-								{"terms": {"cf_blocking_b2g": BLOCKER_PROJECTS}},
-								{"or": [
-									{"term": {"blocked_by": 1080337}},
-									{"term": {"blocked": 1080337}}
-								]}
+								{"term": {"blocked": 1054172}},
+								{"term": {"blocked": 1080337}}
 							]},
 							"columnName": "p1",
 							"partitions": [
 								{
-									"name": "P1?",
+									"name": "2.0m?",
 									"columnValue": "?",
-									"esfilter": {"terms": {"cf_blocking_b2g": NOM_PROJECTS}}
+									"esfilter": {"terms": {"cf_blocking_b2g": "2.0m?"}}
 								},
 								{
-									"name": "P1+",
+									"name": "2.0m+",
 									"columnValue": "+",
-									"esfilter": {"terms": {"cf_blocking_b2g": BLOCKER_PROJECTS}}
+									"esfilter": {"terms": {"cf_blocking_b2g": "2.0m+"}}
 								}
 							]
 						},
 						{
-							"name": "P2",
-							"value": "P2",
-							"columnName": "p2",
+							"name": "Dolphin",
+							"value": "Dolphin",
+							"columnName": "Dolphin",
 							"esfilter": {"and": [
-								{"terms": {"cf_blocking_b2g": BLOCKER_PROJECTS}},
+								{"term": {"blocked": 1123554}},
 								{"or": [
-									{"term": {"blocked_by": 1107999}},
-									{"term": {"blocked": 1107999}}
+									{"term": {"cf_blocking_b2g": "2.1s?"}},
+									{"term": {"cf_blocking_b2g": "2.1s+"}}
 								]}
 							]},
 							"partitions": [
 								{
-									"name": "P2?",
+									"name": "2.1s?",
 									"columnValue": "?",
-									"esfilter": {"terms": {"cf_blocking_b2g": NOM_PROJECTS}}
+									"esfilter": {"terms": {"cf_blocking_b2g": "2.1s?"}}
 								},
 								{
-									"name": "P2+",
+									"name": "2.1s+",
 									"columnValue": "+",
-									"esfilter": {"terms": {"cf_blocking_b2g": BLOCKER_PROJECTS}}
+									"esfilter": {"terms": {"cf_blocking_b2g": "2.1s+"}}
 								}
 							]
 						}

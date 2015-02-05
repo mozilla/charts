@@ -226,7 +226,7 @@ if (!Mozilla) var Mozilla = {"name": "Mozilla", "edges": []};
 												"filter": {"and": [
 													{"term": { "flags.request_type": "needinfo"}},
 													{"term": { "flags.request_status": "?"}},
-													{"range": { "flags.modified_ts": {"gte": Date.today().subtract(Duration.MONTH).milli(), "lt": Date.today().subtract(Duration.WEEK).milli()}}}
+													{"range": { "flags.modified_ts": {"gte": Date.today().subtract(Duration.newInstance("6week")).milli(), "lt": Date.today().subtract(Duration.newInstance("4day")).milli()}}}
 												]}
 											}
 										}
@@ -239,10 +239,10 @@ if (!Mozilla) var Mozilla = {"name": "Mozilla", "edges": []};
 										"path": "attachments.flags",
 										"query": {"filtered": {
 											"query": {"match_all": {}},
-											"filter": {"and":[
+											"filter": {"and": [
 												{"term": {"attachments.flags.request_status": "?"}},
 												{"terms": {"attachments.flags.request_type": ["review", "sec_review"]}},
-												{"range": { "attachments.flags.modified_ts": {"gte": Date.today().subtract(Duration.MONTH).milli(), "lt": Date.today().subtract(Duration.WEEK).milli()}}}
+												{"range": { "attachments.flags.modified_ts": {"gte": Date.today().subtract(Duration.newInstance("6week")).milli(), "lt": Date.today().subtract(Duration.newInstance("4day")).milli()}}}
 											]}
 										}}
 									}}
@@ -297,9 +297,16 @@ if (!Mozilla) var Mozilla = {"name": "Mozilla", "edges": []};
 							]}
 						]}},
 						{"name": "Graphics", "esfilter": {"or": [
+							//FROM MILAN: Jan 30th, 2015
+							//In Core: Canvas: 2D, Canvas: WebGL, GFX: Color Management, Graphics, Graphics: Layers, Graphics: Text, ImageLib, Panning and Zooming
+							//In Firefox for Android: Graphics, Panning and Zooming
+
 							{"and": [
 								{"term": {"product": "firefox for android"}},
-								{"prefix": {"component": "graphics"}}   //Component: "Graphics, Panning and Zooming"
+								{"or": [
+									{"prefix": {"component": "graphics"}},
+									{"term": {"component": "panning and zooming"}}
+								]}
 							]},
 							{"and": [
 								{"term": {"product": "core"}},
@@ -307,7 +314,9 @@ if (!Mozilla) var Mozilla = {"name": "Mozilla", "edges": []};
 									{"prefix": {"component": "canvas"}},  // Anything starting with "Canvas", "Graphics", "Panning and Zooming", "SVG"
 									{"prefix": {"component": "graphics"}},
 									{"prefix": {"component": "panning"}},
-									{"prefix": {"component": "svg"}}
+									{"prefix": {"component": "svg"}},
+									{"prefix": {"component": "gfx: color"}},
+									{"terms": {"component": ["color management", "imagelib", "panning and zooming"]}}
 								]}
 							]}
 						]}},

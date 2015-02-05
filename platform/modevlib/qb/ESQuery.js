@@ -1755,6 +1755,7 @@ ESFilter.fastAndDirtyNormalize = function(esfilter){
 };//method
 
 
+
 function requiredFields(esfilter){
 	//THIS LOOKS INTO DIMENSION DEFINITIONS, AS WELL AS ES FILTERS
 
@@ -1779,9 +1780,12 @@ function requiredFields(esfilter){
 		return Object.keys(esfilter.regexp)
 	}else if (esfilter.missing){
 		return [esfilter.missing.field]
-	}else if (esfilter.exists){
+	}else if (esfilter.exists) {
 		return [esfilter.missing.field]
+	}else if (esfilter.nested){
+		 return [splitField(esfilter.nested.path)[0]]
 	}else{
 		return []
 	}//endif
 }//method
+

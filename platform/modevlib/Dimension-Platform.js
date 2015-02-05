@@ -329,13 +329,27 @@ if (!Mozilla) var Mozilla = {"name": "Mozilla", "edges": []};
 							{"prefix": {"component": "security"}}  // Product: Core, Component: starts with "Security"
 						]}},
 						{"name": "DOM", "esfilter": {"and": [
+							//From Andrew  Jan30 2015
+							//
+							//DOM
+							//DOM: Content Processes
+							//DOM: Core & HTML
+							//DOM: Device Interfaces (but this category is very messy)
+							//DOM: Events
+							//DOM: IndexedDB
+							//DOM: Push Notifications
+							//DOM: Workers
+							//HTML: Parser
+							//IPC
+
 							{"term": {"product": "core"}},
 							{"or": [
-								{"prefix": {"component": "dom"}},  // Anything starting with "DOM", "Document Navigation", "IPC", "XBL", "XForms"
+								{"prefix": {"component": "dom"}},  // Lawrence, Nov 11, 2014: Anything starting with "DOM", "Document Navigation", "IPC", "XBL", "XForms"
 								{"prefix": {"component": "document"}},
 								{"prefix": {"component": "ipc"}},
 								{"prefix": {"component": "xbl"}},
-								{"prefix": {"component": "xform"}}
+								{"prefix": {"component": "xform"}},
+								{"term": {"component": "html: parser"}}
 							]}
 						]}},
 						{"name": "Media", "esfilter": {"and": [

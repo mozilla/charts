@@ -145,6 +145,9 @@ if (!Mozilla) var Mozilla = {"name": "Mozilla", "edges": []};
 				{"term": {"product": "core"}}
 			]},
 			"edges": [
+				releaseTracking,
+				trainTrackingRel,
+
 				{
 					"name": "Categories",
 					"edges": [
@@ -185,9 +188,7 @@ if (!Mozilla) var Mozilla = {"name": "Mozilla", "edges": []};
 							]
 						},
 
-//						releaseTracking,
 						trainTrackingAbs,
-//						trainTrackingRel,
 
 						{
 							"name": "Release Tracking - FirefoxOS",

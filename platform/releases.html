@@ -11,17 +11,27 @@
 	<script type="text/javascript" src="modevlib/imports/import.js"></script>
 </HEAD>
 <BODY>
-<div style="min-height:100%;position: relative;">
-	<div class="content" style="width:100%;text-align: center;">
-		<h1 style="text-align: center;">Tracking Firefox</h1>
-		<br>
-		<div id="teams" style="padding-left:50px;margin-left: 60px;display: inline-block; height:500px"></div>
+	<div class="content">
+		<table class="grid" style="width:100%">
+			<tr><td colspan="3"><div  style="text-align: center;width:100%;"><h1 id="header" layout=".top = page.top;">Tracking Firefox</h1></div></td></tr>
+			<tr><td style="width:200px">
+				<table style="width:150px"><tr><td>
+					<div id="beta_title" class="train_title" style="position:relative;height:100%;" layout="right=title[0,0].right"></div>
+				</td></tr><tr><td>
+					<div id="aurora_title" class="train_title" style="position:relative;" layout="right=title[0,1].right"></div>
+
+				</td></tr></table>
+			</td><td>
+				<div id="teams" layout="top=header.bottom; .[1,].height=.[2,].height;" shape="3, 14"></div>
+			</td><td style="width:50px">
+				&nbsp;
+			</td></tr>
+		</table>
 	</div>
-	<div class="footer">
+	<div id="footer" class="footer" layout=".footer = screen.footer;">
 		View at <a id="selfRef" href="releases.html"></a><br>
 		Source at <a href="https://github.com/mozilla/charts/blob/platform/platform/releases.html">https://github.com/mozilla/charts/blob/platform/platform/releases.html</a>
 	</div>
-</div>
 <script type="application/javascript">
 
 importScript([

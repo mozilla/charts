@@ -90,14 +90,20 @@ tr.selected {
 
 
 #teamsTable {
-    margin-left:-160px;  /*100 +20 +20 (see .train_title)*/
+    /*margin-left:-160px;  *//*100 +20 +20 (see .train_title)*/
 }
 
 .train_title {
     vertical-align: middle;
     text-align: right;
-    padding: 10px 20px 10px 0;
-    width: 120px;
+    width: 100%;
+
+    font-family: 'Open Sans', sans-serif;
+    font-size: 24px;
+    letter-spacing: -0.5px;
+    line-height: 100%;
+    margin: 0;
+
 }
 
 .component {
@@ -165,7 +171,7 @@ tr.selected {
     display: block;
     padding: 0 0 0 0;
     top:0;
-    margin-left: 60px;
+    margin-left: 0px;
     vertical-align: top
 }
 

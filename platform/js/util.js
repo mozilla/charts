@@ -65,20 +65,20 @@ function addTileClickers(selectedToShow){
 	$(".project").hover(function(){
 		var bugList = "#" + CNV.JSON2Object($(this).attr("bugsList")).join(",#");
 		$(bugList).addClass("selected");
-	},function(){
+	}, function(){
 		var bugList = "#" + CNV.JSON2Object($(this).attr("bugsList")).join(",#");
 		$(bugList).removeClass("selected");
 	}).click(function(e){
 		highlightBugs();
 
 		var selectedCats = $(".selected.project");
-		GUI.state.show=selectedCats.map(function(){
+		GUI.state.show = selectedCats.map(function(){
 			return $(this).attr("name");
 		}).get();
 		GUI.State2URL();
 		GUI.State2Parameter();
 	}).each(function(){
-		var self=$(this);
+		var self = $(this);
 		if (selectedToShow.contains(self.attr("name"))) {
 			self.addClass("selected")
 		}//endif
@@ -92,11 +92,11 @@ function addTileClickers(selectedToShow){
 		}).get();
 
 		if (bugList.length == 0) {
-			var allBugs= $.makeArray($(".bug_line")).map(function(v, i){
+			var allBugs = $.makeArray($(".bug_line")).map(function(v, i){
 				return $(v)[0].id;
 			});
 			Bugzilla.showBugs(allBugs);
-		}else{
+		} else {
 			Bugzilla.showBugs(bugList);
 		}//endif
 
@@ -127,7 +127,7 @@ function tile(info){
 	var TEMPLATE = new Template([
 		'<div class="project" name="{{name}}"  style="background-color:{{color}}" dynamic-style="{{dynamicStyle|css}}" dynamic-state="{{states|attribute}}" href="{{bugsURL}}" bugsList="{{bugsList}}">' ,
 		'<div class="release">{{name}}</div>',
-		'<div class="count">'+(info.disabled ? 'N/A' : '{{bugs.length}}')+'</div>',
+			'<div class="count">' + (info.disabled ? 'N/A' : '{{bugs.length}}') + '</div>',
 		(info.unassignedBugs.length > 0 ? '<div class="unassigned"><a class="count_unassigned" href="{{unassignedURL}}">{{unassignedBugs.length}}</a></div>' : '') ,
 		'</div>'
 	]);
@@ -196,43 +196,42 @@ function bugDetails(bugs, categories){
 	// categories IS THE DIMENSION DEFINTION
 
 
-	var header="";
-	var rows="";
+	var header = "";
+	var rows = "";
 
 	//EXTRA COLUMNS
-	if (categories.extraColumns){
+	if (categories.extraColumns) {
 		categories.extraColumns.forall(function(c){
-			header+='<th><div>'+c.name+'</div></th>';
-			rows+='<td><div class="bz_component">{{'+c.value+'|html}}</div></span></td>';
+			header += '<th><div>' + c.name + '</div></th>';
+			rows += '<td><div class="bz_component">{{' + c.value + '|html}}</div></span></td>';
 		})
 	}//endif
 
 	//PARAMETERIZED INDICATOR COLUMNS
 	categories.edges.map(function(c){
-		if (c.edges){
+		if (c.edges) {
 			c.edges.forall(function(e){
-				if (!e.columnName){
+				if (!e.columnName) {
 					Log.error("Expecting a columnName field in dimension description.  (Used to add markup to bug records)")
 				}//endif
-				header+='<th><span class="indicator">'+e.name+'</span></th>';
-				rows +=	'<td style="vertical-align: middle"><span class="indicator" style="{{'+e.columnName+'.style|style}}">{{'+e.columnName+'.order}}</span></td>';
+				header += '<th><span class="indicator">' + e.name + '</span></th>';
+				rows += '<td style="vertical-align: middle"><span class="indicator" style="{{' + e.columnName + '.style|style}}">{{' + e.columnName + '.order}}</span></td>';
 			});
 
-		}else if (c.partitions){
-			if (!c.columnName){
+		} else if (c.partitions) {
+			if (!c.columnName) {
 				Log.error("Expecting a columnName field in dimension description.  (Used to add markup to bug records)")
 			}//endif
-			header+='<th><span class="indicator">'+c.name+'</span></th>';
-			rows +=	'<td style="vertical-align: middle"><span class="indicator" style="{{'+c.columnName+'.style|style}}">{{'+c.columnName+'.order}}</span></td>';
-		}else{
-			if (!c.columnName){
+			header += '<th><span class="indicator">' + c.name + '</span></th>';
+			rows += '<td style="vertical-align: middle"><span class="indicator" style="{{' + c.columnName + '.style|style}}">{{' + c.columnName + '.order}}</span></td>';
+		} else {
+			if (!c.columnName) {
 				Log.error("Expecting a columnName field in dimension description.  (Used to add markup to bug records)")
 			}//endif
-			header+='<th><span class="indicator">'+c.name+'</span></th>';
-			rows +=	'<td style="vertical-align: middle"><span class="indicator" style="{{'+c.columnName+'.style|style}}">{{'+c.columnName+'.order}}</span></td>';
+			header += '<th><span class="indicator">' + c.name + '</span></th>';
+			rows += '<td style="vertical-align: middle"><span class="indicator" style="{{' + c.columnName + '.style|style}}">{{' + c.columnName + '.order}}</span></td>';
 		}//endif
 	});
-
 
 
 	//PROCESS BUGS
@@ -241,14 +240,14 @@ function bugDetails(bugs, categories){
 		b.bugLink = Bugzilla.linkToBug(b.bug_id);
 		b.assigned_to = b.assigned_to == "nobody@mozilla.org" ? "" : b.assigned_to;
 		categories.edges.map(function(c){
-			if (c.edges){
+			if (c.edges) {
 				c.edges.forall(function(e){
 					b[e.columnName] = match(b, e);
 				});
 
-			}else if (c.partitions){
-				b[c.columnName] = getPartIndex(b, c)				;
-			}else{
+			} else if (c.partitions) {
+				b[c.columnName] = getPartIndex(b, c);
+			} else {
 				b[c.columnName] = match(b, c);
 			}//endif
 		});
@@ -307,7 +306,7 @@ function getCategoryHTML(category, allBugs){
 
 		html = edges.map(function(e, i){
 			var info = {
-				"name": e.version && e.name!="Release" ? e.name+"-"+e.version : e.name,
+				"name": e.version && e.name != "Release" ? e.name + "-" + e.version : e.name,
 				"bugs": allBugs.list.filter(e.fullFilter),
 				"version": e.version,
 				"style": {}, //nvl(e.style, {})
@@ -334,35 +333,40 @@ function getCategoryHTML(category, allBugs){
 function setReleaseHTML(data){
 	//DEAR SELF:  PLEASE LEARN D3!!
 
-	var MAX_VERTICAL_HEIGHT = 300;
+	var MAX_VERTICAL_HEIGHT = (window.innerHeight - 200)/2;
+	var WIDTH = (window.innerWidth-250)/ data.edges[1].domain.partitions.length;
+	var BAR_WIDTH = 2*WIDTH/3;
 	var FONT_HEIGHT = 20;
 
-	var header = "<td></td>" + data.edges[1].domain.partitions.map(function(p, i){
-		return '<td style="text-align: center; vertical-align: middle; width:60px;"><div>' + p.name + '</div></td>';
+	$(".train_title").height(MAX_VERTICAL_HEIGHT+FONT_HEIGHT);
+
+	var header = "" + data.edges[1].domain.partitions.map(function(p, i){
+		return '<td style="text-align: center; vertical-align: middle; width:'+WIDTH+'px;height:'+(FONT_HEIGHT*2)+'px"><div>' + p.name + '</div></td>';
 	}).join("");
 
 	var betaTemplate = new Template([
-		'<td style="vertical-align:bottom;text-align: center; width:60px;">',
+		'<td style="vertical-align:bottom;text-align: center; width:'+WIDTH+'px;height:'+MAX_VERTICAL_HEIGHT+'px">',
 		'<div id="{{id}}" class="hoverable tracking" style="{{style|style}}" dynamic-style=":hover{background-color:{{lighter}}}">',
 		'<span>{{value}}</span>',
 		'</div>',
 		'</td>'
 	]);
 
-	var scale = aMath.min(10, MAX_VERTICAL_HEIGHT / aMath.MAX(data.cube[1]), MAX_VERTICAL_HEIGHT / aMath.MAX(data.cube[2]));
+	var scale = aMath.min(30, MAX_VERTICAL_HEIGHT / aMath.MAX(data.cube[1]), MAX_VERTICAL_HEIGHT / aMath.MAX(data.cube[2]));
 	var BETA = data.edges[0].domain.partitions[1];
 	var AURORA = data.edges[0].domain.partitions[2];
 	var ESR = data.edges[0].domain.partitions[3];
 
 	var beta = data.edges[1].domain.partitions.map(function(p, i){
 		var style = {
-			"width": "40px",
+			"width": BAR_WIDTH+"px",
 			"height": (data.cube[1][i] * scale) + "px",
 			"color": data.cube[1][i] * scale > FONT_HEIGHT ? "white" : "transparent",
 			"text-align": "center",
 			"align": "center",
 			"display": "inline-block",
-			"background-color": BETA.style.color
+			"background-color": BETA.style.color,
+			"overflow":"hidden"
 		};
 
 		return betaTemplate.replace({
@@ -374,7 +378,7 @@ function setReleaseHTML(data){
 	}).join("");
 
 	var devTemplate = new Template([
-		'<td style="width:60px;text-align: center;">',
+		'<td style="width:'+WIDTH+'px;text-align: center;">',
 		'<div id="{{id}}" class="hoverable tracking" style="{{style|style}}" dynamic-style=":hover{background-color:{{lighter}}}">',
 		'<div style="vertical-align: bottom;">{{value}}</div>',
 		'</div>',
@@ -382,7 +386,7 @@ function setReleaseHTML(data){
 	]);
 	var dev = data.edges[1].domain.partitions.map(function(p, i){
 		var style = {
-			"width": "40px",
+			"width": BAR_WIDTH+"px",
 			"height": (data.cube[2][i] * scale) + "px",
 			"color": data.cube[2][i] * scale > FONT_HEIGHT ? "white" : "transparent",
 			"vertical-align": "bottom",
@@ -400,7 +404,7 @@ function setReleaseHTML(data){
 
 
 	var esrTemplate = new Template([
-		'<td style="vertical-align:middle;text-align: center; width:60px;">',
+		'<td style="vertical-align:middle;text-align: center; width:'+WIDTH+'px;">',
 		'<div id="{{id}}" class="hoverable tracking" style="{{style|style}}" dynamic-style=":hover{background-color:{{lighter}}}">',
 		'<div style="padding-top:6px;">{{value}}</div>',
 		'</div>',
@@ -408,8 +412,8 @@ function setReleaseHTML(data){
 	]);
 	var esr = data.edges[1].domain.partitions.map(function(p, i){
 		var style = {
-			"width": "40px",
-			"height": "40px",
+			"width": BAR_WIDTH+"px",
+			"height": BAR_WIDTH+"px",
 			"color": "white",
 			"vertical-align": "middle",
 			"text-align": "center",
@@ -431,17 +435,19 @@ function setReleaseHTML(data){
 
 
 	$("#teams").html(
-		'<table id="teamsTable">' +
+			'<div></div>' +
+			'<table id="teamsTable">' +
 			'<tbody>' +
-			'<tr><td class="train_title"><h3>Beta&nbsp;(' + BETA.version + ')</h3></td>' + beta + '</tr>' +
+			'<tr>' + beta + '</tr>' +
 			'<tr>' + header + '</tr>' +
-			'<tr><td class="train_title"><h3>Aurora&nbsp;(' + AURORA.version + ')</h3></td>' + dev + '</tr>' +
+			'<tr>' + dev + '</tr>' +
 //			(aMath.SUM(data.cube[0])>0 ? '<tr><td class="train_title"><h3>Release</h3></td>'+release+'</tr>' : '') +
 //			(aMath.SUM(data.cube[3]) > 0 ? '<tr><td class="train_title"><h3>ESR 31</h3></td>' + esr + '</tr>' : '') +
 			'</tbody>' +
 			'</table>'
 	);
-
+	$("#beta_title").html('<h3 style="position:absolute;display:block;bottom:40px;">Beta&nbsp;(' + BETA.version + ')</h3>');
+	$("#aurora_title").html('<h3 style="position:absolute;display:block;top:40px;">Aurora&nbsp;(' + AURORA.version + ')</h3>');
 
 	//ADD CLICKERS
 	$(".tracking").click(function(){
@@ -473,7 +479,7 @@ function setReleaseHTML(data){
 
 function fillPlatform(temp, allBugs, onPrivateCluster){
 	Mozilla.Platform.Categories.Security.partitions.forall(function(p){
-		p.disabled=!onPrivateCluster;
+		p.disabled = !onPrivateCluster;
 	});
 	temp.html(getCategoryHTML(Mozilla.Platform.Categories.Security, allBugs));
 
@@ -498,4 +504,158 @@ function fillDevices(temp, allBugs, onPrivateCluster){
 		temp.append(getCategoryHTML(category, allBugs));
 	});
 }
-
+//
+//function layout_all(){
+//	//GRASP ALL LAYOUT FORMULA
+//	//POSSIBLE TOPOLOGICAL ORDERING
+//
+//	//APPLY ALL FORMULA
+//
+//
+//}
+//
+//
+//function position(self, parent, lhs, rhs){
+//	// TODO: MAKE THIS BETTER/FASTER BY OPTIMIZING CSS FOR .br=parent.br AND OTHERS
+//	// OR, USE jqueryui WHICH ENHANCES position() TO ACCEPT THESE RELATIVE PARAMETERS
+//	// eg.  css = {"right":0, "bottom":0}
+//	//
+//	// lhs = {"v":vertical, "h":horizontal} OF self
+//	// rhs = {"v":vertical, "h":horizontal} OF parent
+//
+//	prep(self, parent);
+//
+//	var top = {
+//		"t": 0,
+//		"m": -self.outerHeight() / 2,
+//		"b": -self.outerHeight()
+//	}[lhs.v];
+//
+//	var left = {
+//		"l": 0,
+//		"c": -self.outerWidth() / 2,
+//		"r": -self.outerWidth()
+//	}[lhs.h];
+//
+//	top += {
+//		"t": 0,
+//		"m": parent.outerHeight() / 2,
+//		"b": parent.outerHeight()
+//	}[rhs.v];
+//
+//	left += {
+//		"l": 0,
+//		"c": parent.outerWidth() / 2,
+//		"r": parent.outerWidth()
+//	}[rhs.h];
+//
+//	self.position(top, left);
+//}//function
+//
+//
+//function prep(self, parent){
+//	var p = parent.css().position;
+//	if ([p == "absolute" || p=="fixed") return;
+//	parent.css({"position": "relative"});
+//
+//	var element = self.detach();
+//	parent.append(element);
+//	self.css({"position": "absolute"})
+//}//method
+//
+//
+//var canonical = {
+//	"top": {"v": "t", "h": "c"},
+//	"right": {"v": "m", "h": "r"},
+//	"left": {"v": "m", "h": "l"},
+//	"bottom": {"v": "b", "h": "c"},
+//	"tr": {"v": "t", "h": "r"},
+//	"tc": {"v": "t", "h": "c"},
+//	"tl": {"v": "t", "h": "l"},
+//	"mr": {"v": "m", "h": "r"},
+//	"mc": {"v": "m", "h": "c"},
+//	"ml": {"v": "m", "h": "l"},
+//	"br": {"v": "b", "h": "r"},
+//	"bc": {"v": "b", "h": "c"},
+//	"bl": {"v": "b", "h": "l"}
+//};
+//
+//function parseRHS(rhs){
+//	var opIndex = aMath.max(rhs.indexOf("+"),rhs.indexOf("-"));
+//	if (opIndex==-1){
+//		return canonical[rhs];
+//	}else{
+//
+//	}
+//
+//
+//
+//
+//}
+//
+//function layout(self, formula){
+//
+//	//.top = page.top
+//	//top=header.bottom;
+//	//height=teams.height; right=teams.left+30px
+//	//right=title[0,0].right
+//	//right=title[0,1].right
+//	//.footer = screen.footer
+//
+//	var lr = formula.split("=");
+//	var left = lr[0];
+//	var right = lr[1];
+//
+//	//FIND self
+//	var leftPath = left.split(".");
+//	if (leftPath.length>2) Log.error("do not know how to handle deep lhs");
+//	var leftVar = canonical[leftPath.last()];
+//
+//	if (leftPath.length==2 && leftPath[0].trim()==""){
+//		//expected
+//	}else{
+//		self = $("#"+leftPath[0]);  //not expected, but managable
+//	}//endif
+//
+//	//FIND parent
+//	var rightPath = right.split(".");
+//	if (rightPath.length!=2) Log.error("do not know how to handle deep rhs");
+//	var rightVar = canonical[rightPath.last()];
+//
+//	var parentName=rightPath[0];
+//	var parent;
+//	if (parentName=="page"){
+//		parent=$("body");
+//		position(self, parent, leftVar, rightVar)
+//	}else if (parentName=="screen") {
+//		self.css({"position": "fixed"});
+//		if (leftVar != rightVar) Log.error("Can not handle interesting positioning relative to screen");
+//
+//		var trans = [0, 0];
+//
+//		if (leftVar.h == "l") {
+//			self.css({"position": "fixed", "left": 0});
+//
+//		} else if (leftVar.h == "c") {
+//			self.css({"position": "fixed", "left": "50%"});
+//			trans[0] = "-50%";
+//		} else {
+//			self.css({"position": "fixed", "right": 0});
+//		}//endif
+//
+//		if (leftVar.v == "t") {
+//			self.css({"position": "fixed", "top": 0});
+//		} else if (leftVar.v == "m"){
+//			self.css({"position": "fixed", "top": "50%"});
+//			trans[1] = "-50%";
+//		}else{
+//			self.css({"position": "fixed", "bottom": "0"});
+//		}//endif
+//
+//		self.css({"transform":"translate("+trans[0]+","+trans[1]+")"});
+//	}else{
+//		parent=$("#"+parentName);
+//		position(self, parent, leftVar, rightVar)
+//	}//endif
+//
+//}

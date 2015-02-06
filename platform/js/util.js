@@ -446,8 +446,8 @@ function setReleaseHTML(data){
 			'</tbody>' +
 			'</table>'
 	);
-	$("#beta_title").html('<h3 style="position:absolute;display:block;bottom:40px;">Beta&nbsp;(' + BETA.version + ')</h3>');
-	$("#aurora_title").html('<h3 style="position:absolute;display:block;top:40px;">Aurora&nbsp;(' + AURORA.version + ')</h3>');
+	$("#beta_title").html('<h3 style="position:absolute;display:block;bottom:40px;right:0;">Beta&nbsp;(' + BETA.version + ')</h3>');
+	$("#aurora_title").html('<h3 style="position:absolute;display:block;top:40px;right:0;">Aurora&nbsp;(' + AURORA.version + ')</h3>');
 
 	//ADD CLICKERS
 	$(".tracking").click(function(){

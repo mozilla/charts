@@ -90,7 +90,7 @@ tr.selected {
 
 
 #teamsTable {
-    margin-left:-160px;  /*100 +20 +20 (see .train_title)*/
+    /*margin-left:-160px;  *//*100 +20 +20 (see .train_title)*/
 }
 
 .train_title {

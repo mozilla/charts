@@ -45,6 +45,7 @@ if (!Mozilla) var Mozilla = {"name": "Mozilla", "edges": []};
 			{
 				"name": "Firefox36",
 				"version": 36,
+				"releaseDate": "24 feb 2015",  //via email
 				"esfilter": {"and": [
 					{"not": {"terms": {"cf_status_firefox36": SOLVED}}},
 					{"term": {"cf_tracking_firefox36": "+"}}
@@ -53,16 +54,34 @@ if (!Mozilla) var Mozilla = {"name": "Mozilla", "edges": []};
 			{
 				"name": "Firefox37",
 				"version": 37,
+				"releaseDate":"April 7, 2015",
 				"esfilter": {"and": [
 					{"not": {"terms": {"cf_status_firefox37": SOLVED}}},
 					{"term": {"cf_tracking_firefox37": "+"}}
-				]}},
+				]}
+			},
 			{
 				"name": "Firefox38",
 				"version": 38,
 				"esfilter": {"and": [
 					{"not": {"terms": {"cf_status_firefox38": SOLVED}}},
 					{"term": {"cf_tracking_firefox38": "+"}}
+				]}
+			},
+			{
+				"name": "Firefox39",
+				"version": 39,
+				"esfilter": {"and": [
+					{"not": {"terms": {"cf_status_firefox39": SOLVED}}},
+					{"term": {"cf_tracking_firefox39": "+"}}
+				]}
+			},
+			{
+				"name": "Firefox40",
+				"version": 40,
+				"esfilter": {"and": [
+					{"not": {"terms": {"cf_status_firefox40": SOLVED}}},
+					{"term": {"cf_tracking_firefox40": "+"}}
 				]}
 			}
 		]

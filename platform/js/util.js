@@ -462,7 +462,6 @@ function setReleaseHTML(data){
 				"esfilter": {"and": [
 					data.edges[0].domain.partitions[release].fullFilter,
 					data.edges[1].domain.partitions[team].fullFilter,
-					Mozilla.BugStatus.Open.esfilter,
 					Mozilla.CurrentRecords.esfilter
 				]}
 			}));

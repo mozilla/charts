@@ -11,6 +11,8 @@ if (!Mozilla) var Mozilla = {"name": "Mozilla", "edges": []};
 
 	var SOLVED = ["fixed", "wontfix", "unaffected", "disabled", "verified"];
 
+	//TODO: PULL RELEASE DATES FROM http://svn.mozilla.org/libs/product-details/json/firefox_history_major_releases.json
+
 	var releaseTracking = {
 		"name": "Release",
 		"isFacet": true,

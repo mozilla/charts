@@ -54,7 +54,7 @@ if (!Mozilla) var Mozilla = {"name": "Mozilla", "edges": []};
 			{
 				"name": "Firefox37",
 				"version": 37,
-				"releaseDate":"April 7, 2015",
+				"releaseDate":"March 31, 2015",
 				"esfilter": {"and": [
 					{"not": {"terms": {"cf_status_firefox37": SOLVED}}},
 					{"term": {"cf_tracking_firefox37": "+"}}
@@ -63,6 +63,7 @@ if (!Mozilla) var Mozilla = {"name": "Mozilla", "edges": []};
 			{
 				"name": "Firefox38",
 				"version": 38,
+				"releaseDate":"May 12, 2015",
 				"esfilter": {"and": [
 					{"not": {"terms": {"cf_status_firefox38": SOLVED}}},
 					{"term": {"cf_tracking_firefox38": "+"}}

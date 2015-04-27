@@ -93,7 +93,7 @@ Stats.ageOverTime=function(data, timeEdge, sampleSize, statFunction){
 	newdata.sort(function(a, b){return a[0]-b[0]});
 
 
-	var start=0;  //SINCE i IS STRICTLY INCREASING, NO NEED TO REVISIT d<start 
+	var start=0;  //SINCE i IS STRICTLY INCREASING, NO NEED TO REVISIT d<start
 	var output=[];
 	for(var i=timeEdge.min;i.getMilli()<timeEdge.max.getMilli();i=i.add(timeEdge.interval)){
 		var min=i.subtract(sampleSize).getMilli();
@@ -226,7 +226,7 @@ Stats.query2regression=function(query){
 //ASSUMES A Qb OF WEIGHT VALUES
 //RETURN THE REGRESSION LINE FOR THE GIVEN Qb
 Stats.regression=function(weights, domainX, domainY){
-	if (DEBUG) Log.note(CNV.Object2JSON([weights, {"min":domainX.min, "max":domainX.max, "interval":domainX.interval}, {"min":domainY.min, "max":domainY.max, "interval":domainY.interval}]));
+	if (DEBUG) Log.note(convert.value2json([weights, {"min":domainX.min, "max":domainX.max, "interval":domainX.interval}, {"min":domainY.min, "max":domainY.max, "interval":domainY.interval}]));
 
 	if (((domainX.max-domainX.min)/domainX.interval)<=1) Log.error("Can not do regression with only one value");
 	if (((domainY.max-domainY.min)/domainY.interval)<=1) Log.error("Can not do regression with only one value");

@@ -14,7 +14,7 @@ var importScript;
 (function () {
 
 	var METHOD_NAME = "importScript";
-	var FORCE_RELOAD = true;  //COMPENSATE FOR BUG https://bugzilla.mozilla.org/show_bug.cgi?id=991252
+	var FORCE_RELOAD = false;  //COMPENSATE FOR BUG https://bugzilla.mozilla.org/show_bug.cgi?id=991252
 	var DEBUG = false;
 
 	if (typeof(window.Log) == "undefined") {
@@ -101,7 +101,7 @@ var importScript;
 	function readfile(fullPath, callback){
 		var request = new XMLHttpRequest();
 		try {
-			var url = window.location.protocol + "//" + window.location.hostname + fullPath;
+			var url = window.location.protocol + "//" + window.location.hostname + ":" + window.location.port + fullPath;
 			request.open('GET', url);
 			request.responseType="text";
 			request.isDone = false;

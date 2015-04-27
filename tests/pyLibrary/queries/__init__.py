@@ -9,7 +9,7 @@
 #
 from __future__ import unicode_literals
 
-from pyLibrary.dot.dicts import Dict, nvl
+from pyLibrary.dot.dicts import Dict, coalesce
 
 INDEX_CACHE = {}  # MATCH NAMES TO FULL CONNECTION INFO
 
@@ -29,7 +29,7 @@ def _normalize_select(select, schema=None):
     else:
         if not select.name:
             select = select.copy()
-            select.name = nvl(select.value, select.aggregate)
+            select.name = coalesce(select.value, select.aggregate)
 
-        select.aggregate = nvl(select.aggregate, "none")
+        select.aggregate = coalesce(select.aggregate, "none")
         return select

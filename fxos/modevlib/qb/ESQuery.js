@@ -4,7 +4,7 @@
 
 
 importScript("../Settings.js");
-importScript("../util/CNV.js");
+importScript("../util/convert.js");
 importScript("../charts/aColor.js");
 importScript("../collections/aArray.js");
 importScript("../util/aDate.js");
@@ -71,7 +71,7 @@ ESQuery.INDEXES = Settings.indexes;
 				//NESTED TYPE IS A NEW TYPE DEFINITION
 				var nestedName = indexName + "." + name;
 				if (ESQuery.INDEXES[nestedName] === undefined) ESQuery.INDEXES[nestedName] = {};
-				ESQuery.INDEXES[nestedName].columns = ESQuery.parseColumns(nestedName, parentName, nvl(property.properties, {}));
+				ESQuery.INDEXES[nestedName].columns = ESQuery.parseColumns(nestedName, parentName, coalesce(property.properties, {}));
 			}//endif
 
 			if (property.properties !== undefined) {
@@ -198,7 +198,7 @@ ESQuery.INDEXES = Settings.indexes;
 		if (indexInfo.columns !== undefined)
 			yield(null);
 
-		var URL = nvl(query.url, indexInfo.host + indexPath) + "/_mapping";
+		var URL = coalesce(query.url, indexInfo.host + indexPath) + "/_mapping";
 		var path = parse.URL(URL).pathname.split("/").rightBut(1);
 		var pathLength = path.length - 1;  //ASSUME /indexname.../_mapping
 
@@ -307,7 +307,7 @@ ESQuery.INDEXES = Settings.indexes;
 
 		if (!this.query.index.url.endsWith("/_search")) this.query.index.url += "/_search";  //WHEN QUERIES GET RECYCLED, THEIR url IS SOMETIMES STILL AROUND
 		var postResult;
-		if (ESQuery.DEBUG) Log.note(CNV.Object2JSON(this.esQuery));
+		if (ESQuery.DEBUG) Log.note(convert.value2json(this.esQuery));
 
 		if ((this.query.select instanceof Array || this.query.edges.length > 0) && Object.keys(this.esQuery.facets).length == 0 && this.esQuery.size == 0)
 			Log.error("ESQuery is sending no facets");
@@ -316,7 +316,7 @@ ESQuery.INDEXES = Settings.indexes;
 			try {
 				postResult = yield (Rest.post({
 					url: this.query.index.url,
-					data: CNV.Object2JSON(this.esQuery),
+					data: convert.value2json(this.esQuery),
 					dataType: "json",
 					headers: {
 						"Accept-Encoding": "gzip,deflate"
@@ -334,7 +334,7 @@ ESQuery.INDEXES = Settings.indexes;
 					Log.error("Public cluster can not be used", e)
 				} else {
 					Log.action("Query timeout");
-					this.nextDelay = nvl(this.nextDelay, 500) * 2;
+					this.nextDelay = coalesce(this.nextDelay, 500) * 2;
 					yield (Thread.sleep(this.nextDelay));
 					Log.action("Retrying Query...");
 					//TODO: TRY TO DO TAIL-RECURSION
@@ -355,7 +355,7 @@ ESQuery.INDEXES = Settings.indexes;
 
 			if (postResult._shards.failed > 0) {
 				Log.action(postResult._shards.failed + "of" + postResult._shards.total + " shards failed.");
-				this.nextDelay = nvl(this.nextDelay, 500) * 2;
+				this.nextDelay = coalesce(this.nextDelay, 500) * 2;
 				yield (Thread.sleep(this.nextDelay));
 				Log.action("Retrying Query...");
 				//TODO: TRY TO DO TAIL-RECURSION
@@ -664,7 +664,7 @@ ESQuery.INDEXES = Settings.indexes;
 
 		if (edge.domain.isFacet) {
 			//MUST USE THIS' esFacet
-			var condition = nvl(partition.esfilter, {"and": []});
+			var condition = coalesce(partition.esfilter, {"and": []});
 
 			if (partition.min !== undefined && partition.max !== undefined && MVEL.isKeyword(edge.value)) {
 				condition.and.push({
@@ -983,7 +983,7 @@ ESQuery.INDEXES = Settings.indexes;
 
 
 		var nullTest = ESQuery.compileNullTest(edge);
-		var ref = nvl(edge.domain.min, edge.domain.max, new Date(2000, 0, 1));
+		var ref = coalesce(edge.domain.min, edge.domain.max, new Date(2000, 0, 1));
 
 		var partition2int;
 		if (edge.domain.interval.month > 0) {
@@ -1023,7 +1023,7 @@ ESQuery.INDEXES = Settings.indexes;
 		var value = edge.value;
 		if (MVEL.isKeyword(value)) value = "doc[\"" + value + "\"].value";
 
-		var ref = nvl(edge.domain.min, edge.domain.max, Duration.ZERO);
+		var ref = coalesce(edge.domain.min, edge.domain.max, Duration.ZERO);
 		var nullTest = ESQuery.compileNullTest(edge);
 
 
@@ -1076,7 +1076,7 @@ ESQuery.INDEXES = Settings.indexes;
 		}//endif
 
 		partition2int = "((" + nullTest + ") ? " + numPartitions + " : " + partition2int + ")";
-		var offset = CNV.String2Integer(ref);
+		var offset = convert.String2Integer(ref);
 		int2Partition = function(value){
 			if (aMath.round(value) == numPartitions) return edge.domain.NULL;
 			return edge.domain.getPartByKey((value * edge.domain.interval) + offset);
@@ -1095,7 +1095,7 @@ ESQuery.INDEXES = Settings.indexes;
 		return {
 			"toTerm": {"head": "", "body": 'Value2Pipe(' + value + ')'},
 			"fromTerm": function(value){
-				return edge.domain.getPartByKey(CNV.Pipe2Value(value));
+				return edge.domain.getPartByKey(convert.Pipe2Value(value));
 			}
 		};
 	};//method
@@ -1351,7 +1351,7 @@ ESQuery.INDEXES = Settings.indexes;
 					d = d[offset];
 				}//for
 				if (agg0 != "count" && facetValue.count == 0) {
-					d[parseInt(coord[f])] = nvl(self.query.select["default"], null);
+					d[parseInt(coord[f])] = coalesce(self.query.select["default"], null);
 				} else {
 					d[parseInt(coord[f])] = facetValue[agg0];
 				}//endif
@@ -1447,8 +1447,8 @@ ESQuery.INDEXES = Settings.indexes;
 
 
 		if (this.esMode == "fields") {
-			this.esQuery.size = nvl(this.query.limit, 200000);
-			this.esQuery.sort = nvl(this.query.sort, []);
+			this.esQuery.size = coalesce(this.query.limit, 200000);
+			this.esQuery.sort = coalesce(this.query.sort, []);
 			if (select[0].value != "_source") {
 				this.esQuery.fields = select.select("value");
 			}//endif
@@ -1498,7 +1498,7 @@ ESQuery.INDEXES = Settings.indexes;
 		}//endif
 
 		for (var i = T.length; i--;) {
-			var record = nvl(T[i].fields, {});
+			var record = coalesce(T[i].fields, {});
 			var new_rec = {};
 			this.select.forall(function(s, j){
 				if (s.domain && s.domain.interval == "none") {
@@ -1510,7 +1510,7 @@ ESQuery.INDEXES = Settings.indexes;
 					}//endif
 				} else {
 					var field = splitField(s.value)[0].split(".")[0];  //USING BASE OF MULTI_FIELD WHICH HAS ACTUAL VALUE
-					new_rec[s.name] = nvl(record[s.value], T[i][field]);
+					new_rec[s.name] = coalesce(record[s.value], T[i][field]);
 				}
 			});
 			o.push(new_rec)
@@ -1563,7 +1563,7 @@ ESFilter.simplify = function(esfilter){
 //THIS TAKES TOO LONG TO TRANSLATE ALL THE LOGIC FOR THOUSANDS OF FACETS
 //	var normal=ESFilter.normalize(esfilter);
 //	if (normal.or && normal.or.length==1) normal=normal.or[0];
-//	var clean=CNV.JSON2Object(CNV.Object2JSON(normal).replaceAll('"isNormal":true,', '').replaceAll(',"isNormal":true', '').replaceAll('"isNormal":true', ''));
+//	var clean=convert.json2value(convert.value2json(normal).replaceAll('"isNormal":true,', '').replaceAll(',"isNormal":true', '').replaceAll('"isNormal":true', ''));
 //
 //	//REMOVE REDUNDANT FACTORS
 //	//REMOVE false TERMS
@@ -1594,7 +1594,7 @@ ESFilter.removeOr = function(esfilter){
 ESFilter.normalize = function(esfilter){
 	if (esfilter.isNormal) return esfilter;
 
-	Log.note("from: " + CNV.Object2JSON(esfilter));
+	Log.note("from: " + convert.value2json(esfilter));
 	var output = esfilter;
 
 	while (output != null) {
@@ -1698,7 +1698,7 @@ ESFilter.normalize = function(esfilter){
 			break;
 		}//endif
 	}//while
-	Log.note("  to: " + CNV.Object2JSON(esfilter));
+	Log.note("  to: " + convert.value2json(esfilter));
 
 	esfilter.isNormal = true;
 	return esfilter;

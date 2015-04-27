@@ -28,7 +28,7 @@
 	<script type="text/javascript" src="modevlib/collections/aArray.js"></script>
 	<script type="text/javascript" src="lib/jquery.js"></script>
 	<script type="text/javascript" src="lib/jquery.ba-bbq/jquery.ba-bbq.js"></script>
-	<script type="text/javascript" src="modevlib/util/CNV.js"></script>
+	<script type="text/javascript" src="modevlib/util/convert.js"></script>
 	<script type="text/javascript" src="modevlib/util/aDate.js"></script>
 	<script type="text/javascript" src="modevlib/collections/aQueue.js"></script>
 	<script type="text/javascript" src="modevlib/collections/aSet.js"></script>
@@ -301,7 +301,7 @@ importScript([
 		var timeDomain = {"type": "time", "min": sampleMin, "max": sampleMax, "interval": sampleInterval};
 
 		var currScope = GUI.state.scope.getSelectedParts()[0];
-		$("#title").text("Burndown for " + nvl(currScope.title, currScope.name));
+		$("#title").text("Burndown for " + coalesce(currScope.title, currScope.name));
 
 		var currScopeFilter = currScope.esfilter;
 		yield (ESQuery.loadColumns({"from": "bugs"}));
@@ -383,7 +383,7 @@ importScript([
 					{"name": "Summary", "value": "short_desc"},
 					{"name": "Owner", "value": "assigned_to"},
 					{"name": "Status", "value": "bug_status + (resolution ? ' - '+resolution : '')"},
-					{"name": "Estimate", "value": "nvl(ScrumBugs.parse(status_whiteboard).points, 'missing')"}
+					{"name": "Estimate", "value": "coalesce(ScrumBugs.parse(status_whiteboard).points, 'missing')"}
 				],
 				"sort": ["Status", "bug_id"]
 			}));
@@ -399,7 +399,7 @@ importScript([
 			var flat = yield(Q({
 				"from": daily,
 				"select": [
-					{"name": "Remaining Work", "value": 'nvl(ScrumBugs.parse(status_whiteboard).points, 1)-0', "aggregate": "sum", "default": 0, "style": {"visibility": "hidden"}},
+					{"name": "Remaining Work", "value": 'coalesce(ScrumBugs.parse(status_whiteboard).points, 1)-0', "aggregate": "sum", "default": 0, "style": {"visibility": "hidden"}},
 					{"name": "Open Bug Count", "value": "bug_id", "aggregate": "count", "default": 0}
 				],
 				"edges": [

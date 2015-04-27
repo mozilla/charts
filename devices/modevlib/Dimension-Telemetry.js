@@ -107,7 +107,7 @@ Dimension.addEdges(false, Mozilla, [
 				"path":function(v){
 					//MAP TO HUMANE NAMES, IF POSSIBLE
 					return [{
-						"name":nvl(Telemetry.addonGUID2Name[v.toLowerCase()], v.toLowerCase()),
+						"name":coalesce(Telemetry.addonGUID2Name[v.toLowerCase()], v.toLowerCase()),
 						"esfilter":{"prefix":{"info.addons.name":v}}
 					}];
 				}
@@ -130,7 +130,7 @@ Dimension.addEdges(false, Mozilla, [
 				"path":function(v){
 					v=""+v;
 					return [//DATA IN yyyyMMddHHmmss FORMAT
-						{"name":v.left(8), "esfilter":{"range":{"info.appBuildID":{"gte":CNV.String2Integer(v.left(8)+"000000"), 'lt':CNV.String2Integer(v.left(8)+"000000")+1000000}}}},
+						{"name":v.left(8), "esfilter":{"range":{"info.appBuildID":{"gte":convert.String2Integer(v.left(8)+"000000"), 'lt':convert.String2Integer(v.left(8)+"000000")+1000000}}}},
 						{"name":v.rightBut(8), "esfilter":{"term":{"info.appBuildID": v}}}
 					]
 				},

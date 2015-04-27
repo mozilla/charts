@@ -16,7 +16,7 @@ from datetime import datetime
 import sys
 
 from pyLibrary.debugs import constants
-from pyLibrary.dot import nvl, Dict, set_default, listwrap, wrap
+from pyLibrary.dot import coalesce, Dict, set_default, listwrap, wrap
 from pyLibrary.jsons.encoder import encode
 from pyLibrary.thread.threads import Thread, Lock
 from pyLibrary.strings import indent, expand_template
@@ -58,7 +58,7 @@ class Log(object):
             return
 
         cls.settings = settings
-        cls.trace = cls.trace | nvl(settings.trace, False)
+        cls.trace = cls.trace | coalesce(settings.trace, False)
         if cls.trace:
             from pyLibrary.thread.threads import Thread
 
@@ -147,7 +147,7 @@ class Log(object):
         """
         USE THIS FOR DEBUGGING (AND EVENTUAL REMOVAL)
         """
-        Log.note(nvl(template, ""), params, stack_depth=1)
+        Log.note(coalesce(template, ""), params, stack_depth=1)
 
     @classmethod
     def println(cls, template, params=None):

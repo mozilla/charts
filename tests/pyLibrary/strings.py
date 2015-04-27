@@ -15,7 +15,7 @@ from datetime import datetime as builtin_datetime
 import re
 import math
 import __builtin__
-from pyLibrary.dot import nvl, wrap
+from pyLibrary.dot import coalesce, wrap
 
 
 def datetime(value):
@@ -209,7 +209,7 @@ def _expand(template, seq):
         for d in data:
             s = seq + (d,)
             output.append(_expand(template.template, s))
-        return nvl(template.separator, "").join(output)
+        return coalesce(template.separator, "").join(output)
     elif isinstance(template, list):
         return "".join(_expand(t, seq) for t in template)
     else:

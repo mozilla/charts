@@ -13,7 +13,7 @@ from copy import copy
 
 from pyLibrary.collections.matrix import Matrix
 from pyLibrary.debugs.logs import Log
-from pyLibrary.dot import listwrap, Dict, wrap, literal_field, set_default, nvl
+from pyLibrary.dot import listwrap, Dict, wrap, literal_field, set_default, coalesce
 from pyLibrary.queries import es_query_util, Q
 from pyLibrary.queries.Q import accumulate
 from pyLibrary.queries.cube import Cube
@@ -51,7 +51,7 @@ def es_aggsop(es, mvel, query):
         esQuery = d.append_query(esQuery, start)
         start += d.num_columns
 
-    esQuery.size = nvl(query.limit, 0)
+    esQuery.size = coalesce(query.limit, 0)
     esQuery.filter = simplify(query.where)
     data = es_query_util.post(es, esQuery, query.limit)
 

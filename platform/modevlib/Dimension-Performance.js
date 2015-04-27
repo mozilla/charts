@@ -18,8 +18,8 @@ Dimension.addEdges(false, Mozilla, [
 			"limit": 1000
 		},
 		{"name": "Platform", "field": "test_machine.platform", "type": "set", "limit": 1000},
-		{"name": "TestOnly", "field": "result.test_name", "type": "set", "limit": 1000},
-		{"name": "Test", "field": ["testrun.suite", "result.test_name"], "type": "set", "limit": 1000, "esfilter": {"range": {"datazilla.date_loaded": {"gt": Date.today().subtract(Duration.newInstance("month")).getMilli()}}}},
+		//{"name": "TestOnly", "field": "result.test_name", "type": "set", "limit": 1000},
+		{"name": "Test", "field": ["testrun.suite", "result.test_name"], "type": "set", "limit": 1000, "esfilter": {"range": {"test_build.push_date": {"gt": Date.today().subtract(Duration.newInstance("month")).getMilli()}}}},
 		{"name": "Revision", "field": "test_build.revision", "type": "uid"}
 	]},
 //	{"name": "Eideticker", "index": "eideticker", "edges": [

@@ -11,11 +11,11 @@ var REALLY_TOO_LATE = NOW.subtract(Duration.newInstance("1week"));
 function addNumberClickers(cube, mainFilter) {
 	var prefix = cube.name.deformat() + "_value";
 	$("td div").filter(function () {
-		return nvl($(this).attr("id"), "").startsWith(prefix);
+		return coalesce($(this).attr("id"), "").startsWith(prefix);
 	}).click(function (e) {
 			var id = $(this).attr("id");
 			var coord = id.rightBut(prefix.length).split("x").map(function (v) {
-				return CNV.String2Integer(v);
+				return convert.String2Integer(v);
 			});
 			var filter = {"and": cube.edges.map(function (edge, i) {
 				var part = edge.domain.partitions[coord[i]];
@@ -41,12 +41,12 @@ function addNumberClickers(cube, mainFilter) {
 
 function addTeamClickers(cube) {
 	$("td").filter(function () {
-		return nvl($(this).attr("id"), "").startsWith("_team");
+		return coalesce($(this).attr("id"), "").startsWith("_team");
 	}).click(function (e) {
 			var id = $(this).attr("id");
-			var team = cube.edges[0].domain.partiticonvert[CNV.String2Integer(id.rightBut("_team".length))];
+			var team = cube.edges[0].domain.partiticonvert[convert.String2Integer(id.rightBut("_team".length))];
 
-			window.open("team.hconvert#" + CNV.Object2URL({
+			window.open("team.hconvert#" + convert.Object2URL({
 				"team": team.name.replaceAll(" ", "_")
 			}));
 		});
@@ -121,8 +121,8 @@ function cube2grid(param) {
 					} else {
 						html = stateData
 							.replaceAll("{{VALUE}}", value.count)
-							.replaceAll("convertTYLE}}", CNV.Object2CSS(style))
-							.replaceAll("{{dyconvertic_style}}", CNV.Object2CSS(dynamic_style))
+							.replaceAll("convertTYLE}}", convert.Object2CSS(style))
+							.replaceAll("{{dyconvertic_style}}", convert.Object2CSS(dynamic_style))
 							.replaceAll("{{COLOR}}", age2color(value.age).toHTML())
 							.replaceAll("{{LIGHTER}}", age2color(value.age).lighter().toHTML());
 					}//endif

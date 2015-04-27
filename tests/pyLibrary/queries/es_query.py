@@ -23,7 +23,7 @@ from pyLibrary.queries.query import Query, _normalize_where
 from pyLibrary.debugs.logs import Log
 from pyLibrary.queries.MVEL import _MVEL
 from pyLibrary.dot.dicts import Dict
-from pyLibrary.dot import nvl, split_field
+from pyLibrary.dot import coalesce, split_field
 from pyLibrary.dot.lists import DictList
 from pyLibrary.dot import wrap, listwrap
 
@@ -143,7 +143,7 @@ class ESQuery(object):
             }]
         else:
             return [{
-                "name": nvl(edge.name, edge.value),
+                "name": coalesce(edge.name, edge.value),
                 "value": edge.value
             }]
 

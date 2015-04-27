@@ -44,7 +44,7 @@ function showRegressionAge(args) {
 			var data = blockers.cube;
 			allBlockers.list.forall(function (v) {
 				Map.copy({"min": null, "max": null}, v);  //DEFAULT VALUES
-				Map.copy(nvl(data[domain.getPartByKey(v.bug_id).dataIndex], {}), v);
+				Map.copy(coalesce(data[domain.getPartByKey(v.bug_id).dataIndex], {}), v);
 			});
 		}
 
@@ -55,7 +55,7 @@ function showRegressionAge(args) {
 		var chart = yield(Q({
 			"name": "Average Age of Regressions (Days)",
 			"from": allBlockers.list,
-			"select": {"name": "Average", "value": "nvl(min, time.min)>time.min ? null : (time.min.getMilli() - nvl(min, time.min).getMilli())/Duration.DAY.milli", "aggregate": "average", "default": 0, "style": {"color": "#00d6ff", "visibility": "hidden"}},
+			"select": {"name": "Average", "value": "coalesce(min, time.min)>time.min ? null : (time.min.getMilli() - coalesce(min, time.min).getMilli())/Duration.DAY.milli", "aggregate": "average", "default": 0, "style": {"color": "#00d6ff", "visibility": "hidden"}},
 			"edges": [
 				{"name": "Project", "domain": projectDomain},
 				{"name": "date",

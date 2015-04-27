@@ -99,20 +99,16 @@ Map.expecting=function(obj, keyList){
 Map.get=function(obj, fieldName){
 	if (obj===undefined || obj==null) return obj;
 	var path = splitField(fieldName);
-	for (var i=0;i<path.length;i++){
+	for (var i=0;i<path.length-1;i++){
 		var step = path[i];
-
 		if (step=="length"){
-			obj = obj.length;
-		}else if (obj instanceof Array){
-			obj = obj.select(step)
-		}else {
+			obj = eval("obj.length");
+		}else{
 			obj = obj[step];
 		}//endif
-
 		if (obj===undefined || obj==null) return undefined;
 	}//endif
-	return obj;
+	return obj[path.last()];
 };//method
 
 
@@ -242,7 +238,7 @@ var reverseMap=function(map, codomain){
 
 
 //RETURN FIRST NOT NULL, AND DEFINED VALUE
-function nvl(){
+function coalesce(){
 	var args=arguments;
 	if (args instanceof Array && args.length == 1) {
 		if (arguments[0] == undefined) {
@@ -260,12 +256,12 @@ function nvl(){
 	return null;
 }//method
 
-var coalesce=nvl;
+var coalesce=coalesce;
 
 
 var Util = {};
 
-Util.coalesce = nvl;
+Util.coalesce = coalesce;
 
 Util.returnNull = function(__row){
 	return null;

@@ -17,14 +17,14 @@ var aFormat={};
 			//FORCE PLUS SIGN
 			if (value<=0) format="+"+format.rightBut(1);
 		}//endif
-		
+
 		return $.formatNumber(value, {"format":format});
 	};//method
 
 
 	aFormat.json=function(json){
-		if (typeof(json)!="string") return CNV.Object2JSON(json);
-		return CNV.Object2JSON(CNV.JSON2Object(json));
+		if (typeof(json)!="string") return convert.value2json(json);
+		return convert.value2json(convert.json2value(json));
 	};//method
 
 })();

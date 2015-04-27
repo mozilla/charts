@@ -1,4 +1,4 @@
-importScript("../modevlib/util/CNV.js");
+importScript("../modevlib/util/convert.js");
 importScript("../modevlib/qb/Qb.js");
 importScript("../modevlib/charts/aColor.js");
 
@@ -47,14 +47,14 @@ function addRowClickers(){
 
 function addTileClickers(){
 	$(".project").hover(function(){
-		var bugList = "#" + CNV.JSON2Object($(this).attr("bugsList")).join(",#");
+		var bugList = "#" + convert.json2value($(this).attr("bugsList")).join(",#");
 		$(bugList).addClass("selected");
 	},function(){
-		var bugList = "#" + CNV.JSON2Object($(this).attr("bugsList")).join(",#");
+		var bugList = "#" + convert.json2value($(this).attr("bugsList")).join(",#");
 		$(bugList).removeClass("selected");
 	}).click(function(e){
 		var bugList = $(".selected.project").map(function(){
-			return CNV.JSON2Object($(this).attr("bugsList"));
+			return convert.json2value($(this).attr("bugsList"));
 		}).get();
 		if (bugList.length == 0) {
 			$(".bug_line").removeClass("selected").show();
@@ -67,7 +67,7 @@ function addTileClickers(){
 
 	$("#show-bugs").click(function(){
 		var bugList = $(".selected.project").map(function(){
-			return CNV.JSON2Object($(this).attr("bugsList"));
+			return convert.json2value($(this).attr("bugsList"));
 		}).get();
 
 		if (bugList.length == 0) {
@@ -86,10 +86,10 @@ function addTileClickers(){
 
 
 function tile(info){
-	var normalColor = nvl(info.style.color, NORMAL);
+	var normalColor = coalesce(info.style.color, NORMAL);
 	var hoverColor = Color.newInstance(normalColor).lighter().toHTML();
 
-	info.bugsList = CNV.Object2JSON(info.bugs.select("bug_id"));
+	info.bugsList = convert.value2json(info.bugs.select("bug_id"));
 	info.bugsURL = Bugzilla.searchBugsURL(info.bugs.select("bug_id"));
 	info.unassignedBugs = info.bugs.filter(function(b){
 		return b.assigned_to == "nobody@mozilla.org"
@@ -118,7 +118,7 @@ function tile(info){
 //IT IS IMPORTANT FOR THE sorttable LIB THAT ALL ROWS HAVE A VALUE,
 //AND IT IS IMPORTANT THAT THE NULLS ARE SORTED TO THE BOTTOM
 function getPartIndex(b, domain){
-	var parts = nvl(domain.partitions, domain.edges);
+	var parts = coalesce(domain.partitions, domain.edges);
 	for (var i = 0; i < parts.length; i++) {
 		var part = parts[i];
 		var result = [b].filter(part.esfilter);
@@ -263,7 +263,7 @@ function bugDetails(bugs, categories){
 
 
 function getCategoryHTML(category, allBugs){
-	var edges = nvl(category.edges, category.partitions);
+	var edges = coalesce(category.edges, category.partitions);
 
 	var html;
 
@@ -272,7 +272,7 @@ function getCategoryHTML(category, allBugs){
 		html = tile({
 			"name": category.name,
 			"bugs": allBugs.list.filter(category.esfilter),
-			"style": {} //nvl(category.style, {})
+			"style": {} //coalesce(category.style, {})
 		});
 
 	} else {
@@ -283,7 +283,7 @@ function getCategoryHTML(category, allBugs){
 				"name": e.version && e.name!="Release" ? e.name+"-"+e.version : e.name,
 				"bugs": allBugs.list.filter(e.fullFilter),
 				"version": e.version,
-				"style": {} //nvl(e.style, {})
+				"style": {} //coalesce(e.style, {})
 			};
 			return tile(info);
 		}).join("");
@@ -418,8 +418,8 @@ function setReleaseHTML(data){
 	//ADD CLICKERS
 	$(".tracking").click(function(){
 		var parts = $(this)[0].id.split("_");
-		var release = CNV.String2Integer(parts[1]);
-		var team = CNV.String2Integer(parts[2]);
+		var release = convert.String2Integer(parts[1]);
+		var team = convert.String2Integer(parts[2]);
 
 		Thread.run(function*(){
 			var bugs = yield (ESQuery.run({
@@ -454,7 +454,7 @@ function fillPlatform(temp, allBugs, onPrivateCluster){
 			$("#Security_tiles").append(tile({
 				"name": Mozilla.Platform.Categories.Security.name,
 				"bugs": stabilityBugs,
-				"style": nvl(Mozilla.Platform.Categories.Security.style, {})
+				"style": coalesce(Mozilla.Platform.Categories.Security.style, {})
 			}));
 		}//endif
 	} else {

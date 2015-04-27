@@ -1,7 +1,7 @@
 importScript("../collections/aArray.js");
 importScript("aUtil.js");
 importScript("aString.js");
-importScript("CNV.js");
+importScript("convert.js");
 
 
 var Template = function Template(template){
@@ -28,12 +28,12 @@ var Template = function Template(template){
 	// DEFINE TEMPLATE FUNCTIONS HERE
 	///////////////////////////////////////////////////////////////////////////
 	var FUNC = {};
-	FUNC.html = CNV.String2HTML;
-	FUNC.style = CNV.Object2style;
-	FUNC.css = CNV.Object2CSS;
-	FUNC.attribute = CNV.value2HTMLAttribute;
+	FUNC.html = convert.String2HTML;
+	FUNC.style = convert.Object2style;
+	FUNC.css = convert.Object2CSS;
+	FUNC.attribute = convert.value2HTMLAttribute;
 	FUNC.datetime = function(d, f){
-		f = nvl(f, "yyyy-MM-dd HH:mm:ss");
+		f = coalesce(f, "yyyy-MM-dd HH:mm:ss");
 		return d.format(f);
 	};
 

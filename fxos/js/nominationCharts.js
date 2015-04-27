@@ -108,8 +108,8 @@ function showNomChurn(args) {
 				all.append({
 					"bug_id": v.bug_id,
 					"modified_ts": v.modified_ts,
-					"old_value": nvl(c.old_value, "---"),
-					"new_value": nvl(c.new_value, "---")
+					"old_value": coalesce(c.old_value, "---"),
+					"new_value": coalesce(c.new_value, "---")
 				});
 			});
 		});
@@ -117,7 +117,7 @@ function showNomChurn(args) {
 		//IF THE PROJECT IS MARKED AS BLOCKER, OR IF NOMINATION IS MARKED AS NON-BLOCKER
 		var NOM_CHECK_LOGIC = "(project.blocker.contains(new_value) || (project.nom.contains(old_value) && !project.blocker.contains(new_value)))";
 
-		var title = nvl({
+		var title = coalesce({
 			"1day": "Daily",
 			"1week": "Weekly",
 			"1month": "Monthly"

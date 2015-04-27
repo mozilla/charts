@@ -3,7 +3,7 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
 
-importScript("../util/CNV.js");
+importScript("../util/convert.js");
 
 
 (function(){
@@ -21,6 +21,29 @@ importScript("../util/CNV.js");
 	};
 	Exception.prototype = Object.create(Error);
 
+	function pythonExcept2Exception(except){
+		var output = new Exception(
+			new Template(except.template).expand(except.params),
+			except.cause===undefined ? undefined : Array.newInstance(except.cause).map(pythonExcept2Exception)
+		);
+		output.stack = pythonTrace2Stack(except.trace);
+		return output;
+	}//function
+
+	function pythonTrace2Stack(stack){
+		if (stack===undefined || stack==null) return [];
+		var output = stack.map(function(s){
+			return {
+				"function":s.method,
+				"fileName":s.file,
+				"lineNumber":s.line,
+				"depth":s.depth
+			};
+		});
+		return output;
+	}//function
+
+
 	function wrap(e){
 		if (e===undefined || e instanceof Exception) return e;
 		if (e instanceof Error){
@@ -30,6 +53,8 @@ importScript("../util/CNV.js");
 			output.columnNumber = e.columnNumber;
 			output.stack = parseStack(e.stack);
 			return output;
+		} else if (e.type=="ERROR"){
+			return pythonExcept2Exception(e);
 		}//endif
 
 		return new Exception(""+e);
@@ -64,7 +89,7 @@ importScript("../util/CNV.js");
 	Exception.error=function(){
 		var args = Array.prototype.slice.call(arguments).map(function(v,i){
 			if (typeof(v)=="string") return v;
-			return CNV.Object2JSON(v);
+			return convert.value2json(v);
 		});
 		return new Exception("error called with arguments("+args.join(",\n"+")"), null);
 	};
@@ -72,7 +97,7 @@ importScript("../util/CNV.js");
 
 	Exception.prototype.contains=function(type){
 		if (this==type) return true;
-		if (this.message==type) return true;
+		if (this.message.indexOf(type)>=0) return true;
 
 		if (this.cause===undefined){
 			return false;

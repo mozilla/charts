@@ -21,7 +21,7 @@ from pyLibrary import jsons
 from pyLibrary.maths import Math
 from pyLibrary.meta import use_settings
 from pyLibrary.strings import expand_template
-from pyLibrary.dot import nvl, wrap, listwrap, unwrap
+from pyLibrary.dot import coalesce, wrap, listwrap, unwrap
 from pyLibrary import convert
 from pyLibrary.debugs.logs import Log, Except
 from pyLibrary.queries import Q
@@ -72,16 +72,16 @@ class DB(object):
         if isinstance(settings, DB):
             settings = settings.settings
 
-        self.settings.schema = nvl(schema, self.settings.schema, self.settings.database)
+        self.settings.schema = coalesce(schema, self.settings.schema, self.settings.database)
 
-        preamble = nvl(preamble, self.settings.preamble)
+        preamble = coalesce(preamble, self.settings.preamble)
         if preamble == None:
             self.preamble = ""
         else:
             self.preamble = indent(preamble, "# ").strip() + "\n"
 
         self.readonly = readonly
-        self.debug = nvl(self.settings.debug, DEBUG)
+        self.debug = coalesce(self.settings.debug, DEBUG)
         self._open()
 
     def _open(self):
@@ -90,9 +90,9 @@ class DB(object):
             self.db = connect(
                 host=self.settings.host,
                 port=self.settings.port,
-                user=nvl(self.settings.username, self.settings.user),
-                passwd=nvl(self.settings.password, self.settings.passwd),
-                db=nvl(self.settings.schema, self.settings.db),
+                user=coalesce(self.settings.username, self.settings.user),
+                passwd=coalesce(self.settings.password, self.settings.passwd),
+                db=coalesce(self.settings.schema, self.settings.db),
                 charset=u"utf8",
                 use_unicode=True
             )
@@ -251,7 +251,7 @@ class DB(object):
                 Log.note("Execute SQL:\n{{sql}}", {"sql": indent(sql)})
 
             self.cursor.execute(sql)
-            columns = [utf8_to_unicode(d[0]) for d in nvl(self.cursor.description, [])]
+            columns = [utf8_to_unicode(d[0]) for d in coalesce(self.cursor.description, [])]
             fixed = [[utf8_to_unicode(c) for c in row] for row in self.cursor]
             result = convert.table2list(columns, fixed)
 
@@ -286,7 +286,7 @@ class DB(object):
 
             self.cursor.execute(sql)
             grid = [[utf8_to_unicode(c) for c in row] for row in self.cursor]
-            # columns = [utf8_to_unicode(d[0]) for d in nvl(self.cursor.description, [])]
+            # columns = [utf8_to_unicode(d[0]) for d in coalesce(self.cursor.description, [])]
             result = zip(*grid)
 
             if not old_cursor:   # CLEANUP AFTER NON-TRANSACTIONAL READS
@@ -363,7 +363,7 @@ class DB(object):
         settings=None
     ):
         """EXECUTE MANY LINES OF SQL (FROM SQLDUMP FILE, MAYBE?"""
-        settings.schema = nvl(settings.schema, settings.database)
+        settings.schema = coalesce(settings.schema, settings.database)
 
         if param:
             with DB(settings) as temp:

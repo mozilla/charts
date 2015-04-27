@@ -1,7 +1,7 @@
 importScript("../collections/aArray.js");
 importScript("aUtil.js");
 importScript("aString.js");
-importScript("CNV.js");
+importScript("convert.js");
 
 
 var Template = function Template(template){
@@ -10,6 +10,9 @@ var Template = function Template(template){
 
 (function(){
 	Template.prototype.expand = function expand(values){
+		if (values === undefined){
+			return this.template;
+		}//endif
 		var map = {};
 		if (!(values instanceof Array)) {
 			var keys = Object.keys(values);
@@ -24,24 +27,34 @@ var Template = function Template(template){
 	};
 	Template.prototype.replace = Template.prototype.expand;
 
+	function toString(value){
+		if (isString(value)) return value;
+		return convert.value2json(value)
+	}//function
 	///////////////////////////////////////////////////////////////////////////
 	// DEFINE TEMPLATE FUNCTIONS HERE
 	///////////////////////////////////////////////////////////////////////////
 	var FUNC = {};
-	FUNC.html = CNV.String2HTML;
-	FUNC.style = CNV.Object2style;
-	FUNC.css = CNV.Object2CSS;
-	FUNC.attribute = CNV.value2HTMLAttribute;
+	FUNC.html = convert.String2HTML;
+	FUNC.style = convert.Object2style;
+	FUNC.css = convert.Object2CSS;
+	FUNC.attribute = convert.value2HTMLAttribute;
 	FUNC.datetime = function(d, f){
-		f = nvl(f, "yyyy-MM-dd HH:mm:ss");
+		f = coalesce(f, "yyyy-MM-dd HH:mm:ss");
 		return d.format(f);
+	};
+	FUNC.indent = function(value, amount){
+		return toString(value).indent(amount);
+	};
+	FUNC.left = function(value, amount){
+		return toString(value).left(amount);
 	};
 
 
 	function _expand(template, namespaces){
 		if (template instanceof Array) {
 			return _expand_array(template, namespaces);
-		} else if (typeof(template) == "string") {
+		} else if (isString(template)) {
 			return _expand_text(template, namespaces);
 		} else {
 			return _expand_loop(template, namespaces);
@@ -105,7 +118,11 @@ var Template = function Template(template){
 				if (path[p].split("(").length==1){
 					val = FUNC[func](val)
 				}else{
-					val = eval("FUNC[func](val, "+path[p].split("(")[1]);
+					try {
+						val = eval("FUNC[func](val, " + path[p].split("(")[1]);
+					}catch (f){
+						Log.warning("Can not evaluate "+convert.String2Quote(output.substring(s + 2, e)), f)
+					}//try
 				}//endif
 			}//for
 

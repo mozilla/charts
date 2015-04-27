@@ -251,14 +251,17 @@ Dimension.prototype = {
 						dim.partitions = temp.partitions;
 					} else if (edges.length == 1) {
 						var a = Log.action("Get parts of " + dim.name, true);
-						var parts = yield (ESQuery.run({
-							"from": dim.index,
-							"select": {"name": "count", "value": "1", "aggregate": "count"},
-							"edges": edges,
-							"esfilter": dim.esfilter,
-							"limit": dim.limit
-						}));
-						Log.actionDone(a);
+						try{
+							var parts = yield (ESQuery.run({
+								"from": dim.index,
+								"select": {"name": "count", "value": "1", "aggregate": "count"},
+								"edges": edges,
+								"esfilter": dim.esfilter,
+								"limit": dim.limit
+							}));
+						}finally{
+							Log.actionDone(a);
+						}
 
 						var d = parts.edges[0].domain;
 
@@ -279,14 +282,18 @@ Dimension.prototype = {
 
 						//TODO: THIS IS REALLY SLOW!!
 						var a = Log.action("Get parts of " + dim.name, true);
-						var parts = yield (ESQuery.run({
-							"from": dim.index,
-							"select": {"name": "count", "value": "1", "aggregate": "count"},
-							"edges": edges,
-							"esfilter": dim.esfilter,
-							"limit": dim.limit
-						}));
-						Log.actionDone(a);
+						try{
+							var parts = yield (ESQuery.run({
+								"from": dim.index,
+								"select": {"name": "count", "value": "1", "aggregate": "count"},
+								"edges": edges,
+								"esfilter": dim.esfilter,
+								"limit": dim.limit
+							}));
+						}finally{
+							Log.actionDone(a);
+						}
+
 
 						var d = parts.edges[0].domain;
 						var d2 = parts.edges[1].domain;

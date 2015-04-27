@@ -26,6 +26,7 @@ var ESQuery = function(query){
 ESQuery.TrueFilter = {"match_all": {}};
 ESQuery.DEBUG = false;
 ESQuery.INDEXES = Settings.indexes;
+ESQuery.NOT_SUPPORTED = "From clause not supported \n{{from}}";
 
 
 (function(){
@@ -124,11 +125,21 @@ ESQuery.INDEXES = Settings.indexes;
 		var indexName = null;
 		if (typeof(query) == 'string') {
 			indexName = query;
-		} else {//https://metrics.mozilla.com/bugzilla-analysis/es/images/Spreadsheet.png
-			indexName = splitField(query.from)[0];
+		} else {
+			if (typeof(query.from)=='string'){
+				indexName = splitField(query.from)[0];
+			}else{
+				//COMPLEX from CLAUSE, SHUNT TO ActiveData
+				Log.error(ESQuery.NOT_SUPPORTED, {"from":query.from})
+			}//endif
 		}//endif
 
 		var indexInfo = ESQuery.INDEXES[indexName];
+
+		if (indexInfo===undefined){
+			//DIVERT TO ActiveData SERVICE
+			Log.error(ESQuery.NOT_SUPPORTED, {"from":query.from})
+		}//endif
 
 		//WE MANAGE ALL THE REQUESTS FOR THE SAME SCHEMA, DELAYING THEM IF THEY COME IN TOO FAST
 		if (indexInfo.fetcher === undefined) {
@@ -202,6 +213,17 @@ ESQuery.INDEXES = Settings.indexes;
 		var path = parse.URL(URL).pathname.split("/").rightBut(1);
 		var pathLength = path.length - 1;  //ASSUME /indexname.../_mapping
 
+		var cluster_info = null;
+		try {
+			cluster_info = yield(Rest.get({
+				"url": indexInfo.host,
+				"doNotKill": true        //WILL NEED THE SCHEMA EVENTUALLY
+			}));
+		} catch (e) {
+			//DO NOTHING
+		}//try
+
+
 		var schema = null;
 		try {
 			schema = yield(Rest.get({
@@ -213,7 +235,7 @@ ESQuery.INDEXES = Settings.indexes;
 			yield (null)
 		}//try
 
-		if (pathLength == 1) {  //EG http://host/_mapping
+		if (pathLength == 1) {  //EG http://host/indexname/_mapping
 			//CHOOSE AN INDEX
 			prefix = URL.split("/")[3];
 			indicies = Object.keys(schema);
@@ -227,13 +249,24 @@ ESQuery.INDEXES = Settings.indexes;
 		}//endif
 
 		if (pathLength <= 2) {//EG http://host/indexname/typename/_mapping
-			var types = Object.keys(schema);
-			if (types.length == 1) {
-				schema = schema[types[0]];
-			} else if (schema[indexPath.split("/")[2]] !== undefined) {
-				schema = schema[indexPath.split("/")[2]];
-			} else {
-				schema = schema[types[0]];
+			if (!cluster_info || cluster_info.version.number.startsWith("0.9")) {
+				//cluster_info==null MUST ASSUME THIS IS THE esFrontLine (IN FRONT OF 0.9x)
+				var types = Object.keys(schema);
+				if (types.length == 1) {
+					schema = schema[types[0]];
+				} else if (schema[indexPath.split("/")[2]] !== undefined) {
+					schema = schema[indexPath.split("/")[2]];
+				} else {
+					schema = schema[types[0]];
+				}//endif
+			}else if (cluster_info.version.number.startsWith("1.4")){
+				//FULL INDEX/TYPE STRUCTURE IS RETURNED
+				index = mapAllKey(schema, function(k, v){
+					if (k.startsWith(path[0])) return v;
+				})[0];
+				schema = index.mappings[path[1]];
+			}else{
+				Log.error("unknown version "+cluster_info.version.number)
 			}//endif
 		}//endif
 		yield (schema);
@@ -1484,7 +1517,7 @@ ESQuery.INDEXES = Settings.indexes;
 		var o = [];
 		var T = data.hits.hits;
 
-		if (!(this.query.select instanceof Array) && this.select.length == 1) {
+		if (!this.query.select instanceof Array && this.select.length == 1) {
 			//NOT ARRAY MEANS OUTPUT IS LIST OF VALUES, NOT OBJECTS
 			var n = this.query.select.name;
 			if (this.query.select.value == "_source") {
@@ -1753,39 +1786,3 @@ ESFilter.fastAndDirtyNormalize = function(esfilter){
 
 	return esfilter;
 };//method
-
-
-
-function requiredFields(esfilter){
-	//THIS LOOKS INTO DIMENSION DEFINITIONS, AS WELL AS ES FILTERS
-
-	if (esfilter===undefined) return [];
-
-	var parts = coalesce(esfilter.edges, esfilter.partitions, esfilter.and, esfilter.or);
-	if (parts){
-		var rf = requiredFields(esfilter.esfilter);
-		//A DIMENSION! - USE IT ANYWAY
-		return Array.union(parts.map(requiredFields).append(rf));
-	}//endif
-
-	if (esfilter.esfilter){
-		return requiredFields(esfilter.esfilter);
-	}else if (esfilter.not){
-		return requiredFields(esfilter.not);
-	}else if (esfilter.term){
-		return Object.keys(esfilter.term)
-	}else if (esfilter.terms){
-		return Object.keys(esfilter.terms)
-	}else if (esfilter.regexp){
-		return Object.keys(esfilter.regexp)
-	}else if (esfilter.missing){
-		return [esfilter.missing.field]
-	}else if (esfilter.exists) {
-		return [esfilter.missing.field]
-	}else if (esfilter.nested){
-		 return [splitField(esfilter.nested.path)[0]]
-	}else{
-		return []
-	}//endif
-}//method
-

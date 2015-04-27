@@ -4,7 +4,9 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
 importScript("aDate.js");
+importScript("aString.js");
 importScript("convert.js");
+importScript("../math/aMath.js");
 
 
 

@@ -4,6 +4,8 @@
 
 importScript("aHTML.js");
 importScript("aUtil.js");
+importScript("aDuration.js");
+
 
 
 var convert = function(){
@@ -211,9 +213,68 @@ convert.Object2URL=function(value){
 };//method
 
 
+convert.URLParam2Object = function(param){
+	// CONVERT URL QUERY PARAMETERS INTO DICT
+	if (param===undefined || param==null){
+		return {};
+	}//endif
+
+	function _decode(v){
+		var output = "";
+		var i = 0;
+		while (i < v.length) {
+			var c = v[i];
+			if (c == "%") {
+				d = convert.hex2bytes(v.substring(i + 1, i + 3));
+				output += d;
+				i += 3;
+			} else {
+				output += c;
+				i += 1;
+			}//endif
+		}//while
+
+		try {
+			return convert.json2value(output)
+		} catch (e) {
+			//DO NOTHING
+		}//try
+		return output;
+	}//function
+
+
+	var query = {};
+	param.split("&").forall(function(p){
+		if (!p) return;
+
+		var k, v;
+		if (p.indexOf("=") == -1) {
+			k = p;
+			v = true;
+		} else {
+			var kv = p.split("=");
+			k = kv[0];
+			v = kv[1];
+			v = _decode(v)
+		}//endif
+
+		var u = query[k];
+		if (u === undefined || u == null) {
+			query[k] = v
+		} else if (u instanceof Array) {
+			u.append(v)
+		} else {
+			query[k] = [u, v]
+		}//endif
+	});
+
+	return query;
+};//function
+
 
 (function(){
 	var entityMap = {
+		" ": "&nbsp;",
 		"&": "&amp;",
 		"<": "&lt;",
 		">": "&gt;",
@@ -395,7 +456,8 @@ convert.Cube2HTMLTable=function(query){
 
 	var e=query.edges[0];
 
-	if (query.edges.length==0){
+	if (query.edges.length==0 || (query.edges.length==1 && query.edges[0].domain.interval=="none")){
+		//NO EDGES, OR ONLY SMOOTH EDGES MEANS ALL POINTS MUST BE LISTED
 		return convert.List2HTMLTable(query);
 	}else if (query.edges.length==1){
 		header += "<td>" + convert.String2HTML(e.name) + "</td>";
@@ -436,10 +498,10 @@ convert.Cube2HTMLTable=function(query){
 
 			content="";
 			query.edges[1].domain.partitions.forall(function(p,r){
-				var name=query.edges[1].domain.end(p);
+				var name=query.edges[1].domain.label(p);
 				if (name==p && typeof(name)!="string") name=p.name;
-				if (p.name!==undefined && p.name!=name)
-					Log.error("make sure part.name matches the end(part)=="+name+" codomain");
+//				if (p.name!==undefined && p.name!=name)
+//					Log.error("make sure part.name matches the end(part)=="+name+" codomain");
 				content+="<tr>"+wrapWithHtmlTag("th", name);
 				for(var c=0;c<query.cube.length;c++){
 					content+=wrapWithHtmlTag("td", query.cube[c][r]);
@@ -510,7 +572,7 @@ convert.List2HTMLTable = function(data, options){
 	columns.forall(function(v, i){
 		header += wrapWithHtmlTag("td", v.name);
 	});
-	header = "<thead><tr>" + header + "</tr></thead>";
+	header = "<thead><tr><div>" + header + "</div></tr></thead>";
 
 
 	var output = "";
@@ -521,7 +583,7 @@ convert.List2HTMLTable = function(data, options){
 		var row = "";
 		for(var c = 0; c < columns.length; c++){
 			var value = data[i][columns[c].name];
-			row += wrapWithHtmlTag("td", value);
+			row += wrapWithHtmlTag(["td", "div"], value);
 		}//for
 		output += "<tr>" + row + "</tr>\n";
 	}//for
@@ -534,53 +596,67 @@ convert.List2HTMLTable = function(data, options){
 };//method
 
 
-wrapWithHtmlTag=function(tagName, value){
-	if (tagName===undefined) tagName="td";
+wrapWithHtmlTag = function(tagName, value){
+	if (tagName === undefined) tagName = "td";
+	tagName = Array.newInstance(tagName);
+	var prefix = tagName.map(function(t){
+		return "<" + t + ">"
+	}).join("");
+	var suffix = Qb.reverse(tagName).map(function(t){
+		return "</" + t + ">"
+	}).join("");
 
-	if (value === undefined){
+
+	if (value === undefined) {
 //		return "<"+tagName+">&lt;undefined&gt;</"+tagName+">";
-		return "<"+tagName+"></"+tagName+">";
-	} else if (value == null){
+		return prefix + suffix;
+	} else if (value == null) {
 //		return "<"+tagName+">&lt;null&gt;</"+tagName+">";
-		return "<"+tagName+"></"+tagName+">";
-	}else if (value instanceof HTML){
-		return "<"+tagName+">" + value + "</"+tagName+">";
-	} else if (typeof(value)=="string"){
-		return "<"+tagName+">" + convert.String2HTML(value) + "</"+tagName+">";
-	} else if (aMath.isNumeric(value)){
-		if ((""+value).length==13){
+		return prefix + suffix;
+	} else if (value instanceof HTML) {
+		return prefix + value + suffix;
+	} else if (typeof(value) == "string") {
+		return prefix + convert.String2HTML(value) + suffix;
+	} else if (aMath.isNumeric(value) && ("" + value).length == 10 && ("" + value).startsWith("1") && value>1200000000) {
+		//PROBABLY A UNIX TIMESTAMP
+		value = new Date(value*1000);
+		if (value.floorDay().getMilli() == value.getMilli()) {
+			return prefix + new Date(value).format("dd-NNN-yyyy") + suffix;
+		} else {
+			return prefix + new Date(value).format("dd-NNN-yyyy HH:mm:ss") + suffix;
+		}//endif
+	} else if (aMath.isNumeric(value)) {
+		if (("" + value).length == 13) {
 			//PROBABLY A TIMESTAMP
-			value=new Date(value);
-			if (value.floorDay().getMilli()==value.getMilli()){
-				return "<"+tagName+">" + new Date(value).format("dd-NNN-yyyy") + "</"+tagName+">";
-			}else{
-				return "<"+tagName+">" + new Date(value).format("dd-NNN-yyyy HH:mm:ss") + "</"+tagName+">";
+			value = new Date(value);
+			if (value.floorDay().getMilli() == value.getMilli()) {
+				return prefix + new Date(value).format("dd-NNN-yyyy") + suffix;
+			} else {
+				return prefix + new Date(value).format("dd-NNN-yyyy HH:mm:ss") + suffix;
 			}//endif
-		}else{
-			return "<"+tagName+" style='text-align:right;'>" + value + "</"+tagName+">";
+		} else {
+			return prefix.leftBut(1) + " style='text-align:right;'>" + value + suffix;
 		}
-	} else if (value.milli){
+	} else if (value.milli) {
 		//DURATION
-		return "<"+tagName+">" + value.toString() + "</"+tagName+">";
-	} else if (value.getTime){
-		if (value.floorDay().getMilli()==value.getMilli()){
-			return "<"+tagName+">" + new Date(value).format("dd-NNN-yyyy") + "</"+tagName+">";
-		}else{
-			return "<"+tagName+">" + new Date(value).format("dd-NNN-yyyy HH:mm:ss") + "</"+tagName+">";
+		return prefix + value.toString() + suffix;
+	} else if (value.getTime) {
+		if (value.floorDay().getMilli() == value.getMilli()) {
+			return prefix + new Date(value).format("dd-NNN-yyyy") + suffix;
+		} else {
+			return prefix + new Date(value).format("dd-NNN-yyyy HH:mm:ss") + suffix;
 		}//endif
 //	} else if (value.toString !== undefined){
-//		return "<"+tagName+">" + convert.String2HTML(value.toString()) + "</"+tagName+">";
+//		return prefix + convert.String2HTML(value.toString()) + suffix;
 	}//endif
 
 	var json = convert.value2json(value);
 //	if (json.indexOf("\n") == -1){
-		return "<"+tagName+">" + convert.String2HTML(json) + "</"+tagName+">";
+	return prefix + convert.String2HTML(json) + suffix;
 //	} else{
 //		return "<"+tagName+">&lt;json not included&gt;</"+tagName+">";
 //	}//endif
 };
-
-
 
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -685,6 +761,15 @@ convert.hex2int = function(value){
 	return parseInt(value, 16);
 };//method
 
+convert.hex2bytes = function(value){
+	var output = "";
+	for (var i = 0; i < value.length; i += 2) {
+		var c = parseInt(value.substring(i, i + 2), 16);
+		output += String.fromCharCode(c);
+	}//for
+	return output;
+};//method
+
 
 //CONVERT FROM STRING TO SOMETHING THAT CAN BE USED BY $()
 function String2Selector(str){
@@ -758,7 +843,7 @@ convert.esFilter2function=function(esFilter){
 		if (variables.length>1) Log.error("not allowed");
 		var variable = variables[0];
 		return function(row){
-			var value = Map.get(row, variable);
+			var value = row[variable];
 			if (value===undefined){
 				return false;
 			}else if (value instanceof Array){
@@ -766,6 +851,7 @@ convert.esFilter2function=function(esFilter){
 			}else{
 				if (!terms[variable].contains(value)) return false;
 			}//endif
+
 			return true;
 		};
 	}else if (op=="exists"){
@@ -788,85 +874,58 @@ convert.esFilter2function=function(esFilter){
 
 		return function(row, i, rows){
 			if (range.gte !== undefined){
-				if (range.gte > Map.get(row, variableName)) return false;
+				if (range.gte > row[variableName]) return false;
 			} else if (range.gt !== undefined){
-				if (range.gt >= Map.get(row, variableName)) return false;
+				if (range.gt >= row[variableName]) return false;
 			}//endif
 
 			if (range.lte !== undefined){
-				if (range.lte < Map.get(row, variableName)) return false;
+				if (range.lte < row[variableName]) return false;
 			} else if (range.lt !== undefined){
-				if (range.lt <= Map.get(row, variableName)) return false;
+				if (range.lt <= row[variableName]) return false;
 			}//endif
 
 			return true;
 		};
 	} else if (op=="script"){
-		Log.error("not supported");
+		Log.error("scripts not supported");
 	}else if (op=="prefix"){
 		var pair = esFilter[op];
 		var variableName = Object.keys(pair)[0];
 		var prefix = pair[variableName];
 		return function(row, i, rows){
-			var v = Map.get(row, variableName);
+			var v = row[variableName];
 			return typeof(v)=="string" && v.startsWith(prefix);
 		}
 	}else if (op=="match_all"){
 		return TRUE_FILTER;
-	}else if (op=="regexp") {
+	}else if (op=="regexp"){
 		var pair = esFilter[op];
 		var variableName = Object.keys(pair)[0];
 		var regexp = new RegExp(pair[variableName]);
 		return function(row, i, rows){
-			if (regexp.test(Map.get(row, variableName))) {
+			if (regexp.test(row[variableName])){
 				return true;
-			} else {
+			}else{
 				return false;
 			}//endif
 		}
-	}else if (op=="contains") {
+	}else if (op=="contains"){
 		var pair = esFilter[op];
 		var variableName = Object.keys(pair)[0];
 		var substr = pair[variableName];
 		return function(row, i, rows){
-			var v = Map.get(row, variableName);
-			if (v === undefined) {
+			var v = row[variableName];
+			if (v===undefined){
 				return false;
-			} else if (v instanceof Array) {
+			}else if (v instanceof Array){
 				return v.contains(substr);
-			} else if (typeof(v) == "string") {
+			}else if (typeof(v)=="string") {
 				return v.indexOf(substr) >= 0;
-			} else {
+			}else{
 				Log.error("Do not know how to handle")
 			}//endif
 		}
-	}else if (op=="nested"){
-		//REACH INTO THE NESTED TEMPLATE FOR THE filter
-		var path = splitField(esFilter[op].path);
-		var deepFilter = convert.esFilter2function(esFilter[op].query.filtered.filter);
-
-
-		function select(path, rows){
-			//RETURN THE CHILD ROWS FOUND ALONG path
-			if (path.length==0) return rows;
-
-			var output = [];
-			rows.forall(function(r){
-				var crows = Array.newInstance(Map.get(r, path[0]));
-				var cresult = select(path.rightBut(1), crows).map(function(cr){
-					return Map.newInstance(path[0], cr);
-				});
-				output.extend(cresult);
-			});
-			return output;
-
-		}
-
-		return function(row, i, rows){
-			//MAKE A LIST OF CHILD DOCUMENTS TO RUN FILTER ON
-			var childRows = select(path, [row]);
-			return (childRows.filter(deepFilter).length > 0);
-		};
 	} else{
 		Log.error("'" + op + "' is an unknown operation");
 	}//endif

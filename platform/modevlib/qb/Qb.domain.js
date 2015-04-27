@@ -371,7 +371,7 @@ Qb.domain.time.addRange = function(min, max, domain){
 			"value":v,
 			"min":v,
 			"max":v.add(domain.interval),
-			"name":v.format(nvl(domain.format, Qb.domain.time.DEFAULT_FORMAT))
+			"name":v.format(coalesce(domain.format, Qb.domain.time.DEFAULT_FORMAT))
 		};
 		domain.map[v] = partition;
 		domain.partitions.push(partition);
@@ -491,7 +491,7 @@ Qb.domain.duration = function(column, sourceColumns){
 	//PROVIDE FORMATTING FUNCTION
 //	if (d.format === undefined){
 		d.label = function(value){
-			if (value.toString===undefined) return CNV.Object2JSON(value);
+			if (value.toString===undefined) return convert.value2json(value);
 			return value.toString();
 		};//method
 //	}//endif
@@ -584,7 +584,7 @@ Qb.domain.duration = function(column, sourceColumns){
 				if (this.min===undefined){
 					if (noMax || key.milli < this.max.milli){
 						this.min = floor;
-						this.max = nvl(this.max, ceil);
+						this.max = coalesce(this.max, ceil);
 						Qb.domain.duration.addRange(this.min, this.max, this);
 					}//endif
 				}else if (key.milli < this.min.milli){
@@ -599,7 +599,7 @@ Qb.domain.duration = function(column, sourceColumns){
 			if (noMax){//NO MAXIMUM REQUESTED
 				if (this.max===undefined){
 					if (noMin || this.min.milli <= key.milli){
-						this.min = nvl(this.min, floor);
+						this.min = coalesce(this.min, floor);
 						this.max = ceil;
 						Qb.domain.duration.addRange(this.min, this.max, this);
 					}//endif
@@ -702,9 +702,9 @@ Qb.domain.numeric = function(column, sourceColumns){
 	if (d.name === undefined) d.name = d.type;
 	if (d.interval===undefined) Log.error("Expecting domain '"+d.name+"' to have an interval defined");
 	d.NULL = {"value":null, "name":"null"};
-	d.interval = CNV.String2Integer(d.interval);
-	d.min = d.min===undefined ? undefined : _floor(CNV.String2Integer(d.min), d.interval);
-	d.max = d.max===undefined ? undefined : _floor(CNV.String2Integer(d.max)+d.interval, d.interval);
+	d.interval = convert.String2Integer(d.interval);
+	d.min = d.min===undefined ? undefined : _floor(convert.String2Integer(d.min), d.interval);
+	d.max = d.max===undefined ? undefined : _floor(convert.String2Integer(d.max)+d.interval, d.interval);
 
 
 	d.compare = function(a, b){
@@ -721,7 +721,7 @@ Qb.domain.numeric = function(column, sourceColumns){
 	//PROVIDE FORMATTING FUNCTION
 //	if (d.format === undefined){
 		d.label = function(value){
-			if (value.toString===undefined) return CNV.Object2JSON(value);
+			if (value.toString===undefined) return convert.value2json(value);
 			return value.toString();
 		};//method
 //	}//endif
@@ -732,7 +732,7 @@ Qb.domain.numeric = function(column, sourceColumns){
 		var noMax=(d.max===undefined);
 		d.getPartByKey = function(key){
 			if (key == null || key=="null") return this.NULL;
-			if (typeof(key)=="string") key=CNV.String2Integer(key);
+			if (typeof(key)=="string") key=convert.String2Integer(key);
 			try{
 				var floor = _floor(key, d.interval);
 			}catch(e){
@@ -844,9 +844,9 @@ Qb.domain.count = function(column, sourceColumns){
 	if (d.name === undefined) d.name = d.type;
 	if (d.interval===undefined) d.interval=1;
 	d.NULL = {"value":null, "name":"null"};
-	d.interval = CNV.String2Integer(d.interval);
-	d.min = d.min===undefined ? 0 : _floor(CNV.String2Integer(d.min), d.interval);
-	d.max = d.max===undefined ? undefined : _floor(CNV.String2Integer(d.max)+d.interval, d.interval);
+	d.interval = convert.String2Integer(d.interval);
+	d.min = d.min===undefined ? 0 : _floor(convert.String2Integer(d.min), d.interval);
+	d.max = d.max===undefined ? undefined : _floor(convert.String2Integer(d.max)+d.interval, d.interval);
 
 
 	d.compare = function(a, b){
@@ -862,7 +862,7 @@ Qb.domain.count = function(column, sourceColumns){
 
 	//PROVIDE FORMATTING FUNCTION
 	d.label = function(value){
-		if (value.toString===undefined) return CNV.Object2JSON(value);
+		if (value.toString===undefined) return convert.value2json(value);
 		return ""+value.name;
 	};//method
 
@@ -871,7 +871,7 @@ Qb.domain.count = function(column, sourceColumns){
 
 		d.getPartByKey = function(key){
 			if (key == null || key=="null") return this.NULL;
-			if (typeof(key)=="string") key=CNV.String2Integer(key);
+			if (typeof(key)=="string") key=convert.String2Integer(key);
 			try{
 				var floor = _floor(key, d.interval);
 			}catch(e){
@@ -1023,9 +1023,9 @@ Qb.domain.set = function(column, sourceColumns){
 
 			var key=d.getKey(part);
 			if (key === undefined)
-				Log.error("Expecting object to have '" + d.key + "' attribute:" + CNV.Object2JSON(part));
+				Log.error("Expecting object to have '" + d.key + "' attribute:" + convert.value2json(part));
 			if (d.map[key] !== undefined){
-				Log.error("Domain '" + d.name + "' was given two partitions that map to the same value (a[\"" + d.key + "\"]==b[\"" + d.key + "\"]): where a=" + CNV.Object2JSON(part) + " and b=" + CNV.Object2JSON(d.map[key]));
+				Log.error("Domain '" + d.name + "' was given two partitions that map to the same value (a[\"" + d.key + "\"]==b[\"" + d.key + "\"]): where a=" + convert.value2json(part) + " and b=" + convert.value2json(d.map[key]));
 			}//endif
 			d.map[key] = part;
 		}//for

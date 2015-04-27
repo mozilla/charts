@@ -27,7 +27,7 @@
 	<script type="text/javascript" src="modevlib/collections/aRelation.js"></script>
 	<script type="text/javascript" src="modevlib/math/aMath.js"></script>
 	<script type="text/javascript" src="modevlib/MozillaPrograms.js"></script>
-	<script type="text/javascript" src="modevlib/util/CNV.js"></script>
+	<script type="text/javascript" src="modevlib/util/convert.js"></script>
 	<script type="text/javascript" src="modevlib/charts/aColor.js"></script>
 	<script type="text/javascript" src="modevlib/Settings.js"></script>
 
@@ -174,7 +174,7 @@
 			var milestoneFilter ={"and":GUI.state.milestone.getSelectedParts().map(function(p){
 				return p.Targeted.esfilter;
 			})};
-			var milestoneFunc = CNV.esFilter2function(milestoneFilter);
+			var milestoneFunc = convert.esFilter2function(milestoneFilter);
 			allDetails.list.forall(function(v){
 				v.isTargeted = milestoneFunc(v);
 			});

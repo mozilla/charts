@@ -26,7 +26,7 @@ def inverse(d):
     return output
 
 
-def nvl(*args):
+def coalesce(*args):
     # pick the first none-null value
     for a in args:
         if a != None:

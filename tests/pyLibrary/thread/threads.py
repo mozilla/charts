@@ -21,7 +21,7 @@ import time
 import sys
 import gc
 
-from pyLibrary.dot import nvl, Dict
+from pyLibrary.dot import coalesce, Dict
 
 
 DEBUG = True
@@ -72,7 +72,7 @@ class Queue(object):
         max - LIMIT THE NUMBER IN THE QUEUE, IF TOO MANY add() AND extend() WILL BLOCK
         silent - COMPLAIN IF THE READERS ARE TOO SLOW
         """
-        self.max = nvl(max, 2 ** 10)
+        self.max = coalesce(max, 2 ** 10)
         self.silent = silent
         self.keep_running = True
         self.lock = Lock("lock for queue")

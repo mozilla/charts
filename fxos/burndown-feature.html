@@ -29,7 +29,7 @@
 <script type="text/javascript" src="modevlib/util/aHTML.js"></script>
 <script type="text/javascript" src="modevlib/collections/aArray.js"></script>
 <script type="text/javascript" src="lib/jquery.js"></script>
-<script type="text/javascript" src="modevlib/util/CNV.js"></script>
+<script type="text/javascript" src="modevlib/util/convert.js"></script>
 <script type="text/javascript" src="modevlib/util/aDate.js"></script>
 <script type="text/javascript" src="modevlib/collections/aQueue.js"></script>
 <script type="text/javascript" src="modevlib/collections/aSet.js"></script>
@@ -319,7 +319,7 @@ importScript([
 		var sampleInterval = Duration.newInstance(GUI.state.sampleInterval);
 		var sampleMax = Date.newInstance(GUI.state.sampleMax).addDay();
 		var bug_ids = GUI.state.bugList.trim() == "" ? [] : GUI.state.bugList.split(",").map(function(v){
-			return CNV.String2Integer(v.trim());
+			return convert.String2Integer(v.trim());
 		});
 
 		var timeDomain = null;
@@ -389,9 +389,9 @@ importScript([
 				}));
 
 				if (milestones.length > 0) {
-					$("#title").html(r.list.map(CNV.String2HTML).join("<br>") + "Milestone " + milestones.select("name").join(" and "));
+					$("#title").html(r.list.map(convert.String2HTML).join("<br>") + "Milestone " + milestones.select("name").join(" and "));
 				} else {
-					$("#title").html(r.list.map(CNV.String2HTML).join("<br>"));
+					$("#title").html(r.list.map(convert.String2HTML).join("<br>"));
 				}//endif
 			});
 
@@ -402,10 +402,10 @@ importScript([
 		}//endif
 
 
-		var currFeatureFilter = GUI.state.hierarchyMode.getSimpleState() != "All dependencies" ? nvl(milestoneFilter, featureFilter) : {"match_all" : {}};
+		var currFeatureFilter = GUI.state.hierarchyMode.getSimpleState() != "All dependencies" ? coalesce(milestoneFilter, featureFilter) : {"match_all" : {}};
 		daily_data = yield (getDailyDependencies(raw_data, {"and":[
-			nvl(milestoneFilter, {"match_all" : {}}),
-			nvl(featureFilter, {"match_all" : {}})
+			coalesce(milestoneFilter, {"match_all" : {}}),
+			coalesce(featureFilter, {"match_all" : {}})
 		]}));
 
 		//LAST DAY WILL BE CONSIDERED CURRENT FEATURE LIST
@@ -449,10 +449,10 @@ importScript([
 				milestoneFilter = {"or" : milestones.select("esfilter")};
 			}//endif
 
-			var currFeatureFilter = GUI.state.hierarchyMode.getSimpleState() != "All dependencies" ? nvl(milestoneFilter, featureFilter) : {"match_all" : {}};
+			var currFeatureFilter = GUI.state.hierarchyMode.getSimpleState() != "All dependencies" ? coalesce(milestoneFilter, featureFilter) : {"match_all" : {}};
 			daily_data = yield (getDailyDependencies(raw_data, {"and":[
-				nvl(milestoneFilter, {"match_all" : {}}),
-				nvl(featureFilter, {"match_all" : {}})
+				coalesce(milestoneFilter, {"match_all" : {}}),
+				coalesce(featureFilter, {"match_all" : {}})
 			]}));
 
 			//LAST DAY WILL BE CONSIDERED CURRENT FEATURE LIST
@@ -547,7 +547,7 @@ importScript([
 					{"name" : "Summary", "value" : "short_desc"},
 					{"name" : "Owner", "value" : "assigned_to"},
 					{"name" : "Status", "value" : "bug_status + (resolution ? ' - '+resolution : '')"},
-					{"name" : "Estimate", "value" : "nvl(ScrumBugs.parse(status_whiteboard).points, 'missing')"},
+					{"name" : "Estimate", "value" : "coalesce(ScrumBugs.parse(status_whiteboard).points, 'missing')"},
 					{"name" : "Priority", "value" : "priority"}
 				],
 				"sort" : ["Status", "bug_id"]
@@ -567,7 +567,7 @@ importScript([
 				"from" : raw_data,
 				"select" : [
 					{"name" : "count", "value" : "1", "aggregate" : "sum", "default" : 0},
-					{"name" : "work", "value" : "nvl(ScrumBugs.parse(status_whiteboard).points, 1)-0", "aggregate" : "sum", "default" : 0}
+					{"name" : "work", "value" : "coalesce(ScrumBugs.parse(status_whiteboard).points, 1)-0", "aggregate" : "sum", "default" : 0}
 				],
 				"edges" : [
 					{"name" : "status", "value" : "counted", "domain" : {"type" : "set", "key" : "value", "partitions" : [

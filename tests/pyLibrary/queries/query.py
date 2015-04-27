@@ -16,7 +16,7 @@ from pyLibrary.queries.dimensions import Dimension
 from pyLibrary.queries.domains import Domain
 from pyLibrary.queries.filters import TRUE_FILTER, simplify
 from pyLibrary.dot.dicts import Dict
-from pyLibrary.dot import nvl, split_field, join_field, Null, set_default
+from pyLibrary.dot import coalesce, split_field, join_field, Null, set_default
 from pyLibrary.dot.lists import DictList
 from pyLibrary.dot import wrap, unwrap, listwrap
 
@@ -115,7 +115,7 @@ def _normalize_edge(edge, schema=None):
         )
     else:
         return Dict(
-            name=nvl(edge.name, edge.value),
+            name=coalesce(edge.name, edge.value),
             value=edge.value,
             range=edge.range,
             allowNulls=False if edge.allowNulls is False else True,
@@ -152,7 +152,7 @@ def _normalize_domain(domain=None, schema=None):
 
 def _normalize_window(window, schema=None):
     return Dict(
-        name=nvl(window.name, window.value),
+        name=coalesce(window.name, window.value),
         value=window.value,
         edges=[_normalize_edge(e, schema) for e in listwrap(window.edges)],
         sort=_normalize_sort(window.sort),
@@ -341,7 +341,7 @@ def _normalize_sort(sort=None):
         if isinstance(s, basestring):
             output.append({"field": s, "sort": 1})
         else:
-            output.append({"field": nvl(s.field, s.value), "sort": nvl(sort_direction[s.sort], 1)})
+            output.append({"field": coalesce(s.field, s.value), "sort": coalesce(sort_direction[s.sort], 1)})
     return wrap(output)
 
 

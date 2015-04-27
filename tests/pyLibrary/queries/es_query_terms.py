@@ -17,7 +17,7 @@ from pyLibrary.queries import es_query_util
 from pyLibrary.queries.es_query_util import aggregates, buildESQuery, compileEdges2Term
 from pyLibrary.queries.filters import simplify
 from pyLibrary.queries.cube import Cube
-from pyLibrary.dot import nvl
+from pyLibrary.dot import coalesce
 from pyLibrary.dot.lists import DictList
 from pyLibrary.dot import wrap, listwrap
 
@@ -49,7 +49,7 @@ def es_terms(es, mvel, query):
             "terms": {
                 "field": packed_term.field,
                 "script_field": packed_term.expression,
-                "size": nvl(query.limit, 200000)
+                "size": coalesce(query.limit, 200000)
             },
             "facet_filter": simplify(query.where)
         }
@@ -112,7 +112,7 @@ def _es_terms2(es, mvel, query):
             esQuery.facets[s.name + "," + str(i)] = {
                 "terms": {
                     "field": query.edges[1].value,
-                    "size": nvl(query.limit, 200000)
+                    "size": coalesce(query.limit, 200000)
                 },
                 "facet_filter": simplify({"and": [
                     query.where,

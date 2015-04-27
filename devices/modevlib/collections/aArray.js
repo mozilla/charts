@@ -126,7 +126,7 @@ importScript("../util/aUtil.js");
 		if (typeof(func) == "function") {
 			//DO NOTHING
 		}else{
-			func = CNV.esFilter2function(func)
+			func = convert.esFilter2function(func)
 		}//endif
 
 		var output=[];

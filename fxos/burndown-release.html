@@ -27,7 +27,7 @@
 	<script type="text/javascript" src="modevlib/util/aHTML.js"></script>
 	<script type="text/javascript" src="modevlib/collections/aArray.js"></script>
 	<script type="text/javascript" src="lib/jquery.js"></script>
-	<script type="text/javascript" src="modevlib/util/CNV.js"></script>
+	<script type="text/javascript" src="modevlib/util/convert.js"></script>
 	<script type="text/javascript" src="modevlib/util/aDate.js"></script>
 	<script type="text/javascript" src="modevlib/collections/aQueue.js"></script>
 	<script type="text/javascript" src="modevlib/collections/aSet.js"></script>
@@ -563,8 +563,8 @@ importScript([
 							"release": m.name,
 							"date": DUE_DATE <= TODAY ? DUE_DATE.subtract(Duration.DAY).format("NNN dd") : "today",
 							"total": total,
-							"open": nvl(releaseTotals.cube[i][1].count, 0) + nvl(releaseTotals.cube[i][0].count, 0),
-							"regressions": nvl(releaseTotals.cube[i][0].count, "0"),
+							"open": coalesce(releaseTotals.cube[i][1].count, 0) + coalesce(releaseTotals.cube[i][0].count, 0),
+							"regressions": coalesce(releaseTotals.cube[i][0].count, "0"),
 							"closed": releaseTotals.cube[i][2].count,
 							"closed_percent": aMath.round(releaseTotals.cube[i][2].count / total * 100)
 						});
@@ -575,7 +575,7 @@ importScript([
 			releases.forall(function (m) {
 				var i = releaseTotals.edges[0].domain.getPartByKey(m.name).dataIndex;
 
-				var totalButton = $("#" + CNV.String2JQuery(m.name + "Total"));
+				var totalButton = $("#" + convert.String2JQuery(m.name + "Total"));
 				totalButton.click(function () {
 					Thread.run(function*() {
 						var buglist = (yield (ESQuery.run({
@@ -595,7 +595,7 @@ importScript([
 				});
 
 				releaseTotals.edges[1].domain.partitions.forall(function (t, i) {
-					$("#" + CNV.String2JQuery(m.name + t.name)).click(function () {
+					$("#" + convert.String2JQuery(m.name + t.name)).click(function () {
 						Thread.run(function*() {
 							var buglist = (yield (ESQuery.run({
 								"from": "bugs",

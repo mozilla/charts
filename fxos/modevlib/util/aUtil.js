@@ -238,7 +238,7 @@ var reverseMap=function(map, codomain){
 
 
 //RETURN FIRST NOT NULL, AND DEFINED VALUE
-function nvl(){
+function coalesce(){
 	var args = arguments.length == 1 ? arguments[0] : arguments;
 	var a;
 	for(var i=0;i<args.length;i++){
@@ -248,12 +248,12 @@ function nvl(){
 	return null;
 }//method
 
-var coalesce=nvl;
+var coalesce=coalesce;
 
 
 var Util = {};
 
-Util.coalesce = nvl;
+Util.coalesce = coalesce;
 
 Util.returnNull = function(__row){
 	return null;

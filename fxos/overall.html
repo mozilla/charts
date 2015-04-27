@@ -27,7 +27,7 @@
 	<script type="text/javascript" src="modevlib/util/aString.js"></script>
 	<script type="text/javascript" src="modevlib/collections/aQueue.js"></script>
 	<script type="text/javascript" src="modevlib/collections/aSet.js"></script>
-	<script type="text/javascript" src="modevlib/util/CNV.js"></script>
+	<script type="text/javascript" src="modevlib/util/convert.js"></script>
 	<script type="text/javascript" src="modevlib/charts/aColor.js"></script>
 	<script type="text/javascript" src="modevlib/Settings.js"></script>
 
@@ -318,7 +318,7 @@ importScript(['modevlib/main.js', 'modevlib/Dimension-Bugzilla.js', "modevlib/Di
 		Log.actionDone(a);
 
 		allBugs.list.forall(function(v){
-			v.status_whiteboard=nvl(v.status_whiteboard, "");
+			v.status_whiteboard=coalesce(v.status_whiteboard, "");
 		});
 
 		var counting = null;

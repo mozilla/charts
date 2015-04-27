@@ -57,7 +57,7 @@ build = function(){
 	}};
 
 	//RETURN FIRST NOT NULL, AND DEFINED VALUE
-	function nvl(){
+	function coalesce(){
 		var args = arguments;
 		var a;
 		for (var i = 0; i < args.length; i++) {
@@ -156,7 +156,7 @@ build = function(){
 		this.children.push(child);
 		child.parentThread = this;
 //		Log.note("add "+child.name+" as child of "+this.name);
-//		Log.note("Children  of "+this.name+": "+CNV.Object2JSON(this.children.select("name")));
+//		Log.note("Children  of "+this.name+": "+convert.value2json(this.children.select("name")));
 	}//function
 	Thread.prototype.addChild = addChild;
 
@@ -255,7 +255,7 @@ build = function(){
 	Thread.prototype.kill = function(retval){
 
 		var children = this.children.copy();  //CHILD THREAD WILL REMOVE THEMSELVES FROM THIS LIST
-//		Log.note("Killing "+CNV.Object2JSON(children.select("name"))+" child threads");
+//		Log.note("Killing "+convert.value2json(children.select("name"))+" child threads");
 		for (var c = 0; c < children.length; c++) {
 			var child = children[c];
 			if (!child) continue;
@@ -319,9 +319,9 @@ build = function(){
 
 		if (retval instanceof Exception) {
 			if (POPUP_ON_ERROR || DEBUG) {
-				Log.alert("Uncaught Error in thread: " + nvl(this.name, "") + "\n  " + retval.toString());
+				Log.alert("Uncaught Error in thread: " + coalesce(this.name, "") + "\n  " + retval.toString());
 			} else {
-				Log.warning("Uncaught Error in thread: " + nvl(this.name, "") + "\n  ", retval);
+				Log.warning("Uncaught Error in thread: " + coalesce(this.name, "") + "\n  ", retval);
 			}//endif
 		}//endif
 

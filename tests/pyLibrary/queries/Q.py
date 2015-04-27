@@ -22,7 +22,7 @@ from pyLibrary.queries.cube import Cube
 from pyLibrary.maths import Math
 from pyLibrary.debugs.logs import Log
 from pyLibrary.queries.unique_index import UniqueIndex
-from pyLibrary.dot import set_default, Null, Dict, split_field, nvl, join_field
+from pyLibrary.dot import set_default, Null, Dict, split_field, coalesce, join_field
 from pyLibrary.dot.lists import DictList
 from pyLibrary.dot import listwrap, wrap, unwrap
 
@@ -434,25 +434,25 @@ def sort(data, fieldnames=None):
             # SPECIAL CASE, ONLY ONE FIELD TO SORT BY
             if isinstance(fieldnames, (basestring, int)):
                 def comparer(left, right):
-                    return cmp(nvl(left, Dict())[fieldnames], nvl(right, Dict())[fieldnames])
+                    return cmp(coalesce(left, Dict())[fieldnames], coalesce(right, Dict())[fieldnames])
 
                 return DictList([unwrap(d) for d in sorted(data, cmp=comparer)])
             else:
                 # EXPECTING {"field":f, "sort":i} FORMAT
                 fieldnames.sort = sort_direction[fieldnames.sort]
-                fieldnames.field = nvl(fieldnames.field, fieldnames.value)
+                fieldnames.field = coalesce(fieldnames.field, fieldnames.value)
                 if fieldnames.field==None:
                     Log.error("Expecting sort to have 'field' attribute")
                 def comparer(left, right):
-                    return fieldnames["sort"] * cmp(nvl(left, Dict())[fieldnames["field"]], nvl(right, Dict())[fieldnames["field"]])
+                    return fieldnames["sort"] * cmp(coalesce(left, Dict())[fieldnames["field"]], coalesce(right, Dict())[fieldnames["field"]])
 
                 return DictList([unwrap(d) for d in sorted(data, cmp=comparer)])
 
         formal = query._normalize_sort(fieldnames)
 
         def comparer(left, right):
-            left = nvl(left, Dict())
-            right = nvl(right, Dict())
+            left = coalesce(left, Dict())
+            right = coalesce(right, Dict())
             for f in formal:
                 try:
                     result = f["sort"] * cmp(left[f["field"]], right[f["field"]])
@@ -843,8 +843,8 @@ def window(data, param):
         for rownum, r in enumerate(sequence):
             r["__temp__"] = calc_value(r, rownum, sequence)
 
-        head = nvl(_range.max, _range.stop)
-        tail = nvl(_range.min, _range.start)
+        head = coalesce(_range.max, _range.stop)
+        tail = coalesce(_range.min, _range.start)
 
         # PRELOAD total
         total = aggregate()

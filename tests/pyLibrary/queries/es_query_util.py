@@ -21,7 +21,7 @@ from pyLibrary.debugs.logs import Log
 from pyLibrary.maths import Math
 from pyLibrary.queries import domains, MVEL, filters
 from pyLibrary.dot.dicts import Dict
-from pyLibrary.dot import set_default, split_field, join_field, nvl, Null
+from pyLibrary.dot import set_default, split_field, join_field, coalesce, Null
 from pyLibrary.dot.lists import DictList
 from pyLibrary.dot import wrap
 from pyLibrary.times import durations
@@ -223,7 +223,7 @@ def compileTime2Term(edge):
         value = "doc[\"" + value + "\"].value"
 
     nullTest = compileNullTest(edge)
-    ref = nvl(edge.domain.min, edge.domain.max, datetime(2000, 1, 1))
+    ref = coalesce(edge.domain.min, edge.domain.max, datetime(2000, 1, 1))
 
     if edge.domain.interval.month > 0:
         offset = ref.subtract(ref.floorMonth(), durations.DAY).milli
@@ -263,7 +263,7 @@ def compileDuration2Term(edge):
     if MVEL.isKeyword(value):
         value = "doc[\"" + value + "\"].value"
 
-    ref = nvl(edge.domain.min, edge.domain.max, durations.ZERO)
+    ref = coalesce(edge.domain.min, edge.domain.max, durations.ZERO)
     nullTest = compileNullTest(edge)
 
     ms = edge.domain.interval.milli

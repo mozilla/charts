@@ -27,7 +27,7 @@
 	<script type="text/javascript" src="modevlib/util/aHTML.js"></script>
 	<script type="text/javascript" src="modevlib/collections/aArray.js"></script>
 	<script type="text/javascript" src="lib/jquery.js"></script>
-	<script type="text/javascript" src="modevlib/util/CNV.js"></script>
+	<script type="text/javascript" src="modevlib/util/convert.js"></script>
 	<script type="text/javascript" src="modevlib/util/aDate.js"></script>
 	<script type="text/javascript" src="modevlib/collections/aQueue.js"></script>
 	<script type="text/javascript" src="modevlib/collections/aSet.js"></script>
@@ -303,7 +303,7 @@ var __createChart = function*(){
 
 	var scopes = GUI.state.scope.getSelectedParts();
 	var currScope = scopes[0];
-	$("#title").text("Burndown for " + nvl(currScope.title, currScope.name));
+	$("#title").text("Burndown for " + coalesce(currScope.title, currScope.name));
 
 	var currScopeFilter = currScope.esfilter;
 	yield (ESQuery.loadColumns({"from": "bugs"}));
@@ -444,7 +444,7 @@ var __createChart = function*(){
 				{"name":"Summary", "value":"short_desc"},
 				{"name":"Owner", "value":"assigned_to"},
 				{"name":"Status", "value":"bug_status + (resolution ? ' - '+resolution : '')"},
-				{"name":"Estimate", "value":"nvl(ScrumBugs.parse(status_whiteboard).points, 'missing')"}
+				{"name":"Estimate", "value":"coalesce(ScrumBugs.parse(status_whiteboard).points, 'missing')"}
 			],
 			"sort":["Status", "bug_id"]
 		}));
@@ -460,7 +460,7 @@ var __createChart = function*(){
 		var a=Log.action("Adding", true);
 		var chart= yield(Q({
 			"from": daily,
-			"select":{"name":"num", "value":countMode=="Bugs" ? "1" : 'nvl(ScrumBugs.parse(status_whiteboard).points, 1)-0', "aggregate":"sum", "default":0},
+			"select":{"name":"num", "value":countMode=="Bugs" ? "1" : 'coalesce(ScrumBugs.parse(status_whiteboard).points, 1)-0', "aggregate":"sum", "default":0},
 			"edges":[
 				{"name": "status", "value": "counted", "domain": {"type": "set", "key":"value", "partitions": [
 					{"name": "Open", "value": "Open"},

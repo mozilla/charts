@@ -22,7 +22,7 @@ from pyLibrary.maths import Math
 from pyLibrary.meta import use_settings
 from pyLibrary.queries import Q
 from pyLibrary.strings import utf82unicode
-from pyLibrary.dot import nvl, Null, Dict
+from pyLibrary.dot import coalesce, Null, Dict
 from pyLibrary.dot.lists import DictList
 from pyLibrary.dot import wrap, unwrap
 from pyLibrary.thread.threads import ThreadedQueue
@@ -109,7 +109,7 @@ class Index(object):
                     {"add": {"index": self.settings.index, "alias": self.settings.alias}}
                 ]
             })),
-            timeout=nvl(self.settings.timeout, 30)
+            timeout=coalesce(self.settings.timeout, 30)
         )
 
     def get_proto(self, alias):
@@ -296,7 +296,7 @@ class Index(object):
             return self.cluster._post(
                 self.path + "/_search",
                 data=convert.value2json(query).encode("utf8"),
-                timeout=nvl(timeout, self.settings.timeout)
+                timeout=coalesce(timeout, self.settings.timeout)
             )
         except Exception, e:
             Log.error("Problem with search (path={{path}}):\n{{query|indent}}", {

@@ -16,7 +16,7 @@ from pyLibrary.queries.query import Query
 from pyLibrary.sql.db import int_list_packer, SQL, DB
 from pyLibrary.debugs.logs import Log
 from pyLibrary.strings import indent, expand_template
-from pyLibrary.dot import nvl
+from pyLibrary.dot import coalesce
 from pyLibrary.dot.lists import DictList
 from pyLibrary.dot import wrap, listwrap, unwrap
 
@@ -375,8 +375,8 @@ def _esfilter2sqlwhere(db, esfilter):
         }
 
         def single(col, r):
-            min = nvl(r["gte"], r[">="])
-            max = nvl(r["lte"], r["<="])
+            min = coalesce(r["gte"], r[">="])
+            max = coalesce(r["lte"], r["<="])
             if min and max:
                 # SPECIAL CASE (BETWEEN)
                 return db.quote_column(col) + " BETWEEN " + db.quote_value(min) + " AND " + db.quote_value(max)

@@ -27,7 +27,7 @@
 	<script type="text/javascript" src="modevlib/util/aHTML.js"></script>
 	<script type="text/javascript" src="modevlib/collections/aArray.js"></script>
 	<script type="text/javascript" src="lib/jquery.js"></script>
-	<script type="text/javascript" src="modevlib/util/CNV.js"></script>
+	<script type="text/javascript" src="modevlib/util/convert.js"></script>
 	<script type="text/javascript" src="modevlib/util/aDate.js"></script>
 	<script type="text/javascript" src="modevlib/collections/aQueue.js"></script>
 	<script type="text/javascript" src="modevlib/collections/aSet.js"></script>
@@ -389,7 +389,7 @@ var __createChart = function*(){
 				{"name":"Summary", "value":"short_desc"},
 				{"name":"Owner", "value":"assigned_to"},
 				{"name":"Status", "value":"bug_status + (resolution ? ' - '+resolution : '')"},
-				{"name":"Estimate", "value":"nvl(ScrumBugs.parse(status_whiteboard).points, 'missing')"},
+				{"name":"Estimate", "value":"coalesce(ScrumBugs.parse(status_whiteboard).points, 'missing')"},
 				{"name":"Priority", "value":"priority"}
 			],
 			"sort":["Status", "bug_id"]
@@ -526,7 +526,7 @@ var __createChart = function*(){
 		var milestoneTotals=yield(Q({
 			"from":currMilestone,
 			"select":[
-				{"name":"work",  "value":'nvl(ScrumBugs.parse(status_whiteboard).points, 1)-0', "aggregate":"sum", "default":0},
+				{"name":"work",  "value":'coalesce(ScrumBugs.parse(status_whiteboard).points, 1)-0', "aggregate":"sum", "default":0},
 				{"name":"count",  "value":'1', "aggregate":"sum", "default":0}
 			],
 			"edges":[
@@ -560,8 +560,8 @@ var __createChart = function*(){
 					"milestone": m.name,
 					"date": DUE_DATE <= TODAY ? DUE_DATE.subtract(Duration.DAY).format("NNN dd") : "today",
 					"total": total,
-					"open": nvl(milestoneTotals.cube[i][1].count, 0) + nvl(milestoneTotals.cube[i][0].count, 0),
-					"regressions": nvl(milestoneTotals.cube[i][0].count, "0"),
+					"open": coalesce(milestoneTotals.cube[i][1].count, 0) + coalesce(milestoneTotals.cube[i][0].count, 0),
+					"regressions": coalesce(milestoneTotals.cube[i][0].count, "0"),
 					"closed": milestoneTotals.cube[i][2].count,
 					"closed_percent": aMath.round(milestoneTotals.cube[i][2].count / total * 100)
 				});
@@ -573,7 +573,7 @@ var __createChart = function*(){
 		milestones.forall(function(m){
 			var i=milestoneTotals.edges[0].domain.getPartByKey(m.name).dataIndex;
 
-			var totalButton = $("#"+  CNV.String2JQuery(m.name+"Total"));
+			var totalButton = $("#"+  convert.String2JQuery(m.name+"Total"));
 			totalButton.click(function(){
 				Thread.run(function*(){
 					var buglist=(yield (ESQuery.run({
@@ -594,7 +594,7 @@ var __createChart = function*(){
 			});
 
 			milestoneTotals.edges[1].domain.partitions.forall(function(t, i){
-				$("#"+ CNV.String2JQuery(m.name+ t.name)).click(function(){
+				$("#"+ convert.String2JQuery(m.name+ t.name)).click(function(){
 					Thread.run(function*(){
 						var buglist=(yield (ESQuery.run({
 							"from":"bugs",
@@ -645,7 +645,7 @@ var __createChart = function*(){
 	chart = yield(Q({
 		"from": milestoneBugs,
 		"select":[
-			{"name":"work", "value":'nvl(ScrumBugs.parse(status_whiteboard).points, 1)-0', "aggregate":"sum", "default":0},
+			{"name":"work", "value":'coalesce(ScrumBugs.parse(status_whiteboard).points, 1)-0', "aggregate":"sum", "default":0},
 			{"name":"count", "value":'bug_id', "aggregate":"count", "default":0}
 		],
 		"edges":[

@@ -7,7 +7,7 @@ if (Qb===undefined) var Qb = {};
 
 
 
-importScript("../util/CNV.js");
+importScript("../util/convert.js");
 importScript("../util/aDate.js");
 importScript("../util/aUtil.js");
 importScript("../debug/aLog.js");
@@ -156,14 +156,14 @@ function* calc2Tree(query){
 
 	var sourceColumns  = yield (Qb.getColumnsFromQuery(query));
 	if (sourceColumns===undefined){
-		Log.error("Can not get column definitions from query:\n"+CNV.Object2JSON(query).indent(1))
+		Log.error("Can not get column definitions from query:\n"+convert.value2json(query).indent(1))
 	}//endif
 	var from = query.from.list;
 
 	var edges = query.edges;
 	query.columns = Qb.compile(query, sourceColumns);
 	var select = Array.newInstance(query.select);
-	var _where = Qb.where.compile(nvl(query.where, query.esfilter), sourceColumns, edges);
+	var _where = Qb.where.compile(coalesce(query.where, query.esfilter), sourceColumns, edges);
 	var numWhereFalse=0;
 
 
@@ -583,9 +583,9 @@ Qb.toTable=function(query){
 
 Qb.Cube2List=function(query, options){
 	//WILL end() ALL PARTS UNLESS options.useStruct==true OR options.useLabels==true
-	options=nvl(options, {});
-	options.useStruct=nvl(options.useStruct, false);
-	options.useLabels=nvl(options.useLabels, false);
+	options=coalesce(options, {});
+	options.useStruct=coalesce(options.useStruct, false);
+	options.useLabels=coalesce(options.useLabels, false);
 
 	//PRECOMPUTE THE EDGES
 	var edges = query.edges;
@@ -686,7 +686,7 @@ Qb.normalize=function(query, edgeIndex, multiple){
 	var m=new Matrix({"data":query.cube});
 
 	m.forall(edgeIndex, function(v, i){
-		totals[i] = nvl(totals[i], 0) + aMath.abs(v);
+		totals[i] = coalesce(totals[i], 0) + aMath.abs(v);
 	});
 	m.map(query.edges.length, function (v, i) {
 		if (totals[i]!=0){
@@ -1017,7 +1017,7 @@ Qb.sort.compile=function(sortOrder, columns, useNames){
 	if (columns===undefined){
 		orderedColumns = sortOrder.map(function(v){
 			if (v.value!==undefined && v.sort!==undefined){
-				return {"name": v.value, "sortOrder":nvl(v.sort, 1), "domain":Qb.domain.value};
+				return {"name": v.value, "sortOrder":coalesce(v.sort, 1), "domain":Qb.domain.value};
 			}else{
 				return {"name":v, "sortOrder":1, "domain":Qb.domain.value};
 			}//endif
@@ -1026,7 +1026,7 @@ Qb.sort.compile=function(sortOrder, columns, useNames){
 		orderedColumns = sortOrder.map(function(v){
 			if (v.value!==undefined){
 				for(var i=columns.length;i--;){
-					if (columns[i].name==v.value && !(columns[i].sortOrder==0)) return {"name": v.value, "sortOrder":nvl(v.sort, 1), "domain":Qb.domain.value};
+					if (columns[i].name==v.value && !(columns[i].sortOrder==0)) return {"name": v.value, "sortOrder":coalesce(v.sort, 1), "domain":Qb.domain.value};
 				}//for
 			}else{
 				for(var i=columns.length;i--;){
@@ -1049,9 +1049,9 @@ Qb.sort.compile=function(sortOrder, columns, useNames){
 		if (!useNames){
 			index = col.columnIndex;
 		}else if (MVEL.isKeyword(col.name)){
-			index=splitField(col.name).map(CNV.String2Quote).join("][");
+			index=splitField(col.name).map(convert.String2Quote).join("][");
 		}else if (columns.select("name").contains(col.name)){
-			index=CNV.String2Quote(col.name);
+			index=convert.String2Quote(col.name);
 		}else{
 			Log.error("Can not handle");
 		}//endif

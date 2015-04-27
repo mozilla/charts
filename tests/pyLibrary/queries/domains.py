@@ -13,7 +13,7 @@ import re
 from pyLibrary import convert
 from pyLibrary.debugs.logs import Log
 from pyLibrary.queries.unique_index import UniqueIndex
-from pyLibrary.dot import nvl, Dict, set_default
+from pyLibrary.dot import coalesce, Dict, set_default
 from pyLibrary.dot.lists import DictList
 from pyLibrary.dot import wrap, unwrap
 
@@ -38,7 +38,7 @@ class Domain(object):
 
     def __init__(self, **desc):
         desc = wrap(desc)
-        self.name = nvl(desc.name, desc.type)
+        self.name = coalesce(desc.name, desc.type)
         self.type = desc.type
         self.min = desc.min
         self.max = desc.max
@@ -47,7 +47,7 @@ class Domain(object):
         self.key = desc.key
         self.label = desc.label
         self.end = desc.end
-        self.isFacet = nvl(desc.isFacet, False)
+        self.isFacet = coalesce(desc.isFacet, False)
         self.dimension = desc.dimension
 
     def __copy__(self):
@@ -205,7 +205,7 @@ class SimpleSetDomain(Domain):
         else:
             Log.error("Can not hanldle")
 
-        self.label = nvl(self.label, "name")
+        self.label = coalesce(self.label, "name")
 
         if isinstance(desc.partitions, list):
             self.partitions = desc.partitions.copy()
@@ -308,7 +308,7 @@ class SetDomain(Domain):
         else:
             Log.error("Can not hanldle")
 
-        self.label = nvl(self.label, "name")
+        self.label = coalesce(self.label, "name")
 
         if isinstance(desc.partitions, list):
             self.partitions = desc.partitions.copy()

@@ -6,14 +6,14 @@ importScript("aHTML.js");
 importScript("aUtil.js");
 
 
-var CNV = function(){
+var convert = function(){
 };
 
 
 //
 //PULL THE BUGS OUT OF THE ELASTIC SEARCH RESULT OBJECT
 //
-CNV.ESResult2List = function(esResult){
+convert.ESResult2List = function(esResult){
 	var output = [];
 	var h=esResult.hits.hits;
 	for(var x = 0; x < h.length; x++){
@@ -36,7 +36,7 @@ CNV.ESResult2List = function(esResult){
 //		var list = esFacet.terms;
 //		for(var i = 0; i < list.length; i++){
 //			var esRow = list[i];
-//			var values = CNV.JSON2Object(esRow.term);
+//			var values = convert.json2value(esRow.term);
 //			for(var v = 0; v < (values).length; v++){
 //				values[v].count = esRow.count;
 //				output.push(values[v]);
@@ -55,27 +55,27 @@ CNV.ESResult2List = function(esResult){
 
 
 
-CNV.ESResult2HTMLSummaries = function(esResult){
+convert.ESResult2HTMLSummaries = function(esResult){
 	var output = "";
 
 	if (esResult["facets"] === undefined) return output;
 
 	var keys = Object.keys(esResult.facets);
 	for(var x = 0; x < keys.length; x++){
-		output += CNV.ESResult2HTMLSummary(esResult, keys[x]);
+		output += convert.ESResult2HTMLSummary(esResult, keys[x]);
 	}//for
 	return output;
 };//method
 
 
-CNV.ESResult2HTMLSummary = function(esResult, name){
+convert.ESResult2HTMLSummary = function(esResult, name){
 	var output = "";
 	output += "<h3>" + name + "</h3>";
 	var facet=esResult.facets[name];
 	if (facet._type=="statistical"){
-		output+=CNV.Object2JSON(facet);
+		output+=convert.value2json(facet);
 	}else{
-		output += CNV.List2HTMLTable(facet.terms);
+		output += convert.List2HTMLTable(facet.terms);
 	}//endif
 
 
@@ -83,7 +83,7 @@ CNV.ESResult2HTMLSummary = function(esResult, name){
 };//method
 
 
-CNV.JSON2Object = function(json){
+convert.json2value = function(json){
 	try{
 		return JSON.parse(json);
 	}catch(e){
@@ -92,12 +92,12 @@ CNV.JSON2Object = function(json){
 };//method
 
 
-CNV.Map2Style = function(map){
+convert.Map2Style = function(map){
 	return mapAllKey(map, function(k, v){return k+":"+v;}).join(";")+";";
 };//method
 
 
-CNV.Object2JSON = function(json){
+convert.value2json = function(json){
 //	return JSON.stringify(json);
 	if (json instanceof Array){
 		try{
@@ -108,20 +108,20 @@ CNV.Object2JSON = function(json){
 		}//try
 
 		if (json.length==0) return "[]";
-		if (json.length==1) return "["+CNV.Object2JSON(json[0])+"]";
+		if (json.length==1) return "["+convert.value2json(json[0])+"]";
 
 		return "[\n"+json.map(function(v, i){
 			if (v===undefined) return "undefined";
-			return CNV.Object2JSON(v).indent(1);
+			return convert.value2json(v).indent(1);
 		}).join(",\n")+"\n]";
 	}else if (typeof(json)=="function"){
 		return "undefined";
 	}else if (json instanceof Duration){
-		return CNV.String2Quote(json.toString());
+		return convert.String2Quote(json.toString());
 	}else if (json instanceof Date){
-		return CNV.String2Quote(json.format("dd-NNN-yyyy HH:mm:ss"));
+		return convert.String2Quote(json.format("dd-NNN-yyyy HH:mm:ss"));
 //	}else if (typeof(json)=="string"){
-//		var s=CNV.String2Quote(json);
+//		var s=convert.String2Quote(json);
 //		if (json.length>30 && json.indexOf("\n")>0){
 //			s=s.replaceAll("\\n", "\\n\"+\n\"");
 //		}//endif
@@ -136,7 +136,7 @@ CNV.Object2JSON = function(json){
 
 		var keys=Object.keys(json);
 		if (keys.length==0) return "{}";
-		if (keys.length==1) return "{\""+keys[0]+"\":"+CNV.Object2JSON(json[keys[0]]).trim()+"}";
+		if (keys.length==1) return "{\""+keys[0]+"\":"+convert.value2json(json[keys[0]]).trim()+"}";
 
 		var output="{\n\t";
 		for(var k in json){  //NATURAL ORDER
@@ -144,7 +144,7 @@ CNV.Object2JSON = function(json){
 				var v=json[k];
 				if (v!==undefined){
 					if (output.length>3) output+=",\n\t";
-					output+="\""+k+"\":"+CNV.Object2JSON(v).indent(1).trim();
+					output+="\""+k+"\":"+convert.value2json(v).indent(1).trim();
 				}//endif
 			}//endif
 
@@ -153,7 +153,7 @@ CNV.Object2JSON = function(json){
 
 //		return "{\n\t"+mapAllKey(json, function(k, v){
 //			if (v===undefined) return "";
-//			return "\""+k+"\":"+CNV.Object2JSON(v).indent(1).trim();
+//			return "\""+k+"\":"+convert.value2json(v).indent(1).trim();
 //		}).join(",\n\t")+"\n}";
 //TOO BAD: CAN NOT PROVIDE FORMATTED STRINGS
 //	}else if (typeof(json)=="string"){
@@ -169,7 +169,7 @@ CNV.Object2JSON = function(json){
 };//method
 
 
-CNV.Object2CSS=function(value){
+convert.Object2CSS=function(value){
 	//FIND DEPTH
 	var depth=1;
 	Map.forall(value, function(name, value){
@@ -192,21 +192,21 @@ CNV.Object2CSS=function(value){
 	}//endif
 };//method
 
-CNV.style2Object=function(value){
+convert.style2Object=function(value){
 	return Map.zip(value.split(";").map(function (attr) {
 		if (attr.trim()=="") return undefined;
 		return attr.split(":").map(function(v){return v.trim();});
 	}));
 };//method
 
-CNV.Object2style=function(style){
+convert.Object2style=function(style){
 	return mapAllKey(style, function(name, value){
 		return name+":"+value;
 	}).join(";");
 };//method
 
 
-CNV.Object2URL=function(value){
+convert.Object2URL=function(value){
 	return $.param(value).replaceAll("%5B%5D=", "=");
 };//method
 
@@ -225,7 +225,7 @@ CNV.Object2URL=function(value){
 	};
 
 
-	CNV.String2HTML = function String2HTML(value) {
+	convert.String2HTML = function String2HTML(value) {
 		if (value==null) return "";
 		return value.translate(entityMap);
 	};//method
@@ -237,40 +237,40 @@ CNV.Object2URL=function(value){
 		"\t": ""
 	};
 
-	CNV.value2HTMLAttribute = function(value){
+	convert.value2HTMLAttribute = function(value){
 		if (value==null) return "";
 		if (typeof(value)=="string") return value.translate(attrMap);
-		return CNV.Object2JSON(value).translate(attrMap);
+		return convert.value2json(value).translate(attrMap);
 	};
 
 })();
 
 
-CNV.String2HTMLTable = function(value){
+convert.String2HTMLTable = function(value){
 	value="<table><tr>"+value.replaceAll("\n", "</tr><tr>").replaceAll("\t", "</td><td>")+"</tr></table>";
 	return value;
 };//method
 
-CNV.String2Quote = function(str){
+convert.String2Quote = function(str){
 	return "\"" + (str + '').replaceAll("\n", "\\n").replace(/([\n\\"'])/g, "\\$1").replace(/\0/g, "\\0") + "\"";
 };//method
 
-CNV.Date2Code = function(date){
+convert.Date2Code = function(date){
 	return "Date.newInstance("+date.getMilli()+")";
 };//method
 
-CNV.Date2milli = function(date){
+convert.Date2milli = function(date){
 	return date.getMilli();
 };//method
 
-CNV.milli2Date = function(milli){
+convert.milli2Date = function(milli){
 	return new Date(milli);
 };//method
 
 
 
 //CONVERT TO SOME MOSTLY HUMAN READABLE FORM (MEANT TO BE DIGESTED BY OTHER TEXT TOOLS)
-CNV.Value2Text=function(value){
+convert.Value2Text=function(value){
 	if (value === undefined){
 		return "";
 	} else if (value==NaN){
@@ -278,7 +278,7 @@ CNV.Value2Text=function(value){
 	} else if (value == null){
 		return "null";
 	} else if (typeof(value)=="string"){
-		return CNV.String2Quote(value);
+		return convert.String2Quote(value);
 	} else if (aMath.isNumeric(value)){
 		if ((""+value).length==13){
 			//PROBABLY A TIMESTAMP
@@ -302,13 +302,13 @@ CNV.Value2Text=function(value){
 		}//endif
 	}//endif
 
-	var json = CNV.Object2JSON(value);
-	return CNV.String2Quote(json);
+	var json = convert.value2json(value);
+	return convert.String2Quote(json);
 };//method
 
 
 //CONVERT TO JAVESCRIPT FOR THE SAME
-CNV.Value2Quote=function(value){
+convert.Value2Quote=function(value){
 	if (value === undefined){
 		return "undefined";
 	} else if (value==NaN){
@@ -316,7 +316,7 @@ CNV.Value2Quote=function(value){
 	} else if (value == null){
 		return "null";
 	} else if (typeof(value)=="string"){
-		return CNV.String2Quote(value);
+		return convert.String2Quote(value);
 	} else if (aMath.isNumeric(value)){
 		return ""+value;
 	} else if (value.milli){
@@ -326,12 +326,12 @@ CNV.Value2Quote=function(value){
 		return "Date.newInstance("+value.getMilli()+")";
 	}//endif
 
-	var json = CNV.Object2JSON(value);
-	return CNV.String2Quote(json);
+	var json = convert.value2json(value);
+	return convert.String2Quote(json);
 };//method
 
 
-CNV.String2Integer = function(value){
+convert.String2Integer = function(value){
 	if (value===undefined) return undefined;
 	if (value==null || value=="") return null;
 	return value - 0;
@@ -364,10 +364,10 @@ function unPipe(value){
 	return result+value.substring(e);
 }//method
 
-CNV.Pipe2Value=function(value){
+convert.Pipe2Value=function(value){
 	var type=value.charAt(0);
 	if (type=='0') return null;
-	if (type=='n') return CNV.String2Integer(value.substring(1));
+	if (type=='n') return convert.String2Integer(value.substring(1));
 
 	if (type!='s' && type!='a')
 		Log.error("unknown pipe type");
@@ -377,15 +377,15 @@ CNV.Pipe2Value=function(value){
 	if (type=='s') return output;
 
 	return output.split("|").map(function(v, i){
-		return CNV.Pipe2Value(v);
+		return convert.Pipe2Value(v);
 	});
 };//method
 
-CNV.Pipe2Value.pipe = new RegExp("\\\\p", "g");
-CNV.Pipe2Value.bs = new RegExp("\\\\\\\\", "g");
+convert.Pipe2Value.pipe = new RegExp("\\\\p", "g");
+convert.Pipe2Value.bs = new RegExp("\\\\\\\\", "g");
 
 
-CNV.Cube2HTMLTable=function(query){
+convert.Cube2HTMLTable=function(query){
 
 	//WRITE HEADER
 
@@ -396,9 +396,9 @@ CNV.Cube2HTMLTable=function(query){
 	var e=query.edges[0];
 
 	if (query.edges.length==0){
-		return CNV.List2HTMLTable(query);
+		return convert.List2HTMLTable(query);
 	}else if (query.edges.length==1){
-		header += "<td>" + CNV.String2HTML(e.name) + "</td>";
+		header += "<td>" + convert.String2HTML(e.name) + "</td>";
 
 		if (query.select instanceof Array){
 			header+=query.select.map(function(s, i){
@@ -431,7 +431,7 @@ CNV.Cube2HTMLTable=function(query){
 				if (name==p && typeof(name)!="string") name=p.name;
 				if (p.name!==undefined && p.name!=name)
 					Log.error("make sure part.name matches the end(part)=="+name+" codomain");
-				header += "<td>" + CNV.String2HTML(name) + "</td>";
+				header += "<td>" + convert.String2HTML(name) + "</td>";
 			});
 
 			content="";
@@ -460,7 +460,7 @@ CNV.Cube2HTMLTable=function(query){
 			//SHOW FIRST EDGE AS ROWS, SECOND AS COLUMNS
 //			header+=wrapWithHtmlTag(e.name);	//COLUMN FOR FIRST EDGE
 //			query.edges[1].domain.partitions.forall(function(v, i){
-//				header += "<td>" + CNV.String2HTML(v.name) + "</td>";
+//				header += "<td>" + convert.String2HTML(v.name) + "</td>";
 //			});
 //
 //			content=query.cube.map(function(r, i){
@@ -487,7 +487,7 @@ CNV.Cube2HTMLTable=function(query){
 
 
 
-CNV.List2HTMLTable = function(data, options){
+convert.List2HTMLTable = function(data, options){
 	if (data.list && data.columns){
 		//CONVERT FROM QUERY TO EXPECTED FORM
 		options=data;
@@ -546,7 +546,7 @@ wrapWithHtmlTag=function(tagName, value){
 	}else if (value instanceof HTML){
 		return "<"+tagName+">" + value + "</"+tagName+">";
 	} else if (typeof(value)=="string"){
-		return "<"+tagName+">" + CNV.String2HTML(value) + "</"+tagName+">";
+		return "<"+tagName+">" + convert.String2HTML(value) + "</"+tagName+">";
 	} else if (aMath.isNumeric(value)){
 		if ((""+value).length==13){
 			//PROBABLY A TIMESTAMP
@@ -569,12 +569,12 @@ wrapWithHtmlTag=function(tagName, value){
 			return "<"+tagName+">" + new Date(value).format("dd-NNN-yyyy HH:mm:ss") + "</"+tagName+">";
 		}//endif
 //	} else if (value.toString !== undefined){
-//		return "<"+tagName+">" + CNV.String2HTML(value.toString()) + "</"+tagName+">";
+//		return "<"+tagName+">" + convert.String2HTML(value.toString()) + "</"+tagName+">";
 	}//endif
 
-	var json = CNV.Object2JSON(value);
+	var json = convert.value2json(value);
 //	if (json.indexOf("\n") == -1){
-		return "<"+tagName+">" + CNV.String2HTML(json) + "</"+tagName+">";
+		return "<"+tagName+">" + convert.String2HTML(json) + "</"+tagName+">";
 //	} else{
 //		return "<"+tagName+">&lt;json not included&gt;</"+tagName+">";
 //	}//endif
@@ -586,18 +586,18 @@ wrapWithHtmlTag=function(tagName, value){
 ///////////////////////////////////////////////////////////////////////////////
 // CONVERT TO TAB DELIMITED TABLE
 ///////////////////////////////////////////////////////////////////////////////
-CNV.List2Tab = function(data){
+convert.List2Tab = function(data){
 	var output = "";
 
 	//WRITE HEADER
 	var columns = Qb.getColumnsFromList(data);
-	for(var c = 0; c < columns.length; c++) output += CNV.String2Quote(columns[c].name) + "\t";
+	for(var c = 0; c < columns.length; c++) output += convert.String2Quote(columns[c].name) + "\t";
 	output = output.substring(0, output.length - 1) + "\n";
 
 	//WRITE DATA
 	for(var i = 0; i < data.length; i++){
 		for(var c = 0; c < columns.length; c++){
-			output += CNV.Value2Text(data[i][columns[c].name]) + "\t";
+			output += convert.Value2Text(data[i][columns[c].name]) + "\t";
 		}//for
 		output = output.substring(0, output.length - 1) + "\n";
 	}//for
@@ -610,7 +610,7 @@ CNV.List2Tab = function(data){
 ///////////////////////////////////////////////////////////////////////////////
 // CONVERT TO TAB DELIMITED TABLE
 ///////////////////////////////////////////////////////////////////////////////
-CNV.Table2List = function(table){
+convert.Table2List = function(table){
 	var output = [];
 
 	//MAP LIST OF NAMES TO LIST OF COLUMN OBJCETS
@@ -633,7 +633,7 @@ CNV.Table2List = function(table){
 };//method
 
 
-CNV.List2Table = function(list, columnOrder){
+convert.List2Table = function(list, columnOrder){
 	var columns = Qb.getColumnsFromList(list);
 	if (columnOrder !== undefined){
 		var newOrder = [];
@@ -662,7 +662,7 @@ CNV.List2Table = function(list, columnOrder){
 		var item = list[i];
 		var row = [];
 		for(var c = 0; c < columns.length; c++){
-			row[c] = nvl(item[columns[c].name], null);
+			row[c] = coalesce(item[columns[c].name], null);
 		}//for
 		data.push(row);
 	}//for
@@ -670,18 +670,18 @@ CNV.List2Table = function(list, columnOrder){
 };//method
 
 
-CNV.int2hex = function(value, numDigits){
+convert.int2hex = function(value, numDigits){
 	return ("0000000" + value.toString(16)).right(numDigits);
 };//method
-CNV.number2hex = CNV.int2hex;
+convert.number2hex = convert.int2hex;
 
 
-CNV.char2ASCII=function(char){
+convert.char2ASCII=function(char){
 	return char.charCodeAt(0);
 };
 
 
-CNV.hex2int = function(value){
+convert.hex2int = function(value){
 	return parseInt(value, 16);
 };//method
 
@@ -691,14 +691,14 @@ function String2Selector(str){
     return str.replace(/([ ;&,\.\+\*\~':"\!\^#$%@\[\]\(\)\/=>\|])/g, '\\$1');
 }//method
 
-CNV.String2JQuery=String2Selector;
-CNV.String2Selector=String2Selector;
+convert.String2JQuery=String2Selector;
+convert.String2Selector=String2Selector;
 
 
 TRUE_FILTER = function(row, i, rows){return true;};
 FALSE_FILTER = function(row, i, rows){return false;};
 
-CNV.esFilter2function=function(esFilter){
+convert.esFilter2function=function(esFilter){
 	if (esFilter === undefined) return TRUE_FILTER;
 
 	var keys = Object.keys(esFilter);
@@ -708,9 +708,9 @@ CNV.esFilter2function=function(esFilter){
 	if (op == "and"){
 		var list = esFilter[op];
 		if (list.length == 0) return TRUE_FILTER;
-		if (list.length == 1) return CNV.esFilter2function(list[0]);
+		if (list.length == 1) return convert.esFilter2function(list[0]);
 
-		var tests=list.map(CNV.esFilter2function);
+		var tests=list.map(convert.esFilter2function);
 		return function(row, i, rows){
 			for(var t = 0; t < tests.length; t++){
 				if (!tests[t](row, i, rows)) return false;
@@ -720,9 +720,9 @@ CNV.esFilter2function=function(esFilter){
 	} else if (op == "or"){
 		var list = esFilter[op];
 		if (list.length == 0) return FALSE_FILTER;
-		if (list.length == 1) return CNV.esFilter2function(list[0]);
+		if (list.length == 1) return convert.esFilter2function(list[0]);
 
-		var tests=list.map(CNV.esFilter2function);
+		var tests=list.map(convert.esFilter2function);
 		return function(row, i, rows){
 			for(var t = 0; t < tests.length; t++){
 				if (tests[t](row, i, rows)) return true;
@@ -730,7 +730,7 @@ CNV.esFilter2function=function(esFilter){
 			return false;
 		};
 	} else if (op == "not"){
-		var test = CNV.esFilter2function(esFilter[op]);
+		var test = convert.esFilter2function(esFilter[op]);
 		return function(row, i, rows){
 			return !test(row, i, rows);
 		};
@@ -770,13 +770,13 @@ CNV.esFilter2function=function(esFilter){
 		};
 	}else if (op=="exists"){
 		//"exists":{"field":"myField"}
-		var field = nvl(esFilter[op].field, esFilter[op]);
+		var field = coalesce(esFilter[op].field, esFilter[op]);
 		return function(row, i, rows){
 			var val =row[field];
 			return (val!==undefined && val!=null);
 		};
 	}else if (op=="missing"){
-		var field = nvl(esFilter[op].field, esFilter[op]);
+		var field = coalesce(esFilter[op].field, esFilter[op]);
 		return function(row, i, rows){
 			var val =row[field];
 			return (val===undefined || val==null);
@@ -843,7 +843,7 @@ CNV.esFilter2function=function(esFilter){
 	}else if (op=="nested"){
 		//REACH INTO THE NESTED TEMPLATE FOR THE filter
 		var path = splitField(esFilter[op].path);
-		var deepFilter = CNV.esFilter2function(esFilter[op].query.filtered.filter);
+		var deepFilter = convert.esFilter2function(esFilter[op].query.filtered.filter);
 
 
 		function select(path, rows){
@@ -875,7 +875,7 @@ CNV.esFilter2function=function(esFilter){
 };//method
 
 //CONVERT ES FILTER TO JAVASCRIPT EXPRESSION
-CNV.esFilter2Expression=function(esFilter){
+convert.esFilter2Expression=function(esFilter){
 	if (esFilter === undefined) return "true";
 
 	var output = "";
@@ -887,29 +887,29 @@ CNV.esFilter2Expression=function(esFilter){
 	if (op == "and"){
 		var list = esFilter[op];
 		if (list.length == 0) Log.error("Expecting something in 'and' array");
-		if (list.length == 1) return CNV.esFilter2Expression(list[0]);
+		if (list.length == 1) return convert.esFilter2Expression(list[0]);
 		for(var i = 0; i < list.length; i++){
 			if (output != "") output += " &&\n";
-			output += "(" + CNV.esFilter2Expression(list[i]) + ")";
+			output += "(" + convert.esFilter2Expression(list[i]) + ")";
 		}//for
 		return output;
 	} else if (op == "or"){
 		var list = esFilter[op];
 		if (list.length == 0) Log.error("Expecting something in 'or' array");
-		if (list.length == 1) return CNV.esFilter2Expression(list[0]);
+		if (list.length == 1) return convert.esFilter2Expression(list[0]);
 		for(var i = 0; i < list.length; i++){
 			if (output != "") output += " ||\n";
-			output += "(" + CNV.esFilter2Expression(list[i]) + ")";
+			output += "(" + convert.esFilter2Expression(list[i]) + ")";
 		}//for
 		return output;
 	} else if (op == "not"){
-		return "!(" + CNV.esFilter2Expression(esFilter[op]) + ")";
+		return "!(" + convert.esFilter2Expression(esFilter[op]) + ")";
 	} else if (op == "term"){
 		return mapAllKey(esFilter[op], function(variableName, value){
 			if (value instanceof Array){
-				Log.error("Do not use term filter with array of values ("+CNV.Object2JSON(esFilter)+")");
+				Log.error("Do not use term filter with array of values ("+convert.value2json(esFilter)+")");
 			}//endif
-			return "Array.newInstance(" + variableName + ").contains(" + CNV.Value2Quote(value) + ")";  //ARRAY BASED FOR MULTIVALUED VARIABLES
+			return "Array.newInstance(" + variableName + ").contains(" + convert.Value2Quote(value) + ")";  //ARRAY BASED FOR MULTIVALUED VARIABLES
 		}).join(" &&\n");
 	} else if (op == "terms"){
 		var pair = esFilter[op];
@@ -917,8 +917,8 @@ CNV.esFilter2Expression=function(esFilter){
 		var valueList = pair[variableName];
 		if (valueList.length == 0)
 			Log.error("Expecting something in 'terms' array");
-		if (valueList.length == 1) return (variableName) + "==" + CNV.Value2Quote(valueList[0]);
-		output += "[" + valueList.map(CNV.String2Quote).join(", ") + "].intersect(Array.newInstance(" + variableName + ")).length > 0";  //ARRAY BASED FOR MULTIVALUED VARIABLES
+		if (valueList.length == 1) return (variableName) + "==" + convert.Value2Quote(valueList[0]);
+		output += "[" + valueList.map(convert.String2Quote).join(", ") + "].intersect(Array.newInstance(" + variableName + ")).length > 0";  //ARRAY BASED FOR MULTIVALUED VARIABLES
 		return output;
 	}else if (op=="exists"){
 		var variableName = esFilter[op].field;
@@ -934,26 +934,26 @@ CNV.esFilter2Expression=function(esFilter){
 		var upper = "";
 
 		if (!(range.gte === undefined)){
-			lower = CNV.Value2Quote(range.gte) + "<=" + (variableName);
+			lower = convert.Value2Quote(range.gte) + "<=" + (variableName);
 		} else if (!(range.gt === undefined)){
-			lower = CNV.Value2Quote(range.gt) + "<" + (variableName);
+			lower = convert.Value2Quote(range.gt) + "<" + (variableName);
 		} else if (!(range.from == undefined)){
 			if (range.include_lower == undefined || range.include_lower){
-				lower = CNV.Value2Quote(range.from) + "<=" + (variableName);
+				lower = convert.Value2Quote(range.from) + "<=" + (variableName);
 			} else{
-				lower = CNV.Value2Quote(range.from) + "<" + (variableName);
+				lower = convert.Value2Quote(range.from) + "<" + (variableName);
 			}//endif
 		}//endif
 
 		if (!(range.lte === undefined)){
-			upper = CNV.Value2Quote(range.lte) + ">=" + (variableName);
+			upper = convert.Value2Quote(range.lte) + ">=" + (variableName);
 		} else if (!(range.lt === undefined)){
-			upper = CNV.Value2Quote(range.lt) + ">" + (variableName);
+			upper = convert.Value2Quote(range.lt) + ">" + (variableName);
 		} else if (!(range.from == undefined)){
 			if (range.include_lower == undefined || range.include_lower){
-				upper = CNV.Value2Quote(range.from) + ">=" + (variableName);
+				upper = convert.Value2Quote(range.from) + ">=" + (variableName);
 			} else{
-				upper = CNV.Value2Quote(range.from) + ">" + (variableName);
+				upper = convert.Value2Quote(range.from) + ">" + (variableName);
 			}//endif
 		}//endif
 
@@ -969,13 +969,13 @@ CNV.esFilter2Expression=function(esFilter){
 		var pair = esFilter[op];
 		var variableName = Object.keys(pair)[0];
 		var value = pair[variableName];
-		return "(typeof("+variableName+")==\"string\" && "+variableName+".startsWith(" + CNV.Value2Quote(value)+"))";
+		return "(typeof("+variableName+")==\"string\" && "+variableName+".startsWith(" + convert.Value2Quote(value)+"))";
 	}else if (op=="match_all"){
 		return "true"
 	}else if (op=="regexp"){
 		var pair = esFilter[op];
 		var variableName = Object.keys(pair)[0];
-		return "(function(){ return new RegExp("+CNV.Value2Quote(pair[variableName])+").test("+variableName+");})()";
+		return "(function(){ return new RegExp("+convert.Value2Quote(pair[variableName])+").test("+variableName+");})()";
 	} else{
 		Log.error("'" + op + "' is an unknown operation");
 	}//endif

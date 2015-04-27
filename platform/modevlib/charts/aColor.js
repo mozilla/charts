@@ -1,4 +1,4 @@
-importScript("../util/CNV.js");
+importScript("../util/convert.js");
 
 
 Color = function (L, h, s) {
@@ -45,9 +45,9 @@ Color = function (L, h, s) {
 	var COLOR_MESH = hex_color.map(function (L) {
 		return L.map(function (h) {
 			return {
-				"r": CNV.hex2int(h.substring(0, 2)),
-				"g": CNV.hex2int(h.substring(2, 4)),
-				"b": CNV.hex2int(h.substring(4, 6))
+				"r": convert.hex2int(h.substring(0, 2)),
+				"g": convert.hex2int(h.substring(2, 4)),
+				"b": convert.hex2int(h.substring(4, 6))
 			};
 		});
 	}).reverse();
@@ -86,7 +86,7 @@ Color = function (L, h, s) {
 			return new Color(lhs[0], lhs[1], lhs[2]);
 		}else if (value.startsWith("#")){
 			var rgb = Array.newRange(0, 3).map(function(i){
-				return CNV.hex2int(value.substring(i*2+1, i*2+3))
+				return convert.hex2int(value.substring(i*2+1, i*2+3))
 			});
 			return new ColorSRGB(rgb);
 		}else{
@@ -107,9 +107,9 @@ Color = function (L, h, s) {
 
 		//EXPECTING "#" AS FIRST VALUE
 		return new ColorSRGB(
-			CNV.hex2int(value.substring(1, 3)),
-			CNV.hex2int(value.substring(3, 5)),
-			CNV.hex2int(value.substring(5, 7))
+			convert.hex2int(value.substring(1, 3)),
+			convert.hex2int(value.substring(3, 5)),
+			convert.hex2int(value.substring(5, 7))
 		);
 	}//function
 
@@ -164,7 +164,7 @@ Color = function (L, h, s) {
 		if (value===undefined){
 			Log.error();
 		}//endif
-		return "#" + CNV.int2hex(Math.round(value.r), 2) + CNV.int2hex(Math.round(value.g), 2) + CNV.int2hex(Math.round(value.b), 2);
+		return "#" + convert.int2hex(Math.round(value.r), 2) + convert.int2hex(Math.round(value.g), 2) + convert.int2hex(Math.round(value.b), 2);
 	}//function
 
 })();

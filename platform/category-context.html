@@ -1,0 +1,233 @@
+<!DOCTYPE html>
+<!-- This Source Code Form is subject to the terms of the Mozilla Public
+   - License, v. 2.0. If a copy of the MPL was not distributed with this
+   - file, You can obtain one at http://mozilla.org/MPL/2.0/. -->
+<HTML>
+<head>
+  <meta charset="utf-8">
+
+<title>Category Burndown</title>
+	<script type="text/javascript" src="modevlib/imports/import.js"></script>
+</HEAD>
+<BODY>
+
+
+<div id="sidebar" style="width:300px;">
+	<br><br>
+
+	<div style="height: 30px; text-align: center;vertical-align:middle;">
+		<span id="status" style="height:30px">Page Loading...</span><span class="loading"><img src="images/spinner.gif" alt=""></span>
+	</div>
+	<hr>
+	<div id="description">
+		Compare release burndowns<br><br>
+		The line chart shows regressions and the total blocker count (including
+		regressions) by day.  Previous releases can also be over layed.
+	</div>
+	<hr>
+	<div id="stats"></div>
+	<hr>
+	<div id="parameters" class="parameters">
+	</div>
+	<div id="filters" class="menu"></div>
+
+
+</div>
+
+<div style="align:left;position:relative;float:left;width:800px;">
+	<h3 id="title">Release Burndown</h3>
+
+	<div>
+		<div id="release-summary" style="min-height: 30px; position: relative;"></div>
+		<div id="chart" class="chart" style="position: relative;height:300px;"></div>
+		<div id="info"></div>
+	</div>
+</div>
+<script type="application/javascript">
+var color = {
+	"blue" : "#1f77b4",
+	"orange" : "#ff7f0e",
+	"green" : "#2ca02c",
+	"red" : "#d62728",
+	"purple" : "#9467bd",
+	"brown" : "#8c564b",
+	"cyan" : "#17becf"
+};
+
+
+importScript([
+	"modevlib/main.js",
+	"modevlib/gui/dynamic.js",
+	'modevlib/Dimension-Bugzilla.js',
+	'modevlib/Dimension-Platform.js'
+], function(){
+
+
+	var thread;
+	var createChart = function(){
+		if (thread !== undefined)
+			thread.kill();
+		thread = Thread.run(function*(){
+			try {
+				yield (__createChart());
+			} catch (e) {
+				if (e.contains(Thread.Interrupted)) return;
+				throw e;
+			}//try
+		});
+	};
+
+	var __createChart = function*(){
+		var EOD = Date.eod();
+
+		$("#release-summary").html("");
+		$("#chart").html("");
+		$("#chart_diff").html("");
+		$("#buglist").html("");
+
+
+		//GET PAST 6 WEEKS OF RELEASES
+		var releases;
+		var currentRelease = undefined;
+		var edges = Mozilla.Platform.Release.edges;
+		for(var i=1;i<edges.length;i++){
+			var e = edges[i];
+			var p = edges[i -1];
+			e.startDate = Date.newInstance(p.releaseDate);
+			e.releaseDate = Date.newInstance(e.releaseDate);
+			if (e.releaseDate>=EOD){
+				releases = edges.substring(i-5, i+1);
+				currentRelease = e;
+				break;
+			}//endif
+		}//for
+
+		var	targetDate = currentRelease.releaseDate;
+		var category = Mozilla.Platform.Categories.Priority.P1;
+		$("#title").text(category.name);
+
+		yield (ESQuery.loadColumns({"from" : "bugs"}));
+
+		///////////////////////////////////////////////////////////////////////
+		// BURNDOWN
+		///////////////////////////////////////////////////////////////////////
+		var a = Log.action("Request Bugs", true);
+		var chart;
+
+		var categoryBugs = yield(ESQuery.run({
+			"from" : "bugs",
+			"select": Array.union(["bug_id", "bug_status", "modified_ts", "expires_on"], Qb.requiredFields(category.esfilter)),
+			"edges": [
+				{"name" : "date",
+					"range" : {"min" : "modified_ts", "max" : "expires_on"},
+					"allowNulls" : false,
+					"domain" : {
+						"type" : "time",
+						"min" : currentRelease.startDate,
+						"max" : currentRelease.releaseDate,
+						"interval" : Duration.DAY
+					}
+				}
+			],
+			"esfilter" : {"and":[
+				category.esfilter,
+				Mozilla.BugStatus.Open.esfilter,
+				{"range":{"modified_ts":{"lt":targetDate.milli()}}},
+				{"range":{"expires_on":{"gte":releases[0].startDate.milli()}}}
+			]}
+		}));
+		Log.actionDone(a);
+
+		categoryBugs.list.copy().forall(function(b){
+			b.release = null;
+			b.modified_ts = Date.newInstance(b.modified_ts);
+			b.expires_on = Date.newInstance(b.expires_on);
+			releases.forall(function(r){
+				if (b.modified_ts.between(r.startDate, r.releaseDate)){
+					b.release = r;
+				}//endif
+			});
+			//UPDATE DATES TO BE RELATIVE TO targetDate
+			var shift = targetDate.subtract(b.release.releaseDate);
+			b.modified_ts = b.modified_ts.add(shift);
+			b.expires_on = b.expires_on==null ? null : b.expires_on.add(shift);
+		});
+		categoryBugs.columns.append({"name" : "release", "value" : "release"});
+		categoryBugs.columns.append({"name" : "targetDate", "value" : "targetDate"});
+
+		chart = yield(Q({
+			"from" : categoryBugs,
+			"select" : [
+				{"name" : "count", "value" : 'bug_id', "aggregate" : "count"}
+			],
+			"edges" : [
+				{
+					"name":"release",
+					"value" : "release.name",
+					"domain":{
+						"type":"set",
+						"key":"name",
+						"partitions":releases
+					}
+				},
+				{"name" : "date",
+					"range" : {"min" : "modified_ts", "max" : "expires_on"},
+					"allowNulls" : false,
+					"domain" : {
+						"type" : "time",
+						"min" : currentRelease.startDate,
+						"max" : currentRelease.releaseDate,
+						"interval" : Duration.DAY
+					}
+				}
+			]
+		}));
+
+		//FUTURE DATES ARE SET TO null
+		new Matrix({"data":chart.cube}).forall(function(v, c, cube){
+			if (chart.edges[0].domain.partitions[c[0]]!=currentRelease) return;
+			var date = chart.edges[1].domain.partitions[c[1]].min;
+			if (date >= EOD) v.count=null;
+		});
+
+
+		var countColor=["#0070c0", "#accce4", "#accce4", "#accce4", "#accce4"];
+
+		a = Log.action("Make chart", true);
+		aChart.show({
+			"id" : "chart",
+			"sheetDiv" : "info",
+			"type" : "line",
+			"stacked" : false,
+			"cube" : chart,
+			"xAxisSize" : 50,
+			extensionPoints : {
+				dot_shapeRadius : 3,
+				dot_shape : "circle",
+				line_lineWidth : 3
+			}
+		});
+		Log.actionDone(a);
+
+	};
+
+	$(document).ready(function(){
+		GUI.setup(
+			createChart,
+			[
+			],
+			[],
+			"bugs",
+			false
+		);
+
+	});
+
+});
+
+</script>
+
+
+</BODY>
+</HTML>
+

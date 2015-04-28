@@ -1280,6 +1280,29 @@ Qb.drill=function(query, parts){
 	};
 
 
+	Qb.requiredFields = function requiredFields(esfilter){
+		if (esfilter===undefined){
+			return [];
+		}else if (esfilter.and){
+			return Array.union(esfilter.and.map(requiredFields));
+		}else if (esfilter.or){
+			return Array.union(esfilter.or.map(requiredFields));
+		}else if (esfilter.not){
+				return requiredFields(esfilter.not);
+		}else if (esfilter.term){
+			return Object.keys(esfilter.term)
+		}else if (esfilter.terms){
+			return Object.keys(esfilter.terms)
+		}else if (esfilter.regexp){
+			return Object.keys(esfilter.regexp)
+		}else if (esfilter.missing){
+			return [esfilter.missing.field]
+		}else if (esfilter.exists){
+			return [esfilter.missing.field]
+		}else{
+			return []
+		}//endif
+	}//method
 
 	Qb.query={};
 	Qb.query.prototype={};

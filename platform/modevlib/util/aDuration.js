@@ -242,6 +242,11 @@ Duration.prototype.floor = function(interval){
 };//method
 
 
+Duration.prototype.mod = function(interval){
+	return this.subtract(this.floor(interval));
+};//method
+
+
 Duration.prototype.toString = function(){
 	if (this.milli == 0) return "zero";
 

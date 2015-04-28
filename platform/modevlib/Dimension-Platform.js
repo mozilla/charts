@@ -3,6 +3,7 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
 importScript("Dimension.js");
+importScript("qb/Qb.js");
 importScript("qb/ESQuery.js");
 
 if (!Mozilla) var Mozilla = {"name": "Mozilla", "edges": []};
@@ -17,6 +18,15 @@ if (!Mozilla) var Mozilla = {"name": "Mozilla", "edges": []};
 		"name": "Release",
 		"isFacet": true,
 		"edges": [
+			{
+				"name": "Firefox32",
+				"version": 32,
+				"releaseDate": "2014-09-02",
+				"esfilter": {"and": [
+					{"not": {"terms": {"cf_status_firefox32": SOLVED}}},
+					{"term": {"cf_tracking_firefox32": "+"}}
+				]}
+			},
 			{
 				"name": "Firefox33",
 				"version": 33,
@@ -89,7 +99,7 @@ if (!Mozilla) var Mozilla = {"name": "Mozilla", "edges": []};
 			}
 		]
 	};
-	releaseTracking.requiredFields = Array.union(releaseTracking.edges.select("esfilter").map(requiredFields));
+	releaseTracking.requiredFields = Array.union(releaseTracking.edges.select("esfilter").map(Qb.requiredFields));
 
 	{//FIND CURRENT RELEASE, AND ENSURE WE HAVE ENOUGH RELEASES!
 		var currentRelease = undefined;

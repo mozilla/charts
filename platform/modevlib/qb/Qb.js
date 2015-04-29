@@ -1279,16 +1279,22 @@ Qb.drill=function(query, parts){
 		return output;
 	};
 
-
 	Qb.requiredFields = function requiredFields(esfilter){
-		if (esfilter===undefined){
-			return [];
-		}else if (esfilter.and){
-			return Array.union(esfilter.and.map(requiredFields));
-		}else if (esfilter.or){
-			return Array.union(esfilter.or.map(requiredFields));
+		//THIS LOOKS INTO DIMENSION DEFINITIONS, AS WELL AS ES FILTERS
+
+		if (esfilter===undefined) return [];
+
+		var parts = coalesce(esfilter.edges, esfilter.partitions, esfilter.and, esfilter.or);
+		if (parts){
+			var rf = requiredFields(esfilter.esfilter);
+			//A DIMENSION! - USE IT ANYWAY
+			return Array.union(parts.map(requiredFields).append(rf));
+		}//endif
+
+		if (esfilter.esfilter){
+			return requiredFields(esfilter.esfilter);
 		}else if (esfilter.not){
-				return requiredFields(esfilter.not);
+			return requiredFields(esfilter.not);
 		}else if (esfilter.term){
 			return Object.keys(esfilter.term)
 		}else if (esfilter.terms){
@@ -1297,12 +1303,15 @@ Qb.drill=function(query, parts){
 			return Object.keys(esfilter.regexp)
 		}else if (esfilter.missing){
 			return [esfilter.missing.field]
-		}else if (esfilter.exists){
+		}else if (esfilter.exists) {
 			return [esfilter.missing.field]
+		}else if (esfilter.nested){
+			 return [splitField(esfilter.nested.path)[0]]
 		}else{
 			return []
 		}//endif
-	}//method
+	};//method
+
 
 	Qb.query={};
 	Qb.query.prototype={};

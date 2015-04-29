@@ -874,15 +874,15 @@ convert.esFilter2function=function(esFilter){
 
 		return function(row, i, rows){
 			if (range.gte !== undefined){
-				if (range.gte > row[variableName]) return false;
+				if (range.gte > Map.get(row, variableName)) return false;
 			} else if (range.gt !== undefined){
-				if (range.gt >= row[variableName]) return false;
+				if (range.gt >= Map.get(row, variableName)) return false;
 			}//endif
 
 			if (range.lte !== undefined){
-				if (range.lte < row[variableName]) return false;
+				if (range.lte < Map.get(row, variableName)) return false;
 			} else if (range.lt !== undefined){
-				if (range.lt <= row[variableName]) return false;
+				if (range.lt <= Map.get(row, variableName)) return false;
 			}//endif
 
 			return true;
@@ -894,7 +894,7 @@ convert.esFilter2function=function(esFilter){
 		var variableName = Object.keys(pair)[0];
 		var prefix = pair[variableName];
 		return function(row, i, rows){
-			var v = row[variableName];
+			var v = Map.get(row, variableName);
 			return typeof(v)=="string" && v.startsWith(prefix);
 		}
 	}else if (op=="match_all"){
@@ -904,7 +904,7 @@ convert.esFilter2function=function(esFilter){
 		var variableName = Object.keys(pair)[0];
 		var regexp = new RegExp(pair[variableName]);
 		return function(row, i, rows){
-			if (regexp.test(row[variableName])) {
+			if (regexp.test(Map.get(row, variableName))) {
 				return true;
 			} else {
 				return false;
@@ -915,7 +915,7 @@ convert.esFilter2function=function(esFilter){
 		var variableName = Object.keys(pair)[0];
 		var substr = pair[variableName];
 		return function(row, i, rows){
-			var v = row[variableName];
+			var v = Map.get(row, variableName);
 			if (v===undefined){
 				return false;
 			}else if (v instanceof Array){
@@ -926,6 +926,33 @@ convert.esFilter2function=function(esFilter){
 				Log.error("Do not know how to handle")
 			}//endif
 		}
+	}else if (op=="nested"){
+		//REACH INTO THE NESTED TEMPLATE FOR THE filter
+		var path = splitField(esFilter[op].path);
+		var deepFilter = convert.esFilter2function(esFilter[op].query.filtered.filter);
+
+
+		function select(path, rows){
+			//RETURN THE CHILD ROWS FOUND ALONG path
+			if (path.length==0) return rows;
+
+			var output = [];
+			rows.forall(function(r){
+				var crows = Array.newInstance(Map.get(r, path[0]));
+				var cresult = select(path.rightBut(1), crows).map(function(cr){
+					return Map.newInstance(path[0], cr);
+				});
+				output.extend(cresult);
+			});
+			return output;
+
+		}
+
+		return function(row, i, rows){
+			//MAKE A LIST OF CHILD DOCUMENTS TO RUN FILTER ON
+			var childRows = select(path, [row]);
+			return (childRows.filter(deepFilter).length > 0);
+		};
 	} else{
 		Log.error("'" + op + "' is an unknown operation");
 	}//endif

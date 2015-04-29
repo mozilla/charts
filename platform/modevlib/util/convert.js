@@ -899,14 +899,14 @@ convert.esFilter2function=function(esFilter){
 		}
 	}else if (op=="match_all"){
 		return TRUE_FILTER;
-	}else if (op=="regexp"){
+	}else if (op=="regexp") {
 		var pair = esFilter[op];
 		var variableName = Object.keys(pair)[0];
 		var regexp = new RegExp(pair[variableName]);
 		return function(row, i, rows){
-			if (regexp.test(row[variableName])){
+			if (regexp.test(row[variableName])) {
 				return true;
-			}else{
+			} else {
 				return false;
 			}//endif
 		}

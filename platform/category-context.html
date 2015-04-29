@@ -116,7 +116,7 @@ importScript([
 
 		var categoryBugs = yield(ESQuery.run({
 			"from" : "bugs",
-			"select": Array.union(["bug_id", "bug_status", "modified_ts", "expires_on"], Qb.requiredFields(category.esfilter)),
+			"select": {"value":"bug_id", "aggregate":"count"},
 			"edges": [
 				{"name" : "date",
 					"range" : {"min" : "modified_ts", "max" : "expires_on"},

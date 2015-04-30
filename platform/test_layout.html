@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html>
+<head lang="en">
+	<meta charset="UTF-8">
+	<title></title>
+	<script src="modevlib/imports/import.js"></script>
+</head>
+<body>
+	<div id="sidebar" layout="tl=page.tl; bl=page.bl" style="width:200px;background-color: gray;"> This is the sidebar</div>
+	<div id="content" layout="left=sidebar.right; tr=page.tr;" style="min-height: 400px;">
+		<table id="data" layout="tr=content.tr;" style="margin:10px 20px 0 0;background-color: turquoise;">
+			<tr><td>row with single column</td></tr>
+		</table>
+		<div id="chart" layout="bottom=page.bottom" style="width:100px;height:200px;background-color: black;">
+			<div layout="bc=..b[1/6]" style="height:50px;width:10px;background-color: red;">1</div>
+			<div layout="bc=..b[3/6]" style="height:150px;width:10px;background-color: red;">3</div>
+			<div layout="bc=..b[5/6]" style="height:100px;width:10px;background-color: red;">2</div>
+		</div>
+	</div>
+</body>
+<script>
+	importScript([
+		"css/plain.css",
+		"lib/jquery.js",
+		"js/layout.js"
+	], function(){
+		layout_all();
+	});
+
+</script>
+</html>

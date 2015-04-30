@@ -154,6 +154,7 @@ Map.equals=function(a, b){
 
 
 var forAllKey=function(map, func){
+	//func MUST ACCEPT key, value PARAMETERS
 	var keys=Object.keys(map);
 	for(var i=keys.length;i--;){
 		var key=keys[i];
@@ -177,13 +178,14 @@ var countAllKey=function(map){
 };
 
 var mapAllKey=function(map, func){
+	//func MUST ACCEPT key, value, index PARAMETERS
 	var output=[];
 	var keys=Object.keys(map);
 	for(var i=keys.length;i--;){
 		var key=keys[i];
 		var val=map[key];
 		if (val!==undefined){
-			var result=func(key, val);
+			var result=func(key, val, i);
 			if (result!==undefined) output.push(result);
 		}//endif
 	}//for
@@ -256,12 +258,8 @@ function coalesce(){
 	return null;
 }//method
 
-var coalesce=coalesce;
-
 
 var Util = {};
-
-Util.coalesce = coalesce;
 
 Util.returnNull = function(__row){
 	return null;

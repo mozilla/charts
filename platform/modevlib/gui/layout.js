@@ -308,16 +308,17 @@ var layout_all;
 		if (coord.indexOf("[") >= 0) {
 			temp = coord.split("[");
 			if (temp.length == 3) {
-				//EXPECTING [][]
+				//EXPECTING "[" <h-expression> "]" "[" <v-expression> "]"
 				coord = {"v": eval(temp[1].split("]")[0]), "h": eval(temp[2].split("]")[0])};
 			} else if (temp[0].length == 0) {
-				//EXPECTING []\w
+				//EXPECTING "[" <h-expression> "]" <v-position>
 				coord = {"v": eval(temp[0].split("]")[0]), "h": canonical_horizontal[temp[1]]};
 			} else {
-				//EXPECTING \w[]
+				//EXPECTING <h-position> "[" <v-expression> "]"
 				coord = {"v": canonical_vertical[temp[0]], "h": eval(temp[1].split("]")[0])};
 			}//endif
 		} else {
+			//EXPECTING <h-position> <v-position>
 			coord = canonical[coord]
 		}//endif
 

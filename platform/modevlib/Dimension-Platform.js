@@ -84,6 +84,7 @@ if (!Mozilla) var Mozilla = {"name": "Mozilla", "edges": []};
 			{
 				"name": "Firefox39",
 				"version": 39,
+				"releaseDate": "June 23, 2015",
 				"esfilter": {"and": [
 					{"not": {"terms": {"cf_status_firefox39": SOLVED}}},
 					{"term": {"cf_tracking_firefox39": "+"}}

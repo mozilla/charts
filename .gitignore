@@ -3,6 +3,7 @@
 .git
 .idea
 *.iml
+*.pyc
 out
 html/es/lib/jstree/_lib
 html/es/lib/jstree/_docs
@@ -12,4 +13,5 @@ html/es/lib/jstree/_demo
 /tests/__pycache__
 *.pyc
 /.env
-/tests/pyLibrary/*.pyc
+/fxos/images/test.ico
+/fxos/images/test.png

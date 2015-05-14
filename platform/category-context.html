@@ -103,7 +103,8 @@ importScript([
 		}//for
 
 		var	targetDate = currentRelease.releaseDate;
-		var category = Mozilla.Platform.Categories.Priority.P1;
+		var category = Mozilla.Platform.Train.Release;
+//		var category = Mozilla.Platform.Categories.Priority.P1;
 		$("#title").text(category.name);
 
 		yield (ESQuery.loadColumns({"from" : "bugs"}));
@@ -123,7 +124,7 @@ importScript([
 					"allowNulls" : false,
 					"domain" : {
 						"type" : "time",
-						"min" : currentRelease.startDate,
+						"min" : releases[0].startDate,
 						"max" : currentRelease.releaseDate,
 						"interval" : Duration.DAY
 					}

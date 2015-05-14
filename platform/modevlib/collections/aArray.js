@@ -59,8 +59,6 @@ importScript("../util/aUtil.js");
 		this.splice(index, 0, value);
 	};//method
 
-
-
 	Array.prototype.map=function(func){
 		var output=[];
 		for(var i=0;i<this.length;i++){
@@ -70,7 +68,6 @@ importScript("../util/aUtil.js");
 		}//for
 		return output;
 	};//method
-
 
 	Array.prototype.select=function(attrName){
 		var output=[];

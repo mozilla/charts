@@ -87,7 +87,8 @@ Qb.column.compile = function(resultColumn, sourceColumns, edges, useMVEL){  //us
 			"   var output;\n"+
 
 			"	output = " + resultColumn.value + ";\n" +
-			"	if (output===undefined || (output!=null && aMath.isNaN(output))) Log.error(\"" + resultColumn.name + " returns \"+convert.Value2Quote(output));\n"+
+			"	if (output===undefined || (output!=null && aMath.isNaN(output)))\n"+
+			"       Log.error(\"" + resultColumn.name + " returns \"+convert.Value2Quote(output));\n"+
 			"	return output;\n" +
 			"}catch(e){\n" +
 			"	Log.error("+

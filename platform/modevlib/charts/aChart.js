@@ -490,7 +490,7 @@ aChart.showScatter=function(params){
 		showDots:true,
 		dotsVisible: true,
 		showValues: false,
-		originIsZero: this.originZero,
+		originIsZero: true,
 		yAxisPosition: "right",
 		yAxisSize: 50,
 		xAxisSize: 50,
@@ -627,7 +627,10 @@ aChart.showScatter=function(params){
 
 };
 
+/*
 
+	params.fixNulls - nulls will break the charting lib:  fill nulls with one of "past", "future", "zero"
+*/
 aChart.show=function(params){
 	Map.expecting(params, ["id", "cube"]);
 	var divName=params.id;
@@ -792,7 +795,7 @@ aChart.show=function(params){
 		showDots:true,
 		showValues: false,
 		"stacked":stacked,
-		originIsZero: this.originZero,
+		originIsZero: true,
 		yAxisPosition: "right",
 		yAxisSize: 50,
 		xAxisSize: 50,
@@ -893,16 +896,35 @@ aChart.show=function(params){
 	//
 	//
 	data.forall(function(v,i,d){
+		var k;
 		v=v.copy();
 		var isNull=false;  //true IF SEEN A NULL IN THIS SERIES
 		for(var j=0;j<v.length;j++){
 			if (v[j]!=null && isNull){
-				//the charting library has a bug that makes it simply not draw null values
-				//(or even leave a visual placeholder)  This results in a mismatch between
-				//the horizontal scale and the values charted.  For example, if the first
-				//day has null, then the second day is rendered in the first day position,
-				//and so on.
-				Log.error("Charting library can not handle null values (maybe set a default?)");
+				if (params.fixNulls=="future") {
+					for (k = j; k--;) {
+						if (v[k] == null) v[k] = v[k + 1];
+					}//for
+					isNull = false;
+				} else if (params.fixNulls == "past") {
+					if (v[0] == null) v[0] = 0;
+					for (k = 1; k < j; k++) {
+						if (v[k] == null) v[k] = v[k - 1];
+					}//for
+					isNull = false;
+				}else if ([0, "zero", true].contains(params.fixNulls)){
+					for (k = 0; k < j; k++) {
+						if (v[k] == null) v[k] = v[k - 1];
+					}//for
+					isNull = false;
+				}else {
+					//the charting library has a bug that makes it simply not draw null values
+					//(or even leave a visual placeholder)  This results in a mismatch between
+					//the horizontal scale and the values charted.  For example, if the first
+					//day has null, then the second day is rendered in the first day position,
+					//and so on.
+					Log.error("Charting library can not handle null values (maybe set a default?)");
+				}//endif
 			}else if (v[j]==null){
 				isNull=true;
 			}//endif

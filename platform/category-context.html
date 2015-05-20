@@ -4,9 +4,9 @@
    - file, You can obtain one at http://mozilla.org/MPL/2.0/. -->
 <HTML>
 <head>
-  <meta charset="utf-8">
+	<meta charset="utf-8">
 
-<title>Category Burndown</title>
+	<title>Category Burndown</title>
 	<script type="text/javascript" src="modevlib/imports/import.js"></script>
 </HEAD>
 <BODY>
@@ -20,9 +20,9 @@
 	</div>
 	<hr>
 	<div id="description">
-		Compare release burndowns<br><br>
-		The line chart shows regressions and the total blocker count (including
-		regressions) by day.  Previous releases can also be over layed.
+		Get feel for various counts by team and category over time<br><br>
+		Each chart shows the six weeks of the past 5 releases in grey, plus the current release in orange.  The right of each chart is release day.<br><br>
+		The most surprising pattern is that the counts are mostly flat over the six weeks, and burn down quite little.
 	</div>
 	<hr>
 	<div id="stats"></div>
@@ -35,26 +35,12 @@
 </div>
 
 <div style="align:left;position:relative;float:left;width:800px;">
-	<h3 id="title">Release Burndown</h3>
+	<h3 id="title">Team Categories</h3>
 
-	<div>
-		<div id="release-summary" style="min-height: 30px; position: relative;"></div>
-		<div id="chart" class="chart" style="position: relative;height:300px;"></div>
-		<div id="info"></div>
+	<div id="grid">
 	</div>
 </div>
 <script type="application/javascript">
-var color = {
-	"blue" : "#1f77b4",
-	"orange" : "#ff7f0e",
-	"green" : "#2ca02c",
-	"red" : "#d62728",
-	"purple" : "#9467bd",
-	"brown" : "#8c564b",
-	"cyan" : "#17becf"
-};
-
-
 importScript([
 	"modevlib/main.js",
 	"modevlib/gui/dynamic.js",
@@ -81,134 +67,42 @@ importScript([
 		var EOD = Date.eod();
 
 		$("#release-summary").html("");
-		$("#chart").html("");
-		$("#chart_diff").html("");
-		$("#buglist").html("");
-
 
 		//GET PAST 6 WEEKS OF RELEASES
 		var releases;
 		var currentRelease = undefined;
 		var edges = Mozilla.Platform.Release.edges;
-		for(var i=1;i<edges.length;i++){
+		for (var i = 1; i < edges.length; i++) {
 			var e = edges[i];
-			var p = edges[i -1];
+			var p = edges[i - 1];
 			e.startDate = Date.newInstance(p.releaseDate);
 			e.releaseDate = Date.newInstance(e.releaseDate);
-			if (e.releaseDate>=EOD){
-				releases = edges.substring(i-5, i+1);
+			e.style = {
+				"color": "rgba(0, 0, 0, 0.1)",
+				"width": "20px"
+			};
+			if (e.releaseDate >= EOD) {
+				releases = edges.substring(i - 5, i + 1);
 				currentRelease = e;
 				break;
 			}//endif
 		}//for
+		releases.last().style = {"color": "orange"};
 
-		var	targetDate = currentRelease.releaseDate;
-		var category = Mozilla.Platform.Train.Release;
-//		var category = Mozilla.Platform.Categories.Priority.P1;
-		$("#title").text(category.name);
+		var targetDate = currentRelease.releaseDate;
 
-		yield (ESQuery.loadColumns({"from" : "bugs"}));
+		yield (ESQuery.loadColumns({"from": "bugs"}));
 
-		///////////////////////////////////////////////////////////////////////
-		// BURNDOWN
-		///////////////////////////////////////////////////////////////////////
-		var a = Log.action("Request Bugs", true);
-		var chart;
+		var categories = Mozilla.Platform.Categories.edges.select("name");
+		var teams = Mozilla.Platform.Team.partitions.select("name");
 
-		var categoryBugs = yield(ESQuery.run({
-			"from" : "bugs",
-			"select": {"value":"bug_id", "aggregate":"count"},
-			"edges": [
-				{"name" : "date",
-					"range" : {"min" : "modified_ts", "max" : "expires_on"},
-					"allowNulls" : false,
-					"domain" : {
-						"type" : "time",
-						"min" : releases[0].startDate,
-						"max" : currentRelease.releaseDate,
-						"interval" : Duration.DAY
-					}
-				}
-			],
-			"esfilter" : {"and":[
-				category.esfilter,
-				Mozilla.BugStatus.Open.esfilter,
-				{"range":{"modified_ts":{"lt":targetDate.milli()}}},
-				{"range":{"expires_on":{"gte":releases[0].startDate.milli()}}}
-			]}
-		}));
-		Log.actionDone(a);
+		$("#grid").html(gridOfCharts(categories, teams));
 
-		categoryBugs.list.copy().forall(function(b){
-			b.release = null;
-			b.modified_ts = Date.newInstance(b.modified_ts);
-			b.expires_on = Date.newInstance(b.expires_on);
-			releases.forall(function(r){
-				if (b.modified_ts.between(r.startDate, r.releaseDate)){
-					b.release = r;
-				}//endif
+		Mozilla.Platform.Categories.edges.forall(function(category, chartNum){
+			Mozilla.Platform.Team.partitions.forall(function(team, teamNum){
+				showCategory(category, team, [chartNum, teamNum], releases, currentRelease, targetDate);
 			});
-			//UPDATE DATES TO BE RELATIVE TO targetDate
-			var shift = targetDate.subtract(b.release.releaseDate);
-			b.modified_ts = b.modified_ts.add(shift);
-			b.expires_on = b.expires_on==null ? null : b.expires_on.add(shift);
 		});
-		categoryBugs.columns.append({"name" : "release", "value" : "release"});
-		categoryBugs.columns.append({"name" : "targetDate", "value" : "targetDate"});
-
-		chart = yield(Q({
-			"from" : categoryBugs,
-			"select" : [
-				{"name" : "count", "value" : 'bug_id', "aggregate" : "count"}
-			],
-			"edges" : [
-				{
-					"name":"release",
-					"value" : "release.name",
-					"domain":{
-						"type":"set",
-						"key":"name",
-						"partitions":releases
-					}
-				},
-				{"name" : "date",
-					"range" : {"min" : "modified_ts", "max" : "expires_on"},
-					"allowNulls" : false,
-					"domain" : {
-						"type" : "time",
-						"min" : currentRelease.startDate,
-						"max" : currentRelease.releaseDate,
-						"interval" : Duration.DAY
-					}
-				}
-			]
-		}));
-
-		//FUTURE DATES ARE SET TO null
-		new Matrix({"data":chart.cube}).forall(function(v, c, cube){
-			if (chart.edges[0].domain.partitions[c[0]]!=currentRelease) return;
-			var date = chart.edges[1].domain.partitions[c[1]].min;
-			if (date >= EOD) v.count=null;
-		});
-
-
-		var countColor=["#0070c0", "#accce4", "#accce4", "#accce4", "#accce4"];
-
-		a = Log.action("Make chart", true);
-		aChart.show({
-			"id" : "chart",
-			"sheetDiv" : "info",
-			"type" : "line",
-			"stacked" : false,
-			"cube" : chart,
-			"xAxisSize" : 50,
-			extensionPoints : {
-				dot_shapeRadius : 3,
-				dot_shape : "circle",
-				line_lineWidth : 3
-			}
-		});
-		Log.actionDone(a);
 
 	};
 
@@ -225,6 +119,118 @@ importScript([
 	});
 
 });
+
+
+function gridOfCharts(categories, teams){
+	return new Template({
+		"from": "from",
+		"column": '<h3 id="team{{colnum}}">{{column}}</h3>',
+		"row": '<h3 id="category{{rownum}}"  style="width:400px;"">{{row}}</h3>',
+		"cell": '<div>{{column}} - {{row}}</div><div id="chart{{rownum}}-{{colnum}}" class="chart" style="position: relative;height:200px;width:300px;"></div>'
+	}).expand({"from": [categories, teams]});
+}
+
+function showCategory(category, team, coord, releases, currentRelease, targetDate){
+	var EOD = Date.eod();
+	var chartID = "chart" + coord[0]+"-"+coord[1];
+	$("#" + chartID).html("");
+
+	Thread.run(function*(){
+
+		///////////////////////////////////////////////////////////////////////
+		// BURNDOWN
+		///////////////////////////////////////////////////////////////////////
+		var a = Log.action("Request Bugs", true);
+		var chart;
+
+		var categoryBugs = yield(ESQuery.run({
+			"from": "bugs",
+			"select": {"value": "bug_id", "aggregate": "count"},
+			"edges": [
+				{"name": "date",
+					"range": {"min": "modified_ts", "max": "expires_on"},
+					"allowNulls": false,
+					"domain": {
+						"type": "time",
+						"min": releases[0].startDate,
+						"max": currentRelease.releaseDate,
+						"interval": Duration.DAY
+					}
+				}
+			],
+			"esfilter": {"and": [
+				category.esfilter,
+				team.esfilter,
+				Mozilla.BugStatus.Open.esfilter,
+				{"range": {"modified_ts": {"lt": targetDate.milli()}}},
+				{"range": {"expires_on": {"gte": releases[0].startDate.milli()}}}
+			]}
+		}));
+		Log.actionDone(a);
+
+		var rev_releases = Qb.sort(releases, {"value": "releaseDate", "sort": -1});
+		categoryBugs.list = Qb.Cube2List(categoryBugs).forall(function(b){
+			b.release = null;
+			rev_releases.forall(function(r){
+				if (b.date < r.releaseDate) b.release = r;
+			});
+			if (b.date > EOD)    b.bug_id = null;  //FUTURE DATES ARE SET TO null
+
+			b.daysLeft = -b.release.releaseDate.subtract(b.date).divideBy(Duration.DAY);
+		});
+		categoryBugs.columns.append({"name": "release", "value": "release"});
+		categoryBugs.columns.append({"name": "daysLeft", "value": "daysLeft"});
+
+		chart = yield(Q({
+			"from": categoryBugs,
+			"select": [
+				{"name": "count", "value": 'bug_id', "aggregate": "sum"}
+			],
+			"edges": [
+				{
+					"name": "release",
+					"value": "release.name",
+					"domain": {
+						"type": "set",
+						"key": "name",
+						"partitions": releases
+					}
+				},
+				{"name": "daysRemaining",
+					"value": "daysLeft",
+					"allowNulls": false,
+					"domain": {
+						"type": "numeric",
+						"min": -40,
+						"max": 0,
+						"interval": 1
+					}
+				}
+			]
+		}));
+
+		a = Log.action("Make chart", true);
+		aChart.show({
+			"id": chartID,
+			"type": "line",
+			"stacked": false,
+			"cube": chart,
+			"fixNulls": "future",
+			"xAxisSize": 0,
+			"orthoAxisOriginIsZero": false,
+//					"baseAxisLabel_visible": false,
+			extensionPoints: {
+				dot_shapeRadius: 3,
+				dot_shape: "circle",
+				line_lineWidth: 3
+			}
+		});
+		Log.actionDone(a);
+	});
+}
+
+
+
 
 </script>
 

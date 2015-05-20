@@ -100,7 +100,14 @@ convert.Map2Style = function(map){
 
 
 convert.value2json = function(json){
-//	return JSON.stringify(json);
+	return _value2json(json, 30);
+};//method
+
+function _value2json(json, maxDepth){
+	if (maxDepth<0){
+		Log.error("json is too deep")
+	}//endif
+
 	if (json instanceof Array){
 		try{
 			var singleLine=JSON.stringify(json);
@@ -110,11 +117,11 @@ convert.value2json = function(json){
 		}//try
 
 		if (json.length==0) return "[]";
-		if (json.length==1) return "["+convert.value2json(json[0])+"]";
+		if (json.length==1) return "["+_value2json(json[0], maxDepth-1)+"]";
 
 		return "[\n"+json.map(function(v, i){
 			if (v===undefined) return "undefined";
-			return convert.value2json(v).indent(1);
+			return _value2json(v, maxDepth-1).indent(1);
 		}).join(",\n")+"\n]";
 	}else if (typeof(json)=="function"){
 		return "undefined";
@@ -138,7 +145,7 @@ convert.value2json = function(json){
 
 		var keys=Object.keys(json);
 		if (keys.length==0) return "{}";
-		if (keys.length==1) return "{\""+keys[0]+"\":"+convert.value2json(json[keys[0]]).trim()+"}";
+		if (keys.length==1) return "{\""+keys[0]+"\":"+_value2json(json[keys[0]], maxDepth-1).trim()+"}";
 
 		var output="{\n\t";
 		for(var k in json){  //NATURAL ORDER
@@ -146,7 +153,7 @@ convert.value2json = function(json){
 				var v=json[k];
 				if (v!==undefined){
 					if (output.length>3) output+=",\n\t";
-					output+="\""+k+"\":"+convert.value2json(v).indent(1).trim();
+					output+="\""+k+"\":"+_value2json(v, maxDepth-1).indent(1).trim();
 				}//endif
 			}//endif
 
@@ -155,7 +162,7 @@ convert.value2json = function(json){
 
 //		return "{\n\t"+mapAllKey(json, function(k, v){
 //			if (v===undefined) return "";
-//			return "\""+k+"\":"+convert.value2json(v).indent(1).trim();
+//			return "\""+k+"\":"+_value2json(v).indent(1).trim();
 //		}).join(",\n\t")+"\n}";
 //TOO BAD: CAN NOT PROVIDE FORMATTED STRINGS
 //	}else if (typeof(json)=="string"){

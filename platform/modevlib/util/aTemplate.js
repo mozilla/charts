@@ -56,6 +56,8 @@ var Template = function Template(template){
 			return _expand_array(template, namespaces);
 		} else if (isString(template)) {
 			return _expand_text(template, namespaces);
+		} else if (template.cell){
+			return _expand_grid(template, namespaces);
 		} else {
 			return _expand_loop(template, namespaces);
 		}//endif
@@ -69,6 +71,57 @@ var Template = function Template(template){
 		}).join("");
 	}
 
+	function _expand_grid(table, namespaces){
+		table.column = coalesce(table.column, table.col);
+		Map.expecting(table, ["from", "column", "row", "cell"]);
+
+		if (isString(table.from)) {
+			frum = namespaces[0][table.from];
+		} else {
+			frum = table.from;
+		}//endif
+		if (!(frum instanceof Array) || frum.length != 2) {
+			Log.error("Expecting from clause to be an 2-tuple of partitions, [rows, colums]")
+		}//endif
+
+		var rows=frum[0];
+		var columns = frum[1];
+		var header = columns.map(function(col, colnum, cols){
+
+			return '<th>'+_expand(table.column, extendNamespace(namespaces, {"col":col, "column":col, "colnum":colnum, "cols":cols}))+'</th>\n'
+		}).join('');
+
+		var body = rows.map(function(row, rownum, rows){
+			var output='<tr>\n<th>'+
+			_expand(table.row, extendNamespace(namespaces, {"row":row, "rownum":rownum, "rows":rows}))+
+			'</th>\n'+
+			columns.map(function(col, colnum, cols){
+				return '<td>' + _expand(table.cell, extendNamespace(namespaces, {"row": row, "rownum": rownum, "rows": rows, "col": col, "column":col, "colnum": colnum, "cols": cols})) + '</td>\n';
+			}).join('')+
+			'</tr>\n';
+			return output;
+		}).join("");
+
+		return '<table>\n<thead>\n<tr>\n<th>&nbsp;</th>'+header+'</tr>\n</thead>\n<tbody>\n'+body+'</tbody>\n</table>\n';
+	}
+
+	function extendNamespace(namespaces, m){
+		var map = Map.copy(namespaces[0]);
+		if (m instanceof Object && !(m instanceof Array)) {
+			var keys = Object.keys(m);
+			keys.forall(function(k){
+				map[k.toLowerCase()] = m[k];
+			});
+		}//endif
+
+		//ADD RELATIVE REFERENCES
+		map["."] = m;
+		namespaces.forall(function(n, i){
+			map[".".repeat(i+2)] = n;
+		});
+		return namespaces.copy().prepend(map);
+	}
+
 	function _expand_loop(loop, namespaces){
 		Map.expecting(loop, ["from", "template"]);
 		if (typeof(loop.from) != "string") {
@@ -76,20 +129,7 @@ var Template = function Template(template){
 		}//endif
 
 		return namespaces[0][loop.from].map(function(m, i, all){
-			var map = Map.copy(namespaces[0]);
-			if (m instanceof Object && !(m instanceof Array)) {
-				var keys = Object.keys(m);
-				keys.forall(function(k){
-					map[k.toLowerCase()] = m[k];
-				});
-			}//endif
-			//ADD RELATIVE REFERENCES
-			map["."] = m;
-			namespaces.forall(function(n, i){
-				map[Array(i + 3).join(".")] = n;
-			});
-
-			return _expand(loop.template, namespaces.copy().prepend(map));
+			return _expand(loop.template, extendNamespace(namespaces, m));
 		}).join(loop.separator === undefined ? "" : loop.separator);
 	}
 

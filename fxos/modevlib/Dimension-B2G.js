@@ -30,7 +30,7 @@ if (!Mozilla) var Mozilla={"name":"Mozilla", "edges":[]};
 		return p + "+";
 	});
 
-	var MILESTONES = ["fx30", "fx31", "fx32", "fx33", "fx34", "fx35", "fx36", "fx37", "fx38", "fx39", "fx40", "fx41", "fx42"];
+	var MILESTONES = ["fx30", "fx31", "fx32", "fx33", "fx34", "fx35", "fx36", "fx37", "fx38", "fx39", "fx40", "fx41", "fx42", "fx43", "fx44"];
 	var NOM_MILESTONES = MILESTONES.map(function (p) {
 		return p + "?";
 	});
@@ -423,7 +423,7 @@ if (!Mozilla) var Mozilla={"name":"Mozilla", "edges":[]};
 							"style": {"color": "#2ca02c"},
 							"esfilter": {"or": [
 								{"terms": {"cf_blocking_b2g": ["2.5+", "2.5?"]}},
-								{"terms": {"cf_blocking_loop": ["fx37?", "fx38?", "fx39?", "fx40?", "fx41?", "fx42?", "fx37+", "fx38+", "fx39+", "fx40+", "fx41+", "fx42+"]}}
+								{"terms": {"cf_blocking_loop": ["fx37?", "fx38?", "fx39?", "fx40?", "fx41?", "fx42?", "fx43?", "fx44?", "fx37+", "fx38+", "fx39+", "fx40+", "fx41+", "fx42+", "fx43+", "fx44+"]}}
 							]}
 						},
 						{"name": "Other", "style": {"color": "#9467bd"}, "esfilter": {"and": [
@@ -474,7 +474,7 @@ if (!Mozilla) var Mozilla={"name":"Mozilla", "edges":[]};
 					{"name": "2.5",
 						"esfilter": {"or":[
 							{"terms": {"cf_blocking_b2g": ["2.5+"]}},
-							{"terms": {"cf_blocking_loop": ["fx37?", "fx38?", "fx39?", "fx40?", "fx41?", "fx42?", "fx37+", "fx38+", "fx39+", "fx40+", "fx41+", "fx42+"]}}
+							{"terms": {"cf_blocking_loop": ["fx37?", "fx38?", "fx39?", "fx40?", "fx41?", "fx42?", "fx43?", "fx44?", "fx37+", "fx38+", "fx39+", "fx40+", "fx41+", "fx42+", "fx43+", "fx44+"]}}
 						]}
 					},
 					{"name": "Targeted", "style": {"color": "#9467bd"}, "esfilter": {"and": [
@@ -571,7 +571,7 @@ if (!Mozilla) var Mozilla={"name":"Mozilla", "edges":[]};
 							"style": {"color": "#2ca02c"},
 							"esfilter": {"or": [
 								{"terms": {"cf_blocking_b2g": ["2.5+", "2.5?"]}},
-								{"terms": {"cf_blocking_loop": ["fx37?", "fx38?", "fx39?", "fx40?", "fx41?", "fx42?", "fx37+", "fx38+", "fx39+", "fx40+", "fx41+", "fx42+"]}}
+								{"terms": {"cf_blocking_loop": ["fx37?", "fx38?", "fx39?", "fx40?", "fx41?", "fx42?", "fx43?", "fx44?", "fx37+", "fx38+", "fx39+", "fx40+", "fx41+", "fx42+", "fx43+", "fx44+"]}}
 							]}
 						},
 						{"name": "Targeted",

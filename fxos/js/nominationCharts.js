@@ -61,8 +61,8 @@ function showNomChurn(args) {
 		{
 			"name": "2.5",
 			"value": "2.5?",
-			"nom":["2.5?", "fx37?", "fx38?", "fx39?", "fx40?", "fx41?", "fx42?"],
-			"blocker":["3.0+", "fx37+", "fx38+", "fx39+", "fx40+", "fx41+", "fx42+"],
+			"nom":["2.5?", "fx37?", "fx38?", "fx39?", "fx40?", "fx41?", "fx42?", "fx43?", "fx44?"],
+			"blocker":["3.0+", "fx37+", "fx38+", "fx39+", "fx40+", "fx41+", "fx42+", "fx43+", "fx44+"],
 			"style":Mozilla.B2G.Project["2.5"].style
 		}
 	];

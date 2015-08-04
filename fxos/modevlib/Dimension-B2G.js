@@ -152,15 +152,20 @@ if (!Mozilla) var Mozilla={"name":"Mozilla", "edges":[]};
 						]}}
 					]}},
 
-					{"name": "RIL", "esfilter": {"and": [
+					{"name": "Telephony", "esfilter": {"and": [
 						{"not": {"term": {"keywords": "perf"}}}, //AN UNFORTUNATE REDUNDANCY
 						{"terms": {"component": [
-							"ril",
-							"nfc",
-							"wifi",
-							"rtsp"
+							"ril"
 						]}}
 					]}},
+                                        {"name": "Connectivity", "esfilter": {"and": [
+                                                {"not": {"term": {"keywords": "perf"}}}, //AN UNFORTUNATE REDUNDANCY
+                                                {"terms": {"component": [
+                                                        "nfc",
+                                                        "wifi",
+                                                        "rtsp"
+                                                ]}}
+                                        ]}},
 					{"name": "System Platform", "esfilter": {"and": [
 						{"not": {"term": {"keywords": "perf"}}}, //AN UNFORTUNATE REDUNDANCY
 						{"term": {"product": "firefox os"}},
@@ -176,17 +181,17 @@ if (!Mozilla) var Mozilla={"name":"Mozilla", "edges":[]};
 						{"not": {"term": {"keywords": "perf"}}}, //AN UNFORTUNATE REDUNDANCY
 						{"terms": {"component": [
 							"video/audio: recording",
+							"audiochannel",
 							"video/audio"
 						]}}
 					]}},
-					{"name": "Devices", "esfilter": {"and": [
+					{"name": "System", "esfilter": {"and": [
 						{"not": {"term": {"keywords": "perf"}}}, //AN UNFORTUNATE REDUNDANCY
 						{"term": {"product": "firefox os"}},
 						{"terms": {"component": [
-							"audiochannel",
 							"bluetooth",
 							"hardware",
-							"vendcom"
+							"geolocation"
 						]}}
 					]}},
 
@@ -324,7 +329,7 @@ if (!Mozilla) var Mozilla={"name":"Mozilla", "edges":[]};
 							"audiochannel",
 							"bluetooth",
 							"hardware",
-							"vendcom",
+							"geolocation",
 							"javascript engine: jit",
 							"networking: cache",
 							"networking: http",

@@ -237,7 +237,7 @@ function bugDetails(bugs, categories){
 	//PROCESS BUGS
 	bugs.forall(function(b){
 		b.component = cleanupComponent(b.component);
-		b.bugLink = Bugzilla.linkToBug(b.bug_id);
+		b.bugLink = new HTML('<a>' + b.bug_id + '</a>');
 		b.assigned_to = b.assigned_to == "nobody@mozilla.org" ? "" : b.assigned_to;
 		categories.edges.map(function(c){
 			if (c.edges) {

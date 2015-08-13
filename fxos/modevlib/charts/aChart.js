@@ -1166,6 +1166,7 @@ aChart.addPredictionLine = function(param){
 
 		var num = param.source.domain.max.subtract(param.source.domain.min).divideBy(Duration.DAY);
 		var minDomain = param.predict.domain.min.subtract(param.source.domain.min).divideBy(Duration.DAY)+1;
+		if (minDomain>=num) return;
 
 		//COPY UP TO THE POINT OF PREDICTION (BECAUSE CHARTING LIB SUCKS)
 		for(var i = 0; i < Math.min(minDomain, num); i++){

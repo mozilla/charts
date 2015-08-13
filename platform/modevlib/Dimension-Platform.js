@@ -84,18 +84,46 @@ if (!Mozilla) var Mozilla = {"name": "Mozilla", "edges": []};
 			{
 				"name": "Firefox39",
 				"version": 39,
-				"releaseDate": "June 23, 2015",
+				"releaseDate": "July 2, 2015",
 				"esfilter": {"and": [
 					{"not": {"terms": {"cf_status_firefox39": SOLVED}}},
 					{"term": {"cf_tracking_firefox39": "+"}}
 				]}
 			},
 			{
-				"name": "Firefox40",
+				"name": "Firefox40",   //https://wiki.mozilla.org/RapidRelease/Calendar#Future_branch_dates
 				"version": 40,
+				"releaseDate": "Aug 11, 2015",
 				"esfilter": {"and": [
 					{"not": {"terms": {"cf_status_firefox40": SOLVED}}},
 					{"term": {"cf_tracking_firefox40": "+"}}
+				]}
+			},
+			{
+				"name": "Firefox41",
+				"version": 41,
+				"releaseDate": "Sep 22, 2015",
+				"esfilter": {"and": [
+					{"not": {"terms": {"cf_status_firefox41": SOLVED}}},
+					{"term": {"cf_tracking_firefox41": "+"}}
+				]}
+			},
+			{
+				"name": "Firefox42",
+				"version": 42,
+				"releaseDate": "Nov 3, 2015",
+				"esfilter": {"and": [
+					{"not": {"terms": {"cf_status_firefox42": SOLVED}}},
+					{"term": {"cf_tracking_firefox42": "+"}}
+				]}
+			},
+			{
+				"name": "Firefox43",
+				"version": 43,
+				"releaseDate": "Dec 15, 2015",
+				"esfilter": {"and": [
+					{"not": {"terms": {"cf_status_firefox43": SOLVED}}},
+					{"term": {"cf_tracking_firefox43": "+"}}
 				]}
 			}
 		]

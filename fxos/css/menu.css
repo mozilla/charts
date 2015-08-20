@@ -452,8 +452,15 @@ table.grid td.vSeperatorA {
     margin-right: auto;
 }
 
+.parameters input {
+    width: 130px;
+    margin-left: auto;
+    margin-right: auto;
+}
+
 span.parameter_name {
     float: left;
+    font-size: 1.0em;
     width: 150px;
     text-align: right;
     margin-right: 10px;

@@ -330,7 +330,7 @@ importScript([
 		var needed_fields = null;
 		var dateMarks = [];
 
-		var milestones = GUI.state.milestone.getSelectedParts();
+		var milestones = GUI.state.epm.getSelectedParts();
 		var milestoneFilter = null;
 		if (milestones.length > 0) {
 			//SHOW UI dates AS DISABLED
@@ -358,7 +358,7 @@ importScript([
 		if (features.length > 0) {
 			var featureName = features.select("name").join(" and ");
 			if (milestones.length > 0) {
-				$("#title").text("Burndown for " + featureName + " (Milestone " + milestones.select("name").join(" and ") + ")");
+				$("#title").text("Burndown for " + featureName + " (EPM " + milestones.select("name").join(" and ") + ")");
 			} else {
 				$("#title").text("Burndown for " + featureName);
 			}//endif
@@ -380,7 +380,7 @@ importScript([
 			raw_data = yield(getRawDependencyData(featureFilter, timeDomain, needed_fields));
 		} else {
 			if (bug_ids.length == 0) {
-				$("#title").text("Must select bug number, or predefined feature");
+				$("#title").text("Must select bug number, feature, or EPM");
 				yield (null); //EXIT EARLY
 			}//endif
 
@@ -398,7 +398,7 @@ importScript([
 				}));
 
 				if (milestones.length > 0) {
-					$("#title").html(r.list.map(CNV.String2HTML).join("<br>") + "Milestone " + milestones.select("name").join(" and "));
+					$("#title").html(r.list.map(CNV.String2HTML).join("<br>") + "EPM " + milestones.select("name").join(" and "));
 				} else {
 					$("#title").html(r.list.map(CNV.String2HTML).join("<br>"));
 				}//endif
@@ -848,7 +848,7 @@ importScript([
 			{"id" : "hierarchyMode", "name" : "Dependencies", "type" : RadioFilter.newInstance({
 				"id" : "hierarchyMode",
 				"name" : "Dependencies",
-				"message" : "Chart all bug dependencies (default), or chart only the bugs matching milestone criterion<br><br>",
+				"message" : "Chart all bug dependencies (default), or chart only the bugs matching criterion<br><br>",
 				"options" : ["All dependencies", "Matching criterion"],
 				"default" : "All dependencies",
 				"refreshCallback" : __reChart
@@ -861,11 +861,11 @@ importScript([
 				"expandAll" : true,
 				"treeDepth" : 0
 			})},
-			{"id" : "milestone", "name" : "Milestone", "type" : PartitionFilter.newInstance({
-				"id" : "milestones",
-				"name" : "All Milestones",
-				"description" : "You may restrict the feature to the only the bugs marked with the given milestone",
-				"dimension" : Mozilla.Milestone,
+			{"id" : "epm", "name" : "EPM", "type" : PartitionFilter.newInstance({
+				"id" : "epms",
+				"name" : "All EPMs",
+				"description" : "You may restrict the feature to an EPM",
+				"dimension" : Mozilla.EPM,
 				"onlyOne" : false,
 				"expandAll" : true,
 				"treeDepth" : 0,

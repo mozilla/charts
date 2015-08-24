@@ -20,9 +20,9 @@ if (!Mozilla) var Mozilla={"name":"Mozilla", "edges":[]};
 		]}
 	]};
 
-	//ADD PROJECTS AND MILESTAONES HERE
+	//ADD PROJECTS AND MILESTONES HERE
 	//BUT REMEMBER TO ADD DETAILED ENTRIES (AT BOTTOM)
-	var PROJECTS = ["1.3", "1.3t", "1.4", "2.0", "2.1", "2.2", "2.5"];
+	var PROJECTS = ["1.3", "1.3t", "1.4", "2.0", "2.1", "2.2", "2.5", "3.0"];
 	var NOM_PROJECTS = PROJECTS.map(function (p) {
 		return p + "?";
 	});
@@ -427,7 +427,7 @@ if (!Mozilla) var Mozilla={"name":"Mozilla", "edges":[]};
 							],
 							"style": {"color": "#2ca02c"},
 							"esfilter": {"or": [
-								{"terms": {"cf_blocking_b2g": ["2.5+", "2.5?"]}},
+								{"terms": {"cf_blocking_b2g": ["2.5+", "3.0+", "2.5?", "3.0?"]}},
 								{"terms": {"cf_blocking_loop": ["fx37?", "fx38?", "fx39?", "fx40?", "fx41?", "fx42?", "fx43?", "fx44?", "fx37+", "fx38+", "fx39+", "fx40+", "fx41+", "fx42+", "fx43+", "fx44+"]}}
 							]}
 						},
@@ -478,7 +478,7 @@ if (!Mozilla) var Mozilla={"name":"Mozilla", "edges":[]};
 					},
 					{"name": "2.5",
 						"esfilter": {"or":[
-							{"terms": {"cf_blocking_b2g": ["2.5+"]}},
+							{"terms": {"cf_blocking_b2g": ["2.5+", "3.0+"]}},
 							{"terms": {"cf_blocking_loop": ["fx37?", "fx38?", "fx39?", "fx40?", "fx41?", "fx42?", "fx43?", "fx44?", "fx37+", "fx38+", "fx39+", "fx40+", "fx41+", "fx42+", "fx43+", "fx44+"]}}
 						]}
 					},
@@ -575,7 +575,7 @@ if (!Mozilla) var Mozilla={"name":"Mozilla", "edges":[]};
 							],
 							"style": {"color": "#2ca02c"},
 							"esfilter": {"or": [
-								{"terms": {"cf_blocking_b2g": ["2.5+", "2.5?"]}},
+								{"terms": {"cf_blocking_b2g": ["2.5+", "3.0+", "2.5?", "3.0?"]}},
 								{"terms": {"cf_blocking_loop": ["fx37?", "fx38?", "fx39?", "fx40?", "fx41?", "fx42?", "fx43?", "fx44?", "fx37+", "fx38+", "fx39+", "fx40+", "fx41+", "fx42+", "fx43+", "fx44+"]}}
 							]}
 						},

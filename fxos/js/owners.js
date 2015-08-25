@@ -4,10 +4,10 @@
 //Please keep the owner names consistent with phonebook names
 
 var OWNERS = {
-  "AudioChannel": "Steven Lee", // Firefox OS
+  "AudioChannel": "Blake Wu", // Firefox OS
   "B2g Installer": "Gregor Wagner (Alex Lissy, Dale Harvey)",
   "BetaTriage": "?", // Firefox OS
-  "Bluetooth": "Ben Tian (Shawn Huang)", // Firefox OS
+  "Bluetooth": "Ben Tian", // Firefox OS
   "Build Config": "Dylan Oliver", // Core
   "Canvas: 2D": "Milan Sreckovic (Benoit Jacob, Jeff Muizelaar)",
   "Canvas: WebGL": "Milan Sreckovic (Benoit Jacob, Jeff Gilbert)",
@@ -25,11 +25,11 @@ var OWNERS = {
   "DOM: Events": "Andrew Overholt (Johnny Stenback)",
   "Gaia": "David Scravaglieri (Francisco Jordano)",
   // "Gaia:: Achievements": "?",
-  "Gaia::Bluetooth File Transfer": "Tim Guan-tin Chien (Ian Liu)",
+  "Gaia::Bluetooth File Transfer": "Tim Guan-tin Chien",
   "Gaia:: Bookmark": "Gregor Wagner (Ben Francis)",
   "Gaia::Browser": "Gregor Wagner (Ben Francis)",
   "Gaia:: Bugzilla Lite": "Dale Harvey",
-  "Gaia::Build": "Tim Guan-tin Chien (Yuren Ju)",
+  "Gaia::Build": "Tim Guan-tin Chien (Ricky Chien)",
   "Gaia::Calendar": "Dylan Oliver (Gareth Aye)",
   "Gaia::Camera": "Hema Koka (David Flanagan)",
   "Gaia::Clock": "Dylan Oliver (Marcus Cavanaugh)",
@@ -48,7 +48,7 @@ var OWNERS = {
   "Gaia::GithubBot": "Kevin Grandon",
   "Gaia:: Hackerplace": "Michael Henretty",
   "Gaia::Homescreen": "Gregor Wagner (Chris Lord)",
-  "Gaia::Keyboard": "Tim Guan-tin Chien (Rudy Lu)",
+  "Gaia::Keyboard": "Tim Guan-tin Chien",
   "Gaia:: L10n": "Zibi Braniecki (Stas Malolepszy)",
   // "Gaia:: Loop": "?",
   "Gaia::Music": "Hema Koka (David Flanagan)",
@@ -60,7 +60,7 @@ var OWNERS = {
   "Gaia:: Project Infrastructure": "Gareth Aye (Ghislain Locroix, Eli Perelman, Kevin Grandon)",
   "Gaia::Ringtones": "Hema Koka (David Flanagan)",
   "Gaia::Search": "Gregor Wagner (Kevin Grandon)",
-  "Gaia::Settings": "Tim Guan-tin Chien",
+  "Gaia::Settings": "Tim Guan-tin Chien (Fred Lin)",
   "Gaia:: Shared": "David Flanagan (Kevin Grandon)",
   "Gaia::SMS": "David Scravaglieri (Francisco Jordano)",
   "Gaia::System": "Michael Henretty (Gregor Wagner, Tim Guan-tin)", //  Tim relies on Gregor to actively throwing bugs over.
@@ -68,7 +68,7 @@ var OWNERS = {
   // "Gaia::System::Audio Mgmt": "Alive?",
   "Gaia::System::Browser Chrome": "Gregor Wagner (Ben Francis)",
   "Gaia::System::Download": "Gregor Wagner (Aus Lacroix)",
-  "Gaia::System::Input Mgmt": "Tim Guan-tin Chien (Rudy Lu)",
+  "Gaia::System::Input Mgmt": "Tim Guan-tin Chien",
   "Gaia::System::Lockscreen": "Tim Guan-tin Chien (Greg Weng)",
   "Gaia::System::Mobile Connection": "Etienne Segonzac, Sean McArthur",
   "Gaia::System::MobileID": "Fernando Jiménez Moreno",
@@ -82,7 +82,7 @@ var OWNERS = {
   "Gaia::System::Task Manager": "Gregor Wagner (Sam Foster)",
   "Gaia::System::WebRTC": "Fred Lin",
   "Gaia::System::Wifi": "Tim Guantin Chien",
-  "Gaia::System::Window Mgmt": "Tim Guan-tin Chien",
+  "Gaia::System::Window Mgmt": "Tim Guan-tin Chien (Greg Weng)",
   // "Gaia::TestAgent": "Garreth Aye, Aus Lacroix",
   // "Gaia::Theme Editor": "?",
   // "Gaia::TV": "?",
@@ -113,8 +113,8 @@ var OWNERS = {
   "MTP/UMS": "Ben Tian", // Firefox OS
   "MFBT": "Naveed Ihsanullah",
   "Networking": "Jason Duell", // Core
-  "NFC": "Vincent Chang", // Firefox OS
-  "rtsp": "Vincent Chang", // Firefox OS
+  "NFC": "Ethan Tseng", // Firefox OS
+  "rtsp": "Ethan Tseng", // Firefox OS
   "Panning and Zooming": "Milan Sreckovic (Kartikaya Gupta, Botond Ballo)", // Core
   "Performance": "Everyone", // Firefox OS
   "Runtime": "Gregor Wagner (Fabrice Desré)", // Firefox OS
@@ -126,10 +126,10 @@ var OWNERS = {
   // "Stability": "Al Tsai",
   // "Sync": "Fernando Jimenez"
   "Video/Audio": "Jet Villegas", // Core
-  "Video/Audio: Recording": "Steven Lee", // Core
+  "Video/Audio: Recording": "Blake Wu", // Core
   "Vendcom": "Vance Chen", // Firefox OS
   "Widget: Gonk": "Mike Wu",
-  "Wifi": "Vincent Chang" // Firefox OS
+  "Wifi": "Ethan Tseng" // Firefox OS
   // "WMF": "?" // Firefox OS
 };
 

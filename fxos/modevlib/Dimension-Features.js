@@ -107,7 +107,7 @@ Dimension.addEdges(true, Mozilla, [
 		{"name": "Personal", "esfilter": {"terms": {"bug_id": [1180672, 1180665, 1180666, 1180668, 1180669]}}},
 		{"name": "Direct Contributor Updates", "esfilter": {"terms": {"bug_id": [1180678]}}},
 		{"name": "Privacy", "esfilter": {"terms": {"bug_id": [1180674, 1180675]}}},
-		{"name": "Device performance/Metrics", "esfilter": {"term": {"bug_id": [1180695, 1180696, 1180699, 1180701, 1167167, 1180703, 1180705]}}},
+		{"name": "Device performance/Metrics", "esfilter": {"terms": {"bug_id": [1180695, 1180696, 1180699, 1180701, 1167167, 1180703, 1180705]}}},
 		{"name": "Local Configuration", "esfilter": {"terms": {"bug_id": [1180707, 1180710, 1179459]}}},
 		{"name": "Architecture Evolution", "esfilter": {"terms": {"bug_id": [1180716, 1180718]}}},
 		{"name": "Devices Support", "esfilter": {"terms": {"bug_id": [1180719]}}},

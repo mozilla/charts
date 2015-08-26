@@ -464,7 +464,7 @@ importScript([
 				userFilter =  {"match_all": {}};
 			}//try
 
-			var milestones = GUI.state.milestone.getSelectedParts();
+			var milestones = GUI.state.epm.getSelectedParts();
 			var milestoneFilter = null;
 			if (milestones.length > 0) {
 				$("#title").append(" (Milestone " + milestones.select("name").join(" and ") + ")");

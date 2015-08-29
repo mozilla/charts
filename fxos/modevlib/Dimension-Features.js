@@ -46,7 +46,7 @@ Sprints = [
 					{"term" : {"cf_blocking_loop" : blocks}}
 				]}},
 				{"name" : "Targeted", "esfilter" : {"and" : [
-					{"term" : {"target_milestone" : targets}},
+					{"term" : {"target_milestone" : targets}}
 //				{"not": {"term": {"cf_blocking_loop": blocks}}}  // UNFORTUNATE REDUNDANCY
 				]}}
 			]
@@ -84,7 +84,7 @@ Sprints = [
 						{"term" : {"cf_blocking_b2g" : blocks}}
 					]}},
 					{"name" : "Targeted", "esfilter" : {"and" : [
-						{"term" : {"target_milestone" : targets}},
+						{"term" : {"target_milestone" : targets}}
 //				{"not": {"term": {"cf_blocking_b2g": blocks}}}  // UNFORTUNATE REDUNDANCY
 					]}}
 				]
@@ -96,104 +96,56 @@ Sprints = [
 
 Dimension.addEdges(true, Mozilla, [
 
-	{"name" : "Feature", "index" : "bugs", "needed_fields" : ["cf_feature_b2g", "status_whiteboard"], "esfilter" : {"match_all" : {}}, "edges" : [
-		{"name" : "UCID 2.0", "esfilter" : {"and" : [
-			{"regexp" : {"status_whiteboard" : ".*ucid.*"}},
-			{"or" : [
-				{"regexp" : {"status_whiteboard" : ".*2\\.0.*"}},
-				{"regexp" : {"status_whiteboard" : ".*1\\.5.*"}}
-			]}
-		]}},
-		{"name" : "Feature-B2G = 2.0", "needed_fields" : ["cf_feature_b2g"], "esfilter" : {"and" : [
-			{"term" : {"cf_feature_b2g" : "2.0"}}
-		]}},
-
-		{"name" : "Platform webRTC", "esfilter" : {"term" : {"bug_id" : 970426}}},
-		{"name" : "Loop MLP", "esfilter" : {"term" : {"bug_id" : 972866}}},
-		{"name" : "Loop Mobile MVP", "esfilter" : {"term" : {"bug_id" : 970426}}},
-		{"name" : "e10s on Nightly",
-			"needed_fields":["blocked"],
-			"esfilter" : {"or" : [
-				{"term" : {"bug_id" : 997462}},
-				{"term" : {"blocked" : 997462}}
-			]},
-			"dateMarks" : [
-				{"name" : "e10s Target", "date" : "Nov 9, 2014", "style" : {strokeStyle : "gray", verticalOffset : 20}}
-			]
-		}
+	{"name" : "Feature", "index" : "bugs", "needed_fields" : ["cf_blocking_b2g"], "esfilter" : {"match_all" : {}}, "edges" : [
+		{"name": "All 2.5", "esfilter": {"terms": {"bug_id": [
+			1180659, 1180660, 1180662, 1180672, 1180665, 1180666, 1180668, 1180669,
+			1180678, 1180674, 1180675, 1180695, 1180696, 1180699, 1180701, 1167167,
+			1180703, 1180705, 1180707, 1180710, 1179459, 1180716, 1180718, 1180719
+		]}}},
+		{"name": "Hackability", "esfilter": {"terms": {"bug_id": [1180659, 1180660]}}},
+		{"name": "Help/Onboarding", "esfilter": {"term": {"bug_id": 1180662}}},
+		{"name": "Personal", "esfilter": {"terms": {"bug_id": [1180672, 1180665, 1180666, 1180668, 1180669]}}},
+		{"name": "Direct Contributor Updates", "esfilter": {"terms": {"bug_id": [1180678]}}},
+		{"name": "Privacy", "esfilter": {"terms": {"bug_id": [1180674, 1180675]}}},
+		{"name": "Device performance/Metrics", "esfilter": {"terms": {"bug_id": [1180695, 1180696, 1180699, 1180701, 1167167, 1180703, 1180705]}}},
+		{"name": "Local Configuration", "esfilter": {"terms": {"bug_id": [1180707, 1180710, 1179459]}}},
+		{"name": "Architecture Evolution", "esfilter": {"terms": {"bug_id": [1180716, 1180718]}}},
+		{"name": "Devices Support", "esfilter": {"terms": {"bug_id": [1180719]}}},
+//		{"name": "Other 2.5 Blockers", "esfilter": {"and":[
+//			{"term": {"cf_blocking_b2g": "2.5+"}},
+//			{"not": {"terms": {"bug_id": [
+//				1180659, 1180660, 1180662, 1180672, 1180665, 1180666, 1180668, 1180669,
+//				1180678, 1180674, 1180675, 1180695, 1180696, 1180699, 1180701, 1167167,
+//				1180703, 1180705, 1180707, 1180710, 1179459, 1180716, 1180718, 1180719
+//			]}}}
+//		]}}
 	]},
-
-	{"name" : "Scope", "index" : "bugs", "needed_fields" : ["cf_feature_b2g", "status_whiteboard"], "esfilter" : {"match_all" : {}}, "edges" : [
-		{"name" : "UCID 2.0",
-			"title" : "UCID 2.0 (no dependencies)",
-			"primary" : "UCID 2.0 + Feature-B2G = 2.0",
-			"needed_fields" : ["status_whiteboard"],
-			"esfilter" : {"and" : [
-				{"regexp" : {"status_whiteboard" : ".*ucid.*"}},
-				{"or" : [
-					{"regexp" : {"status_whiteboard" : ".*2\\.0.*"}},
-					{"regexp" : {"status_whiteboard" : ".*1\\.5.*"}}
-				]}
-			]}
+	{"name" : "EPM", "index" : "bugs", "needed_fields" : ["cf_blocking_b2g"], "esfilter" : {"match_all" : {}}, "edges" : [
+		{"name": "Aaron Wu",
+			"esfilter": {"terms": {"bug_id": [1180668]}}
 		},
-		{"name" : "Feature-B2G = 2.0",
-			"title" : "Feature-B2G = 2.0 (no dependencies)",
-			"primary" : "UCID 2.0 + Feature-B2G = 2.0",
-			"needed_fields" : ["cf_feature_b2g"],
-			"esfilter" : {"term" : {"cf_feature_b2g" : "2.0"}}
+		{"name": "Bobby Chien",
+			"esfilter": {"terms": {"bug_id": [1180695, 1180696, 1180703, 1180705]}}
 		},
-		{"name" : "UCID 2.0 + Feature-B2G = 2.0",
-			"title" : "UCID 2.0 and Feature-B2G = 2.0 (no dependencies)",
-			"primary" : "UCID 2.0 + Feature-B2G = 2.0",
-			"needed_fields" : ["cf_feature_b2g", "status_whiteboard"],
-			"esfilter" : {"or" : [
-				{"term" : {"cf_feature_b2g" : "2.0"}},
-				{"and" : [
-					{"regexp" : {"status_whiteboard" : ".*ucid.*"}},
-					{"or" : [
-						{"regexp" : {"status_whiteboard" : ".*2\\.0.*"}},
-						{"regexp" : {"status_whiteboard" : ".*1\\.5.*"}}
-					]}
-				]}
-			]}
+		{"name": "Candice Serran",
+			"esfilter": {"terms": {"bug_id": [1167167]}}
 		},
-		{"name" : "Both 2.0",
-			"title" : "both UCID 2.0 and Feature-B2G = 2.0 (inc. dependencies)",
-			"primary" : "UCID 2.0 + Feature-B2G = 2.0",
-			"esfilter" : {"match_all" : {}}
+		{"name": "Jean",
+			"esfilter": {"terms": {"bug_id": [1180719]}}
 		},
-
-
-		{"name" : "UCID 2.1",
-			"title" : "UCID 2.1 (no dependencies)",
-			"primary" : "UCID 2.1 + Feature-B2G = 2.1",
-			"esfilter" : {"and" : [
-				{"regexp" : {"status_whiteboard" : ".*ucid.*"}},
-				{"regexp" : {"status_whiteboard" : ".*2\\.1.*"}}
-			]}
+		{"name": "Josh",
+			"esfilter": {"terms": {"bug_id": [1180707, 1179459]}}
 		},
-		{"name" : "Feature-B2G = 2.1",
-			"title" : "Feature-B2G = 2.1 (no dependencies)",
-			"primary" : "UCID 2.1 + Feature-B2G = 2.1",
-			"needed_fields" : ["cf_feature_b2g"],
-			"esfilter" : {"term" : {"cf_feature_b2g" : "2.1"}}
+		{"name": "Nicole Yee",
+			"esfilter": {"terms": {"bug_id": [1180659, 1180660]}}
 		},
-		{"name" : "UCID 2.1 + Feature-B2G = 2.1",
-			"title" : "UCID 2.1 and Feature-B2G = 2.1 (no dependencies)",
-			"primary" : "UCID 2.1 + Feature-B2G = 2.1",
-			"needed_fields" : ["cf_feature_b2g", "status_whiteboard"],
-			"esfilter" : {"or" : [
-				{"term" : {"cf_feature_b2g" : "2.1"}},
-				{"and" : [
-					{"regexp" : {"status_whiteboard" : ".*ucid.*"}},
-					{"regexp" : {"status_whiteboard" : ".*2\\.1.*"}}
-				]}
-			]}
-		},
-		{"name" : "Both 2.1",
-			"title" : "both UCID 2.1 and Feature-B2G = 2.1 (inc. dependencies)",
-			"primary" : "UCID 2.1 + Feature-B2G = 2.1",
-			"esfilter" : {"match_all" : {}}
+		{"name": "Other EPM",
+			"esfilter": {"terms": {"bug_id": [
+				1180699, 1180662, 1180672, 1180665,
+				1180666, 1180669, 1180678, 1180674,
+				1180675, 1180701, 1180710, 1180716,
+				1180718
+			]}}
 		}
 	]},
 

@@ -57,7 +57,14 @@ function showNomChurn(args) {
 		{"name": "1.4", "value": "1.4?", "nom":["1.4?", "fx30?"], "blocker":["1.4+", "fx30+"], "style":Mozilla.B2G.Project["1.4"].style},
 		{"name": "2.0", "value": "2.0?", "nom":["2.0?", "fx31?", "fx32?"], "blocker":["2.0+", "fx31+", "fx32+"], "style":Mozilla.B2G.Project["2.0"].style},
 		{"name": "2.1", "value": "2.1?", "nom":["2.1?", "fx33?", "fx34?"], "blocker":["2.1+", "fx33+", "fx34+"], "style":Mozilla.B2G.Project["2.1"].style},
-		{"name": "2.2", "value": "2.2?", "nom":["2.2?", "fx35?", "fx36?"], "blocker":["2.2+", "fx35+", "fx36+"], "style":Mozilla.B2G.Project["2.2"].style}
+		{"name": "2.2", "value": "2.2?", "nom":["2.2?", "fx35?", "fx36?"], "blocker":["2.2+", "fx35+", "fx36+"], "style":Mozilla.B2G.Project["2.2"].style},
+		{
+			"name": "2.5",
+			"value": "2.5?",
+			"nom":["2.5?", "3.0?", "fx37?", "fx38?", "fx39?", "fx40?", "fx41?", "fx42?", "fx43?", "fx44?"],
+			"blocker":["2.5+", "3.0+", "fx37+", "fx38+", "fx39+", "fx40+", "fx41+", "fx42+", "fx43+", "fx44+"],
+			"style":Mozilla.B2G.Project["2.5"].style
+		}
 	];
 	var triage = [];
 	projects.forall(function(n){

@@ -22,16 +22,16 @@ if (!Mozilla) var Mozilla = {"name": "Mozilla", "edges": []};
 
 	//ADD PROJECTS AND MILESTONES HERE
 	//BUT REMEMBER TO ADD DETAILED ENTRIES (AT BOTTOM)
-	var PROJECTS = ["1.3", "1.3t", "1.4", "2.0", "2.1", "2.2"];
-	var NOM_PROJECTS = PROJECTS.map(function(p){
+	var PROJECTS = ["1.3", "1.3t", "1.4", "2.0", "2.1", "2.2", "2.5", "3.0"];
+	var NOM_PROJECTS = PROJECTS.map(function (p) {
 		return p + "?";
 	});
 	var BLOCKER_PROJECTS = PROJECTS.map(function(p){
 		return p + "+";
 	});
 
-	var MILESTONES = ["fx30", "fx31", "fx32", "fx33", "fx34", "fx35", "fx36"];
-	var NOM_MILESTONES = MILESTONES.map(function(p){
+	var MILESTONES = ["fx30", "fx31", "fx32", "fx33", "fx34", "fx35", "fx36", "fx37", "fx38", "fx39", "fx40", "fx41", "fx42", "fx43", "fx44"];
+	var NOM_MILESTONES = MILESTONES.map(function (p) {
 		return p + "?";
 	});
 	var BLOCKER_MILESTONE = MILESTONES.map(function(p){
@@ -152,15 +152,20 @@ if (!Mozilla) var Mozilla = {"name": "Mozilla", "edges": []};
 						]}}
 					]}},
 
-					{"name": "RIL", "esfilter": {"and": [
+					{"name": "Telephony", "esfilter": {"and": [
 						{"not": {"term": {"keywords": "perf"}}}, //AN UNFORTUNATE REDUNDANCY
 						{"terms": {"component": [
-							"ril",
-							"nfc",
-							"wifi",
-							"rtsp"
+							"ril"
 						]}}
 					]}},
+                                        {"name": "Connectivity", "esfilter": {"and": [
+                                                {"not": {"term": {"keywords": "perf"}}}, //AN UNFORTUNATE REDUNDANCY
+                                                {"terms": {"component": [
+                                                        "nfc",
+                                                        "wifi",
+                                                        "rtsp"
+                                                ]}}
+                                        ]}},
 					{"name": "System Platform", "esfilter": {"and": [
 						{"not": {"term": {"keywords": "perf"}}}, //AN UNFORTUNATE REDUNDANCY
 						{"term": {"product": "firefox os"}},
@@ -176,17 +181,17 @@ if (!Mozilla) var Mozilla = {"name": "Mozilla", "edges": []};
 						{"not": {"term": {"keywords": "perf"}}}, //AN UNFORTUNATE REDUNDANCY
 						{"terms": {"component": [
 							"video/audio: recording",
+							"audiochannel",
 							"video/audio"
 						]}}
 					]}},
-					{"name": "Devices", "esfilter": {"and": [
+					{"name": "System", "esfilter": {"and": [
 						{"not": {"term": {"keywords": "perf"}}}, //AN UNFORTUNATE REDUNDANCY
 						{"term": {"product": "firefox os"}},
 						{"terms": {"component": [
-							"audiochannel",
 							"bluetooth",
 							"hardware",
-							"vendcom"
+							"geolocation"
 						]}}
 					]}},
 
@@ -324,7 +329,7 @@ if (!Mozilla) var Mozilla = {"name": "Mozilla", "edges": []};
 							"audiochannel",
 							"bluetooth",
 							"hardware",
-							"vendcom",
+							"geolocation",
 							"javascript engine: jit",
 							"networking: cache",
 							"networking: http",
@@ -415,6 +420,17 @@ if (!Mozilla) var Mozilla = {"name": "Mozilla", "edges": []};
 								{"terms": {"cf_blocking_loop": ["fx35?", "fx36?", "fx35+", "fx36+"]}}
 							]}
 						},
+						{"name": "2.5",
+							"start_date":"Jun 29, 2015",
+							"targetDate":"Jan 04, 2016",
+							"dateMarks": [
+							],
+							"style": {"color": "#2ca02c"},
+							"esfilter": {"or": [
+								{"terms": {"cf_blocking_b2g": ["2.5+", "3.0+", "2.5?", "3.0?"]}},
+								{"terms": {"cf_blocking_loop": ["fx37?", "fx38?", "fx39?", "fx40?", "fx41?", "fx42?", "fx43?", "fx44?", "fx37+", "fx38+", "fx39+", "fx40+", "fx41+", "fx42+", "fx43+", "fx44+"]}}
+							]}
+						},
 						{"name": "Other", "style": {"color": "#9467bd"}, "esfilter": {"and": [
 							{"not": {"terms": {"cf_blocking_b2g": NOM_PROJECTS.union(BLOCKER_PROJECTS)}}},  //TODO: No way to select 1.3
 							{"not": {"terms": {"cf_blocking_loop": NOM_MILESTONES.union(BLOCKER_MILESTONE)}}}
@@ -423,49 +439,55 @@ if (!Mozilla) var Mozilla = {"name": "Mozilla", "edges": []};
 					]
 				},
 
-				{"name": "Targeted", "index": "bugs", "isFacet": true,
-					"partitions": [
-						//https://wiki.mozilla.org/Release_Management/B2G_Landing
-						{"name": "1.3",
-							"esfilter": {"or": [
-								{"terms": {"cf_blocking_b2g": ["1.3+"]}}
-							]}
-						},
-						{"name": "1.3T",
-							"esfilter": {"or": [
-								{"terms": {"cf_blocking_b2g": ["1.3t+"]}}
-							]}
-						},
-						{"name": "1.4",
-							"esfilter": {"or": [
-								{"terms": {"cf_blocking_b2g": ["1.4+"]}},
-								{"terms": {"cf_blocking_loop": ["fx30+"]}}
-							]}
-						},
-						{"name": "2.0",
-							"esfilter": {"or": [
-								{"terms": {"cf_blocking_b2g": ["2.0+"]}},
-								{"terms": {"cf_blocking_loop": ["fx31+", "fx32+"]}}
-							]}
-						},
-						{"name": "2.1",
-							"esfilter": {"or": [
-								{"terms": {"cf_blocking_b2g": ["2.1+"]}},
-								{"terms": {"cf_blocking_loop": ["fx33+", "fx34+"]}}
-							]}
-						},
-						{"name": "2.2",
-							"esfilter": {"or": [
-								{"terms": {"cf_blocking_b2g": ["2.2+"]}},
-								{"terms": {"cf_blocking_loop": ["fx35+", "fx36+"]}}
-							]}
-						},
-						{"name": "Targeted", "style": {"color": "#9467bd"}, "esfilter": {"and": [
-							{"not": {"terms": {"cf_blocking_b2g": BLOCKER_PROJECTS}}},
-							{"not": {"terms": {"cf_blocking_loop": BLOCKER_MILESTONE}}}
-						]}}
-					]
-				},
+			{"name": "Targeted", "index": "bugs", "isFacet": true,
+				"partitions": [
+					//https://wiki.mozilla.org/Release_Management/B2G_Landing
+					{"name": "1.3",
+						"esfilter": {"or":[
+							{"terms": {"cf_blocking_b2g": ["1.3+"]}}
+						]}
+					},
+					{"name": "1.3T",
+						"esfilter": {"or":[
+							{"terms": {"cf_blocking_b2g": ["1.3t+"]}}
+						]}
+					},
+					{"name": "1.4",
+						"esfilter": {"or":[
+							{"terms": {"cf_blocking_b2g": ["1.4+"]}},
+							{"terms": {"cf_blocking_loop": ["fx30+"]}}
+						]}
+					},
+					{"name": "2.0",
+						"esfilter": {"or":[
+							{"terms": {"cf_blocking_b2g": ["2.0+"]}},
+							{"terms": {"cf_blocking_loop": ["fx31+", "fx32+"]}}
+						]}
+					},
+					{"name": "2.1",
+						"esfilter": {"or":[
+							{"terms": {"cf_blocking_b2g": ["2.1+"]}},
+							{"terms": {"cf_blocking_loop": ["fx33+", "fx34+"]}}
+						]}
+					},
+					{"name": "2.2",
+						"esfilter": {"or":[
+							{"terms": {"cf_blocking_b2g": ["2.2+"]}},
+							{"terms": {"cf_blocking_loop": ["fx35+", "fx36+"]}}
+						]}
+					},
+					{"name": "2.5",
+						"esfilter": {"or":[
+							{"terms": {"cf_blocking_b2g": ["2.5+", "3.0+"]}},
+							{"terms": {"cf_blocking_loop": ["fx37?", "fx38?", "fx39?", "fx40?", "fx41?", "fx42?", "fx43?", "fx44?", "fx37+", "fx38+", "fx39+", "fx40+", "fx41+", "fx42+", "fx43+", "fx44+"]}}
+						]}
+					},
+					{"name": "Targeted", "style": {"color": "#9467bd"}, "esfilter": {"and": [
+						{"not": {"terms": {"cf_blocking_b2g": BLOCKER_PROJECTS}}},
+						{"not": {"terms": {"cf_blocking_loop": BLOCKER_MILESTONE}}}
+					]}}
+				]
+			},
 
 				{"name": "FinalState", "index": "bugs", "isFacet": true,
 					"partitions": [
@@ -541,6 +563,20 @@ if (!Mozilla) var Mozilla = {"name": "Mozilla", "edges": []};
 							"esfilter": {"or": [
 								{"terms": {"cf_blocking_b2g": ["2.2+", "2.2?"]}},
 								{"terms": {"cf_blocking_loop": ["fx35?", "fx36?", "fx35+", "fx36+"]}}
+							]}
+						},
+						{"name": "2.5",
+							"start_date":"Jun 29, 2015",
+							"targetDate":"Jan 04, 2016",
+							"dateMarks": [
+								{"Start": "Jun 29, 2015"},
+								{"FC": "Nov 02, 2015"},
+								{"CC": "Jan 04, 2016"}
+							],
+							"style": {"color": "#2ca02c"},
+							"esfilter": {"or": [
+								{"terms": {"cf_blocking_b2g": ["2.5+", "3.0+", "2.5?", "3.0?"]}},
+								{"terms": {"cf_blocking_loop": ["fx37?", "fx38?", "fx39?", "fx40?", "fx41?", "fx42?", "fx43?", "fx44?", "fx37+", "fx38+", "fx39+", "fx40+", "fx41+", "fx42+", "fx43+", "fx44+"]}}
 							]}
 						},
 						{"name": "Targeted",

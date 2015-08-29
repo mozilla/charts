@@ -654,7 +654,7 @@ Qb.normalizeByCohort=function(query, multiple){
 };//method
 
 ////////////////////////////////////////////////////////////////////////////////
-// ASSUME THE SECOND DIMESION IS THE XAXIS, AND NORMALIZE (DIVIDE BY SUM(ABS(Ci))
+// ASSUME THE SECOND DIMENSION IS THE X-AXIS, AND NORMALIZE (DIVIDE BY SUM(ABS(Ci))
 ////////////////////////////////////////////////////////////////////////////////
 Qb.normalizeByX=function(query, multiple){
 	if (multiple===undefined) multiple=1;

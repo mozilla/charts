@@ -82,7 +82,7 @@ var OWNERS = {
   "Gaia::System::Task Manager": "Gregor Wagner (Sam Foster)",
   "Gaia::System::WebRTC": "Tim Guan-tin Chien (Fred Lin)",
   "Gaia::System::Wifi": "Tim Guan-tin Chien",
-  "Gaia::System::Window Mgmt": "Tim Guan-tin Chien",
+  "Gaia::System::Window Mgmt": "Tim Guan-tin Chien (Greg Weng)",
   // "Gaia::TestAgent": "Garreth Aye, Aus Lacroix",
   // "Gaia::Theme Editor": "?",
   "Gaia::TV": "Evelyn Hung (Rex Lee)",

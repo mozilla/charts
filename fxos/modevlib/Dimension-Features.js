@@ -97,7 +97,7 @@ Sprints = [
 Dimension.addEdges(true, Mozilla, [
 
 	{"name" : "Feature", "index" : "bugs", "needed_fields" : ["cf_blocking_b2g"], "esfilter" : {"match_all" : {}}, "edges" : [
-		{"name": "All 2.5", "esfilter": {"terms": {"bug_id": [
+		{"name": "All 2.5 Features", "esfilter": {"terms": {"bug_id": [
 			1180659, 1180660, 1180662, 1180672, 1180665, 1180666, 1180668, 1180669,
 			1180678, 1180674, 1180675, 1180695, 1180696, 1180699, 1180701, 1167167,
 			1180703, 1180705, 1180707, 1180710, 1179459, 1180716, 1180718, 1180719

@@ -314,13 +314,13 @@ importScript([
 		var TODAY = Date.today();
 
 		var sampleMin = Date.newInstance(GUI.state.sampleMin);
-		var sampleInterval = Duration.newInstance(GUI.state.sampleInterval);
+		var sampleInterval = Duration.DAY;
 		var sampleMax = Date.newInstance(GUI.state.sampleMax).addDay();
 		var userFilter;
 		try {
 			userFilter = GUI.state.filter == "" ? {"match_all": {}} : CNV.JSON2Object(GUI.state.filter);
 		}catch(e){
-			userFilter =  {"match_all": {}};
+			userFilter = {"match_all": {}};
 		}//try
 		var bug_ids = GUI.state.bugList.trim() == "" ? [] : GUI.state.bugList.split(",").map(function(v){
 			return CNV.String2Integer(v.trim());
@@ -455,7 +455,7 @@ importScript([
 			$("#info").html("");
 
 			var sampleMin = Date.newInstance(GUI.state.sampleMin);
-			var sampleInterval = Duration.newInstance(GUI.state.sampleInterval);
+			var sampleInterval = Duration.DAY;
 			var sampleMax = Date.newInstance(GUI.state.sampleMax).addDay();
 			var userFilter;
 			try {
@@ -843,7 +843,7 @@ importScript([
 			{"id" : "bugList", "name" : "Tracking Bug(s)", "type" : "text", "default" : null},
 			{"id" : "sampleMin", "name" : "Start Date", "type" : "time", "default" : Date.eod().add("-6week")},
 			{"id" : "sampleMax", "name" : "End Date", "type" : "time", "default" : Date.today().ceilingWeek()},
-			{"id" : "sampleInterval", "name" : "Interval", "type" : "duration", "default" : "day"},
+//			{"id" : "sampleInterval", "name" : "Interval", "type" : "duration", "default" : "day"},
 			{"id" : "filter", "name" : "Filter", "type" : "string", "default" : ""},
 			{"id" : "hierarchyMode", "name" : "Dependencies", "type" : RadioFilter.newInstance({
 				"id" : "hierarchyMode",

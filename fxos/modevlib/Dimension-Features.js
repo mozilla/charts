@@ -404,8 +404,8 @@ Dimension.addEdges(true, Mozilla, [
 		{"name" : "Regression", "esfilter" : {"term" : {"keywords" : "regression"}}},
 		{"name" : "Blocker", "esfilter" : {"and" : [
 			{"or" : [
-				{"terms" : {"cf_blocking_b2g" : ["1.3+", "1.4+", "1.3t+", "1.5+", "2.0+"]}},
-				{"terms" : {"cf_blocking_loop" : ["fx30+", "fx31+", "fx32+", "fx33+", "fx30+", "fx34+", "fx35+", "fx36+"]}}
+				{"terms" : {"cf_blocking_b2g" : ["1.3+", "1.3t+", "1.4+", "2.0+", "2.1+", "2.2+", "2.5+", "3.0+"]}},
+				{"terms" : {"cf_blocking_loop" : ["fx30+", "fx31+", "fx32+", "fx33+", "fx34+", "fx35+", "fx36+", "fx37+", "fx38+", "fx39+", "fx40+", "fx41+", "fx42+", "fx43+", "fx44+"]}}
 			]}
 		]}},
 		{"name" : "Targeted",

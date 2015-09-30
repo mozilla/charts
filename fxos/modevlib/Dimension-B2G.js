@@ -38,7 +38,6 @@ if (!Mozilla) var Mozilla = {"name": "Mozilla", "edges": []};
 		return p + "+";
 	});
 
-
 	Dimension.addEdges(true, Mozilla, [
 		{"name": "B2G",
 //				{"term": {"target_milestone": "mozilla31"}},

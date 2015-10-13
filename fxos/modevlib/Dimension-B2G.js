@@ -419,10 +419,26 @@ if (!Mozilla) var Mozilla={"name":"Mozilla", "edges":[]};
 								{"terms": {"cf_blocking_loop": ["fx35?", "fx36?", "fx35+", "fx36+"]}}
 							]}
 						},
+						{"name": "2.5FC",
+							"start_date":"Jun 29, 2015",
+							"targetDate":"Nov 02, 2015",
+							"dateMarks": [
+								{"name":"Start", "date":"Jun 29, 2015", "style":{"color":"black"}},
+								{"name":"FC", "date":"Nov 02, 2015", "style":{"color":"black"}}
+							],
+							"style": {"color": "#2ca02c"},
+							"esfilter": {"or": [
+								{"terms": {"cf_blocking_b2g": ["2.5+", "3.0+", "2.5?", "3.0?"]}},
+								{"terms": {"cf_blocking_loop": ["fx37?", "fx38?", "fx39?", "fx40?", "fx41?", "fx42?", "fx43?", "fx44?", "fx37+", "fx38+", "fx39+", "fx40+", "fx41+", "fx42+", "fx43+", "fx44+"]}}
+							]}
+						},
 						{"name": "2.5",
 							"start_date":"Jun 29, 2015",
 							"targetDate":"Jan 04, 2016",
 							"dateMarks": [
+								{"name":"Start", "date":"Jun 29, 2015", "style":{"color":"black"}},
+								{"name":"FC", "date":"Nov 02, 2015", "style":{"color":"black"}},
+								{"name":"CC", "date":"Jan 04, 2016", "style":{"color":"black"}}
 							],
 							"style": {"color": "#2ca02c"},
 							"esfilter": {"or": [

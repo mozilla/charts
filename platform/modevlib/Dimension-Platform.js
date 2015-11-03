@@ -161,7 +161,7 @@ if (!Mozilla) var Mozilla = {"name": "Mozilla", "edges": []};
 					{"term": {"cf_tracking_firefox48": "+"}}
 				]}
 			},
-			{
+			{//SOURCE https://wiki.mozilla.org/RapidRelease/Calendar
 				"name": "Firefox49",
 				"version": 49,
 				"releaseDate": "Aug 23, 2016",

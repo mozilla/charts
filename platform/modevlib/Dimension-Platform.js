@@ -115,7 +115,62 @@ if (!Mozilla) var Mozilla = {"name": "Mozilla", "edges": []};
 					{"not": {"terms": {"cf_status_firefox43": SOLVED}}},
 					{"term": {"cf_tracking_firefox43": "+"}}
 				]}
+			},
+			{
+				"name": "Firefox4",
+				"version": 44,
+				"releaseDate": "Jan 26, 2016",
+				"esfilter": {"and": [
+					{"not": {"terms": {"cf_status_firefox44": SOLVED}}},
+					{"term": {"cf_tracking_firefox44": "+"}}
+				]}
+			},
+			{
+				"name": "Firefox45",
+				"version": 45,
+				"releaseDate": "Mar 8, 2016",
+				"esfilter": {"and": [
+					{"not": {"terms": {"cf_status_firefox45": SOLVED}}},
+					{"term": {"cf_tracking_firefox45": "+"}}
+				]}
+			},
+			{
+				"name": "Firefox46",
+				"version": 46,
+				"releaseDate": "Apr 19, 2016",
+				"esfilter": {"and": [
+					{"not": {"terms": {"cf_status_firefox46": SOLVED}}},
+					{"term": {"cf_tracking_firefox46": "+"}}
+				]}
+			},
+			{
+				"name": "Firefox47",
+				"version": 47,
+				"releaseDate": "May 31, 2016",
+				"esfilter": {"and": [
+					{"not": {"terms": {"cf_status_firefox47": SOLVED}}},
+					{"term": {"cf_tracking_firefox47": "+"}}
+				]}
+			},
+			{
+				"name": "Firefox48",
+				"version": 48,
+				"releaseDate": "Jul 12, 2016",
+				"esfilter": {"and": [
+					{"not": {"terms": {"cf_status_firefox48": SOLVED}}},
+					{"term": {"cf_tracking_firefox48": "+"}}
+				]}
+			},
+			{
+				"name": "Firefox49",
+				"version": 49,
+				"releaseDate": "Aug 23, 2016",
+				"esfilter": {"and": [
+					{"not": {"terms": {"cf_status_firefox49": SOLVED}}},
+					{"term": {"cf_tracking_firefox49": "+"}}
+				]}
 			}
+
 		]
 	};
 	releaseTracking.requiredFields = Array.union(releaseTracking.edges.select("esfilter").map(requiredFields));

@@ -72,7 +72,7 @@ var OWNERS = {
   "Gaia::System::Lockscreen": "Tim Guan-tin Chien (Greg Weng)",
   "Gaia::System::Mobile Connection": "Etienne Segonzac, Sean McArthur",
   "Gaia::System::MobileID": "Fernando Jiménez Moreno",
-  "Gaia::System::Music Control": "Evan?",
+  "Gaia::System::Music Control": "Hema Koka & Tim Guan-tin Chien",
   "Gaia::System::Payments": "Fernando Jiménez Moreno",
   // "Gaia::System::Power Mgmt": "?",
   // "Gaia::System::SIM Tool Kit": "?",

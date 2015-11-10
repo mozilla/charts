@@ -22,7 +22,7 @@ if (!Mozilla) var Mozilla={"name":"Mozilla", "edges":[]};
 
 	//ADD PROJECTS AND MILESTONES HERE
 	//BUT REMEMBER TO ADD DETAILED ENTRIES (AT BOTTOM)
-	var PROJECTS = ["1.3", "1.3t", "1.4", "2.0", "2.1", "2.2", "2.5", "3.0"];
+	var PROJECTS = ["1.3", "1.3t", "1.4", "2.0", "2.1", "2.2", "2.5", "2.6", "3.0"];
 	var NOM_PROJECTS = PROJECTS.map(function (p) {
 		return p + "?";
 	});
@@ -30,7 +30,7 @@ if (!Mozilla) var Mozilla={"name":"Mozilla", "edges":[]};
 		return p + "+";
 	});
 
-	var MILESTONES = ["fx30", "fx31", "fx32", "fx33", "fx34", "fx35", "fx36", "fx37", "fx38", "fx39", "fx40", "fx41", "fx42", "fx43", "fx44"];
+	var MILESTONES = ["fx30", "fx31", "fx32", "fx33", "fx34", "fx35", "fx36", "fx37", "fx38", "fx39", "fx40", "fx41", "fx42", "fx43", "fx44, "];
 	var NOM_MILESTONES = MILESTONES.map(function (p) {
 		return p + "?";
 	});
@@ -345,7 +345,7 @@ if (!Mozilla) var Mozilla={"name":"Mozilla", "edges":[]};
 //								{"name": "FL", "date": "Dec 9, 2013", "style": {strokeStyle: "black", verticalOffset: 10}},
 //								{"name": "FC", "date": "Mar 17, 2014", "style": {strokeStyle: "black", verticalOffset: 10}}
 //							],
-//							"style": {"color": "#d62728"},
+//							"style": {"color": "#d62728"},  //red
 //							"esfilter": {"or": [
 //								{"terms": {"cf_blocking_b2g": ["1.3+", "1.3?"]}}
 //							]}
@@ -402,7 +402,7 @@ if (!Mozilla) var Mozilla={"name":"Mozilla", "edges":[]};
 								{"CS": "Nov 14, 2014"},  //partner delivery
 								{"CC": "Nov 24, 2014"}
 							],
-							"style": {"color": "#d62728"},
+							"style": {"color": "#9467bd"},
 							"esfilter": {"or": [
 								{"terms": {"cf_blocking_b2g": ["2.1+", "2.1?"]}},
 								{"terms": {"cf_blocking_loop": ["fx33?", "fx34?", "fx33+", "fx34+"]}}
@@ -413,23 +413,10 @@ if (!Mozilla) var Mozilla={"name":"Mozilla", "edges":[]};
 							"targetDate":"Nov 24, 2014",
 							"dateMarks": [
 							],
-							"style": {"color": "#ff7f0e"},
+							"style": {"color": "#d62728"},
 							"esfilter": {"or": [
 								{"terms": {"cf_blocking_b2g": ["2.2+", "2.2?"]}},
 								{"terms": {"cf_blocking_loop": ["fx35?", "fx36?", "fx35+", "fx36+"]}}
-							]}
-						},
-						{"name": "2.5FC",
-							"start_date":"Jun 29, 2015",
-							"targetDate":"Nov 02, 2015",
-							"dateMarks": [
-								{"name":"Start", "date":"Jun 29, 2015", "style":{"color":"black"}},
-								{"name":"FC", "date":"Nov 02, 2015", "style":{"color":"black"}}
-							],
-							"style": {"color": "#2ca02c"},
-							"esfilter": {"or": [
-								{"terms": {"cf_blocking_b2g": ["2.5+", "3.0+", "2.5?", "3.0?"]}},
-								{"terms": {"cf_blocking_loop": ["fx37?", "fx38?", "fx39?", "fx40?", "fx41?", "fx42?", "fx43?", "fx44?", "fx37+", "fx38+", "fx39+", "fx40+", "fx41+", "fx42+", "fx43+", "fx44+"]}}
 							]}
 						},
 						{"name": "2.5",
@@ -440,10 +427,24 @@ if (!Mozilla) var Mozilla={"name":"Mozilla", "edges":[]};
 								{"name":"FC", "date":"Nov 02, 2015", "style":{"color":"black"}},
 								{"name":"CC", "date":"Jan 04, 2016", "style":{"color":"black"}}
 							],
-							"style": {"color": "#2ca02c"},
+							"style": {"color": "#d62728"},
 							"esfilter": {"or": [
 								{"terms": {"cf_blocking_b2g": ["2.5+", "3.0+", "2.5?", "3.0?"]}},
 								{"terms": {"cf_blocking_loop": ["fx37?", "fx38?", "fx39?", "fx40?", "fx41?", "fx42?", "fx43?", "fx44?", "fx37+", "fx38+", "fx39+", "fx40+", "fx41+", "fx42+", "fx43+", "fx44+"]}}
+							]}
+						},
+						{"name": "2.6",
+							"start_date":"Nov 9, 2015",
+							"targetDate":"May 30, 2016",
+							"dateMarks": [
+								{"Start": "Nov 9, 2015"},
+								{"FC": "Apr 18, 2015"},
+								{"RA": "May 30, 2016"}
+							],
+							"style": {"color": "#ff7f0e"},
+							"esfilter": {"or": [
+								{"terms": {"cf_blocking_b2g": ["2.6+", "2.6?"]}},
+								{"terms": {"cf_blocking_loop": ["fx45?", "fx46?", "fx47?", "fx48?", "fx45+", "fx46+", "fx47+", "fx48+"]}}
 							]}
 						},
 						{"name": "Other", "style": {"color": "#9467bd"}, "esfilter": {"and": [
@@ -495,6 +496,12 @@ if (!Mozilla) var Mozilla={"name":"Mozilla", "edges":[]};
 						"esfilter": {"or":[
 							{"terms": {"cf_blocking_b2g": ["2.5+", "3.0+"]}},
 							{"terms": {"cf_blocking_loop": ["fx37?", "fx38?", "fx39?", "fx40?", "fx41?", "fx42?", "fx43?", "fx44?", "fx37+", "fx38+", "fx39+", "fx40+", "fx41+", "fx42+", "fx43+", "fx44+"]}}
+						]}
+					},
+					{"name": "2.6",
+						"esfilter": {"or":[
+							{"terms": {"cf_blocking_b2g": ["2.6+"]}},
+							{"terms": {"cf_blocking_loop": ["fx45?", "fx46?", "fx47?", "fx448", "fx45+", "fx46+", "fx47+", "fx48+"]}}
 						]}
 					},
 					{"name": "Targeted", "style": {"color": "#9467bd"}, "esfilter": {"and": [
@@ -592,6 +599,20 @@ if (!Mozilla) var Mozilla={"name":"Mozilla", "edges":[]};
 							"esfilter": {"or": [
 								{"terms": {"cf_blocking_b2g": ["2.5+", "3.0+", "2.5?", "3.0?"]}},
 								{"terms": {"cf_blocking_loop": ["fx37?", "fx38?", "fx39?", "fx40?", "fx41?", "fx42?", "fx43?", "fx44?", "fx37+", "fx38+", "fx39+", "fx40+", "fx41+", "fx42+", "fx43+", "fx44+"]}}
+							]}
+						},
+						{"name": "2.6",
+							"start_date":"Nov 9, 2015",
+							"targetDate":"May 30, 2016",
+							"dateMarks": [
+								{"Start": "Nov 9, 2015"},
+								{"FC": "Apr 18, 2015"},
+								{"RA": "May 30, 2016"}
+							],
+							"style": {"color": "#2ca02c"},
+							"esfilter": {"or": [
+								{"terms": {"cf_blocking_b2g": ["2.6+", "2.6?"]}},
+								{"terms": {"cf_blocking_loop": ["fx45?", "fx46?", "fx47?", "fx48?", "fx45+", "fx46+", "fx47+", "fx48+"]}}
 							]}
 						},
 						{"name": "Targeted",

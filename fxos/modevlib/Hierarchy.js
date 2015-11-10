@@ -318,8 +318,15 @@ function* getRawDependencyData(esfilter, dateRange, selects){
 			"select" : allSelects.copy(),
 			"esfilter" : {"and" : [
 				{"terms" : {"bug_id" : possibleTree}},
-				{"range" : {"modified_ts" : {"lt" : dateRange.max.getMilli()}}},
-				{"range" : {"expires_on" : {"gte" : dateRange.min.getMilli()}}}
+				{"or":[
+					{"range" : {"expires_on" : {"gte" : dateRange.min.getMilli(), "lt" : dateRange.max.getMilli()}}},
+					{"range" : {"modified_ts" : {"gte" : dateRange.min.getMilli(), "lt" : dateRange.max.getMilli()}}},
+					{"and":[
+						{"range" : {"modified_ts" : {"lt" : dateRange.min.getMilli()}}},
+						{"range" : {"expires_on" : {"gte" : dateRange.max.getMilli()}}},
+						Mozilla.BugStatus.Open.esfilter
+					]}
+				]}
 			]}
 		}
 	));

@@ -64,6 +64,13 @@ function showNomChurn(args) {
 			"nom":["2.5?", "3.0?", "fx37?", "fx38?", "fx39?", "fx40?", "fx41?", "fx42?", "fx43?", "fx44?"],
 			"blocker":["2.5+", "3.0+", "fx37+", "fx38+", "fx39+", "fx40+", "fx41+", "fx42+", "fx43+", "fx44+"],
 			"style":Mozilla.B2G.Project["2.5"].style
+		},
+		{
+			"name": "2.6",
+			"value": "2.6?",
+			"nom":["2.6?", "fx45?", "fx46?", "fx47?", "fx48?"],
+			"blocker":["2.6+", "fx45+", "fx46+", "fx47+", "fx48+"],
+			"style":Mozilla.B2G.Project["2.6"].style
 		}
 	];
 	var triage = [];

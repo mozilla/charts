@@ -277,7 +277,10 @@ if (!Mozilla) var Mozilla = {"name": "Mozilla", "edges": []};
 							"name": "Stability",
 							"columnName": "stability",
 							"style": {"color": "#777777"},
-							"esfilter": {"terms": {"keywords": ["topcrash"]}}
+							"esfilter": {"or":[
+								{"terms": {"keywords": ["topcrash"]}},
+								{"prefix": {"keywords": "topcrash"}}
+							]}
 						},
 						{
 							"name": "Priority",
@@ -302,16 +305,16 @@ if (!Mozilla) var Mozilla = {"name": "Mozilla", "edges": []};
 							"esfilter": {"regexp": {"cf_blocking_b2g": ".*\\+"}},
 							"edges": [
 								{
-									"name": "2.1",
-									"columnName": "b2g2_1",
-									"style": {"color": "#00539F"},
-									"esfilter": {"term": {"cf_blocking_b2g": "2.1+"}}
-								},
-								{
 									"name": "2.2",
 									"columnName": "b2g2_2",
-									"style": {"color": "#0095DD"},
+									"style": {"color": "#00539F"},
 									"esfilter": {"term": {"cf_blocking_b2g": "2.2+"}}
+								},
+								{
+									"name": "2.5",
+									"columnName": "b2g2_5",
+									"style": {"color": "#0095DD"},
+									"esfilter": {"terms": {"cf_blocking_b2g": ["2.5+", "3.0+"]}}
 								}
 							]
 						},

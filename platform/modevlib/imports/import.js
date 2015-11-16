@@ -101,7 +101,7 @@ var importScript;
 	function readfile(fullPath, callback){
 		var request = new XMLHttpRequest();
 		try {
-			var url = window.location.protocol + "//" + window.location.hostname + fullPath;
+			var url = window.location.origin + fullPath;
 			request.open('GET', url);
 			request.responseType="text";
 			request.isDone = false;

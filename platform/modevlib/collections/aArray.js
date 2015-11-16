@@ -132,7 +132,7 @@ importScript("../util/aUtil.js");
 
 		var output=[];
 		for(var i=0;i<this.length;i++){
-			if (func(this[i], i)) output.push(this[i]);
+			if (func(this[i], i, this)) output.push(this[i]);
 		}//for
 		return output;
 	};//method

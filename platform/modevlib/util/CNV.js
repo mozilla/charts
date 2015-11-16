@@ -809,6 +809,13 @@ CNV.esFilter2function=function(esFilter){
 		var prefix = pair[variableName];
 		return function(row, i, rows){
 			var v = Map.get(row, variableName);
+			if (v instanceof Array){
+				for(i=0;i<v.length;i++){
+					vv = v[i];
+					if (typeof(vv)=="string" && vv.startsWith(prefix)) return true;
+				}//endif
+				return false;
+			}//endif
 			return typeof(v)=="string" && v.startsWith(prefix);
 		}
 	}else if (op=="match_all"){

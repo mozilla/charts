@@ -117,7 +117,7 @@ if (!Mozilla) var Mozilla = {"name": "Mozilla", "edges": []};
 				]}
 			},
 			{
-				"name": "Firefox4",
+				"name": "Firefox44",
 				"version": 44,
 				"releaseDate": "Jan 26, 2016",
 				"esfilter": {"and": [
@@ -182,6 +182,7 @@ if (!Mozilla) var Mozilla = {"name": "Mozilla", "edges": []};
 			if (e.releaseDate && Date.newInstance(e.releaseDate) <= Date.today()) {
 				currentRelease = e;
 			}//endif
+			e.retireDate=Map.get(releaseTracking.edges[i+1], "releaseDate")
 		});
 
 		if (!currentRelease) Log.error("What's the next release!?  Please add more to Dimension-Platform.js");
@@ -254,6 +255,34 @@ if (!Mozilla) var Mozilla = {"name": "Mozilla", "edges": []};
 				releaseTracking,
 				trainTrackingRel,
 
+				{
+					"name": "ReleaseManagementCategories",
+					"edges": [
+						{
+							"name": "Security",
+							"esfilter":{"or":[
+								{"term": {"keywords": "sec-critical"}},
+								{"term": {"keywords": "sec-high"}}
+							]}
+						},
+						{
+							"name": "Stability",
+							"style": {"color": "#777777"},
+							"esfilter": {"or":[
+								{"prefix": {"keywords": "topcrash"}},
+								{"prefix": {"keyaords": "crash"}}
+							]}
+						},
+						{
+							"name": "Regressions",
+							"columnName": "priority",
+							"esfilter":	{"term": {"keywords": "regression"}}
+						},
+						{   "name":"other",
+							"esfilter": {"match_all":{}}
+						}
+					]
+				},
 				{
 					"name": "Categories",
 					"edges": [

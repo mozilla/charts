@@ -1,0 +1,200 @@
+<!DOCTYPE html>
+<!-- This Source Code Form is subject to the terms of the Mozilla Public
+   - License, v. 2.0. If a copy of the MPL was not distributed with this
+   - file, You can obtain one at http://mozilla.org/MPL/2.0/. -->
+<HTML>
+<head>
+	<meta charset="utf-8">
+
+	<title>Dashboard - Platform</title>
+	<script type="text/javascript" src="modevlib/imports/import.js"></script>
+</HEAD>
+<BODY>
+<div style="position: fixed; overflow: visible;height: 100%;width:100%">
+	<div style="position: relative;z-index:10;">
+		<div id="sidebar">
+			<div id="description" style="width:300px;">
+				Team manager dashboard
+			</div>
+			<hr>
+			<div id="last-updated" style="text-align: center;width:300px;"></div>
+			<hr>
+			<div id="filters" style="width:300px;" class="menu">
+
+
+			</div>
+			<div id="parameters" style="display:none;">
+			</div>
+		</div>
+		<div class="sidebar_name">
+			<div>Team Selection</div>
+		</div>
+		<div class="content" style="padding-top: 10px;">
+			<h1 id="title" style="display:inline-block;">Release Management Uplifts</h1>
+
+			<div id="byType" class="chart" style="width:350px"></div>
+		</div>
+	</div>
+	<div style="position:absolute;bottom:0;height:40px;text-align: center;padding: 5px 0 5px 0;width:100%;background-color: #fff;z-index: 12;">
+		Source at <a href="https://github.com/mozilla/charts/blob/platform/platform/release-history.html">https://github.com/mozilla/charts/blob/platform/platform/release-history.html</a>
+	</div>
+</div>
+
+<div style="overflow:hidden;">
+	<div class="content" style="position:inherit;padding-bottom:100px;">
+		<table class="layout">
+			<tr>
+				<td>
+					<div style="width:350px"></div>
+				</td>
+				<td>
+					<div id="bug_list" style="position: relative;z-index:11 "></div>
+				</td>
+			</tr>
+		</table>
+	</div>
+
+</div>
+
+<script type="application/javascript">
+
+function getHistoryFilter(timeDomain, offset){
+
+	var SOLVED = Map.map(Mozilla.Platform.Release.edges[0].esfilter.and[0].not.terms, function(k, v){
+		if (k.startsWith("cf_status_firefox")) {
+			return v;
+		}//endif
+	})[0];
+	if (!SOLVED){
+		Log.error("Expecting to pull range of values indicating 'solved'");
+	}//endif
+
+	return {
+		"or": Mozilla.Platform.Release.edges.map(function(e, i){
+			if (timeDomain.min <= e.releaseDate && e.releaseDate < timeDomain.max) {
+				return {
+					"and": [
+						{"range": {"max": {"gte": e.releaseDate.milli, "lt": e.retireDate.milli}}},
+						{"not": {"terms": Map.newInstance("cf_status_firefox" + e.version + offset, SOLVED)}},
+						{"term": Map.newInstance("cf_tracking_firefox" + e.version + offset, "+")}
+					]
+				}
+			}//endif
+		})
+	};
+}//function
+
+
+importScript('js/main_lib.js', function(){
+	sidebarSlider();
+
+	var thread;
+
+	function createChart(){
+		if (thread !== undefined)
+			thread.kill(true);
+		thread = Thread.run(__createChart());
+	}
+
+	var __createChart = function*(){
+		yield (ESQuery.loadColumns({"from": "bugs"}));
+
+		var onPrivateCluster = !ESQuery.INDEXES["bugs"].path.contains("public_bugs");
+
+//		var team = GUI.state.team.getSimpleState();
+
+//		$("#title").html(team);
+
+		var eow = Date.today().ceiling("week");
+		var timeDomain = {"type": "time", "min": eow.minus(Duration.newInstance("12week")), "max": eow};
+
+		//FIND CHURN ON RELEASE TRACKING BUGS IN GENERAL
+		//FIRST INSTANCE SHOWING AS TRACKING
+		//USE CURRENT BUG, AND TIME OF CLOSE
+		var allBugs = yield (ElasticSearch.getMinMax(Mozilla.Platform.Train.esfilter));
+
+		//BUILD THE HISTORY FILTER
+		var beta = getHistoryFilter(timeDomain, 1);
+		var aurora = getHistoryFilter(timeDomain, 2);
+
+		//PULL ALL METADATA!!
+		var extraFields = Array.union(
+				requiredFields(Mozilla.Platform.ReleaseManagementCategories),
+				requiredFields(Mozilla.Platform.Team),
+				requiredFields(beta),
+				requiredFields(aurora)
+		);
+
+		var details = yield (ESQuery.run({
+			"from": "bugs",
+			"select": ["bug_id"].union(extraFields),
+			"esfilter": {"and":[
+				Mozilla.CurrentRecords.esfilter,
+				{"terms": {"bug_id": allBugs.edges[0].domain.partitions.select("value")}}
+			]}
+		}));
+
+
+		//SHOW BY TEAM
+//		var byTeam = yield (Q({
+//			"from":details,
+//			"edges":[
+//				{"name":"type", "domain":Mozilla.Platform.Team.getDomain({"fullFilter":true})},
+//				{"name":"week", "value":"max", "domain":timeDomain}
+//			]
+//		}));
+
+		//SHOW BY KEYWORD
+		var byType = yield (Q({
+			"from":details,
+			"edges":[
+				{"name":"type", "domain":Mozilla.Platform.ReleaseManagementCategories.getDomain({"fullFilter":true})},
+				{"name":"week", "value":"max", "domain":timeDomain},
+
+			],
+			"esfilter": aurora
+		}));
+
+		aChart.show({
+			"id": "byType",
+			"type": "area",
+			"stacked": true,
+			"cube": byType
+		});
+
+	};
+
+
+
+	$(document).ready(function(){
+		GUI.setup(
+			createChart,
+			[
+				{"id": "team", "name": "Teams", "type": PartitionFilter.newInstance({
+					"id": "Teams",
+					"name": "All Teams",
+					"dimension": Mozilla.Platform.Team,
+					"onlyOne": true,
+					"expandAll": true
+				})},
+				{"id":"show", "name":"Categories", "type":"set", "default":[]}
+			],
+			[],
+			null,
+			false,		//SHOW DEFAULT FILTERS?
+			false,
+			false        //DISABLE showLastUpdated
+		);
+	});
+});
+
+
+</script>
+
+
+</BODY>
+</HTML>
+
+
+
+

@@ -122,6 +122,8 @@ Date.prototype.subtract=function(time, interval){
 		}//endif
 	}//endif
 };//method
+Date.prototype.minus=Date.prototype.subtract;
+
 
 //RETURN THE NUMBER OF WEEKDAYS BETWWEN GIVEN TIMES
 Date.diffWeekday=function(endTime, startTime){

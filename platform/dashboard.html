@@ -89,7 +89,7 @@ importScript('js/main_lib.js', function(){
 		]};
 
 		//PULL ALL METADATA!!
-		var extraFields = requiredFields(Mozilla.Platform.Categories);
+		var extraFields = Qb.requiredFields(Mozilla.Platform.Categories);
 		var allBugs = yield (ESQuery.run({
 			"from": "bugs",
 			"select": ["bug_id", "assigned_to", "component"].union(extraFields),
@@ -110,7 +110,7 @@ importScript('js/main_lib.js', function(){
 			}));
 
 			allDesc.list.forall(function(b){
-				$("#" + b.bug_id + "_desc").html(CNV.String2HTML(b.short_desc));
+				$("#" + b.bug_id + "_desc").html(convert.String2HTML(b.short_desc));
 			});
 		});
 

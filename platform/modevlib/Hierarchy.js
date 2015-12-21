@@ -83,7 +83,7 @@ Hierarchy.addDescendants = function addDescendants(args){
 	var id = args.id_field;
 	var fk = args.fk_field;
 	var descendants_field = args.descendants_field;
-	var DEBUG = nvl(args.DEBUG, false);
+	var DEBUG = coalesce(args.DEBUG, false);
 	var DEBUG_MIN = 1000000;
 
 	//REVERSE POINTERS
@@ -372,7 +372,7 @@ function* getRawDependencyData(esfilter, dateRange, selects){
 // REWRITES THE .counted ATTRIBUTE TO BE "Open", "Closed", or "none"
 // REWRITES THE .churn ATTRIBUTE TO BE +1 (to Open), -1 (from Open), 0 (no change)
 function* getDailyDependencies(data, topBugFilter){
-	if (typeof(topBugFilter) != "function") topBugFilter = CNV.esFilter2function(topBugFilter);
+	if (typeof(topBugFilter) != "function") topBugFilter = convert.esFilter2function(topBugFilter);
 
 	//FOR EACH DAY, FIND ALL DEPENDANT BUGS
 	var yesterdayBugs = null; var yesterdayOpenDescendants = null; var yesterdayOpenBugs

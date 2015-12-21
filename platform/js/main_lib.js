@@ -21,7 +21,7 @@ importScript([
 	"../modevlib/Dimension-Devices.js",
 	"../modevlib/Dimension-Platform.js",
 	"../modevlib/charts/aColor.js",
-	"../modevlib/gui/dynamic.js",
+	"../modevlib/layouts/dynamic.js",
 	"./util.js"
 ]);
 

@@ -133,7 +133,7 @@ ESQuery.INDEXES = Settings.indexes;
 		//WE MANAGE ALL THE REQUESTS FOR THE SAME SCHEMA, DELAYING THEM IF THEY COME IN TOO FAST
 		if (indexInfo.fetcher === undefined) {
 			indexInfo.fetcher = Thread.run(function*(){
-				currInfo = indexInfo;
+				var currInfo = indexInfo;
 				var depth = 0;
 				var attempts = [];
 				var schemas = [];

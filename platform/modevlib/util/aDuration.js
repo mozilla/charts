@@ -4,7 +4,9 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
 importScript("aDate.js");
-importScript("CNV.js");
+importScript("aString.js");
+importScript("convert.js");
+importScript("../math/aMath.js");
 
 
 
@@ -62,7 +64,7 @@ Duration.String2Duration = function(text){
 
 	var output = new Duration();
 	var interval = text.rightBut(s);
-	var amount = (s == 0 ? 1 : CNV.String2Integer(text.left(s)));
+	var amount = (s == 0 ? 1 : convert.String2Integer(text.left(s)));
 
 	if (Duration.MILLI_VALUES[interval] === undefined)
 		Log.error(interval + " is not a recognized duration type (did you use the pural form by mistake?");
@@ -135,7 +137,7 @@ Duration.newInstance = function(obj){
 	} else if (isNaN(obj)){
 		//return null;
 	} else{
-		Log.error("Do not know type of object (" + CNV.Object2JSON(obj) + ")of to make a Duration");
+		Log.error("Do not know type of object (" + convert.value2json(obj) + ")of to make a Duration");
 	}//endif
 	return output;
 };//method
@@ -237,6 +239,11 @@ Duration.prototype.floor = function(interval){
 		output.milli = aMath.floor(this.milli / (interval.milli)) * (interval.milli);
 	}//endif
 	return output;
+};//method
+
+
+Duration.prototype.mod = function(interval){
+	return this.subtract(this.floor(interval));
 };//method
 
 

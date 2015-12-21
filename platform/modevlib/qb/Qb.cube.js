@@ -12,11 +12,9 @@ Qb.cube = {};
 Qb.cube.newInstance = function(edges, depth, select){
 	if (depth == edges.length){
 		var element={};
-//		var element=[]
 		if (select instanceof Array){
 			for(var s = 0; s < select.length; s++){
 				element[select[s].name] = select[s].domain.end(select[s].defaultValue());
-//				element[s] = select[s].defaultValue();
 			}//for
 		} else{
 			element = select.domain.end(select.defaultValue());
@@ -29,14 +27,13 @@ Qb.cube.newInstance = function(edges, depth, select){
 	for(; p < edges[depth].domain.partitions.length; p++){
 		data[p] = Qb.cube.newInstance(edges, depth + 1, select);
 	}//for
-//	if (edges[depth].domain.partitions.length==0 || edges[depth].allowNulls){
 	if (edges[depth].allowNulls){
 		data[p]= Qb.cube.newInstance(edges, depth + 1, select);
 	}//endif
 	return data;
 };//method
 
-//MAKE THE MAP ARRAY FROM NEW TO OLD COLUMN INDICIES
+//MAKE THE MAP ARRAY FROM NEW TO OLD COLUMN indices
 //newColumns[i]==oldColumns[smap[i]]
 function remap(oldColumns, newColumns){
 	var smap = [];
@@ -128,7 +125,7 @@ Qb.cube.union=function(cubeA, cubeB){
 		if (cubeA.edges[i].name!=cubeB.edges[i].name) Log.error("Expecting both cubes to have edges in the same order");
 	}//for
 
-		
+
 
 
 

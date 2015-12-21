@@ -1,4 +1,4 @@
-importScript("../modevlib/util/CNV.js");
+importScript("../modevlib/util/convert.js");
 importScript("../modevlib/qb/Qb.js");
 importScript("../modevlib/charts/aColor.js");
 importScript("../modevlib/gui/GUI.js");
@@ -50,7 +50,7 @@ function addRowClickers(){
 function highlightBugs(){
 	var selectedCats = $(".selected.project");
 	var bugList = selectedCats.map(function(){
-		return CNV.JSON2Object($(this).attr("bugsList"));
+		return convert.json2value($(this).attr("bugsList"));
 	}).get();
 	if (bugList.length == 0) {
 		$(".bug_line").removeClass("selected").show();
@@ -63,10 +63,10 @@ function highlightBugs(){
 
 function addTileClickers(selectedToShow){
 	$(".project").hover(function(){
-		var bugList = "#" + CNV.JSON2Object($(this).attr("bugsList")).join(",#");
+		var bugList = "#" + convert.json2value($(this).attr("bugsList")).join(",#");
 		$(bugList).addClass("selected");
 	}, function(){
-		var bugList = "#" + CNV.JSON2Object($(this).attr("bugsList")).join(",#");
+		var bugList = "#" + convert.json2value($(this).attr("bugsList")).join(",#");
 		$(bugList).removeClass("selected");
 	}).click(function(e){
 		highlightBugs();
@@ -88,7 +88,7 @@ function addTileClickers(selectedToShow){
 
 	$("#show-bugs").click(function(){
 		var bugList = $(".selected.project").map(function(){
-			return CNV.JSON2Object($(this).attr("bugsList"));
+			return convert.json2value($(this).attr("bugsList"));
 		}).get();
 
 		if (bugList.length == 0) {
@@ -110,7 +110,7 @@ function tile(info){
 	var normalColor = nvl(info.style.color, NORMAL);
 	var hoverColor = Color.newInstance(normalColor).lighter().toHTML();
 
-	info.bugsList = CNV.Object2JSON(info.bugs.select("bug_id"));
+	info.bugsList = convert.value2json(info.bugs.select("bug_id"));
 	info.bugsURL = Bugzilla.searchBugsURL(info.bugs.select("bug_id"));
 	info.unassignedBugs = info.bugs.filter(function(b){
 		return b.assigned_to == "nobody@mozilla.org"
@@ -452,8 +452,8 @@ function setReleaseHTML(data){
 	//ADD CLICKERS
 	$(".tracking").click(function(){
 		var parts = $(this)[0].id.split("_");
-		var release = CNV.String2Integer(parts[1]);
-		var team = CNV.String2Integer(parts[2]);
+		var release = convert.String2Integer(parts[1]);
+		var team = convert.String2Integer(parts[2]);
 
 		Thread.run(function*(){
 			var bugs = yield (ESQuery.run({

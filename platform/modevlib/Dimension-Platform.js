@@ -258,9 +258,11 @@ if (!Mozilla) var Mozilla = {"name": "Mozilla", "edges": []};
 
 				{
 					"name": "ReleaseManagementCategories",
+					"allowNulls": false,
 					"partitions": [
 						{
 							"name": "Security",
+							"style":{"color":"#ff7f0e"},
 							"esfilter":{"or":[
 								{"term": {"keywords": "sec-critical"}},
 								{"term": {"keywords": "sec-high"}}
@@ -268,18 +270,19 @@ if (!Mozilla) var Mozilla = {"name": "Mozilla", "edges": []};
 						},
 						{
 							"name": "Stability",
-							"style": {"color": "#777777"},
+							"style": {"color":"#2ca02c"},
 							"esfilter": {"or":[
 								{"prefix": {"keywords": "topcrash"}},
-								{"prefix": {"keyaords": "crash"}}
+								{"prefix": {"keywords": "crash"}}
 							]}
 						},
 						{
 							"name": "Regressions",
-							"columnName": "priority",
-							"esfilter":	{"term": {"keywords": "regression"}}
+							"style": {"color": "#d62728"},
+							"esfilter": {"term": {"keywords": "regression"}}
 						},
 						{   "name":"other",
+							"style": {"color": "#CCCCCC"},
 							"esfilter": {"match_all":{}}
 						}
 					]

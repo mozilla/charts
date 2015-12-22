@@ -183,7 +183,10 @@ function* calc2Matrix(query){
 
 	var select = Array.newInstance(query.select);
 
-	var shape = edges.map(function(e){return e.domain.partitions.length+1;});
+
+	var shape = edges.map(function(e){
+		return e.domain.partitions.length + (e.allowNulls === false ? 0 : 1);
+	});
 	var data = Map.zip(select.map(function(s){
 		Qb.aggregate[s.aggregate](s);  //ANNOTATE select COLUMN
 		return [s.name, new Matrix({"dim":shape, "constructor":s.defaultValue})];
@@ -210,9 +213,12 @@ function* calc2Matrix(query){
 			return p.dataIndex;
 		});
 
-		select.forall(function(s, i){
+		select.forall(function(s){
 			var total = data[s.name].get(coord);
-			s.add(total, s.calc(row));
+			var new_total = s.add(total, s.calc(row));
+			if (new_total!==total){
+				data[s.name].set(coord, new_total);
+			}//endif
 		})
 	}//for
 

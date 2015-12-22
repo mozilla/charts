@@ -31,8 +31,16 @@
 		</div>
 		<div class="content" style="padding-top: 10px;">
 			<h1 id="title" style="display:inline-block;">Release Management Uplifts</h1>
-
-			<div id="byType" class="chart" style="width:350px"></div>
+			<table>
+				<tr>
+					<td><div id="byTypeBeta" class="chart" style="width:700px;height:400px;"></div></td>
+					<td><div id="byTypeAurora" class="chart" style="width:700px;height:400px;"></div></td>
+				</tr>
+				<tr>
+					<td><div id="byTeamBeta" class="chart" style="width:700px;height:400px;"></div></td>
+					<td><div id="byTeamAurora" class="chart" style="width:700px;height:400px;"></div></td>
+				</tr>
+			</table>
 		</div>
 	</div>
 	<div style="position:absolute;bottom:0;height:40px;text-align: center;padding: 5px 0 5px 0;width:100%;background-color: #fff;z-index: 12;">
@@ -69,25 +77,136 @@ function getHistoryFilter(timeDomain, offset){
 		Log.error("Expecting to pull range of values indicating 'solved'");
 	}//endif
 
-	return {
-		"or": Mozilla.Platform.Release.edges.map(function(e, i){
-			var releaseDate = Date.newInstance(e.releaseDate);
-			var retireDate = Date.newInstance(e.retireDate);
-			if (timeDomain.min <= retireDate && releaseDate < timeDomain.max) {
-				return {
-					"and": [
-						{"range": {"max": {"gte": releaseDate.milli(), "lt": retireDate.milli()}}},
-						{"not": {"terms": Map.newInstance("cf_status_firefox" + (e.version + offset), SOLVED)}},
-						{"term": Map.newInstance("cf_tracking_firefox" + (e.version + offset), "+")}
-					]
-				}
-			}//endif
-		})
-	};
+
+	return {"or": Mozilla.Platform.Release.edges.map(function(e, i){
+		var releaseDate = Date.newInstance(e.releaseDate);
+		var retireDate = Date.newInstance(e.retireDate);
+		if (timeDomain.min <= retireDate && releaseDate < timeDomain.max) {
+			return {"and":[
+				{"range":{"modified_ts":{"gte": releaseDate.milli(), "lt": retireDate.milli()}}},
+				{"nested":{
+					"path":"changes",
+					"query":{"filtered":{
+						"query":{"match_all":{}},
+						"filter":{"and":[
+							{"term":{"changes.field_name":"cf_status_firefox" + (e.version + offset)}},
+							{"terms":{"changes.new_value":["fixed","wontfix","unaffected","disabled","verified"]}}
+						]}
+					}}
+				}}
+			]}
+		}//endif
+	})};
+
+// FILTER FOR WHEN THE BUGS ARE OPEN
+//	return {
+//		"or": Mozilla.Platform.Release.edges.map(function(e, i){
+//			var releaseDate = Date.newInstance(e.releaseDate);
+//			var retireDate = Date.newInstance(e.retireDate);
+//			if (timeDomain.min <= retireDate && releaseDate < timeDomain.max) {
+//				return {
+//					"and": [
+//						{"range": {"max": {"gte": releaseDate.milli(), "lt": retireDate.milli()}}},
+//						{"not": {"terms": Map.newInstance("cf_status_firefox" + (e.version + offset), SOLVED)}},
+//						{"term": Map.newInstance("cf_tracking_firefox" + (e.version + offset), "+")}
+//					]
+//				}
+//			}//endif
+//		})
+//	};
+}//function
+
+function showTrain(aurora, timeDomain, name){
+	var auroraThread=Thread.run(function*(){
+		var allBugs = yield(ESQuery.run({
+			"from":"bugs",
+			"select":{"name":"modified_ts", "value":"modified_ts", "aggregate":"maximum"},
+			"edges":[
+				"bug_id"
+			],
+			"esfilter": aurora
+		}));
+
+		//PULL ALL METADATA!!
+		var extraFields = Array.union(
+			Qb.requiredFields(Mozilla.Platform.ReleaseManagementCategories),
+			Qb.requiredFields(Mozilla.Platform.Team)
+		);
+
+		//MAP FROM bug_id TO min/max PAIR
+		var timestamps = {};
+		allBugs.edges[0].domain.partitions.forall(function(p, i){
+			timestamps[p.value] = allBugs.cube[i];
+		});
+
+		var details = yield (ESQuery.run({
+			"from": "bugs",
+			"select": ["bug_id"].union(extraFields),
+			"esfilter": {"and":[
+				Mozilla.CurrentRecords.esfilter,
+				{"terms": {"bug_id": Map.getKeys(timestamps)}}
+			]}
+		}));
+
+		//ANNOTATE WITH min/max PAIR
+		details.list.forall(function(d){
+			d.modified_ts = timestamps[d.bug_id];
+		});
+		details.columns.append({"name": "modified_ts"});
+
+		//SHOW BY KEYWORD
+		var byType = yield (Q({
+			"from": details,
+			"select": {"name": "bug_count", "value": "bug_id", "aggregate": "count"},
+			"edges":[
+				{"name":"type", "domain":Mozilla.Platform.ReleaseManagementCategories.getDomain()},
+				{"name":"week", "value":"modified_ts", "domain": timeDomain}
+			],
+			"meta": {"format": "cube"}
+		}));
+
+		//FLIP THIS DIMENSION FOR PRESENTATION
+		byType.edges[0].domain.partitions = Qb.reverse(byType.edges[0].domain.partitions);
+		byType.data.bug_count = Qb.reverse(byType.data.bug_count);
+
+		aChart.show({
+			"name": name,
+			"id": "byType"+name,
+			"type": "bar",
+			"stacked": true,
+			"cube": byType
+		});
+
+		//SHOW BY TEAM
+		var byTeam = yield (Q({
+			"from": details,
+			"select": {"name": "bug_count", "value": "bug_id", "aggregate": "count"},
+			"edges": [
+				{"name": "type", "domain": Mozilla.Platform.Team.getDomain()},
+				{"name": "week", "value": "modified_ts", "domain": timeDomain}
+			]
+		}));
+
+		aChart.show({
+			"name": name,
+			"id": "byTeam"+name,
+			"type": "line",
+			"stacked": false,
+			"cube": byTeam
+		});
+
+
+
+
+
+
+	});
+
 }//function
 
 
-importScript(['js/main_lib.js', 'modevlib/charts/mgChart.js'], function(){
+
+importScript(['js/main_lib.js', 'modevlib/charts/cccChart.js'], function(){
 	sidebarSlider();
 
 	var thread;
@@ -110,74 +229,13 @@ importScript(['js/main_lib.js', 'modevlib/charts/mgChart.js'], function(){
 		var eow = Date.today().ceiling("week");
 		var timeDomain = {"type": "time", "min": eow.subtract(Duration.newInstance("12week")), "max": eow, "interval": "week"};
 
-		//FIND CHURN ON RELEASE TRACKING BUGS IN GENERAL
-		//FIRST INSTANCE SHOWING AS TRACKING
-		//USE CURRENT BUG, AND TIME OF CLOSE
-		var allBugs = yield (ElasticSearch.getMinMax(Mozilla.Platform.Train.esfilter));
-
 		//BUILD THE HISTORY FILTER
 		var beta = getHistoryFilter(timeDomain, 1);
 		var aurora = getHistoryFilter(timeDomain, 2);
 
-		//PULL ALL METADATA!!
-		var extraFields = Array.union(
-				Qb.requiredFields(Mozilla.Platform.ReleaseManagementCategories),
-				Qb.requiredFields(Mozilla.Platform.Team),
-				Qb.requiredFields(beta),
-				Qb.requiredFields(aurora)
-		);
+		showTrain(beta, timeDomain, "Beta");
+		showTrain(aurora, timeDomain, "Aurora");
 
-		//MAP FROM bug_id TO min/max PAIR
-		var bug_ids = {};
-		allBugs.edges[0].domain.partitions.forall(function(p, i){
-			bug_ids[p.value]=Map.copy(allBugs.cube[i], {"bug_id": p.value});
-		});
-
-		var details = yield (ESQuery.run({
-			"from": "bugs",
-			"select": ["bug_id"].union(extraFields),
-			"esfilter": {"and":[
-				Mozilla.CurrentRecords.esfilter,
-				{"terms": {"bug_id": Map.getKeys(bug_ids)}}
-			]}
-		}));
-
-		//ANNOTATE WITH min/max PAIR
-		details.list.forall(function(d){
-			Map.copy(bug_ids[d.bug_id], d);
-		});
-		details.columns.extend([{"name":"min"}, {"name":"max"}]);
-
-		//SHOW BY TEAM
-//		var byTeam = yield (Q({
-//			"from":details,
-//			"edges":[
-//				{"name":"type", "domain":Mozilla.Platform.Team.getDomain({"fullFilter":true})},
-//				{"name":"week", "value":"max", "domain":timeDomain}
-//			]
-//		}));
-
-		//MERGE MIN/MAX INTO THE details
-
-
-		//SHOW BY KEYWORD
-		var byType = yield (Q({
-			"from": details,
-			"select": {"value": "bug_id", "aggregate": "count"},
-			"edges":[
-				{"name":"type", "domain":Mozilla.Platform.ReleaseManagementCategories.getDomain({"fullFilter":true})},
-				{"name":"week", "value":"max", "domain": timeDomain}
-			],
-			"esfilter": aurora,
-			"meta": {"format": "cube"}
-		}));
-
-		aChart.show({
-			"id": "byType",
-			"type": "area",
-			"stacked": true,
-			"cube": byType
-		});
 	};
 
 

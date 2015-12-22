@@ -107,7 +107,7 @@ function addTileClickers(selectedToShow){
 
 
 function tile(info){
-	var normalColor = nvl(info.style.color, NORMAL);
+	var normalColor = coalesce(info.style.color, NORMAL);
 	var hoverColor = Color.newInstance(normalColor).lighter().toHTML();
 
 	info.bugsList = convert.value2json(info.bugs.select("bug_id"));
@@ -139,7 +139,7 @@ function tile(info){
 //IT IS IMPORTANT FOR THE sorttable LIB THAT ALL ROWS HAVE A VALUE,
 //AND IT IS IMPORTANT THAT THE NULLS ARE SORTED TO THE BOTTOM
 function getPartIndex(b, domain){
-	var parts = nvl(domain.partitions, domain.edges);
+	var parts = coalesce(domain.partitions, domain.edges);
 	for (var i = 0; i < parts.length; i++) {
 		var part = parts[i];
 		var result = [b].filter(part.esfilter);
@@ -289,7 +289,7 @@ function bugDetails(bugs, categories){
 
 
 function getCategoryHTML(category, allBugs){
-	var edges = nvl(category.edges, category.partitions);
+	var edges = coalesce(category.edges, category.partitions);
 
 	var html;
 
@@ -298,7 +298,7 @@ function getCategoryHTML(category, allBugs){
 		html = tile({
 			"name": category.name,
 			"bugs": allBugs.list.filter(category.esfilter),
-			"style": {} //nvl(category.style, {})
+			"style": {} //coalesce(category.style, {})
 		});
 
 	} else {
@@ -309,7 +309,7 @@ function getCategoryHTML(category, allBugs){
 				"name": e.version && e.name != "Release" ? e.name + "-" + e.version : e.name,
 				"bugs": allBugs.list.filter(e.fullFilter),
 				"version": e.version,
-				"style": {}, //nvl(e.style, {})
+				"style": {}, //coalesce(e.style, {})
 				"disabled": e.disabled
 			};
 			return tile(info)
@@ -489,7 +489,7 @@ function fillPlatform(temp, allBugs, onPrivateCluster){
 		$("#Security_tiles").append(tile({
 			"name": Mozilla.Platform.Categories.Stability.name,
 			"bugs": stabilityBugs,
-			"style": nvl(Mozilla.Platform.Categories.Stability.style, {})
+			"style": coalesce(Mozilla.Platform.Categories.Stability.style, {})
 		}));
 	}//endif
 

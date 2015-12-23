@@ -116,8 +116,21 @@ function getHistoryFilter(timeDomain, offset){
 //	};
 }//function
 
-function showTrain(aurora, timeDomain, name){
+function showTrain(aurora, timeDomain, offset, name){
 	var auroraThread=Thread.run(function*(){
+
+		timeDomain = Map.copy(timeDomain);
+	    timeDomain.dateMarks=Mozilla.Platform.Release.edges.map(function(e){
+			var releaseDate = Date.newInstance(e.releaseDate);
+			if (releaseDate.between(timeDomain.min, timeDomain.max)) {
+				return {
+					"name": "" + (e.version+offset),
+					"date": releaseDate,
+					"style": coalesce(e.style, {"color": "black"})
+				};
+			}//endif
+		});
+
 		var allBugs = yield(ESQuery.run({
 			"from":"bugs",
 			"select":{"name":"modified_ts", "value":"modified_ts", "aggregate":"maximum"},
@@ -166,15 +179,16 @@ function showTrain(aurora, timeDomain, name){
 		}));
 
 		//FLIP THIS DIMENSION FOR PRESENTATION
-		byType.edges[0].domain.partitions = Qb.reverse(byType.edges[0].domain.partitions);
-		byType.data.bug_count = Qb.reverse(byType.data.bug_count);
+//		byType.edges[0].domain.partitions = Qb.reverse(byType.edges[0].domain.partitions);
+//		byType.data.bug_count = Qb.reverse(byType.data.bug_count);
 
 		aChart.show({
 			"name": name,
 			"id": "byType"+name,
 			"type": "bar",
 			"stacked": true,
-			"cube": byType
+			"cube": byType,
+			"clickAction": clicker(byType)
 		});
 
 		//SHOW BY TEAM
@@ -189,20 +203,50 @@ function showTrain(aurora, timeDomain, name){
 
 		aChart.show({
 			"name": name,
-			"id": "byTeam"+name,
+			"id": "byTeam" + name,
 			"type": "line",
 			"stacked": false,
-			"cube": byTeam
+			"cube": byTeam,
+			"clickAction": clicker(byTeam)
 		});
 
 
+		function clicker(query){
+			return function(series, x, d, elem){
+				Thread.run(function * (){
+					var part;
+					var filter = [];
+					query.edges[0].domain.partitions.forall(function(p){
+						if (part) return;
+						if (p.name==series){
+							part=p;
+							filter.append(p.esfilter)
+						}else{
+							filter.append({"not": p.esfilter});
+						}//endif
+					});
+					var week;
+					query.edges[1].domain.partitions.forall(function(w){
+						if (week) return;
+						if (w.value.subtract(x).milli==0){
+							week=w;
+							filter.append({"range":{"modified_ts":{"gte": w.min, "lt": w.max}}})
+						}//endif
+					});
+					var buglist = yield (Q({
+						"from":details,
+						"select":"bug_id",
+						"where":{"and":filter}
+					}));
 
-
-
+					Bugzilla.showBugs(buglist.list);
+				});
+			};//function
+		}//function
 
 	});
+};//function
 
-}//function
 
 
 
@@ -227,19 +271,22 @@ importScript(['js/main_lib.js', 'modevlib/charts/cccChart.js'], function(){
 //		$("#title").html(team);
 
 		var eow = Date.today().ceiling("week");
-		var timeDomain = {"type": "time", "min": eow.subtract(Duration.newInstance("12week")), "max": eow, "interval": "week"};
+		var start = eow.subtract(Duration.newInstance("12week"));
+		var timeDomain = {
+			"type": "time",
+			"min": start,
+			"max": eow,
+			"interval": "week"
+		};
 
 		//BUILD THE HISTORY FILTER
 		var beta = getHistoryFilter(timeDomain, 1);
 		var aurora = getHistoryFilter(timeDomain, 2);
 
-		showTrain(beta, timeDomain, "Beta");
-		showTrain(aurora, timeDomain, "Aurora");
+		showTrain(beta, timeDomain, 1, "Beta");
+		showTrain(aurora, timeDomain, 2, "Aurora");
 
 	};
-
-
-
 	$(document).ready(function(){
 		GUI.setup(
 			createChart,

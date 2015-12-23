@@ -262,7 +262,7 @@ if (!Mozilla) var Mozilla = {"name": "Mozilla", "edges": []};
 					"partitions": [
 						{
 							"name": "Security",
-							"style":{"color":"#ff7f0e"},
+							//"style":{"color":"#ff7f0e"},
 							"esfilter":{"or":[
 								{"term": {"keywords": "sec-critical"}},
 								{"term": {"keywords": "sec-high"}}
@@ -270,7 +270,7 @@ if (!Mozilla) var Mozilla = {"name": "Mozilla", "edges": []};
 						},
 						{
 							"name": "Stability",
-							"style": {"color":"#2ca02c"},
+							//"style": {"color":"#2ca02c"},
 							"esfilter": {"or":[
 								{"prefix": {"keywords": "topcrash"}},
 								{"prefix": {"keywords": "crash"}}
@@ -278,7 +278,7 @@ if (!Mozilla) var Mozilla = {"name": "Mozilla", "edges": []};
 						},
 						{
 							"name": "Regressions",
-							"style": {"color": "#d62728"},
+							//"style": {"color": "#d62728"},
 							"esfilter": {"term": {"keywords": "regression"}}
 						},
 						{   "name":"other",

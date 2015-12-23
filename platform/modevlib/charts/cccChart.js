@@ -583,7 +583,6 @@ aChart.show=function(params){
 		legend: (chartCube.edges.length!=1 || Array.newInstance(chartCube.select).length>1),		//DO NOT SHOW LEGEND IF NO CATEGORIES
 		legendPosition: "bottom",
 		legendAlign: "center",
-
 		orientation: 'vertical',
 		timeSeries: (xaxis.domain.type=="time"),
 		timeSeriesFormat: JavaDateFormat2ProtoVisDateFormat(Qb.domain.time.DEFAULT_FORMAT),

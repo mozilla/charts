@@ -6,7 +6,7 @@
 <head>
 	<meta charset="utf-8">
 
-	<title>Dashboard - Platform</title>
+	<title>Release History</title>
 	<script type="text/javascript" src="modevlib/imports/import.js"></script>
 </HEAD>
 <BODY>
@@ -14,7 +14,8 @@
 	<div style="position: relative;z-index:10;">
 		<div id="sidebar">
 			<div id="description" style="width:300px;">
-				Team manager dashboard
+				Release Management Uplifts<br>
+				Counts last time each bug changed to <code>status_firefoxXX=="fixed"</code>.
 			</div>
 			<hr>
 			<div id="last-updated" style="text-align: center;width:300px;"></div>
@@ -68,15 +69,7 @@
 
 function getHistoryFilter(timeDomain, offset){
 
-	var SOLVED = Map.map(Mozilla.Platform.Release.edges[0].esfilter.and[0].not.terms, function(k, v){
-		if (k.startsWith("cf_status_firefox")) {
-			return v;
-		}//endif
-	})[0];
-	if (!SOLVED){
-		Log.error("Expecting to pull range of values indicating 'solved'");
-	}//endif
-
+	var SOLVED = ["fixed"];
 
 	return {"or": Mozilla.Platform.Release.edges.map(function(e, i){
 		var releaseDate = Date.newInstance(e.releaseDate);
@@ -90,7 +83,7 @@ function getHistoryFilter(timeDomain, offset){
 						"query":{"match_all":{}},
 						"filter":{"and":[
 							{"term":{"changes.field_name":"cf_status_firefox" + (e.version + offset)}},
-							{"terms":{"changes.new_value":["fixed","wontfix","unaffected","disabled","verified"]}}
+							{"terms":{"changes.new_value":SOLVED}}
 						]}
 					}}
 				}}
@@ -117,7 +110,7 @@ function getHistoryFilter(timeDomain, offset){
 }//function
 
 function showTrain(aurora, timeDomain, offset, name){
-	var auroraThread=Thread.run(function*(){
+	Thread.run(function*(){
 
 		timeDomain = Map.copy(timeDomain);
 	    timeDomain.dateMarks=Mozilla.Platform.Release.edges.map(function(e){
@@ -271,7 +264,7 @@ importScript(['js/main_lib.js', 'modevlib/charts/cccChart.js'], function(){
 //		$("#title").html(team);
 
 		var eow = Date.today().ceiling("week");
-		var start = eow.subtract(Duration.newInstance("12week"));
+		var start = eow.subtract(Duration.newInstance("18week"));
 		var timeDomain = {
 			"type": "time",
 			"min": start,

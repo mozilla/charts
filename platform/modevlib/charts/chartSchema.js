@@ -217,6 +217,9 @@ a = {
 					"style": {"$ref": "#definitions.style"}
 
 				}
+			},
+			"style": {
+				"$ref":"#definitions.style"
 			}
 		},
 		"style": {
@@ -235,6 +238,11 @@ a = {
 			"color": {
 				"description": "css color",
 				"type": "string"
+			},
+			"visibility":{
+				"description": "initial visibility (default visible)",
+				"type": "string",
+				"enum": ["visibile", "hidden"]
 			},
 			"style": {
 				"description": "css solid, dotted, etc",

@@ -10,57 +10,37 @@
 	<script type="text/javascript" src="modevlib/imports/import.js"></script>
 </HEAD>
 <BODY>
-<div style="position: fixed; overflow: visible;height: 100%;width:100%">
-	<div style="position: relative;z-index:10;">
-		<div id="sidebar">
-			<div id="description" style="width:300px;">
-				Team manager dashboard
-			</div>
-			<hr>
-			<div id="last-updated" style="text-align: center;width:300px;"></div>
-			<hr>
-			<div id="filters" style="width:300px;" class="menu">
-
-
-			</div>
-			<div id="parameters" style="display:none;">
-			</div>
+	<div id="sidebar" layout="tl=window.tl;bottom=footer.bottom;" style="width:0;overflow:hidden;">
+		<div id="description" style="width:300px;">
+			Team manager dashboard
 		</div>
-		<div class="sidebar_name">
-			<div>Team Selection</div>
+		<hr>
+		<div id="last-updated" style="text-align: center;width:300px;"></div>
+		<hr>
+		<div id="filters" style="width:300px;" class="menu">
 		</div>
-		<div class="content" style="padding-top: 10px;">
-			<h1 id="title" style="display:inline-block;">Platform Dashboard</h1>
-
-			<div id="category" style="width:350px"></div>
+		<div id="parameters" style="display:none;">
 		</div>
 	</div>
-	<div style="position:absolute;bottom:0;height:40px;text-align: center;padding: 5px 0 5px 0;width:100%;background-color: #fff;z-index: 12;">
+	<div id="sidebar_name" class="sidebar_name" layout="top=window.top;bottom=footer.top;left=sidebar.right;">
+		<div>Team Selection</div>
+	</div>
+	<div id="lhs" class="content" style="padding-top: 10px;" layout="top=window.top;bottom=footer.top;left=sidebar_name.right;">
+		<h1 id="title" style="display:inline-block;">Platform Dashboard</h1>
+		<div id="category" style="width:350px"></div>
+	</div>
+	<div id="bug_list" style="z-index:11;overflow:scroll;padding:100px 20px 5px 10px;" layout="top=page.top;left=lhs.right;right=page.right"></div>
+	<div id="footer" style="height:55px;text-align: center;padding: 5px 0 5px 0;background-color: #fff;z-index: 12;" layout="bl=window.bl;br=window.br;">
 		Github Issues <a href="https://github.com/mozilla/charts/issues/new">https://github.com/mozilla/charts/issues/new</a><br>
 		Source at <a href="https://github.com/mozilla/charts/blob/platform/platform/dashboard.html">https://github.com/mozilla/charts/blob/platform/platform/dashboard.html</a>
 
 		<div id="show-bugs" class="go-to-bugzilla">Show Bugs in Bugzilla</div>
 	</div>
-</div>
 
-<div style="overflow:hidden;">
-	<div class="content" style="position:inherit;padding-bottom:100px;">
-		<table class="layout" style="">
-			<tr>
-				<td>
-					<div style="width:350px"></div>
-				</td>
-				<td>
-					<div id="bug_list" style="position: relative;z-index:11;"></div>
-				</td>
-			</tr>
-		</table>
-	</div>
-</div>
 
 <script type="application/javascript">
 
-importScript('js/main_lib.js', function(){
+importScript(['js/main_lib.js', 'modevlib/layouts/layout.js'], function(){
 	sidebarSlider();
 
 	var thread;
@@ -125,6 +105,7 @@ importScript('js/main_lib.js', function(){
 	};
 
 	$(document).ready(function(){
+		layoutAll();
 		GUI.setup(
 			createChart,
 			[

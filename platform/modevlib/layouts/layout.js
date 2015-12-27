@@ -4,7 +4,7 @@ var dynamicLayout;
 
 (function(){
 	var DELAY_JAVASCRIPT = 200;
-	var DEBUG = true;
+	var DEBUG = false;
 
 	var allExpression = undefined;
 	var mapSelf2DynamicFormula = undefined;

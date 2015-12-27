@@ -7,17 +7,13 @@ importScript([
 	"../../lib/jquery.js",
 	"../../lib/jquery-ui/js/jquery-ui-1.10.2.custom.js",
 	"../../lib/jquery-ui/css/start/jquery-ui-1.10.2.custom.css",
-	"../../lib/jquery.ba-bbq/jquery.ba-bbq.js",
 	"../../lib/jquery-linedtextarea/jquery-linedtextarea.css",
 	"../../lib/jquery-linedtextarea/jquery-linedtextarea.js",
 	"../../lib/jsonlint/jsl.parser.js",
 	"../../lib/jsonlint/jsl.format.js"
 ]);
 
-importScript("Filter.js");
-importScript("ComponentFilter.js");
-importScript("ProductFilter.js");
-importScript("ProgramFilter.js");
+importScript("../util/State.js");
 importScript("PartitionFilter.js");
 importScript("TeamFilter.js");
 importScript("RadioFilter.js");
@@ -37,6 +33,11 @@ importScript("../aFormat.js");
 
 GUI = {};
 (function () {
+	if (window.GUI === undefined) {
+		window.GUI = {};
+	}//endif
+	var GUI = window.GUI;
+
 		GUI.state = {};
 		GUI.customFilters = [];
 
@@ -82,14 +83,17 @@ GUI = {};
 			checkLastUpdated     //SEND QUERY TO GET THE LAST DATA?
 		) {
 
-			GUI.performChecks=nvl(performChecks, true);
-			GUI.checkLastUpdated=nvl(checkLastUpdated, true);
+			GUI.performChecks=coalesce(performChecks, true);
+			GUI.checkLastUpdated=coalesce(checkLastUpdated, true);
 
 			if (typeof(refreshChart) != "function") {
 				Log.error("Expecting first parameter to be a refresh (creatChart) function");
 			}//endif
-			GUI.refreshChart = refreshChart;
-			GUI.pleaseRefreshLater = nvl(GUI.pleaseRefreshLater, false);
+			GUI.pleaseRefreshLater = coalesce(GUI.pleaseRefreshLater, false);
+			GUI.refreshChart = function(){
+				if (GUI.pleaseRefreshLater) return;
+				refreshChart();
+			};
 
 			//IF THERE ARE ANY CUSTOM FILTERS, THEN TURN OFF THE DEFAULTS
 			var isCustom = false;
@@ -102,36 +106,46 @@ GUI = {};
 				}
 			});
 
-			if (((showDefaultFilters === undefined) && !isCustom) || showDefaultFilters) {
+			function post_filter_functions(){
+				GUI.showLastUpdated(indexName);
+				GUI.AddParameters(parameters, relations); //ADD PARAM AND SET DEFAULTS
+				GUI.Parameter2State();			//UPDATE STATE OBJECT WITH THOSE DEFAULTS
+
+				GUI.makeSelectionPanel();
+
+				GUI.relations = coalesce(relations, []);
+				GUI.FixState();
+
+				GUI.URL2State();				//OVERWRITE WITH URL PARAM
+				GUI.State2URL.isEnabled = true;	//DO NOT ALLOW URL TO UPDATE UNTIL WE HAVE GRABBED IT
+
+				GUI.FixState();
+				GUI.State2URL();
+				GUI.State2Parameter();
+
+				if (!GUI.pleaseRefreshLater) {
+					//SOMETIMES SETUP NEEDS TO BE DELAYED A BIT MORE
+					GUI.refresh();
+				}//endif
+			}//function
+
+			if (window.ProgramFilter===undefined && (((showDefaultFilters === undefined) && !isCustom) || showDefaultFilters)) {
+				GUI.pleaseRefreshLater=true;
 				//USE DEFAULT FILTERS
-				GUI.state.programFilter = new ProgramFilter();
-				GUI.state.productFilter = new ProductFilter();
-				GUI.state.componentFilter = new ComponentFilter();
+				importScript(["ComponentFilter.js", "ProductFilter.js", "ProgramFilter.js"], function(){
+					GUI.state.programFilter = new ProgramFilter();
+					GUI.state.productFilter = new ProductFilter();
+					GUI.state.componentFilter = new ComponentFilter();
 
-				GUI.customFilters.push(GUI.state.programFilter);
-				GUI.customFilters.push(GUI.state.productFilter);
-				GUI.customFilters.push(GUI.state.componentFilter);
-			}//endif
+					GUI.customFilters.push(GUI.state.programFilter);
+					GUI.customFilters.push(GUI.state.productFilter);
+					GUI.customFilters.push(GUI.state.componentFilter);
 
-			GUI.showLastUpdated(indexName);
-			GUI.AddParameters(parameters, relations); //ADD PARAM AND SET DEFAULTS
-			GUI.Parameter2State();			//UPDATE STATE OBJECT WITH THOSE DEFAULTS
-
-			GUI.makeSelectionPanel();
-
-			GUI.relations = nvl(relations, []);
-			GUI.FixState();
-
-			GUI.URL2State();				//OVERWRITE WITH URL PARAM
-			GUI.State2URL.isEnabled = true;	//DO NOT ALLOW URL TO UPDATE UNTIL WE HAVE GRABBED IT
-
-			GUI.FixState();
-			GUI.State2URL();
-			GUI.State2Parameter();
-
-			if (!GUI.pleaseRefreshLater) {
-				//SOMETIMES SETUP NEEDS TO BE DELAYED A BIT MORE
-				GUI.refresh();
+					GUI.pleaseRefreshLater=false;
+					post_filter_functions();
+				});
+			}else{
+				post_filter_functions();
 			}//endif
 		};
 
@@ -193,7 +207,7 @@ GUI = {};
 					esHasErrorInIndex = false;
 					time = new Date((yield(ESQuery.run({
 						"from":"talos",
-						"select":{"name": "max_date", "value":"datazilla.date_loaded","aggregate":"maximum"}
+						"select":{"name": "max_date", "value":"testrun.date","aggregate":"maximum"}
 					}))).cube.max_date);
 					$("#testMessage").html("Latest Push " + time.addTimezone().format("NNN dd @ HH:mm") + Date.getTimezone());
 				} else {
@@ -254,7 +268,7 @@ GUI = {};
 		GUI.State2URL = function () {
 			if (!GUI.State2URL.isEnabled) return;
 
-			var simplestate = {};
+			var simpleState = {};
 			Map.forall(GUI.state, function (k, v) {
 
 				var p = GUI.parameters.map(function (v, i) {
@@ -262,43 +276,31 @@ GUI = {};
 				})[0];
 
 				if (v.isFilter) {
-					simplestate[k] = v.getSimpleState();
+					simpleState[k] = v.getSimpleState();
 				} else if (jQuery.isArray(v)) {
 					if (v.length > 0) {
-						simplestate[k] = v.join(",");
+						simpleState[k] = v.join(",");
 					}else{
-						simplestate[k] = undefined;
+						simpleState[k] = undefined;
 					}//endif
 				} else if (p && p.type == "json") {
-					v = CNV.Object2JSON(v);
+					v = convert.value2json(v);
 					v = v.escape(GUI.urlMap);
-					simplestate[k] = v;
+					simpleState[k] = v;
 				} else if (typeof(v) == "string" || aMath.isNumeric(k)) {
 					v = v.escape(GUI.urlMap);
-					simplestate[k] = v;
+					simpleState[k] = v;
 				}//endif
 			});
 
-			{//bbq REALY NEEDS TO KNOW WHAT ATTRIBUTES TO REMOVE FROM URL
-				var removeList = [];
-				var keys = Object.keys(simplestate);
-				for (var i = keys.length; i--;) {
-					var key = keys[i];
-					var val = simplestate[key];
-					if (val === undefined) removeList.push(key);
-				}//for
-
-				jQuery.bbq.removeState(removeList);
-				jQuery.bbq.pushState(Map.copy(simplestate));
-			}
-
+			Session.URL.setFragment(simpleState);
 		};
 
 		GUI.State2URL.isEnabled = false;
 
 
 		GUI.URL2State = function () {
-			var urlState = jQuery.bbq.getState();
+			var urlState = Session.URL.getFragment();
 			Map.forall(urlState, function (k, v) {
 				if (GUI.state[k] === undefined) return;
 
@@ -312,7 +314,7 @@ GUI = {};
 				} else if (p && p.type == "json") {
 					try {
 						v = v.escape(Map.inverse(GUI.urlMap));
-						GUI.state[k] = CNV.JSON2Object(v);
+						GUI.state[k] = convert.json2value(v);
 					} catch (e) {
 						Log.error("Malformed JSON: " + v);
 					}//try
@@ -514,7 +516,7 @@ GUI = {};
 			GUI.parameters.forEach(function (param) {
 
 				if (param.type == "json") {
-					$("#" + param.id).val(CNV.Object2JSON(GUI.state[param.id]));
+					$("#" + param.id).val(convert.value2json(GUI.state[param.id]));
 				} else if (param.type == "boolean") {
 					$("#" + param.id).prop("checked", GUI.state[param.id]);
 				} else if (param.type == "datetime") {
@@ -533,7 +535,7 @@ GUI = {};
 		GUI.Parameter2State = function () {
 			GUI.parameters.forEach(function (param) {
 				if (param.type == "json") {
-					GUI.state[param.id] = CNV.JSON2Object($("#" + param.id).val());
+					GUI.state[param.id] = convert.json2value($("#" + param.id).val());
 				} else if (param.type == "boolean") {
 					GUI.state[param.id] = $("#" + param.id).prop("checked");
 				}else if (param.type =="set"){
@@ -544,7 +546,11 @@ GUI = {};
 						GUI.state[param.id]=v.split(",").map(String.trim);
 					}//endif
 				} else {
-					GUI.state[param.id] = $("#" + param.id).val();
+					v = $("#" + param.id).val();
+					if (v===undefined){
+						Log.error("not expected")
+					}//endif
+					GUI.state[param.id] = v;
 				}//endif
 			});
 		};
@@ -626,16 +632,15 @@ GUI = {};
 			$("#summary").html(html);
 		};
 
-		GUI.refreshRequested = false;	//TRY TO AGGREGATE MULTIPLE refresh() REQUESTS INTO ONE
+		GUI.refreshInProgress = false;	//TRY TO AGGREGATE MULTIPLE refresh() REQUESTS INTO ONE
 
 		GUI.refresh = function (refresh) {
-			if (GUI.refreshRequested) return;
-			GUI.refreshRequested = true;
+			if (GUI.refreshInProgress) return;
+			GUI.refreshInProgress = true;
 
 			Thread.run("refresh gui", function*() {
 				yield (Thread.sleep(200));
-				GUI.refreshRequested = false;
-
+				GUI.refreshInProgress = false;
 				GUI.State2URL();
 
 				var threads = [];

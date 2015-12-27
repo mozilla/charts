@@ -7,6 +7,7 @@ importScript("charts/aColor.js");
 
 (function(){
 	var green = Color.GREEN.multiply(0.5).hue(10).toHTML();
+	var blue = Color.BLUE.multiply(0.5).hue(10).toHTML();
 	var yellow = Color.RED.multiply(0.7).hue(-60).toHTML();
 	var red = Color.RED.multiply(0.5).toHTML();
 
@@ -14,7 +15,10 @@ importScript("charts/aColor.js");
 	window.Settings = {
 		"imagePath" : "images",
 
+		// POINTERS TO THE MANY SYSTEMS
 		"indexes" : {
+
+			// BUGZILLA TABLES (ElasticSearch Indexes)
 			"bugs" : {"name" : "private bugs cluster", "style" : {"color" : "black", "background-color" : yellow}, "host" : "http://elasticsearch-private.bugs.scl3.mozilla.com:9200", "path" : "/private_bugs/bug_version"},
 			"public_bugs" : {"name" : "Mozilla public bugs cluster", "style" : {"color" : "white", "background-color" : green}, "host" : "https://esfrontline.bugzilla.mozilla.org:443", "path" : "/public_bugs/bug_version"},
 			"public_bugs_backend" : {"style" : {"color" : "black", "background-color" : yellow}, "host" : "http://elasticsearch1.bugs.scl3.mozilla.com:9200", "path" : "/public_bugs/bug_version"},
@@ -56,12 +60,14 @@ importScript("charts/aColor.js");
 			"telemetry" : {"style" : {"color" : "black", "background-color" : yellow}, "host" : "http://elasticsearch-private.bugs.scl3.mozilla.com:9200", "path" : "/telemetry_agg_valid_201305/data"},
 			"raw_telemetry" : {"style" : {"color" : "black", "background-color" : yellow}, "host" : "http://klahnakoski-es.corp.tor1.mozilla.com:9200", "path" : "/raw_telemetry/data"},
 
+//			"talos" : {"style" : {"color" : "black", "background-color" : yellow}, "host" : "http://klahnakoski-es.corp.tor1.mozilla.com:9200", "path" : "/talos/test_results"},
+//			"kyle_talos" : {"style" : {"color" : "black", "background-color" : yellow}, "host" : "http://192.168.0.98:9200", "path" : "/talos/test_results"},
+//			"local_talos" : {"style" : {"color" : "black", "background-color" : yellow}, "host" : "http://localhost:9200", "path" : "/talos/test_results"},
 			"talos" : {"style" : {"color" : "black", "background-color" : yellow}, "host" : "http://klahnakoski-es.corp.tor1.mozilla.com:9200", "path" : "/talos/test_results"},
-			"kyle_talos" : {"style" : {"color" : "black", "background-color" : yellow}, "host" : "http://192.168.0.98:9200", "path" : "/talos/test_results"},
-			"local_talos" : {"style" : {"color" : "black", "background-color" : yellow}, "host" : "http://localhost:9200", "path" : "/talos/test_results"},
+			"alt_talos" : {"style" : {"color" : "black", "background-color" : yellow}, "host" : "http://192.168.0.98:9200", "path" : "/talos/test_results"},
+			"alt_talos2" : {"style" : {"color" : "black", "background-color" : yellow}, "host" : "http://192.168.0.98:9200", "path" : "/talos2/test_results"},
 			"public_talos" : {"style" : {"color" : "black", "background-color" : yellow}, "host" : "http://67.55.30.33:9201", "path" : "/talos/test_results"},
-
-			"talos2" : {"style" : {"color" : "black", "background-color" : yellow}, "host" : "http://localhost:9200", "path" : "/talos2/test_results"},
+			"local_talos" : {"style" : {"color" : "black", "background-color" : yellow}, "host" : "http://localhost:9200", "path" : "/talos/test_results"},
 
 			"b2g_tests" : {"style" : {"color" : "black", "background-color" : yellow}, "host" : "http://elasticsearch-private.bugs.scl3.mozilla.com:9200", "path" : "/b2g_tests/results"},
 			"b2g" : {"style" : {"color" : "black", "background-color" : yellow}, "host" : "http://elasticsearch-private.bugs.scl3.mozilla.com:9200", "path" : "/b2g_tests/results"},
@@ -71,15 +77,32 @@ importScript("charts/aColor.js");
 			"perfy" : {"style" : {"color" : "black", "background-color" : yellow}, "host" : "http://elasticsearch-private.bugs.scl3.mozilla.com:9200", "path" : "/perfy/scores"},
 			"local_perfy" : {"style" : {"background-color" : red}, "host" : "http://localhost:9200", "path" : "/perfy/scores"},
 
-			"eideticker" : {"style" : {"background-color" : red}, "host" : "http://67.55.30.33:9201", "path" : "/eideticker/results"}
+			"eideticker" : {"style" : {"background-color" : red}, "host" : "http://67.55.30.33:9201", "path" : "/eideticker/results"},
+
+
+			// ACTIVE DATA TABLES
+			"jobs": {"style" : {"background-color" : blue}, "host" : "http://activedata.allizom.org", "table":"jobs", "host_type":"ActiveData"},
+			"jobs.action.timings": {"style" : {"background-color" : blue}, "host" : "http://activedata.allizom.org", "table":"jobs.action.timings", "host_type":"ActiveData"},
+			"local_jobs.action.timings": {"style" : {"background-color" : blue}, "host" : "http://localhost:5000", "table":"jobs.action.timings", "host_type":"ActiveData"},
+			"timings": {"style" : {"background-color" : blue}, "host" : "http://activedata.allizom.org", "table":"jobs.action.timings", "host_type":"ActiveData"},
+			"unittests": {"style" : {"background-color" : blue}, "host" : "http://activedata.allizom.org", "table":"unittest", "host_type":"ActiveData"},
+			"perf": {"style" : {"background-color" : blue}, "host" : "http://activedata.allizom.org", "table":"perf", "host_type":"ActiveData"}
+
+		},
+
+		//REGISTER GENERATORS THAT HANDLE Qb QUERIES
+		"host_types":{
+
 
 		}
+
 	};
 
 
-	//GIVE ALL CLUSTERS NAMES
+	//GIVE ALL CLUSTERS NAMES AND IDS
 	Map.forall(Settings.indexes, function(k, v){
-		v.name=nvl(v.name, k);
+		v._id=k;
+		v.name=coalesce(v.name, k);
 	});
 
 	//TRY PRIVATE CLUSTER FIRST, THEN FALL BACK TO PUBLIC
@@ -87,6 +110,7 @@ importScript("charts/aColor.js");
 	Settings.indexes.bug_hierarchy.alternate = Settings.indexes.public_bug_hierarchy;
 	Settings.indexes.bug_dependencies.alternate = Settings.indexes.public_bug_dependencies;
 	Settings.indexes.talos.alternate=Settings.indexes.public_talos;
+	Settings.indexes.public_talos.alternate=Settings.indexes.alt_talos;
 	Settings.indexes.b2g.alternate=Settings.indexes.public_b2g;
 	Settings.indexes.public_b2g.alternate=Settings.indexes.local_b2g;
 	Settings.indexes.reviews.alternate = Settings.indexes.public_reviews;

@@ -1,0 +1,314 @@
+<!DOCTYPE html>
+<!-- This Source Code Form is subject to the terms of the Mozilla Public
+   - License, v. 2.0. If a copy of the MPL was not distributed with this
+   - file, You can obtain one at http://mozilla.org/MPL/2.0/. -->
+<HTML>
+<head>
+	<meta charset="utf-8">
+
+	<title>Release History</title>
+	<script type="text/javascript" src="modevlib/imports/import.js"></script>
+</HEAD>
+<BODY>
+<div style="position: fixed; overflow: visible;height: 100%;width:100%">
+	<div style="position: relative;z-index:10;">
+		<div id="sidebar">
+			<div id="description" style="width:300px;">
+				Release Management Uplifts<br>
+				Counts last time each bug changed to <code>status_firefoxXX=="fixed"</code>.
+			</div>
+			<hr>
+			<div id="last-updated" style="text-align: center;width:300px;"></div>
+			<hr>
+			<div id="filters" style="width:300px;" class="menu">
+
+
+			</div>
+			<div id="parameters" style="display:none;">
+			</div>
+		</div>
+		<div class="sidebar_name">
+			<div>Team Selection</div>
+		</div>
+		<div class="content" style="padding-top: 10px;">
+			<h1 id="title" style="display:inline-block;">Release Management Uplifts</h1>
+			<table>
+				<tr>
+					<td><div id="byTypeBeta" class="chart" style="width:700px;height:400px;"></div></td>
+					<td><div id="byTypeAurora" class="chart" style="width:700px;height:400px;"></div></td>
+				</tr>
+				<tr>
+					<td><div id="byTeamBeta" class="chart" style="width:700px;height:400px;"></div></td>
+					<td><div id="byTeamAurora" class="chart" style="width:700px;height:400px;"></div></td>
+				</tr>
+			</table>
+		</div>
+	</div>
+	<div style="position:absolute;bottom:0;height:40px;text-align: center;padding: 5px 0 5px 0;width:100%;background-color: #fff;z-index: 12;">
+		Source at <a href="https://github.com/mozilla/charts/blob/platform/platform/release-history.html">https://github.com/mozilla/charts/blob/platform/platform/release-history.html</a>
+	</div>
+</div>
+
+<div style="overflow:hidden;">
+	<div class="content" style="position:inherit;padding-bottom:100px;">
+		<table class="layout">
+			<tr>
+				<td>
+					<div style="width:350px"></div>
+				</td>
+				<td>
+					<div id="bug_list" style="position: relative;z-index:11 "></div>
+				</td>
+			</tr>
+		</table>
+	</div>
+
+</div>
+
+<script type="application/javascript">
+
+function getHistoryFilter(timeDomain, offset){
+
+	var SOLVED = ["fixed"];
+
+	return {"or": Mozilla.Platform.Release.edges.map(function(e, i){
+		var releaseDate = Date.newInstance(e.releaseDate);
+		var retireDate = Date.newInstance(e.retireDate);
+		if (timeDomain.min <= retireDate && releaseDate < timeDomain.max) {
+			return {"and":[
+				{"range":{"modified_ts":{"gte": releaseDate.milli(), "lt": retireDate.milli()}}},
+				{"nested":{
+					"path":"changes",
+					"query":{"filtered":{
+						"query":{"match_all":{}},
+						"filter":{"and":[
+							{"term":{"changes.field_name":"cf_status_firefox" + (e.version + offset)}},
+							{"terms":{"changes.new_value":SOLVED}}
+						]}
+					}}
+				}}
+			]}
+		}//endif
+	})};
+
+// FILTER FOR WHEN THE BUGS ARE OPEN
+//	return {
+//		"or": Mozilla.Platform.Release.edges.map(function(e, i){
+//			var releaseDate = Date.newInstance(e.releaseDate);
+//			var retireDate = Date.newInstance(e.retireDate);
+//			if (timeDomain.min <= retireDate && releaseDate < timeDomain.max) {
+//				return {
+//					"and": [
+//						{"range": {"max": {"gte": releaseDate.milli(), "lt": retireDate.milli()}}},
+//						{"not": {"terms": Map.newInstance("cf_status_firefox" + (e.version + offset), SOLVED)}},
+//						{"term": Map.newInstance("cf_tracking_firefox" + (e.version + offset), "+")}
+//					]
+//				}
+//			}//endif
+//		})
+//	};
+}//function
+
+function showTrain(aurora, timeDomain, offset, name){
+	Thread.run(function*(){
+
+		timeDomain = Map.copy(timeDomain);
+	    timeDomain.dateMarks=Mozilla.Platform.Release.edges.map(function(e){
+			var releaseDate = Date.newInstance(e.releaseDate);
+			if (releaseDate.between(timeDomain.min, timeDomain.max)) {
+				return {
+					"name": "" + (e.version+offset),
+					"date": releaseDate,
+					"style": coalesce(e.style, {"color": "black"})
+				};
+			}//endif
+		});
+
+		var allBugs = yield(ESQuery.run({
+			"from":"bugs",
+			"select":{"name":"modified_ts", "value":"modified_ts", "aggregate":"maximum"},
+			"edges":[
+				"bug_id"
+			],
+			"esfilter": aurora
+		}));
+
+		//PULL ALL METADATA!!
+		var extraFields = Array.union(
+			Qb.requiredFields(Mozilla.Platform.ReleaseManagementCategories),
+			Qb.requiredFields(Mozilla.Platform.Team)
+		);
+
+		//MAP FROM bug_id TO min/max PAIR
+		var timestamps = {};
+		allBugs.edges[0].domain.partitions.forall(function(p, i){
+			timestamps[p.value] = allBugs.cube[i];
+		});
+
+		var details = yield (ESQuery.run({
+			"from": "bugs",
+			"select": ["bug_id"].union(extraFields),
+			"esfilter": {"and":[
+				Mozilla.CurrentRecords.esfilter,
+				{"terms": {"bug_id": Map.getKeys(timestamps)}}
+			]}
+		}));
+
+		//ANNOTATE WITH min/max PAIR
+		details.list.forall(function(d){
+			d.modified_ts = timestamps[d.bug_id];
+		});
+		details.columns.append({"name": "modified_ts"});
+
+		//SHOW BY KEYWORD
+		var byType = yield (Q({
+			"from": details,
+			"select": {"name": "bug_count", "value": "bug_id", "aggregate": "count"},
+			"edges":[
+				{"name":"type", "domain":Mozilla.Platform.ReleaseManagementCategories.getDomain()},
+				{"name":"week", "value":"modified_ts", "domain": timeDomain}
+			],
+			"meta": {"format": "cube"}
+		}));
+
+		//FLIP THIS DIMENSION FOR PRESENTATION
+//		byType.edges[0].domain.partitions = Qb.reverse(byType.edges[0].domain.partitions);
+//		byType.data.bug_count = Qb.reverse(byType.data.bug_count);
+
+		aChart.show({
+			"name": name,
+			"id": "byType"+name,
+			"type": "bar",
+			"stacked": true,
+			"cube": byType,
+			"clickAction": clicker(byType)
+		});
+
+		//SHOW BY TEAM
+		var byTeam = yield (Q({
+			"from": details,
+			"select": {"name": "bug_count", "value": "bug_id", "aggregate": "count"},
+			"edges": [
+				{"name": "type", "domain": Mozilla.Platform.Team.getDomain()},
+				{"name": "week", "value": "modified_ts", "domain": timeDomain}
+			]
+		}));
+
+		aChart.show({
+			"name": name,
+			"id": "byTeam" + name,
+			"type": "line",
+			"stacked": false,
+			"cube": byTeam,
+			"clickAction": clicker(byTeam)
+		});
+
+
+		function clicker(query){
+			return function(series, x, d, elem){
+				Thread.run(function * (){
+					var part;
+					var filter = [];
+					query.edges[0].domain.partitions.forall(function(p){
+						if (part) return;
+						if (p.name==series){
+							part=p;
+							filter.append(p.esfilter)
+						}else{
+							filter.append({"not": p.esfilter});
+						}//endif
+					});
+					var week;
+					query.edges[1].domain.partitions.forall(function(w){
+						if (week) return;
+						if (w.value.subtract(x).milli==0){
+							week=w;
+							filter.append({"range":{"modified_ts":{"gte": w.min, "lt": w.max}}})
+						}//endif
+					});
+					var buglist = yield (Q({
+						"from":details,
+						"select":"bug_id",
+						"where":{"and":filter}
+					}));
+
+					Bugzilla.showBugs(buglist.list);
+				});
+			};//function
+		}//function
+
+	});
+};//function
+
+
+
+
+importScript(['js/main_lib.js', 'modevlib/charts/cccChart.js'], function(){
+	sidebarSlider();
+
+	var thread;
+
+	function createChart(){
+		if (thread !== undefined)
+			thread.kill(true);
+		thread = Thread.run(__createChart());
+	}
+
+	var __createChart = function*(){
+		yield (ESQuery.loadColumns({"from": "bugs"}));
+
+		var onPrivateCluster = !ESQuery.INDEXES["bugs"].path.contains("public_bugs");
+
+//		var team = GUI.state.team.getSimpleState();
+
+//		$("#title").html(team);
+
+		var eow = Date.today().ceiling("week");
+		var start = eow.subtract(Duration.newInstance("18week"));
+		var timeDomain = {
+			"type": "time",
+			"min": start,
+			"max": eow,
+			"interval": "week"
+		};
+
+		//BUILD THE HISTORY FILTER
+		var beta = getHistoryFilter(timeDomain, 1);
+		var aurora = getHistoryFilter(timeDomain, 2);
+
+		showTrain(beta, timeDomain, 1, "Beta");
+		showTrain(aurora, timeDomain, 2, "Aurora");
+
+	};
+	$(document).ready(function(){
+		GUI.setup(
+			createChart,
+			[
+				{"id": "team", "name": "Teams", "type": PartitionFilter.newInstance({
+					"id": "Teams",
+					"name": "All Teams",
+					"dimension": Mozilla.Platform.Team,
+					"onlyOne": true,
+					"expandAll": true
+				})},
+				{"id":"show", "name":"Categories", "type":"set", "default":[]}
+			],
+			[],
+			null,
+			false,		//SHOW DEFAULT FILTERS?
+			false,
+			false        //DISABLE showLastUpdated
+		);
+	});
+});
+
+
+</script>
+
+
+</BODY>
+</HTML>
+
+
+
+

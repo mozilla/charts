@@ -99,7 +99,7 @@ TeamFilter.newInstance=function(field_name){
 				}//endif
 				return v;
 			});
-			others.children = others.children.filter({"not":{"terms":hier.select("id")}});
+			others.children = others.children.filter({"not":{"terms":{"id": hier.select("id")}}});
 		}//endif
 
 		self.injectHTML(hier);
@@ -108,7 +108,7 @@ TeamFilter.newInstance=function(field_name){
 		//HOPEFULLY IT WILL EXIST WHEN THE HEAD EXISTS
 //		'#' + myid.replace(/(:|\.)/g,'\\$1');
 
-		while($("#"+CNV.String2JQuery("other@mozilla.com")).length==0){
+		while($("#"+convert.String2JQuery("other@mozilla.com")).length==0){
 			yield (Thread.sleep(100));
 		}//while
 
@@ -191,7 +191,7 @@ TeamFilter.prototype.setSimpleState=function(value){
 
 TeamFilter.prototype.makeFilter = function(field_name){
 	if (this.selectedEmails.length == 0) return ESQuery.TrueFilter;
-	field_name=nvl(field_name, this.field_name);
+	field_name=coalesce(field_name, this.field_name);
 	if (field_name==null) return ESQuery.TrueFilter;
 
 	var selected = Thread.runSynchronously(this.getSelectedPeople());
@@ -236,8 +236,8 @@ TeamFilter.prototype.refresh = function*()
 	var f = $('#teamList');
 	f.jstree("deselect_all");
 	selected.forall(function(p){
-		f.jstree("select_node", "#" + CNV.String2JQuery(p.id));
-		f.jstree("check_node", "#" + CNV.String2JQuery(p.id));
+		f.jstree("select_node", "#" + convert.String2JQuery(p.id));
+		f.jstree("check_node", "#" + convert.String2JQuery(p.id));
 	});
 
 	this.disableUI = false;

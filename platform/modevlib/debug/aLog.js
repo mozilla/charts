@@ -7,10 +7,11 @@ importScript([
 		"../../lib/jquery.js",
 		"../../lib/jquery-ui/js/jquery-ui-1.10.2.custom.js",
 		"../../lib/jquery-ui/css/start/jquery-ui-1.10.2.custom.css",
-		"../../lib/jquery.ba-bbq/jquery.ba-bbq.js"
 ]);
 importScript("aException.js");
+importScript("../util/State.js");
 importScript("../util/aTemplate.js");
+importScript("../charts/aColor.js");
 
 
 
@@ -41,12 +42,12 @@ var Log = new function(){
 		}else if (message.message){
 			return Log.FORMAT.expand(message);
 		}else{
-			return CNV.Object2JSON(message);
+			return convert.value2json(message);
 		}//endif
 	}
 
 	function log2html(message){
-		return "<p>"+CNV.String2HTML(JSON.stringify(message))+"</p>"
+		return "<p>"+convert.String2HTML(JSON.stringify(message))+"</p>"
 	}
 
 	//ADD THE DEFAULT CONSOLE LOGGING
@@ -74,9 +75,10 @@ var Log = new function(){
 		});
 	};
 
+
 	try{
 		$(document).ready(function(){
-			var id=$.bbq.getState("log");
+			var id=window.Session.URL.getFragment()["log"];
 			Log.addInvisibleLog(id);
 		});
 	}catch(e){
@@ -115,7 +117,7 @@ var Log = new function(){
 	};//method
 
 	Log.error = function(description, cause, stackOffset){
-		var ex=new Exception(description, cause, nvl(stackOffset, 0)+1);
+		var ex=new Exception(description, cause, coalesce(stackOffset, 0)+1);
 //		console.error(ex.toString());
 		throw ex;
 	};//method
@@ -180,7 +182,7 @@ var Log = new function(){
 		);
 		var html = template.expand({
 			"uid":uid,
-			"style":CNV.Object2CSS({
+			"style":convert.Object2CSS({
 				"width":"100%",
 				"text-align":"center",
 				"color":"white",
@@ -296,7 +298,7 @@ ASSERT.hasAttributes=function(obj, keyList){
 			for(j=0;j<keyList[i].length;j++){
 				if (obj[keyList[i][j]]!==undefined) continue A;
 			}//for
-			Log.error("expecting object to have one of "+CNV.Object2JSON(keyList[i])+" attribute");
+			Log.error("expecting object to have one of "+convert.value2json(keyList[i])+" attribute");
 		}else{
 			if (obj[keyList[i]]===undefined) Log.error("expecting object to have '"+keyList[i]+"' attribute");
 		}//endif

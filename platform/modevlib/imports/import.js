@@ -12,10 +12,11 @@
 var importScript;
 
 (function () {
+	"use strict";
 
 	var METHOD_NAME = "importScript";
-	var FORCE_RELOAD = true;  //COMPENSATE FOR BUG https://bugzilla.mozilla.org/show_bug.cgi?id=991252
-	var DEBUG = false;
+	var FORCE_RELOAD = false;  //COMPENSATE FOR BUG https://bugzilla.mozilla.org/show_bug.cgi?id=991252
+	var DEBUG = true;
 
 	if (typeof(window.Log) == "undefined") {
 		window.Log = {
@@ -63,6 +64,30 @@ var importScript;
 		return c;
 	}//method
 
+	function remove(a, v){
+		//REMOVE v FROM a
+		var j=0;
+		for (var i = 0; i < a.length; i++) {
+			if (a[i] !== v) {
+				a[j] = a[i];
+				j++;
+			}//endif
+		}//for
+		a.length = j;
+	}//method
+
+	function between(self, start, end){
+		var s=self.indexOf(start);
+		if (s==-1) return null;
+		s+=start.length;
+		if (end===undefined) return self.substring(s);
+
+		var e=self.indexOf(end, s);
+		if (e==-1) return self.substring(s);
+		return self.substring(s, e);
+	}//method
+
+
 	function contains(array, element) {
 		for (var i = array.length; i--;) {
 			if (array[i] == element) return true;
@@ -89,7 +114,11 @@ var importScript;
 			var e = src.indexOf(")", s);	//HOPEFULLY THIS WILL CATCH THE PARAMETERS (FAILS WHEN COMMENTS EXIST)
 
 			var f = "addDependency(" + quote(parentPath) + ", " + src.substring(s + 1, e + 1);
-			eval(f);
+			try {
+				eval(f);
+			}catch (e){
+				//DO NOTHING
+			}//try
 
 			found = src.indexOf(METHOD_NAME, e);
 		}//while
@@ -101,11 +130,16 @@ var importScript;
 	function readfile(fullPath, callback){
 		var request = new XMLHttpRequest();
 		try {
-			var url = window.location.origin + fullPath;
+			var url;
+			if (window.location.protocol == "file:") {
+				url = window.location.protocol + "//" + fullPath;
+			} else {
+				url = window.location.protocol + "//" + window.location.hostname + ":" + window.location.port + fullPath;
+			}//endif
 			request.open('GET', url);
-			request.responseType="text";
+			request.responseType = "text";
 			request.isDone = false;
-			request.onreadystatechange = function () {
+			request.onreadystatechange = function(){
 				if (request.readyState == 4) {
 					if (request.status == 200 || request.status == 0) {
 						if (request.isDone) return;
@@ -113,19 +147,19 @@ var importScript;
 						if (DEBUG) Log.note("GOT " + url);
 						callback(request.responseText);
 					} else {
-						Log.error("What!?!");
+						Log.error("Problem loading " + url + ", error status: " + request.status);
 						callback(null);
 					}//endif
 				}//endif
 			};
-			request.onload = function () {
+			request.onload = function(){
 				if (request.status == 200 || request.status == 0) {
 					if (request.isDone) return;
 					request.isDone = true;
 					if (DEBUG) Log.note("GOT " + url);
 					callback(request.responseText);
 				} else {
-					Log.error("What!?!");
+					Log.error("Problem loading " + url + ", error status: " + request.status);
 					callback(null);
 				}//endif
 			};
@@ -135,7 +169,7 @@ var importScript;
 			Log.error("Can not read " + fullPath + " (" + e.message + ")");
 			callback(null);
 		}//try
-	}
+	}//method
 
 	function shortPath(fullPath) {
 		return fullPath.substring(fullPath.lastIndexOf("/") + 1);
@@ -201,15 +235,33 @@ var importScript;
 
 		var netPaths = subtract(paths, existingScripts);
 
-		var numLoaded = netPaths.length;
-		if (DEBUG) Log.note("Waiting for " + numLoaded + " scripts to load");
+		var numLoaded = netPaths;
+		if (DEBUG) Log.note("Waiting for " + numLoaded.length + " scripts to load");
+
+		setTimeout(function(){
+			if (numLoaded.length>0){
+				var list = "";
+				for (var i = 0; i < numLoaded.length; i++){
+					list += "\t" + numLoaded[i] + "\n";
+				}//for
+				Log.error("Scripts not imported!\n"+list)
+			}//endif
+		}, 15000);
 
 		function onLoadCallback() {
-			numLoaded--;
-			if (numLoaded == 0) {
-				doneCallback();
+			var path;
+			if (this.src.startsWith(window.location.origin)) {
+				path = this.src.slice(window.location.origin.length).split("?")[0].split("#")[0];
+			}else{
+				path = this.src.split("?")[0].split("#")[0];
 			}//endif
-		}
+			remove(numLoaded, path);
+			if (numLoaded.length == 0) {
+				doneCallback();
+			}else{
+				if (DEBUG) Log.note("Loaded: "+this.outerHTML+ " remaining: "+numLoaded.length)
+			}//endif
+		}//endif
 
 		var frag = document.createDocumentFragment();   //http://ejohn.org/blog/dom-documentfragments/
 		for (var i = 0; i < netPaths.length; i++) {
@@ -221,7 +273,8 @@ var importScript;
 				newCSS.rel = "stylesheet";
 				newCSS.href = netPaths[i];
 				frag.appendChild(newCSS);
-				numLoaded--;
+				remove(numLoaded, netPaths[i]);
+				i--;
 			} else {
 				var script = document.createElement('script');
 				script.type = 'text/javascript';
@@ -232,8 +285,8 @@ var importScript;
 			}//endif
 		}//for
 		head.appendChild(frag);
-		if (numLoaded == 0) doneCallback();
-		if (DEBUG) Log.note("Added " + numLoaded + " scripts");
+		if (numLoaded.length == 0) doneCallback();
+		if (DEBUG) Log.note("Added " + numLoaded.length + " scripts");
 	}//function
 
 
@@ -376,6 +429,29 @@ var importScript;
 		return processed;
 	}//method
 
+	var stackPattern;
+	if (!!window.chrome){
+		//GOOGLE CHROME
+		stackPattern=/(\d*)(.*):(\d+):(\d+)/; //(\d*) is a dummy placeholder
+	}else{
+		//FIREFOX
+		stackPattern=/(.*)@(.*):(\d+):(\d+)/;
+	}//endif
+	function parseStack(stackString){
+		var output = [];
+		if (stackString===undefined || stackString==null) return output;
+		stackString.split("\n").forEach(function(l){
+			var parts=stackPattern.exec(l);
+			if (parts==null) return;
+			output.push({
+				"function":parts[1],
+				"fileName":parts[2],
+				"lineNumber":parts[3],
+				"columnNumber":parts[4]
+			});
+		});
+		return output;
+	}//function
 
 	////////////////////////////////////////////////////////////////////////////////
 	// IMPORT ALL SCRIPTS
@@ -397,9 +473,9 @@ var importScript;
 
 			numRemaining++;
 			(function (fullPath) {
-				readfile(fullPath, function (code) {
-					var scriptBegin = preprocess(fullPath, code);
-					code[fullPath] = code.substring(scriptBegin);
+				readfile(fullPath, function (c) {
+					var scriptBegin = preprocess(fullPath, c);
+					code[fullPath] = c.substring(scriptBegin);
 
 					numRemaining--;
 					//CHECK FOR MORE WORK
@@ -441,18 +517,37 @@ var importScript;
 	//AN ARRAY WILL DEMAND LOAD ORDER
 	function __importScript__(importFile, code) {
 		if (code !== undefined) pending.push(code);
-		addDependency(window.location.pathname, importFile);
-		importScript = function (i, code) {
+
+		var path = window.location.pathname;
+		try{
+			throw Error();
+		}catch (e){
+			//THIS IS A BETTER PATH, GIVEN SOME IMPORTED JS FILE CAN CALL importScript() DIRECTLY
+			var caller = parseStack(e.stack)[1].fileName;
+			path = "/" + caller.split("?")[0].split("#")[0].split("/").slice(3).join("/");
+		}//try
+
+		addDependency(path, importFile);
+		window.importScript = function (i, code) {
+			// importScript() WILL CERTAINLY BE CALLED, BECAUSE IT IS IN THE SOURCES
+			// IT PROBABLY DOES NOT HAVE code, BUT IF IT DOES IT WILL BE RUN AFTER
+			// ALL IMPORTS ARE COMPLETE
 			if (code !== undefined) pending.push(code);
 		};
 		_importScript_(function () {
-			//WHEN ALL DONE AUTOMATICALLY
-			for (var i = 0; i < pending.length; i++) {
-				pending[i]();
+			window.importScript = __importScript__;
+			var p = pending;
+			pending = [];
+			for (var i = 0; i < p.length; i++) {
+				p[i]();
 			}//for
-			window.importScript = __importScript__
 		});
 	}//method
+
+
+
+
+
 
 	__importScript__.DEBUG=DEBUG;
 	__importScript__.sort=sort;     //FOR TESTING

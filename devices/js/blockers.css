@@ -81,6 +81,7 @@ tr.selected {
 
 .desc {
     width: auto;
+    max-width: 99%;
     padding-top: 8px;
     max-height: 3em;
     word-wrap: break-word;
@@ -304,7 +305,7 @@ table.grid td div.small_unassigned {
     display: inline-block;
     font-size: 14px;
     line-height: 1.42857;
-    padding: 6px 12px;
+    padding: 5px 12px;
 }
 
 

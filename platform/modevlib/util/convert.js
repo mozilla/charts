@@ -272,7 +272,7 @@ var convert = function(){
 
 	(function(){
 		var entityMap = {
-			" ": "&nbsp;",
+			//" ": "&nbsp;",
 			"&": "&amp;",
 			"<": "&lt;",
 			">": "&gt;",

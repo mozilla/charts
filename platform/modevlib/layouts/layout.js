@@ -1,15 +1,17 @@
 
 var layoutAll;
-
+var dynamicLayout;
 
 (function(){
 	var DELAY_JAVASCRIPT = 200;
 	var DEBUG = true;
 
-	var allExpression = [];
-	var mapSelf2DynamicFormula = {"v": {}, "h": {}};
+	var allExpression = undefined;
+	var mapSelf2DynamicFormula = undefined;
 
 	layoutAll = function layout_all(){
+		allExpression = [];
+		mapSelf2DynamicFormula = {"v": {}, "h": {}};
 
 		//GRASP ALL LAYOUT FORMULA
 		$("[layout]").each(function(){
@@ -37,16 +39,16 @@ var layoutAll;
 		forall(['v', 'h'], function(dim){
 			forall(allExpression, function(e){
 				if (e.d != dim) return;
-				var selfID=e.l.id;
-				if (e.r.id == mapSelf2TrueParents[selfID][0]){
-					if (!mapSelf2StaticFormula[selfID]) mapSelf2StaticFormula[selfID] = {"v": [], "h": []};
-					mapSelf2StaticFormula[selfID][dim].push(e);
+				var lhsID=e.l.id;
+				if (e.r.id == mapSelf2TrueParents[lhsID][0]){
+					if (!mapSelf2StaticFormula[lhsID]) mapSelf2StaticFormula[lhsID] = {"v": [], "h": []};
+					mapSelf2StaticFormula[lhsID][dim].push(e);
 					e.dynamic = false;
 				} else {
 					e.dynamic = true;
 				}//endif
-				if (!mapSelf2DynamicFormula[dim][selfID]) mapSelf2DynamicFormula[dim][selfID]=[];
-				mapSelf2DynamicFormula[dim][selfID].push(e);
+				if (!mapSelf2DynamicFormula[dim][lhsID]) mapSelf2DynamicFormula[dim][lhsID]=[];
+				mapSelf2DynamicFormula[dim][lhsID].push(e);
 			});
 		});
 
@@ -151,7 +153,19 @@ var layoutAll;
 		//COMPILE FUNCTION TO HANDLE RESIZE
 		var layoutFunction = "function(){\n";
 		items(dimMap, function(dim, mapper){
-			items(mapSelf2DynamicFormula[dim], function(selfID, formula){
+
+			//TOPOSORT THE EXPRESSIONS IN THIS DIMENSION
+			var edges=map(allExpression, function(e){
+				if (e.d != dim) return;
+				return [e.r.id, e.l.id];
+			});
+			var sortedID = toposort(edges);
+
+			map(sortedID, function(lhsID){
+				var formula = mapSelf2DynamicFormula[dim][lhsID];
+				if (!formula) return;  //TOPOSORT WILL INCLUDE NODES WITH NO FORMULA (THE BASIS)
+				formula = removeRedundancy(formula);
+
 				var position = undefined;
 				var width = undefined;
 
@@ -181,7 +195,7 @@ var layoutAll;
 					Log.error("More than two expressions along one dimension can not be solved.");
 				}//endif
 
-				//WIDTH
+				//RHS WIDTH
 				var points = map([position, width], function(e){
 					if (e===undefined) return;
 					var leftPosition = '$("#' + e.r.id + '").offset().' + mapper.left;
@@ -201,13 +215,14 @@ var layoutAll;
 						"rcode": code
 					};
 				});
+
 				//WIDTH IS ALWAYS DYNAMIC
 				var selfWidth;
 				if (width) {
-					selfWidth = '((' + points[0].rcode + '-' + points[1].rcode + ')/' + (points[0].l - points[1].l) + ')+"px"';
-					layoutFunction += '$("#' + selfID + '").' + mapper.outerWidth + '(' + selfWidth + ');\n';
+					selfWidth = '((' + points[0].rcode + '-' + points[1].rcode + ')/' + (points[0].l - points[1].l) + ')';
+					layoutFunction += '$("#' + lhsID + '").' + mapper.outerWidth + '(' + selfWidth + ');\n';
 				}else{
-					selfWidth = '$("#' + selfID + '").' + mapper.outerWidth + '()';
+					selfWidth = '$("#' + lhsID + '").' + mapper.outerWidth + '()';
 				}//endif
 
 				//POSITION ALWAYS EXISTS
@@ -220,10 +235,10 @@ var layoutAll;
 					}//endif
 
 					if (points[0].l==0){
-						layoutFunction += '$("#' + selfID + '").offset({"' + mapper.left+'": '+ leftMost+ '+"px"});\n';
+						layoutFunction += '$("#' + lhsID + '").offset({"' + mapper.left+'": '+ leftMost+ '});\n';
 					}else{
-						selfWidth = '$("#' + selfID + '").' + mapper.outerWidth + '()';
-						layoutFunction += '$("#' + selfID + '").offset({"' + mapper.left+'":('+ leftMost+'-'+selfWidth+'*'+points[0].l+')+"px"});\n';
+						selfWidth = '$("#' + lhsID + '").' + mapper.outerWidth + '()';
+						layoutFunction += '$("#' + lhsID + '").offset({"' + mapper.left+'": '+ leftMost+'-'+selfWidth+'*'+points[0].l+'});\n';
 					}//endif
 				}//endif
 
@@ -235,23 +250,28 @@ var layoutAll;
 			Log.note("dynamicLayout="+layoutFunction)
 		}//endif
 
-		var dynamicLayout;
 		eval("dynamicLayout=" + layoutFunction);
 		dynamicLayout();
-		window.onresize = debounce(dynamicLayout, DELAY_JAVASCRIPT);
+		dynamicLayout = debounce(dynamicLayout, DELAY_JAVASCRIPT);
+		window.onresize = dynamicLayout;
 	}//function
 
 
 	function prep(self, parent){
-		if (DEBUG){
-			Log.note(self.attr("id")+" is child of "+parent.attr("id"));
-		}
+		var parentID=parent.attr("id");
+		if (DEBUG) Log.note(self.attr("id")+" is child of "+parentID);
+
+		if (parentID=="window"){
+			self.css({"position": "fixed"});
+			return;
+		}//endif
+
 		var p = parent.css("position");
 		if (p === undefined || p=="static") {
 			parent.css({"position": "relative"});
 		}//endif
 
-		if (self.parent().attr("id") != parent.attr("id")) {
+		if (self.parent().attr("id") != parentID) {
 			parent.append(self);
 		}//endif
 		self.css({"position": "absolute"})
@@ -381,10 +401,9 @@ var layoutAll;
 					var w = $("#window");
 					if (w.length == 0) {
 						$("html").css({"height":"100%"});
-
 						body = $("body");
-						body.append('<div id="window" style="position:fixed;top:0;left:0;right:0;bottom:0;"></div>');
 						body.css({"position": "relative", "height":"100%"});
+						body.prepend('<div id="window" style="position:fixed;top:0;left:0;right:0;bottom:0;z-index:-1000"></div>');
 					}//endif
 				}//endif
 
@@ -418,8 +437,15 @@ var layoutAll;
 		var output = [];
 		for (var i = 0; i < formula.length; i++) {
 			var g = formula[i];
-			for (var u = 0; u < i; u++) {
-				if (g.l.coord == formula[u].l.coord && g.r.coord == formula[u].r.coord) g = undefined;
+			for (var u = 0; u < i; u++){
+				try {
+					if (g.l.coord == formula[u].l.coord && g.r.coord == formula[u].r.coord && g.r.id == formula[u].r.id) {
+						g = undefined;
+						break;
+					}//endif
+				}catch(e){
+					Log.error("Logic error!");
+				}//try
 			}//for
 			if (g) output.push(g);
 		}//for
@@ -480,5 +506,47 @@ var layoutAll;
 		}//for
 		return output;
 	}//method
+
+	function toposort(edges, nodes){
+		/*
+		edges IS AN ARRAY OF [parent, child] PAIRS
+		nodes IS AN OPTIONAL ARRAY OF ALL NODES
+		 */
+		if (!nodes){
+			nodes = uniqueNodes(edges);
+		}//endif
+		var sorted = [];
+		var visited = {};
+
+		function visit(node, predecessors){
+			if (predecessors.indexOf(node) >= 0) {
+				Log.error(node + " found in loop" + JSON.stringify(predecessors))
+			}//endif
+
+			if (visited[node]) return;
+			visited[node] = true;
+
+			edges.forEach(function(edge){
+				if (edge[1] == node) {
+					visit(edge[0], predecessors.concat([node]))
+				}//endif
+			});
+			sorted.push(node);
+		}//function
+
+		nodes.forEach(function(n){
+			if (!visited[n]) visit(n, [])
+		});
+		return sorted;
+	}
+
+	function uniqueNodes(arr){
+		var res = {};
+		arr.forEach(function(edge){
+			res[edge[0]] = true;
+			res[edge[1]] = true;
+		});
+		return Object.keys(res);
+	}//function
 
 })();

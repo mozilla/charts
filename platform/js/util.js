@@ -21,18 +21,28 @@ function refresher(func){
 
 
 function sidebarSlider(){
+	var WIDTH = "320px";
+
 	$("body").css("display", "block");
 
 	$('.sidebar_name').click(function(){
 		var self = $(this);
 		if (self.hasClass("selected")) {
 			self.removeClass("selected");
-			$("#sidebar").animate({"width": "0px"}, 500);
-			$(".content").animate({"margin-left": "60px"}, 500);  //TODO:
+			$("#sidebar").animate({"width": "0px"}, 500, undefined, function(){
+				setTimeout(function(){
+					$("#sidebar").css({"width": "0px"});
+					dynamicLayout();
+				}, 500)
+			});
 		} else {
 			self.addClass("selected");
-			$("#sidebar").animate({"width": "300px"}, 500);
-			$(".content").animate({"margin-left": "360px"}, 500);
+			$("#sidebar").animate({"width": WIDTH}, 500, undefined, function(){
+				setTimeout(function(){
+					$("#sidebar").css({"width": WIDTH});
+					dynamicLayout();
+				}, 500)
+			});
 		}//endif
 	});
 }
@@ -194,8 +204,6 @@ function cleanupComponent(name){
 
 function bugDetails(bugs, categories){
 	// categories IS THE DIMENSION DEFINTION
-
-
 	var header = "";
 	var rows = "";
 
@@ -259,7 +267,7 @@ function bugDetails(bugs, categories){
 	bugs = Qb.sort(bugs, ["release.order", "overallPriority"]);
 
 	var output = new Template([
-		"<table class='table' style='width:auto'>",
+		"<table class='table' style='width:100%'>",
 		"<thead><tr>",
 		"<th><div style='width:70px;'>ID</div></th>",
 		"<th><div>Summary</div></th>",

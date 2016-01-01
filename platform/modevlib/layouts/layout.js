@@ -453,19 +453,29 @@ var dynamicLayout;
 	}//function
 
 
-	//RETURN FUNCTION THAT WILL ONLY CALL f AFTER time MS HAS PASSED
-	function debounce(f, timeout){
-		var pending = undefined;
+	// RETURN FAST, AND QUEUE f FOR EXECUTION
+	// ENSURE f WILL ALWAYS RUN AFTER LAST CALL
+	function debounce(f){
+		var pending = false;
+		var running = false;
 
 		function output(){
 			var self = this;
 			var args = arguments;
-			if (pending) clearTimeout(pending);
+
+			if (running){
+				pending = pending || true;
+				return;
+			}//endif
+			running=true;
+			pending=false;
+
 			var g = function(){
 				f.apply(self, args);
-				pending = undefined;
+				running=false;
 			};
-			pending = setTimeout(g, timeout);
+			setTimeout(g, 0);
+			output();
 		}//function
 		return output;
 	}//function

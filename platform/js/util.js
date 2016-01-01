@@ -29,20 +29,12 @@ function sidebarSlider(){
 		var self = $(this);
 		if (self.hasClass("selected")) {
 			self.removeClass("selected");
-			$("#sidebar").animate({"width": "0px"}, 500, undefined, function(){
-				setTimeout(function(){
-					$("#sidebar").css({"width": "0px"});
-					dynamicLayout();
-				}, 500)
-			});
+			$("#sidebar").css({"width": "0px"});
+			dynamicLayout();
 		} else {
 			self.addClass("selected");
-			$("#sidebar").animate({"width": WIDTH}, 500, undefined, function(){
-				setTimeout(function(){
-					$("#sidebar").css({"width": WIDTH});
-					dynamicLayout();
-				}, 500)
-			});
+			$("#sidebar").css({"width": WIDTH});
+			dynamicLayout();
 		}//endif
 	});
 }

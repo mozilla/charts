@@ -14,6 +14,12 @@ aMath = {};
 		return !isNaN(parseFloat(n)) && isFinite(n);
 	};
 
+	aMath.isInteger = function(n){
+		if (n == null) return null;
+		return !isNaN(parseInt(n)) && isFinite(n);
+	};
+
+
 	aMath.isNaN = function(n){
 		return typeof(n) == "number" && n != +n;
 	};

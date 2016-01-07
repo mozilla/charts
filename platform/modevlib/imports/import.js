@@ -16,7 +16,7 @@ var importScript;
 
 	var METHOD_NAME = "importScript";
 	var FORCE_RELOAD = false;  //COMPENSATE FOR BUG https://bugzilla.mozilla.org/show_bug.cgi?id=991252
-	var DEBUG = true;
+	var DEBUG = false;
 
 	if (typeof(window.Log) == "undefined") {
 		window.Log = {

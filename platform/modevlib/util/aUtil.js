@@ -15,16 +15,6 @@ var Map = {};
 // null IS A VALID VALUE INDICATING THE VALUE IS UNKNOWN
 ////////////////////////////////////////////////////////////////////////////////
 (function(){
-	function splitField(fieldname){
-		try {
-			return fieldname.replaceAll("\\.", "\b").split(".").map(function(v){
-				return v.replaceAll("\b", ".");
-			});
-		} catch (e) {
-			Log.error("Can not split field", e);
-		}//try
-	}//method
-
 	Map.newInstance = function(key, value){
 		var output = {};
 		output[key] = value;
@@ -317,6 +307,9 @@ Util.returnNull = function(__row){
 
 
 //POOR IMPLEMENTATION
+/*
+ * @return {string} A Random GUID
+ */
 Util.GUID = function(){
 	return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function(c){
 		var r = aMath.random() * 16 | 0, v = c == 'x' ? r : (r & 0x3 | 0x8);
@@ -325,4 +318,34 @@ Util.GUID = function(){
 };//method
 
 
+function splitField(fieldname){
+	try {
+		return fieldname.replaceAll("\\.", "\b").split(".").map(function(v){
+			return v.replaceAll("\b", ".");
+		});
+	} catch (e) {
+		Log.error("Can not split field", e);
+	}//try
+}//method
 
+
+
+deepCopy = function(value) {
+    if (typeof value !== "object" || !value)
+        return value;
+
+	var copy;
+	var k;
+    if (Array.isArray(value)){
+        copy = [];
+        for (k=value.length;k--;) copy[k] = deepCopy(value[k]);
+        return copy;
+    }//endif
+
+    var cons = value.constructor;
+    if (cons === RegExp || cons === Date) return value;
+
+    copy = cons();
+	Map.forall(value, function(k, v){copy[k]=deepCopy(v);});
+	return copy;
+};

@@ -513,6 +513,7 @@ if (!Mozilla) var Mozilla = {"name": "Mozilla", "edges": []};
 						]}},
 						{
 							"name": "Other",
+							"style": {"color": "#CCCCCC"},
 							"esfilter": {"match_all": {}} // Any tracked bug not in one of the product/component combinations above.
 						}
 					]

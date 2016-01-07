@@ -69,7 +69,7 @@ Matrix=function(arg){
 function forall1(edge, func){
 	var data = this.data;
 	var num = this.num;
-	var c = new Uint32Array(this.num);
+	var c = [];
 
 	function iter(v, d){
 		if (d == num) {
@@ -96,7 +96,7 @@ Matrix.prototype.forall = function(func, other){
 
 	var data = this.data;
 	var num = this.num;
-	var c = new Uint32Array(this.num);
+	var c = [];
 
 	function iter(v, d){
 		if (d == num) {
@@ -120,7 +120,7 @@ Matrix.prototype.map = function (func) {
 // func MUST RETURN A NEW VALUE
 	var data=this.data;
 	var num = this.num;
-	var c = new Uint32Array(this.num);
+	var c = [];
 
 	function iter(v, d) {
 		if (d == num) {
@@ -137,6 +137,76 @@ Matrix.prototype.map = function (func) {
 	return iter(data, 0);
 };
 
+/*
+ * RETURN A NEW MATRIX WITH LESS COORDINATES
+ * slice - AN ARRAY OF SLICES
+ * EACH SUB-SLICE IS
+ *  * undefined - TO INDICATE ALL
+ *  * AN ARRAY OF VALUES TO BE KEPT
+ *  * RANGE {"min":min, "max":max}, BOTH PARAMETERS OPTIONAL
+ */
+Matrix.prototype.slice=function(slice){
+
+	function _slicer(_slice, data){
+		var slice=_slice[0];
+
+		if (_slice.length==1){
+			if (slice===undefined){
+				return data;
+			}else if (Array.isArray(slice)){
+				return data.map(function(m, i){
+					if (slice.contains(i)) return m;
+				});
+			}else{
+				return data.map(function(m, i){
+					if (slice.min === undefined) {
+						if (slice.max === undefined) {
+							return m;
+						} else {
+							if (i < slice.max) return m;
+						}//endif
+					} else {
+						if (slice.max === undefined) {
+							if (i >= slice.min) return m;
+						} else {
+							if (slice.min <= i && i < slice.max) return m;
+						}//endif
+					}//endif
+				});
+			}//endif
+		}else{
+			if (slice===undefined){
+				return data.map(function(d){return _slicer(_slice.slice(1), d);});
+			}else if (Array.isArray(slice)){
+				return data.map(function(d, i){
+					if (slice.contains(i)) return _slicer(_slice.slice(1), d);
+				});
+			}else{
+				return data.map(function(d, i){
+					if (slice.min === undefined) {
+						if (slice.max === undefined) {
+							return _slicer(_slice.slice(1), d);
+						} else {
+							if (i < slice.max) return _slicer(_slice.slice(1), d);
+						}//endif
+					} else {
+						if (slice.max === undefined) {
+							if (i >= slice.min) return _slicer(_slice.slice(1), d);
+						} else {
+							if (slice.min <= i && i < slice.max) return _slicer(_slice.slice(1), d);
+						}//endif
+					}//endif
+				});
+			}//endif
+		}//endif
+	}
+
+	if (slice.length<this.dim.length) slice[this.dim.length-1]=undefined;
+	var newData = new Matrix({"data":_slicer(slice, this.data)});
+	return newData;
+};
+
+
 //PROVIDE func(v, i, c, cube) WHERE
 // v - IS A SUB-CUBE
 // i - IS THE INDEX INTO THE edge
@@ -145,7 +215,7 @@ Matrix.prototype.map = function (func) {
 // func MUST RETURN A SUBCUBE, OR undefined
 Matrix.prototype.filter = function (edge, func) {
 	var data=this.data;
-	var c = new Uint32Array(edge);
+	var c = [];
 
 	function iter(v, d) {
 		var output=[];

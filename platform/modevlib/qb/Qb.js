@@ -1425,12 +1425,16 @@ function joinField(path){
 		output.data = m.slice(slicer);
 
 		//SLICE THE PARTITIONS
-		output.edges = Map.clone(output.edges);
+		output.edges = deepCopy(output.edges);
 		output.edges[edgeIndex].partitions = edge.domain.partitions.map(function(p, i){
 			if (hasData[i]) return p;
 		});
-		output.edges[edgeIndex].partitions.forall(function(p, i){
-			p.dataIndex = i;
+		output.edges.forall(function(e){
+			if (e.domain.type=="time"){
+				e.domain.partitions.forall(function(p, i){
+					p.dataIndex = i;
+				});
+			}//endif
 		});
 
 		return output

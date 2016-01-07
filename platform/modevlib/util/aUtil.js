@@ -346,8 +346,6 @@ deepCopy = function(value) {
     if (cons === RegExp || cons === Date) return value;
 
     copy = cons();
-    for (k in value) {
-        copy[k] = deepCopy(value[k]);
-    }
-    return copy;
+	Map.forall(value, function(k, v){copy[k]=deepCopy(v);});
+	return copy;
 };

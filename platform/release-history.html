@@ -6,7 +6,7 @@
 <head>
 	<meta charset="utf-8">
 
-	<title>Release History</title>
+	<title>Uplift History</title>
 	<script type="text/javascript" src="modevlib/imports/import.js"></script>
 </HEAD>
 <BODY>
@@ -21,8 +21,8 @@
 		total is true.  Bugs marked with multiple keywords are counted only
 		once, with preference given to security, then stability.
 		<br><br>
-		The <b>by Team</b> charts does not show all teams.  Only the top 5
-		teams, with 2 or more bugs, is shown.  All other team counts are
+		The <b>Team</b> charts do not show all teams.  Only the top 5
+		teams, with 2 or more bugs, are shown.  All other team counts are
 		added to he <b>other</b> category for visual clarity.
 	</div>
 	<hr>
@@ -36,7 +36,7 @@
 <div id="sidebar_name" class="sidebar_name" layout="top=window.top;bottom=footer.top;left=sidebar.right;">
 	<div>Configuration</div>
 </div>
-<div class="content" layout="tr=window.tr;left=sidebar_name.right;bottom=footer.top" style="padding: 10px;">
+<div class="content" layout="tr=window.tr;left=sidebar_name.right;" style="padding: 10px;">
 	<h1 id="title" style="display:inline-block;">Release Management Uplifts</h1>
 	<table>
 		<tr>
@@ -149,30 +149,34 @@ function showTrain(aurora, timeDomain, offset, name, otherThread){
 		//MAP FROM bug_id TO min/max PAIR
 		var timestamps = {};
 		allBugs.edges[0].domain.partitions.forall(function(p, i){
-			timestamps[p.value] = allBugs.cube[i];
+//			if (p.value==1207423) {
+				timestamps[p.value] = allBugs.cube[i];
+//			}//endif
 		});
 
+
 		// A BE SURE TO MATCH THE cf_tracking_firefox TO THE DATE FOUND
-		var bugTrainFilter = {"or": Mozilla.Platform.Release.edges.map(function(e, i){
-			var releaseDate = Date.newInstance(e.releaseDate);
-			var retireDate = Date.newInstance(e.retireDate);
-			var candidate = {"and": [
-				{"term": Map.newInstance("cf_tracking_firefox"+(e.version+offset), "+")},
-				{"terms": {"bug_id": Map.map(timestamps, function(bug_id, timestamp){
-					if (releaseDate <= timestamp && timestamp < retireDate) return bug_id;
-				})}}
-			]};
-			if (candidate.and[1].terms.bug_id.length>0){
-				return candidate;
-			}//endif
-		})};
+//		var bugTrainFilter = {"or": Mozilla.Platform.Release.edges.map(function(e, i){
+//			var releaseDate = Date.newInstance(e.releaseDate);
+//			var retireDate = Date.newInstance(e.retireDate);
+//			var candidate = {"and": [
+//				{"term": Map.newInstance("cf_tracking_firefox"+(e.version+offset), "+")},
+//				{"terms": {"bug_id": Map.map(timestamps, function(bug_id, timestamp){
+//					if (releaseDate <= timestamp && timestamp < retireDate) return bug_id;
+//				})}}
+//			]};
+//			if (candidate.and[1].terms.bug_id.length>0){
+//				return candidate;
+//			}//endif
+//		})};
 
 		var details = yield (ESQuery.run({
 			"from": "bugs",
 			"select": ["bug_id"].union(extraFields),
 			"esfilter": {"and":[
 				Mozilla.CurrentRecords.esfilter,
-				bugTrainFilter
+				{"terms": {"bug_id": Map.getKeys(timestamps)}}
+//				bugTrainFilter
 			]}
 		}));
 

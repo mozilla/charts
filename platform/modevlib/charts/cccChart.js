@@ -411,6 +411,7 @@ aChart.show=function(params){
 	var chartCube=params.cube;
 	var cube = coalesce(chartCube.cube, chartCube.data);
 
+	//EXPECTING cube TO BE AN OBJECT WITH cube[chartCube.select] BEING AN ARRAY
 	if (!(cube instanceof Array)){
 		//THE ActiveData CUBE
 		//do nothing
@@ -486,12 +487,11 @@ aChart.show=function(params){
 			return v.name;
 		});
 	}else if (chartCube.edges.length==2){
-		if (chartCube.select instanceof Array){
-			if (chartCube.select.length>1) {
+		if (chartCube.select instanceof Array) {
+			if (chartCube.select.length > 1) {
 				Log.error("Can not chart when select clause is an array");
-			}else{
+			} else {
 				chartCube.select = chartCube.select[0];
-				cube = new Matrix({"data":cube[chartCube.select.name]})
 			}//endif
 		}//endif
 		categoryAxis=chartCube.edges[0];

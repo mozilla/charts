@@ -100,8 +100,10 @@ function getHistoryFilter(timeDomain, offset){
 //	};
 }//function
 
-function showTrain(aurora, timeDomain, offset, name){
-	Thread.run(function*(){
+var chartMax=-1;   // IT IS UNFORTUNATE THIS CHART LIB DOES NOT SYNCH CHARTS
+
+function showTrain(aurora, timeDomain, offset, name, otherThread){
+	var outputThread = Thread.run(function*(){
 
 		timeDomain = Map.copy(timeDomain);
 	    timeDomain.dateMarks=Mozilla.Platform.Release.edges.map(function(e){
@@ -136,12 +138,27 @@ function showTrain(aurora, timeDomain, offset, name){
 			timestamps[p.value] = allBugs.cube[i];
 		});
 
+		// A BE SURE TO MATCH THE cf_tracking_firefox TO THE DATE FOUND
+		var bugTrainFilter = {"or": Mozilla.Platform.Release.edges.map(function(e, i){
+			var releaseDate = Date.newInstance(e.releaseDate);
+			var retireDate = Date.newInstance(e.retireDate);
+			var candidate = {"and": [
+				{"term": Map.newInstance("cf_tracking_firefox"+(e.version+offset), "+")},
+				{"terms": {"bug_id": Map.map(timestamps, function(bug_id, timestamp){
+					if (releaseDate <= timestamp && timestamp < retireDate) return bug_id;
+				})}}
+			]};
+			if (candidate.and[1].terms.bug_id.length>0){
+				return candidate;
+			}//endif
+		})};
+
 		var details = yield (ESQuery.run({
 			"from": "bugs",
 			"select": ["bug_id"].union(extraFields),
 			"esfilter": {"and":[
 				Mozilla.CurrentRecords.esfilter,
-				{"terms": {"bug_id": Map.getKeys(timestamps)}}
+				bugTrainFilter
 			]}
 		}));
 
@@ -162,16 +179,31 @@ function showTrain(aurora, timeDomain, offset, name){
 			"meta": {"format": "cube"}
 		}));
 
+		//SKEYWORD
+		var byWeek = yield (Q({
+			"from": details,
+			"select": {"name": "bug_count", "value": "bug_id", "aggregate": "count"},
+			"edges":[
+				{"name":"week", "value":"modified_ts", "domain": timeDomain}
+			],
+			"meta": {"format": "cube"}
+		}));
+		if (otherThread) yield (Thread.join(otherThread));
+		chartMax = aMath.niceCeiling(aMath.max(chartMax, aMath.MAX(byWeek.data.bug_count)));
+
 		//FLIP THIS DIMENSION FOR PRESENTATION
 //		byType.edges[0].domain.partitions = Qb.reverse(byType.edges[0].domain.partitions);
 //		byType.data.bug_count = Qb.reverse(byType.data.bug_count);
+
 
 		aChart.show({
 			"name": name,
 			"id": "byType"+name,
 			"type": "bar",
 			valuesVisible: true,
+			isReversed: true,
 		    valuesOptimizeLegibility: true,
+			orthoAxisFixedMax: chartMax,
 			"stacked": true,
 			"cube": byType,
 			"clickAction": clicker(byType)
@@ -187,7 +219,7 @@ function showTrain(aurora, timeDomain, offset, name){
 			]
 		}));
 
-		byTeam = Qb.minPercent(byTeam, "bug_count", "type", {"value": 7});
+		byTeam = Qb.minPercent(byTeam, "bug_count", "type", {"count": 5});
 
 
 		aChart.show({
@@ -196,6 +228,7 @@ function showTrain(aurora, timeDomain, offset, name){
 			"type": "bar",
 			valuesVisible: true,
 		    valuesOptimizeLegibility: true,
+			orthoAxisFixedMax: chartMax,
 			"stacked": true,
 			"cube": byTeam,
 			"clickAction": clicker(byTeam)
@@ -235,6 +268,7 @@ function showTrain(aurora, timeDomain, offset, name){
 			};//function
 		}//function
 	});
+	return outputThread;
 };//function
 
 
@@ -272,8 +306,8 @@ importScript(['js/main_lib.js', 'modevlib/charts/cccChart.js', 'modevlib/layouts
 		var beta = getHistoryFilter(timeDomain, 1);
 		var aurora = getHistoryFilter(timeDomain, 2);
 
-		showTrain(beta, timeDomain, 1, "Beta");
-		showTrain(aurora, timeDomain, 2, "Aurora");
+		var auroraThread = showTrain(aurora, timeDomain, 2, "Aurora");
+		showTrain(beta, timeDomain, 1, "Beta", auroraThread);
 
 	};
 	$(document).ready(function(){

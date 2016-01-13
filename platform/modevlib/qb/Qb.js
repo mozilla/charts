@@ -1363,7 +1363,9 @@ function joinField(path){
 	/*
 	 min MUST BE AS STRUCTURE WITH percent OR value PROPERTY
 	 ALL VALUES LESS THAN THIS WILL BE ADDED TO other
-	 splitBy - THE ONE COLUMN THAT WILL BE PARTIALLY AGGREGATED
+	 value - NAME OF FIELD WITH VALUE
+	 aggBy - THE ONE COLUMN THAT WILL BE PARTIALLY AGGREGATED
+	 min - OBJECT WITH ONE OF ["count", "percent", "value"]
 	 */
 	Qb.minPercent = function(cube, value, aggBy, min){
 		//FIND VALUE WE WILL BE USING TO GROUP
@@ -1392,52 +1394,67 @@ function joinField(path){
 		}//endif
 		if (!edge) Log.error("edge by name of " + aggBy + " is not found");
 
-		var minValue = null;
+		var m = new Matrix({"data":coalesce(cube.cube, cube.data)});
+		var otherIndex = m.dim[edgeIndex]-1; //PUT other ON LAST ENTRY
+		hasData[otherIndex]=true;
+		var output;
+
 		if (min.percent) {
 			Log.error("can not handle percent yet");
+		} else if (min.count) {
+			output = m.mapN(m.dim.map(function(d, i){ if (i!=edgeIndex) return i;}), function(values){
+				var rank = Qb.sort(values);
+				var minValue = Math.max(rank[min.count-1], 2);
+				values.forall(function(v, i){
+					if (i==otherIndex) {
+						//skip
+					} else if (v<minValue){
+						values[otherIndex] +=v;
+						values[i] = 0;
+					}else{
+						hasData[i] = true;
+					}//endif
+				});
+				return values;
+			});
 		} else if (min.value) {
+			var minValue = null;
 			minValue = min.value;
+			output = m.mapN(m.dim.map(function(d, i){ if (i!=edgeIndex) return i;}), function(values){
+				values.forall(function(v, i){
+					if (i==otherIndex){
+						//skip
+					}else if (v<minValue){
+						values[otherIndex]+=v;
+						values[i]=0;
+					}else{
+						hasData[i] = true;
+					}//endif
+				});
+				return values;
+			});
 		} else {
 			Log.error("Expecting a min.value, or min.percent");
 		}//endif
 
-		var m = new Matrix({"data":coalesce(cube.cube, cube.data)});
-		var otherIndex = m.dim[edgeIndex]-1; //PUT other ON LAST ENTRY
-		hasData[otherIndex]=true;
-		m.forall(function(value, coord){
-			if (coord[edgeIndex]==otherIndex) return;
-			var nullAt = coord.copy();
-			nullAt[edgeIndex] = otherIndex;
-
-			if (value < minValue) {
-				m.set(nullAt, m.get(nullAt) + m.get(coord));
-				m.set(coord, 0);
-			} else {
-				hasData[coord[edgeIndex]] = true;
-			}//endif
-		});
-
-		var output = Map.copy(cube);
+		var queryResult = Map.copy(cube);
 
 		//SLICE THE DATA
 		var slicer = [];
 		slicer[edgeIndex] = hasData.map(function(v, i){if (v) return i;});
-		output.data = m.slice(slicer);
+		queryResult.data = Map.newInstance(value, output.slice(slicer).data);
+		queryResult.cube = undefined;
 
 		//SLICE THE PARTITIONS
-		output.edges = deepCopy(output.edges);
-		output.edges[edgeIndex].partitions = edge.domain.partitions.map(function(p, i){
+		queryResult.edges = deepCopy(queryResult.edges);
+		queryResult.edges[edgeIndex].domain.partitions = edge.domain.partitions.map(function(p, i){
 			if (hasData[i]) return p;
 		});
-		output.edges.forall(function(e){
-			if (e.domain.type=="time"){
-				e.domain.partitions.forall(function(p, i){
-					p.dataIndex = i;
-				});
-			}//endif
+		queryResult.edges[edgeIndex].domain.partitions.forall(function(p, i){
+			p.dataIndex = i;
 		});
 
-		return output
+		return queryResult
 	};
 
 

@@ -21,7 +21,7 @@ function refresher(func){
 
 
 function sidebarSlider(){
-	var WIDTH = "320px";
+	var WIDTH = "340px";
 
 	$("body").css("display", "block");
 

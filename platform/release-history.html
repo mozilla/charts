@@ -19,10 +19,8 @@
 	<div id="last-updated" style="text-align: center;width:300px;"></div>
 	<hr>
 	<div id="filters" style="width:300px;" class="menu">
-
-
 	</div>
-	<div id="parameters" style="display:none;">
+	<div id="parameters">
 	</div>
 </div>
 <div id="sidebar_name" class="sidebar_name" layout="top=window.top;bottom=footer.top;left=sidebar.right;">
@@ -65,7 +63,7 @@
 <script type="application/javascript">
 
 function getHistoryFilter(timeDomain, offset){
-
+	var showLables = false;
 	var SOLVED = ["fixed"];
 
 	return {"or": Mozilla.Platform.Release.edges.map(function(e, i){
@@ -206,7 +204,7 @@ function showTrain(aurora, timeDomain, offset, name, otherThread){
 			"name": name,
 			"id": "byType"+name,
 			"type": "bar",
-			valuesVisible: true,
+			valuesVisible: showLabels,
 			isReversed: true,
 		    valuesOptimizeLegibility: true,
 			orthoAxisFixedMax: chartMax,
@@ -232,7 +230,7 @@ function showTrain(aurora, timeDomain, offset, name, otherThread){
 			"name": name,
 			"id": "byTeam" + name,
 			"type": "bar",
-			valuesVisible: true,
+			valuesVisible: showLabels,
 		    valuesOptimizeLegibility: true,
 			orthoAxisFixedMax: chartMax,
 			"stacked": true,
@@ -298,13 +296,15 @@ importScript(['js/main_lib.js', 'modevlib/charts/cccChart.js', 'modevlib/layouts
 //		var team = GUI.state.team.getSimpleState();
 
 //		$("#title").html(team);
+		var startTime = Date.newInstance(GUI.state["sampleMin"]);
+		var endTime = Date.newInstance(GUI.state["sampleMax"]);
+		var interval = Duration.newInstance(GUI.state["sampleInterval"]);
+		showLabels = GUI.state["showLabels"];
 
-		var eow = Date.today().ceiling("week");
-		var start = eow.subtract(Duration.newInstance("18week"));
 		var timeDomain = {
 			"type": "time",
-			"min": start,
-			"max": eow,
+			"min": startTime,
+			"max": endTime,
 			"interval": "week"
 		};
 
@@ -320,16 +320,15 @@ importScript(['js/main_lib.js', 'modevlib/charts/cccChart.js', 'modevlib/layouts
 		GUI.setup(
 			createChart,
 			[
-				{"id": "team", "name": "Teams", "type": PartitionFilter.newInstance({
-					"id": "Teams",
-					"name": "All Teams",
-					"dimension": Mozilla.Platform.Team,
-					"onlyOne": true,
-					"expandAll": true
-				})},
-				{"id":"show", "name":"Categories", "type":"set", "default":[]}
+				{"id":"sampleMin", "name":"Start Date", "type":"time", "default":Date.eod().add("-18week")},
+				{"id":"sampleMax", "name":"End Date", "type":"time", "default":Date.today().ceilingWeek()},
+				{"id":"sampleInterval", "name":"Interval", "type":"duration", "default":"week"},
+				{"id": "showLabels", "name":"Show Labels", "type":"boolean", "default":false}
 			],
-			[],
+			[
+				"sampleMin=Date.newInstance(sampleMin).floor(Duration.newInstance(sampleInterval)).format('yyyy-MM-dd')",
+				"sampleMax=Date.newInstance(sampleMax).addDay(1).floor(Duration.newInstance(sampleInterval)).addDay(-1).format('yyyy-MM-dd')"
+			],
 			null,
 			false,		//SHOW DEFAULT FILTERS?
 			false,

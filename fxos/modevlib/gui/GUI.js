@@ -140,7 +140,7 @@ GUI = {};
 		//SHOW THE LAST TIME ES WAS UPDATED
 		GUI.showLastUpdated = function(indexName) {
 			if (!GUI.checkLastUpdated) return;
-			
+
 			Thread.run("show last updated timestamp", function*() {
 				var time;
 
@@ -265,6 +265,8 @@ GUI = {};
 					simplestate[k] = v.getSimpleState();
 				} else if (jQuery.isArray(v)) {
 					if (v.length > 0) simplestate[k] = v.join(",");
+				} else if (p.type == "boolean") {
+					simplestate[k] =convert.value2json(v==true);
 				} else if (p && p.type == "json") {
 					v = CNV.Object2JSON(v);
 					v = v.escape(GUI.urlMap);
@@ -312,6 +314,8 @@ GUI = {};
 					} catch (e) {
 						Log.error("Malformed JSON: " + v);
 					}//try
+				}else if (p.type=="boolean"){
+					GUI.state[k] = convert.json2value(v);
 				} else if (p && p.type == "text") {
 					v = v.escape(Map.inverse(GUI.urlMap));
 					GUI.state[k] = v;

@@ -283,6 +283,8 @@ GUI = {};
 					}else{
 						simpleState[k] = undefined;
 					}//endif
+				} else if (p && p.type == "boolean") {
+					simpleState[k] = convert.value2json(v == true);
 				} else if (p && p.type == "json") {
 					v = convert.value2json(v);
 					v = v.escape(GUI.urlMap);
@@ -318,6 +320,8 @@ GUI = {};
 					} catch (e) {
 						Log.error("Malformed JSON: " + v);
 					}//try
+				} else if (p && p.type == "boolean") {
+					GUI.state[k] = convert.json2value(v);
 				} else if (p && p.type == "text") {
 					v = v.escape(Map.inverse(GUI.urlMap));
 					GUI.state[k] = v;

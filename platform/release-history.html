@@ -11,9 +11,19 @@
 </HEAD>
 <BODY>
 <div id="sidebar" layout="tl=window.tl;bottom=footer.bottom;" style="width:0;overflow:hidden;">
-	<div id="description" style="width:300px;">
-		Release Management Uplifts<br>
-		Counts last time each bug changed to <code>status_firefoxXX=="fixed"</code>.
+	<div id="description" style="padding-left:10px;">
+		<h3>About</h3>
+		This dashboard counts "uplifts": Defined as bugs marked both
+		tracking_firefoxXX=="+" and status_firefoxXX=="fixed". Only the most
+		recent "fixed" is counted (on the off chance a bug toggles its status).
+		<br><br>
+		Uplifts categorized by keyword are only counted once so the stacked
+		total is true.  Bugs marked with multiple keywords are counted only
+		once, with preference given to security, then stability.
+		<br><br>
+		The <b>by Team</b> charts does not show all teams.  Only the top 5
+		teams, with 2 or more bugs, is shown.  All other team counts are
+		added to he <b>other</b> category for visual clarity.
 	</div>
 	<hr>
 	<div id="last-updated" style="text-align: center;width:300px;"></div>

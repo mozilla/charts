@@ -14,7 +14,7 @@
 	<div id="description" style="padding-left:10px;">
 		<h3>About</h3>
 		This dashboard counts "uplifts": Defined as bugs marked both
-		tracking_firefoxXX=="+" and status_firefoxXX=="fixed". Only the most
+		with patch marked approval-mozilla-beta=="+" and status_firefoxXX=="fixed". Only the most
 		recent "fixed" is counted (on the off chance a bug toggles its status).
 		<br><br>
 		Uplifts categorized by keyword are only counted once so the stacked
@@ -156,27 +156,33 @@ function showTrain(aurora, timeDomain, offset, name, otherThread){
 
 
 		// A BE SURE TO MATCH THE cf_tracking_firefox TO THE DATE FOUND
-//		var bugTrainFilter = {"or": Mozilla.Platform.Release.edges.map(function(e, i){
-//			var releaseDate = Date.newInstance(e.releaseDate);
-//			var retireDate = Date.newInstance(e.retireDate);
-//			var candidate = {"and": [
-//				{"term": Map.newInstance("cf_tracking_firefox"+(e.version+offset), "+")},
-//				{"terms": {"bug_id": Map.map(timestamps, function(bug_id, timestamp){
-//					if (releaseDate <= timestamp && timestamp < retireDate) return bug_id;
-//				})}}
-//			]};
-//			if (candidate.and[1].terms.bug_id.length>0){
-//				return candidate;
-//			}//endif
-//		})};
+		var bugTrainFilter = {"or": Mozilla.Platform.Release.edges.map(function(e, i){
+			var releaseDate = Date.newInstance(e.releaseDate);
+			var retireDate = Date.newInstance(e.retireDate);
+			var candidate = {"and": [
+				{"nested":{
+					"path":"attachments.flags",
+					"filter":{"and":[
+						{"term":{"attachments.flags.request_type": "approval-mozilla-"+name.toLowerCase()}},
+						{"term":{"attachments.flags.request_status": "+"}}
+					]}
+				}},
+				{"terms": {"bug_id": Map.map(timestamps, function(bug_id, timestamp){
+					if (releaseDate <= timestamp && timestamp < retireDate) return bug_id;
+				})}}
+			]};
+			if (candidate.and[1].terms.bug_id.length>0){
+				return candidate;
+			}//endif
+		})};
 
 		var details = yield (ESQuery.run({
 			"from": "bugs",
 			"select": ["bug_id"].union(extraFields),
 			"esfilter": {"and":[
 				Mozilla.CurrentRecords.esfilter,
-				{"terms": {"bug_id": Map.getKeys(timestamps)}}
-//				bugTrainFilter
+//				{"terms": {"bug_id": Map.getKeys(timestamps)}}
+				bugTrainFilter
 			]}
 		}));
 

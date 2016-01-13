@@ -317,7 +317,7 @@ importScript(['js/main_lib.js', 'modevlib/charts/cccChart.js', 'modevlib/layouts
 
 //		$("#title").html(team);
 		var startTime = Date.newInstance(GUI.state["sampleMin"]);
-		var endTime = Date.newInstance(GUI.state["sampleMax"]);
+		var endTime = Date.newInstance(GUI.state["sampleMax"]).ceilingWeek();
 		var interval = Duration.newInstance(GUI.state["sampleInterval"]);
 		showLabels = GUI.state["showLabels"];
 

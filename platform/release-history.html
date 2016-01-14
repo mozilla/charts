@@ -36,11 +36,12 @@
 <div id="sidebar_name" class="sidebar_name" layout="top=window.top;bottom=footer.top;left=sidebar.right;">
 	<div>Configuration</div>
 </div>
-<div class="content" layout="tr=window.tr;left=sidebar_name.right;" style="padding: 10px;">
+<div class="content" layout="top=page.top;left=sidebar_name.right;" style="padding: 10px;z-index:-1">
 	<h1 id="title" style="display:inline-block;">Release Management Uplifts</h1>
 	<table>
 		<tr>
-			<td colspan="2"><h2>Uplifts by Keyword</h2></td>
+			<td><h2>Beta Uplifts by Keyword</h2></td>
+			<td><h2>Aurora Uplifts by Keyword</h2></td>
 		</tr>
 		<tr>
 			<td>
@@ -51,7 +52,8 @@
 			</td>
 		</tr>
 		<tr>
-			<td colspan="2" style="padding-top: 20px"><h2>Uplifts by Team</h2></td>
+			<td style="padding-top: 20px"><h2>Beta Uplifts by Team</h2></td>
+			<td style="padding-top: 20px"><h2>Aurora Uplifts by Team</h2></td>
 		</tr>
 		<tr>
 			<td>
@@ -221,7 +223,6 @@ function showTrain(aurora, timeDomain, offset, name, otherThread){
 
 
 		aChart.show({
-			"name": name,
 			"id": "byType"+name,
 			"type": "bar",
 			valuesVisible: showLabels,
@@ -247,7 +248,6 @@ function showTrain(aurora, timeDomain, offset, name, otherThread){
 
 
 		aChart.show({
-			"name": name,
 			"id": "byTeam" + name,
 			"type": "bar",
 			valuesVisible: showLabels,

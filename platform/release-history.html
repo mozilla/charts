@@ -36,19 +36,31 @@
 <div id="sidebar_name" class="sidebar_name" layout="top=window.top;bottom=footer.top;left=sidebar.right;">
 	<div>Configuration</div>
 </div>
-<div class="content" layout="top=page.top;left=sidebar_name.right;" style="padding: 10px;z-index:-1">
+<div class="content" layout="top=page.top;left=sidebar_name.right;" style="padding: 10px 10px 50px 10px;">
 	<h1 id="title" style="display:inline-block;">Release Management Uplifts</h1>
 	<table>
+		<tr>
+			<td><h2>Beta Uplifts</h2></td>
+			<td><h2>Aurora Uplifts</h2></td>
+		</tr>
+		<tr>
+			<td>
+				<div id="Beta" class="chart" style="width:600px;height:80px;"></div>
+			</td>
+			<td>
+				<div id="Aurora" class="chart" style="width:600px;height:80px;"></div>
+			</td>
+		</tr>
 		<tr>
 			<td><h2>Beta Uplifts by Keyword</h2></td>
 			<td><h2>Aurora Uplifts by Keyword</h2></td>
 		</tr>
 		<tr>
 			<td>
-				<div id="byTypeBeta" class="chart" style="width:700px;height:400px;"></div>
+				<div id="byTypeBeta" class="chart" style="width:600px;height:300px;"></div>
 			</td>
 			<td>
-				<div id="byTypeAurora" class="chart" style="width:700px;height:400px;"></div>
+				<div id="byTypeAurora" class="chart" style="width:600px;height:300px;"></div>
 			</td>
 		</tr>
 		<tr>
@@ -57,10 +69,10 @@
 		</tr>
 		<tr>
 			<td>
-				<div id="byTeamBeta" class="chart" style="width:700px;height:400px;"></div>
+				<div id="byTeamBeta" class="chart" style="width:600px;height:300px;"></div>
 			</td>
 			<td>
-				<div id="byTeamAurora" class="chart" style="width:700px;height:400px;"></div>
+				<div id="byTeamAurora" class="chart" style="width:600px;height:300px;"></div>
 			</td>
 		</tr>
 	</table>
@@ -183,7 +195,6 @@ function showTrain(aurora, timeDomain, offset, name, otherThread){
 			"select": ["bug_id"].union(extraFields),
 			"esfilter": {"and":[
 				Mozilla.CurrentRecords.esfilter,
-//				{"terms": {"bug_id": Map.getKeys(timestamps)}}
 				bugTrainFilter
 			]}
 		}));
@@ -193,6 +204,31 @@ function showTrain(aurora, timeDomain, offset, name, otherThread){
 			d.modified_ts = timestamps[d.bug_id];
 		});
 		details.columns.append({"name": "modified_ts"});
+
+		//FIND THE CEILING
+		var byWeek = yield (Q({
+			"from": details,
+			"select": {"name": "bug_count", "value": "bug_id", "aggregate": "count"},
+			"edges":[
+				{"name":"week", "value":"modified_ts", "domain": timeDomain}
+			],
+			"meta": {"format": "cube"}
+		}));
+		if (otherThread) yield (Thread.join(otherThread));
+		chartMax = aMath.niceCeiling(aMath.max(chartMax, aMath.MAX(byWeek.data.bug_count)));
+
+		aChart.show({
+			"id": ""+name,
+			"type": "bar",
+			valuesVisible: showLabels,
+			isReversed: true,
+		    valuesOptimizeLegibility: true,
+			orthoAxisFixedMax: chartMax,
+			"stacked": true,
+			"cube": byWeek,
+			xAxisSize: 0,
+			"clickAction": clicker(byType)
+		});
 
 		//SHOW BY KEYWORD
 		var byType = yield (Q({
@@ -204,18 +240,6 @@ function showTrain(aurora, timeDomain, offset, name, otherThread){
 			],
 			"meta": {"format": "cube"}
 		}));
-
-		//SKEYWORD
-		var byWeek = yield (Q({
-			"from": details,
-			"select": {"name": "bug_count", "value": "bug_id", "aggregate": "count"},
-			"edges":[
-				{"name":"week", "value":"modified_ts", "domain": timeDomain}
-			],
-			"meta": {"format": "cube"}
-		}));
-		if (otherThread) yield (Thread.join(otherThread));
-		chartMax = aMath.niceCeiling(aMath.max(chartMax, aMath.MAX(byWeek.data.bug_count)));
 
 		//FLIP THIS DIMENSION FOR PRESENTATION
 //		byType.edges[0].domain.partitions = Qb.reverse(byType.edges[0].domain.partitions);
@@ -231,6 +255,7 @@ function showTrain(aurora, timeDomain, offset, name, otherThread){
 			orthoAxisFixedMax: chartMax,
 			"stacked": true,
 			"cube": byType,
+			xAxisSize: 40,
 			"clickAction": clicker(byType)
 		});
 
@@ -255,6 +280,7 @@ function showTrain(aurora, timeDomain, offset, name, otherThread){
 			orthoAxisFixedMax: chartMax,
 			"stacked": true,
 			"cube": byTeam,
+			xAxisSize: 40,
 			"clickAction": clicker(byTeam)
 		});
 

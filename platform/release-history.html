@@ -52,8 +52,8 @@
 			</td>
 		</tr>
 		<tr>
-			<td><h2>Beta Uplifts by Keyword</h2></td>
-			<td><h2>Aurora Uplifts by Keyword</h2></td>
+			<td style="padding-top: 20px"><h2>Beta Uplifts by Keyword</h2></td>
+			<td style="padding-top: 20px"><h2>Aurora Uplifts by Keyword</h2></td>
 		</tr>
 		<tr>
 			<td>
@@ -217,6 +217,7 @@ function showTrain(aurora, timeDomain, offset, name, otherThread){
 		if (otherThread) yield (Thread.join(otherThread));
 		chartMax = aMath.niceCeiling(aMath.max(chartMax, aMath.MAX(byWeek.data.bug_count)));
 
+		// SHOW TOTALS BY WEEK
 		aChart.show({
 			"id": ""+name,
 			"type": "bar",
@@ -227,7 +228,7 @@ function showTrain(aurora, timeDomain, offset, name, otherThread){
 			"stacked": true,
 			"cube": byWeek,
 			xAxisSize: 0,
-			"clickAction": clicker(byType)
+			"clickAction": clicker(byWeek)
 		});
 
 		//SHOW BY KEYWORD
@@ -287,30 +288,32 @@ function showTrain(aurora, timeDomain, offset, name, otherThread){
 
 		function clicker(query){
 			return function(series, x, d, elem){
-				Thread.run(function * (){
+				Thread.run(function*(){
 					var part;
 					var filter = [];
-					query.edges[0].domain.partitions.forall(function(p){
-						if (part) return;
-						if (p.name==series){
-							part=p;
-							filter.append(p.esfilter)
-						}else{
-							filter.append({"not": p.esfilter});
-						}//endif
-					});
+					if (query.edges.length==2){  //ONLY FIND PART IF WE HACVE TWO DIMENSIONS (OTHERWISE WE WERE GIVEN THE WEEKLY SUMMARY)
+						query.edges[0].domain.partitions.forall(function(p){
+							if (part) return;
+							if (p.name==series){
+								part=p;
+								filter.append(p.esfilter)
+							}else{
+								filter.append({"not": p.esfilter});
+							}//endif
+						});
+					}//endif
 					var week;
-					query.edges[1].domain.partitions.forall(function(w){
+					query.edges.last().domain.partitions.forall(function(w){
 						if (week) return;
 						if (w.value.subtract(x).milli==0){
 							week=w;
-							filter.append({"range":{"modified_ts":{"gte": w.min, "lt": w.max}}})
+							filter.append({"range": {"modified_ts": {"gte": w.min, "lt": w.max}}})
 						}//endif
 					});
 					var buglist = yield (Q({
 						"from":details,
 						"select":"bug_id",
-						"where":{"and":filter}
+						"where":{"and": filter}
 					}));
 
 					Bugzilla.showBugs(buglist.list);

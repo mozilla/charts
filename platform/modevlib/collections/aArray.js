@@ -82,7 +82,7 @@ importScript("../util/aUtil.js");
 	Array.prototype.map=function(func){
 		var output=[];
 		for(var i=0;i<this.length;i++){
-			var v=func(this[i], i);
+			var v=func(this[i], i, this);
 			if (v===undefined || v==null) continue;
 			output.push(v);
 		}//for

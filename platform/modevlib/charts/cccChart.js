@@ -677,7 +677,7 @@ aChart.show=function(params){
 			var temp=seriesLabels;
 			seriesLabels=categoryLabels;
 			categoryLabels=temp;
-			data=cube[chartCube.select].map(function(v){return [v];});
+			data=cube[chartCube.select.name].map(function(v){return [v];});
 		}//endif
 	}else{
 		data=cube[Array.newInstance(chartCube.select)[0].name];

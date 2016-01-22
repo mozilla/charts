@@ -13,9 +13,9 @@
 <div id="sidebar" layout="tl=window.tl;bottom=footer.bottom;" style="width:0;overflow:hidden;">
 	<div id="description" style="padding-left:10px;">
 		<h3>About</h3>
-		This dashboard counts "uplifts": Defined as bugs marked both
-		with patch marked approval-mozilla-beta=="+" and status_firefoxXX=="fixed". Only the most
-		recent "fixed" is counted (on the off chance a bug toggles its status).
+		This dashboard counts "uplifts".  Aurora uplifts are have a patch marked approval-mozilla-aurora=="+"
+		and status_firefoxXX=="fixed". Beta counts both <b>beta</b> and <b>release</b> approvals.
+		For each path, only the most recent "fixed" is counted (on the off chance a bug toggles its status).
 		<br><br>
 		Uplifts categorized by keyword are only counted once so the stacked
 		total is true.  Bugs marked with multiple keywords are counted only
@@ -24,6 +24,9 @@
 		The <b>Team</b> charts do not show all teams.  Only the top 5
 		teams, with 2 or more bugs, are shown.  All other team counts are
 		added to he <b>other</b> category for visual clarity.
+		<br><br>
+		Clicking on the bars will show <b>all</b> visible categories, no matter which
+		segment you click on.  Click on the legend to show less categories.
 	</div>
 	<hr>
 	<div id="last-updated" style="text-align: center;width:300px;"></div>
@@ -156,6 +159,10 @@ function showTrain(aurora, timeDomain, offset, name, otherThread){
 //			}//endif
 		});
 
+		//INCLUDE beta WITH RELEASE
+		var approvalList = ["approval-mozilla-"+name.toLowerCase()];
+		if (name.toLowerCase()=="beta") approvalList.append("approval-mozilla-release");
+
 
 		// A BE SURE TO MATCH THE cf_tracking_firefox TO THE DATE FOUND
 		var bugTrainFilter = {"or": Mozilla.Platform.Release.edges.map(function(e, i){
@@ -165,7 +172,7 @@ function showTrain(aurora, timeDomain, offset, name, otherThread){
 				{"nested":{
 					"path":"attachments.flags",
 					"filter":{"and":[
-						{"term":{"attachments.flags.request_type": "approval-mozilla-"+name.toLowerCase()}},
+						{"terms":{"attachments.flags.request_type": approvalList}},
 						{"term":{"attachments.flags.request_status": "+"}}
 					]}
 				}},

@@ -40,39 +40,27 @@
 	<h1 id="title" style="display:inline-block;">Release Management Uplifts</h1>
 	<table>
 		<tr>
-			<td><h2>Beta Uplifts</h2></td>
-			<td><h2>Aurora Uplifts</h2></td>
-		</tr>
-		<tr>
-			<td>
-				<div id="Beta" class="chart" style="width:600px;height:80px;"></div>
-			</td>
-			<td>
-				<div id="Aurora" class="chart" style="width:600px;height:80px;"></div>
-			</td>
-		</tr>
-		<tr>
 			<td style="padding-top: 20px"><h2>Beta Uplifts by Keyword</h2></td>
-			<td style="padding-top: 20px"><h2>Aurora Uplifts by Keyword</h2></td>
-		</tr>
-		<tr>
-			<td>
-				<div id="byTypeBeta" class="chart" style="width:600px;height:300px;"></div>
-			</td>
-			<td>
-				<div id="byTypeAurora" class="chart" style="width:600px;height:300px;"></div>
-			</td>
-		</tr>
-		<tr>
 			<td style="padding-top: 20px"><h2>Beta Uplifts by Team</h2></td>
+		</tr>
+		<tr>
+			<td>
+				<div id="byTypeBeta" class="chart" style="width:600px;height:400px;"></div>
+			</td>
+			<td>
+				<div id="byTeamBeta" class="chart" style="width:600px;height:400px;"></div>
+			</td>
+		</tr>
+		<tr>
+			<td style="padding-top: 20px"><h2>Aurora Uplifts by Keyword</h2></td>
 			<td style="padding-top: 20px"><h2>Aurora Uplifts by Team</h2></td>
 		</tr>
 		<tr>
 			<td>
-				<div id="byTeamBeta" class="chart" style="width:600px;height:300px;"></div>
+				<div id="byTypeAurora" class="chart" style="width:600px;height:400px;"></div>
 			</td>
 			<td>
-				<div id="byTeamAurora" class="chart" style="width:600px;height:300px;"></div>
+				<div id="byTeamAurora" class="chart" style="width:600px;height:400px;"></div>
 			</td>
 		</tr>
 	</table>
@@ -217,20 +205,6 @@ function showTrain(aurora, timeDomain, offset, name, otherThread){
 		if (otherThread) yield (Thread.join(otherThread));
 		chartMax = aMath.niceCeiling(aMath.max(chartMax, aMath.MAX(byWeek.data.bug_count)));
 
-		// SHOW TOTALS BY WEEK
-		aChart.show({
-			"id": ""+name,
-			"type": "bar",
-			valuesVisible: showLabels,
-			isReversed: true,
-		    valuesOptimizeLegibility: true,
-			orthoAxisFixedMax: chartMax,
-			"stacked": true,
-			"cube": byWeek,
-			xAxisSize: 0,
-			"clickAction": clicker(byWeek)
-		});
-
 		//SHOW BY KEYWORD
 		var byType = yield (Q({
 			"from": details,
@@ -247,16 +221,17 @@ function showTrain(aurora, timeDomain, offset, name, otherThread){
 //		byType.data.bug_count = Qb.reverse(byType.data.bug_count);
 
 
-		aChart.show({
+		var chart = aChart.show({
 			"id": "byType"+name,
 			"type": "bar",
 			valuesVisible: showLabels,
 			isReversed: true,
 		    valuesOptimizeLegibility: true,
-			orthoAxisFixedMax: chartMax,
+//			orthoAxisFixedMax: chartMax,
 			"stacked": true,
 			"cube": byType,
 			xAxisSize: 40,
+			legendSize: 50,
 			"clickAction": clicker(byType)
 		});
 
@@ -278,32 +253,37 @@ function showTrain(aurora, timeDomain, offset, name, otherThread){
 			"type": "bar",
 			valuesVisible: showLabels,
 		    valuesOptimizeLegibility: true,
-			orthoAxisFixedMax: chartMax,
+//			orthoAxisFixedMax: chartMax,
 			"stacked": true,
 			"cube": byTeam,
 			xAxisSize: 40,
+			legendSize: 50,
 			"clickAction": clicker(byTeam)
 		});
 
 
 		function clicker(query){
 			return function(series, x, d, elem){
+				window.self=this;
 				Thread.run(function*(){
-					var part;
-					var filter = [];
-					if (query.edges.length==2){  //ONLY FIND PART IF WE HACVE TWO DIMENSIONS (OTHERWISE WE WERE GIVEN THE WEEKLY SUMMARY)
-						query.edges[0].domain.partitions.forall(function(p){
-							if (part) return;
-							if (p.name==series){
-								part=p;
-								filter.append(p.esfilter)
-							}else{
-								filter.append({"not": p.esfilter});
-							}//endif
-						});
-					}//endif
+					var self=window.self;  //WHAT HAPPENED TO CLOSURES, NOW THEY DO NOT WORK ANYMORE WITH GENERATORS?!?
+
+					//WHAT IS VISIBLE?
+					var visible = new aSet();
+					Map.forall(self.chart.data._visibleDatums.source, function(index, datum){
+						var category = datum.key.between(",", ",");
+						visible.add(category);
+					});
+
+					var filter = [{"or":[]}];
+					query.edges[0].domain.partitions.forall(function(p){
+						if (visible.contains(p.name)) {
+							filter[0]["or"].append(p.fullFilter);
+						}//endif
+					});
+
 					var week;
-					query.edges.last().domain.partitions.forall(function(w){
+					query.edges[1].domain.partitions.forall(function(w){
 						if (week) return;
 						if (w.value.subtract(x).milli==0){
 							week=w;
@@ -347,7 +327,6 @@ importScript(['js/main_lib.js', 'modevlib/charts/cccChart.js', 'modevlib/layouts
 //		$("#title").html(team);
 		var startTime = Date.newInstance(GUI.state["sampleMin"]);
 		var endTime = Date.newInstance(GUI.state["sampleMax"]).ceilingWeek();
-		var interval = Duration.newInstance(GUI.state["sampleInterval"]);
 		showLabels = GUI.state["showLabels"];
 
 		var timeDomain = {
@@ -371,12 +350,11 @@ importScript(['js/main_lib.js', 'modevlib/charts/cccChart.js', 'modevlib/layouts
 			[
 				{"id":"sampleMin", "name":"Start Date", "type":"time", "default":Date.eod().add("-18week")},
 				{"id":"sampleMax", "name":"End Date", "type":"time", "default":Date.today().ceilingWeek()},
-				{"id":"sampleInterval", "name":"Interval", "type":"duration", "default":"week"},
-				{"id": "showLabels", "name":"Show Labels", "type":"boolean", "default":false}
+				{"id":"showLabels", "name":"Show Labels", "type":"boolean", "default":false}
 			],
 			[
-				"sampleMin=Date.newInstance(sampleMin).floor(Duration.newInstance(sampleInterval)).format('yyyy-MM-dd')",
-				"sampleMax=Date.newInstance(sampleMax).addDay(1).floor(Duration.newInstance(sampleInterval)).addDay(-1).format('yyyy-MM-dd')"
+				"sampleMin=Date.newInstance(sampleMin).floor(Duration.WEEK).format('yyyy-MM-dd')",
+				"sampleMax=Date.newInstance(sampleMax).addDay(1).floor(Duration.WEEK).addDay(-1).format('yyyy-MM-dd')"
 			],
 			null,
 			false,		//SHOW DEFAULT FILTERS?

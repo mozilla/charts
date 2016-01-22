@@ -755,6 +755,7 @@ aChart.show=function(params){
 	}//endif
 
 
+	return chart;
 };
 
 
@@ -779,10 +780,10 @@ function fixAction(chartParams, actionName){
 				c = c.addTimezone();
 			}//endif
 
-			return action(s, c, v, elem, series.dataIndex);
+			return action.call(this, s, c, v, elem, series.dataIndex);
 		} else{
 			//CCC VERSION 1
-			return action(series, x, d, elem);
+			return action.call(this, series, x, d, elem);
 		}//endif
 	};//method
 }

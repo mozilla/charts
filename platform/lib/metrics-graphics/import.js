@@ -1,7 +1,7 @@
 importScript([
     'dist/metricsgraphics.css',
     '../jquery.js',
-    'https://cdnjs.cloudflare.com/ajax/libs/d3/3.5.0/d3.min.js',
+    'https://cdnjs.cloudflare.com/ajax/libs/d3/3.5.0/d3.js',
 	"src/js/MG.js",
 	"src/js/common/register.js",
 	"src/js/common/hooks.js",

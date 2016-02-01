@@ -1223,16 +1223,18 @@ function joinField(path){
 
 			var index;
 			if (!useNames) {
-				index = col.columnIndex;
+				index = "["+col.columnIndex+"]";
+			}else if (col.name=="."){
+				index = "";
 			} else if (MVEL.isKeyword(col.name)) {
-				index = splitField(col.name).map(convert.String2Quote).join("][");
+				index = "["+splitField(col.name).map(convert.String2Quote).join("][")+"]";
 			} else if (columns.select("name").contains(col.name)) {
-				index = convert.String2Quote(col.name);
+				index = "["+convert.String2Quote(col.name)+"]";
 			} else {
 				Log.error("Can not handle");
 			}//endif
 
-			f += "diff = orderedColumns[" + o + "].domain.compare(a[" + index + "], b[" + index + "]);\n";
+			f += "diff = orderedColumns[" + o + "].domain.compare(a" + index + ", b" + index + ");\n";
 			if (o == orderedColumns.length - 1) {
 				if (col.sortOrder === undefined || col.sortOrder == 1) {
 					f += "return diff;\n";

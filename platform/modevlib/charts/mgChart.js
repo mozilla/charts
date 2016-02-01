@@ -4,12 +4,13 @@
 
 importScript("../../lib/metrics-graphics/import.js");
 importScript("../../lib/jquery.js");
+importScript("../qb/Expressions.js");
 
 
 
 
 (function(){
-	var DEBUG = true;
+	var DEBUG = false;
 
 
 	window.aChart = window.aChart || {};
@@ -30,17 +31,37 @@ importScript("../../lib/jquery.js");
 		{"color": "#17becf"}
 	];
 
-
 	/*
 	 * SCATTER USES THE `select` COLUMNS FOR x AND y RESPECTIVELY
 	 * THE FIRST EDGE IS USED FOR CATEGORIES
 	 */
 	aChart.showScatter = function(params){
 		Map.expecting(params, ["target", "data"]);
+		var styles = Map.clone(STYLES);
 
 		var data;
-		if (params.data instanceof Array) {
-			data = params.data;
+		if (isArray(params.data) || Map.get(params, "data.meta.format")=="list") {
+			data = coalesce(params.data.data, params.data);
+
+			params.series.forall(function(s){
+				var getter = qb2function(s.value);
+				var edge = params.axis[s.axis];
+				Qb.domain.compile(edge);
+				edge.domain.NULL.style = Map.get(edge, "missing.style");
+
+				if (s.axis=="color"){
+					//ASSIGN THE _colorIndex FOR metrics-graphics ACCESSOR
+					params.data.forall(function(d){
+						var part = edge.domain.getPartByKey(getter(d));
+						if (Map.get(part, "style.color")){
+							styles[part.dataIndex]=part.style;
+						}//endif
+						d["_colorIndex"] = part.dataIndex;
+					});
+				}else{
+					Log.error("do not know how to handle")
+				}//endif
+			});
 		} else if (params.data.meta) {
 			//ASSUME Qb QUERY RESULT
 			var chartCube = params.data;
@@ -53,8 +74,6 @@ importScript("../../lib/jquery.js");
 			////////////////////////////////////////////////////////////////////////////
 			var xaxis = chartCube.select[0];
 			var yaxis = chartCube.select[1];
-
-			var styles = Map.clone(STYLES);
 
 			if (chartCube.edges.length >= 1) {
 				chartCube.edges[0].domain.partitions.forall(function(p, i){
@@ -93,8 +112,8 @@ importScript("../../lib/jquery.js");
 		var height = coalesce(Map.get(params, "style.height"), $('#' + params.target).height(), 400);
 		var width = coalesce(Map.get(params, "style.width"), $('#' + params.target).width(), 300);
 
-		var x_accessor = coalesce(Map.get(params, "axis.x.value"), xaxis.name);
-		var y_accessor = coalesce(Map.get(params, "axis.y.value"), yaxis.name);
+		var x_accessor = coalesce(Map.get(params, "axis.x.value"), Map.get(xaxis, "name"));
+		var y_accessor = coalesce(Map.get(params, "axis.y.value"), Map.get(yaxis, "name"));
 
 
 		//POPUP FORMATTING
@@ -102,7 +121,7 @@ importScript("../../lib/jquery.js");
 		var mouseover;
 		var y_rollover_format;
 		var x_rollover_format;
-		if (format && isString()) {
+		if (isString(format)) {
 			mouseover = function(d, i){
 				d3
 				.select('#' + params.target + ' svg .mg-active-datapoint')
@@ -164,20 +183,37 @@ importScript("../../lib/jquery.js");
 			color_range: styles.map(function(v){
 				return v.color;
 			}),
+			legend: Map.getValues(params.axis).first().domain.partitions.select("name"),
 			color_type: 'category',
+
+			min_y: coalesce(Map.get(params, "axis.y.range.min"), Map.get(params, "axis.y.domain.min")),
+			max_y: coalesce(Map.get(params, "axis.y.range.max"), Map.get(params, "axis.y.domain.max")),
+			min_x: coalesce(Map.get(params, "axis.x.range.min"), Map.get(params, "axis.x.domain.min")),
+			max_x: coalesce(Map.get(params, "axis.x.range.max"), Map.get(params, "axis.x.domain.max")),
+
 			x_rug: Map.get(params, "axis.x.rug"),
-			mouseover: mouseover
+			mouseover: mouseover,
+			click: params.click
 		};
 		MG.data_graphic(chartParams);
 
 	};
 
 
-	aChart.show = function(params){
+	/*
+	RETURN A NICE MAX VALUE, THAT INCLUDES THE IMPORTANT CHART VALUES
+	 */
+	aChart.maxNice=function(values){
+		var sorted = Qb.sort(values, ".");
+		var mostlyMax = sorted[aMath.ceiling(values.length*0.90)];
+		var max = sorted.last();
+
+		if (max <=mostlyMax*1.1){
+			return aMath.niceCeiling(max);
+		}else{
+			return aMath.niceCeiling(mostlyMax);
+		}//endif
 
 
-
-
-	};
-
+	}
 })();

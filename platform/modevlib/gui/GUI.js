@@ -202,7 +202,7 @@ GUI = {};
 						"from": "perfy",
 						"select": {"name": "max_date", "value": "info.started", "aggregate": "maximum"}
 					}))).cube.max_date);
-					$("#testMessage").html("Perfy Last Updated " + time.addTimezone().format("NNN dd @ HH:mm") + Date.getTimezone());
+					$("#testMessage").html("Builds Last Updated " + time.addTimezone().format("NNN dd @ HH:mm") + Date.getTimezone());
 				}else if (indexName == "talos"){
 					esHasErrorInIndex = false;
 					time = new Date((yield(ESQuery.run({

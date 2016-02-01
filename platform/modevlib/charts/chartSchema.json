@@ -55,7 +55,7 @@
 			}
 		},
 		"legend": {
-			"description": "more configuration for ledgend",
+			"description": "more configuration for legend",
 			"type": "object",
 			"properties": {
 				"label": {
@@ -163,8 +163,22 @@
 					"type": "boolean",
 					"default": true
 				},
+				"domain":{"$ref": "#definitions.domain"},
+				"missing": {
+					"description": "information on behaviour when outside the domain or range.  Has no meaning when using the default domain.",
+					"type": "object",
+					"properties": {
+						"style": {
+							"$ref": "#defiinitions.style"
+						}
+					}
+				},
+				"showZero": {
+					"description": "show zero coordinate, even if calculated range would not",
+					"type": "boolean"
+				},
 				"range": {
-					"description": "define the range of values on axis",
+					"description": "optional, instead of a formal `domain`; define the range of values on axis",
 					"type": "object",
 					"properties": {
 						"min": {
@@ -174,10 +188,6 @@
 						"max": {
 							"description": "maximum axis value shown",
 							"type": "number"
-						},
-						"showZero": {
-							"description": "show zero coordinate, even if calculated range would not",
-							"type": "bolean"
 						}
 					}
 				}
@@ -259,6 +269,30 @@
 			"style": {
 				"$ref": "#definitions.object_style"
 			}
+		},
+		"domain":{
+
+			"domain":{"$ref": "#definitions.domain"},
+			"range": {
+				"description": "define the range of values on axis",
+				"type": "object",
+				"properties": {
+					"min": {
+						"description": "minimum axis value shown",
+						"type": "number"
+					},
+					"max": {
+						"description": "maximum axis value shown",
+						"type": "number"
+					},
+					"showZero": {
+						"description": "show zero coordinate, even if calculated range would not",
+						"type": "bolean"
+					}
+				}
+			}
+
+
 		},
 		"object_style": {
 			"type": "object",

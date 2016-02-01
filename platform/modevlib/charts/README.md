@@ -14,5 +14,7 @@ considered *linked*, and act as a single chart.  Use the [`$ref` property](https
 define a shared axis.
 
 
+[Link to the chart schema](chartSchema.md)
+
 
 

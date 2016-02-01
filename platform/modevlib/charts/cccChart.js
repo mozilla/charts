@@ -405,13 +405,18 @@ aChart.showPie=function(params){
 
 
 aChart.show=function(params){
-	Map.expecting(params, ["id", "cube"]);
+	Map.expecting(params, ["id"]);
 	var divName=params.id;
 
 	var chartCube=params.cube;
-	var cube = coalesce(chartCube.cube, chartCube.data);
+	var cube = coalesce(Map.get(params, "cube.cube"), Map.get(params, "cube.data"), params.data);
+	if (!cube) Log.error("Expecting `cube` parameter, or `data` parameter");
 
+	if (!chartCube){
+		Map.expecting(params["data", "axis.x.value", "series.type"])
+	}
 	//EXPECTING cube TO BE AN OBJECT WITH cube[chartCube.select] BEING AN ARRAY
+
 	if (!(cube instanceof Array)){
 		//THE ActiveData CUBE
 		//do nothing
@@ -677,7 +682,7 @@ aChart.show=function(params){
 			var temp=seriesLabels;
 			seriesLabels=categoryLabels;
 			categoryLabels=temp;
-			data=cube[chartCube.select].map(function(v){return [v];});
+			data=cube[chartCube.select.name].map(function(v){return [v];});
 		}//endif
 	}else{
 		data=cube[Array.newInstance(chartCube.select)[0].name];
@@ -755,6 +760,7 @@ aChart.show=function(params){
 	}//endif
 
 
+	return chart;
 };
 
 
@@ -779,10 +785,10 @@ function fixAction(chartParams, actionName){
 				c = c.addTimezone();
 			}//endif
 
-			return action(s, c, v, elem, series.dataIndex);
+			return action.call(this, s, c, v, elem, series.dataIndex);
 		} else{
 			//CCC VERSION 1
-			return action(series, x, d, elem);
+			return action.call(this, series, x, d, elem);
 		}//endif
 	};//method
 }
@@ -793,7 +799,7 @@ function findDateMarks(part, name){
 	try{
 	var output = [];
 	Array.newInstance(part.dateMarks).forall(function (mark) {
-		var style = Map.setDefault({}, mark.style, part.style, {"color": "black", "lineWidth": "2.0", verticalAnchor: "top"});
+		var style = Map.setDefault({}, mark.style, part.style, {color: "black", lineWidth: "2.0", verticalAnchor: "top"});
 		style.strokeStyle = coalesce(style.strokeStyle, style.color);
 		style.textStyle = coalesce(style.textStyle, style.color);
 

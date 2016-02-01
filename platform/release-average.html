@@ -13,9 +13,9 @@
 <div id="sidebar" layout="tl=window.tl;bottom=footer.bottom;" style="width:0;overflow:hidden;">
 	<div id="description" style="padding-left:10px;">
 		<h3>About</h3>
-		This dashboard counts "uplifts".  Aurora uplifts are have a patch marked approval-mozilla-aurora=="+"
-		and status_firefoxXX=="fixed". Beta counts both <b>beta</b> and <b>release</b> approvals.
-		For each path, only the most recent "fixed" is counted (on the off chance a bug toggles its status).
+		This dashboard counts "uplifts": Defined as bugs marked both
+		with patch marked approval-mozilla-beta=="+" and status_firefoxXX=="fixed". Only the most
+		recent "fixed" is counted (on the off chance a bug toggles its status).
 		<br><br>
 		Uplifts categorized by keyword are only counted once so the stacked
 		total is true.  Bugs marked with multiple keywords are counted only
@@ -24,9 +24,6 @@
 		The <b>Team</b> charts do not show all teams.  Only the top 5
 		teams, with 2 or more bugs, are shown.  All other team counts are
 		added to he <b>other</b> category for visual clarity.
-		<br><br>
-		Clicking on the bars will show <b>all</b> visible categories, no matter which
-		segment you click on.  Click on the legend to show less categories.
 	</div>
 	<hr>
 	<div id="last-updated" style="text-align: center;width:300px;"></div>
@@ -43,27 +40,39 @@
 	<h1 id="title" style="display:inline-block;">Release Management Uplifts</h1>
 	<table>
 		<tr>
+			<td><h2>Beta Uplifts</h2></td>
+			<td><h2>Aurora Uplifts</h2></td>
+		</tr>
+		<tr>
+			<td>
+				<div id="Beta" class="chart" style="width:600px;height:80px;"></div>
+			</td>
+			<td>
+				<div id="Aurora" class="chart" style="width:600px;height:80px;"></div>
+			</td>
+		</tr>
+		<tr>
 			<td style="padding-top: 20px"><h2>Beta Uplifts by Keyword</h2></td>
-			<td style="padding-top: 20px"><h2>Beta Uplifts by Team</h2></td>
-		</tr>
-		<tr>
-			<td>
-				<div id="byTypeBeta" class="chart" style="width:600px;height:350px;"></div>
-			</td>
-			<td>
-				<div id="byTeamBeta" class="chart" style="width:600px;height:350px;"></div>
-			</td>
-		</tr>
-		<tr>
 			<td style="padding-top: 20px"><h2>Aurora Uplifts by Keyword</h2></td>
+		</tr>
+		<tr>
+			<td>
+				<div id="byTypeBeta" class="chart" style="width:600px;height:300px;"></div>
+			</td>
+			<td>
+				<div id="byTypeAurora" class="chart" style="width:600px;height:300px;"></div>
+			</td>
+		</tr>
+		<tr>
+			<td style="padding-top: 20px"><h2>Beta Uplifts by Team</h2></td>
 			<td style="padding-top: 20px"><h2>Aurora Uplifts by Team</h2></td>
 		</tr>
 		<tr>
 			<td>
-				<div id="byTypeAurora" class="chart" style="width:600px;height:350px;"></div>
+				<div id="byTeamBeta" class="chart" style="width:600px;height:300px;"></div>
 			</td>
 			<td>
-				<div id="byTeamAurora" class="chart" style="width:600px;height:350px;"></div>
+				<div id="byTeamAurora" class="chart" style="width:600px;height:300px;"></div>
 			</td>
 		</tr>
 	</table>
@@ -78,9 +87,6 @@
 <script type="application/javascript">
 
 function getHistoryFilter(timeDomain, offset){
-	var showLables = false;
-	var SOLVED = ["fixed"];
-
 	return {"or": Mozilla.Platform.Release.edges.map(function(e, i){
 		var releaseDate = Date.newInstance(e.releaseDate);
 		var retireDate = Date.newInstance(e.retireDate);
@@ -93,45 +99,39 @@ function getHistoryFilter(timeDomain, offset){
 						"query":{"match_all":{}},
 						"filter":{"and":[
 							{"term":{"changes.field_name":"cf_status_firefox" + (e.version + offset)}},
-							{"terms":{"changes.new_value":SOLVED}}
+							{"term":{"changes.new_value": "fixed"}}
 						]}
 					}}
 				}}
 			]}
 		}//endif
 	})};
-
-// FILTER FOR WHEN THE BUGS ARE OPEN
-//	return {
-//		"or": Mozilla.Platform.Release.edges.map(function(e, i){
-//			var releaseDate = Date.newInstance(e.releaseDate);
-//			var retireDate = Date.newInstance(e.retireDate);
-//			if (timeDomain.min <= retireDate && releaseDate < timeDomain.max) {
-//				return {
-//					"and": [
-//						{"range": {"max": {"gte": releaseDate.milli(), "lt": retireDate.milli()}}},
-//						{"not": {"terms": Map.newInstance("cf_status_firefox" + (e.version + offset), SOLVED)}},
-//						{"term": Map.newInstance("cf_tracking_firefox" + (e.version + offset), "+")}
-//					]
-//				}
-//			}//endif
-//		})
-//	};
 }//function
 
 var chartMax=-1;   // IT IS UNFORTUNATE THIS CHART LIB DOES NOT SYNCH CHARTS
 
-function showTrain(aurora, timeDomain, offset, name, otherThread){
+function showTrain(trackFilter, timeDomain, offset, name, otherThread){
 	var outputThread = Thread.run(function*(){
 
 		timeDomain = Map.copy(timeDomain);
+	    timeDomain.dateMarks=Mozilla.Platform.Release.edges.map(function(e){
+			var releaseDate = Date.newInstance(e.releaseDate);
+			if (releaseDate.between(timeDomain.min, timeDomain.max)) {
+				return {
+					"name": "" + (e.version+offset),
+					"date": releaseDate,
+					"style": coalesce(e.style, {"color": "black"})
+				};
+			}//endif
+		});
+
 		var allBugs = yield(ESQuery.run({
 			"from":"bugs",
 			"select":{"name":"modified_ts", "value":"modified_ts", "aggregate":"maximum"},
 			"edges":[
 				"bug_id"
 			],
-			"esfilter": aurora
+			"esfilter": trackFilter
 		}));
 
 		//PULL ALL METADATA!!
@@ -148,12 +148,8 @@ function showTrain(aurora, timeDomain, offset, name, otherThread){
 //			}//endif
 		});
 
-		//INCLUDE beta WITH RELEASE
-		var approvalList = ["approval-mozilla-"+name.toLowerCase()];
-		if (name.toLowerCase()=="beta") approvalList.append("approval-mozilla-release");
 
-
-		// A BE SURE TO MATCH THE cf_tracking_firefox TO THE DATE FOUND
+		// A BE SURE TO MATCH THE cf_approval-mozilla- TO THE DATE FOUND
 		var bugTrainFilter = {"or": Mozilla.Platform.Release.edges.map(function(e, i){
 			var releaseDate = Date.newInstance(e.releaseDate);
 			var retireDate = Date.newInstance(e.retireDate);
@@ -161,7 +157,7 @@ function showTrain(aurora, timeDomain, offset, name, otherThread){
 				{"nested":{
 					"path":"attachments.flags",
 					"filter":{"and":[
-						{"terms":{"attachments.flags.request_type": approvalList}},
+						{"term":{"attachments.flags.request_type": "approval-mozilla-"+name.toLowerCase()}},
 						{"term":{"attachments.flags.request_status": "+"}}
 					]}
 				}},
@@ -189,38 +185,7 @@ function showTrain(aurora, timeDomain, offset, name, otherThread){
 		});
 		details.columns.append({"name": "modified_ts"});
 
-		//FIND THE CEILING
-		var byWeek = yield (Q({
-			"from": details,
-			"select": {"name": "bug_count", "value": "bug_id", "aggregate": "count"},
-			"edges":[
-				{"name":"week", "value":"modified_ts", "domain": timeDomain}
-			],
-			"meta": {"format": "cube"}
-		}));
-		if (otherThread) yield (Thread.join(otherThread));
-		chartMax = aMath.niceCeiling(aMath.max(chartMax, aMath.MAX(byWeek.data.bug_count)));
-
-
-		//COUNTS FOR EACH RELEASE
-		var parts = Mozilla.Platform.Release.edges.map(function(r, i, releases){
-			var min = undefined;
-			var max = undefined;
-
-			try{
-				min = Date.newInstance(releases[i - 0].releaseDate).milli();
-			}catch (e){}
-
-			try{
-				max = Date.newInstance(releases[i + 1].releaseDate).milli();
-			}catch(e){}
-
-			return {
-				"name": "" + (r.version + offset),
-				"min": min,
-				"max": max
-			};
-		});
+		//FLEXIBLE TIME DOMAIN
 		var byRelease = yield (Q({
 			"from": details,
 			"select": {"name": "bug_count", "value": "bug_id", "aggregate": "count"},
@@ -230,107 +195,54 @@ function showTrain(aurora, timeDomain, offset, name, otherThread){
 					"value": "modified_ts",
 					"domain": {
 						"type": "range",
-						"partitions": parts
+						"partitions": Mozilla.Platform.Release.edges.map(function(e, i, releases){
+							var releaseDate = Date.newInstance(e.releaseDate);
+							if (releaseDate.between(timeDomain.min, timeDomain.max)) {
+								return {
+									"name": "" + (e.version + offset),
+									"min": Date.newInstance(releases[i - 1].releaseDate).unix(),
+									"max": releaseDate.unix()
+								};
+							}//endif
+						})
 					}
 				}
 			],
 			"meta": {"format": "cube"}
 		}));
 
-		timeDomain.dateMarks=Mozilla.Platform.Release.edges.map(function(e, i){
-			var count = byRelease.data.bug_count[i];
-			var releaseDate = Date.newInstance(e.releaseDate);
-			if (releaseDate.between(timeDomain.min, timeDomain.max)) {
-				return {
-					"name": new Template("{{release}} ({{count}} bugs)").expand({
-						"release": e.version + offset,
-						"count": count
-					}),
-					"date": releaseDate,
-					"style": coalesce(e.style, {"color": "black", horizontalAnchor: "right", forceHorizontalAnchor: true})
-				};
-			}//endif
-		});
 
-		//SHOW BY KEYWORD
-		var byType = yield (Q({
-			"from": details,
-			"select": {"name": "bug_count", "value": "bug_id", "aggregate": "count"},
-			"edges":[
-				{"name":"type", "domain":Mozilla.Platform.ReleaseManagementCategories.getDomain()},
-				{"name":"week", "value":"modified_ts", "domain": timeDomain}
-			],
-			"meta": {"format": "cube"}
-		}));
-
-		//FLIP THIS DIMENSION FOR PRESENTATION
-//		byType.edges[0].domain.partitions = Qb.reverse(byType.edges[0].domain.partitions);
-//		byType.data.bug_count = Qb.reverse(byType.data.bug_count);
-
-
-		var chart = aChart.show({
-			"id": "byType"+name,
+		// SHOW TOTALS BY RELEASE
+		aChart.show({
+			"id": ""+name,
 			"type": "bar",
 			valuesVisible: showLabels,
 			isReversed: true,
 		    valuesOptimizeLegibility: true,
-//			orthoAxisFixedMax: chartMax,
 			"stacked": true,
-			"cube": byType,
-			xAxisSize: 40,
-			legendSize: 50,
-			"clickAction": clicker(byType)
+			"cube": byRelease,
+			xAxisSize: 0,
+			"clickAction": clicker(byRelease)
 		});
-
-		//SHOW BY TEAM
-		var byTeam = yield (Q({
-			"from": details,
-			"select": {"name": "bug_count", "value": "bug_id", "aggregate": "count"},
-			"edges": [
-				{"name": "type", "domain": Mozilla.Platform.Team.getDomain()},
-				{"name": "week", "value": "modified_ts", "domain": timeDomain}
-			]
-		}));
-
-		byTeam = Qb.minPercent(byTeam, "bug_count", "type", {"count": 5});
-
-
-		aChart.show({
-			"id": "byTeam" + name,
-			"type": "bar",
-			valuesVisible: showLabels,
-		    valuesOptimizeLegibility: true,
-//			orthoAxisFixedMax: chartMax,
-			"stacked": true,
-			"cube": byTeam,
-			xAxisSize: 40,
-			legendSize: 50,
-			"clickAction": clicker(byTeam)
-		});
-
 
 		function clicker(query){
 			return function(series, x, d, elem){
-				window.self=this;
 				Thread.run(function*(){
-					var self=window.self;  //WHAT HAPPENED TO CLOSURES, NOW THEY DO NOT WORK ANYMORE WITH GENERATORS?!?
-
-					//WHAT IS VISIBLE?
-					var visible = new aSet();
-					Map.forall(self.chart.data._visibleDatums.source, function(index, datum){
-						var category = datum.key.between(",", ",");
-						visible.add(category);
-					});
-
-					var filter = [{"or":[]}];
-					query.edges[0].domain.partitions.forall(function(p){
-						if (visible.contains(p.name)) {
-							filter[0]["or"].append(p.fullFilter);
-						}//endif
-					});
-
+					var part;
+					var filter = [];
+					if (query.edges.length==2){  //ONLY FIND PART IF WE HACVE TWO DIMENSIONS (OTHERWISE WE WERE GIVEN THE WEEKLY SUMMARY)
+						query.edges[0].domain.partitions.forall(function(p){
+							if (part) return;
+							if (p.name==series){
+								part=p;
+								filter.append(p.esfilter)
+							}else{
+								filter.append({"not": p.esfilter});
+							}//endif
+						});
+					}//endif
 					var week;
-					query.edges[1].domain.partitions.forall(function(w){
+					query.edges.last().domain.partitions.forall(function(w){
 						if (week) return;
 						if (w.value.subtract(x).milli==0){
 							week=w;
@@ -374,6 +286,7 @@ importScript(['js/main_lib.js', 'modevlib/charts/cccChart.js', 'modevlib/layouts
 //		$("#title").html(team);
 		var startTime = Date.newInstance(GUI.state["sampleMin"]);
 		var endTime = Date.newInstance(GUI.state["sampleMax"]).ceilingWeek();
+		var interval = Duration.newInstance(GUI.state["sampleInterval"]);
 		showLabels = GUI.state["showLabels"];
 
 		var timeDomain = {
@@ -397,11 +310,12 @@ importScript(['js/main_lib.js', 'modevlib/charts/cccChart.js', 'modevlib/layouts
 			[
 				{"id":"sampleMin", "name":"Start Date", "type":"time", "default":Date.eod().add("-18week")},
 				{"id":"sampleMax", "name":"End Date", "type":"time", "default":Date.today().ceilingWeek()},
-				{"id":"showLabels", "name":"Show Labels", "type":"boolean", "default":false}
+				{"id":"sampleInterval", "name":"Interval", "type":"duration", "default":"week"},
+				{"id": "showLabels", "name":"Show Labels", "type":"boolean", "default":false}
 			],
 			[
-				"sampleMin=Date.newInstance(sampleMin).floor(Duration.WEEK).format('yyyy-MM-dd')",
-				"sampleMax=Date.newInstance(sampleMax).addDay(1).floor(Duration.WEEK).addDay(-1).format('yyyy-MM-dd')"
+				"sampleMin=Date.newInstance(sampleMin).floor(Duration.newInstance(sampleInterval)).format('yyyy-MM-dd')",
+				"sampleMax=Date.newInstance(sampleMax).addDay(1).floor(Duration.newInstance(sampleInterval)).addDay(-1).format('yyyy-MM-dd')"
 			],
 			null,
 			false,		//SHOW DEFAULT FILTERS?

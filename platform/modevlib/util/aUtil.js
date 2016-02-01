@@ -21,8 +21,9 @@ var Map = {};
 		return output;
 	};//method
 
-	//LIST OF [k, v] TUPLES EXPECTED
 	Map.zip = function(keys, values){
+		// LIST OF [k, v] TUPLES EXPECTED
+		// OR LIST OF keys AND LIST OF values
 		var output = {};
 
 		if (values === undefined) {
@@ -204,12 +205,12 @@ var Map = {};
 		//func MUST ACCEPT key, value, index PARAMETERS
 		var output = [];
 		var keys = Object.keys(map);
-		for (var i = keys.length; i--;) {
+		for (var i = 0; i < keys.length; i++) {
 			var key = keys[i];
 			var val = map[key];
 			if (val !== undefined) {
 				var result = func(key, val, i);
-				if (result !== undefined) output.push(result);
+				if (result !== undefined) output.append(result);
 			}//endif
 		}//for
 		return output;

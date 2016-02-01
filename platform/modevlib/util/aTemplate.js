@@ -57,21 +57,41 @@ var Template = function Template(template){
 	FUNC.json = function(value){
 		return convert.value2json(value);
 	};
+	FUNC.comma = function(value){
+		//SNAGGED FROM http://stackoverflow.com/questions/2901102/how-to-print-a-number-with-commas-as-thousands-separators-in-javascript
+		var parts = value.toString().split(".");
+        parts[0] = parts[0].replace(/\B(?=(\d{3})+(?!\d))/g, ",");
+        return parts.join(".");
+	};
 	FUNC.quote = function(value){
 		return convert.value2quote(value);
 	};
 	FUNC.format = function(value, format){
 		return Date.newInstance(value).format(format);
 	};
-	FUNC.round = aMath.round;
+	FUNC.round = function(value, digits){
+		return aMath.round(value, {"digits":digits});
+	};
+	FUNC.metric = aMath.roundMetric;
+	FUNC.upper = function(value){
+		if (isString(value)){
+			return value.toUpperCase();
+		}else{
+			return convert.value2json();
+		}
+	};
 
 	function _expand(template, namespaces){
 		if (template instanceof Array) {
 			return _expand_array(template, namespaces);
 		} else if (isString(template)) {
 			return _expand_text(template, namespaces);
-		} else {
+		} else if (template.from_items) {
+			return _expand_items(template, namespaces);
+		} else if (template.from) {
 			return _expand_loop(template, namespaces);
+		}else{
+			Log.error("Not recognized {{template}}", {"template": template})
 		}//endif
 	}
 
@@ -94,6 +114,32 @@ var Template = function Template(template){
 			map["."] = m;
 			if (m instanceof Object && !(m instanceof Array)) {
 				Map.forall(m, function(k, v){
+					map[k.toLowerCase()] = v;
+				});
+			}//endif
+			namespaces.forall(function(n, i){
+				map[Array(i + 3).join(".")] = n;
+			});
+
+			return _expand(loop.template, namespaces.copy().prepend(map));
+		}).join(loop.separator === undefined ? "" : loop.separator);
+	}
+
+	/*
+	LOOP THROUGH THEN key:value PAIRS OF THE OBJECT
+	 */
+	function _expand_items(loop, namespaces){
+		Map.expecting(loop, ["from_items", "template"]);
+		if (typeof(loop.from_items) != "string") {
+			Log.error("expecting `from_items` clause to be string");
+		}//endif
+
+		return Map.map(Map.get(namespaces[0], loop.from_items), function(name, value){
+			var map = Map.copy(namespaces[0]);
+			map["name"] = name;
+			map["value"] = value;
+			if (value instanceof Object && !(value instanceof Array)) {
+				Map.forall(value, function(k, v){
 					map[k.toLowerCase()] = v;
 				});
 			}//endif

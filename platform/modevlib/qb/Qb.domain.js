@@ -998,7 +998,7 @@ Qb.domain.set = function(column, sourceColumns){
 	if (typeof(d.partitions[0])=="string"){
 		d.partitions.forall(function(part, i){
 			if (typeof(part)!="string") Log.error("Partition list can not be heterogeneous");
-			part={"name":part, "value":part};
+			part = {"name": part, "value": part, "dataIndex": i};
 			d.partitions[i]=part;
 		});
 		d.value="name";
@@ -1352,7 +1352,7 @@ Qb.domain.range = function(column, sourceColumns){
 	d.getPartByKey = function(key){
 		var output = d.NULL;
 		d.partitions.forall(function(r){
-			if (r.min <= key < r.max) output = r;
+			if (r.min <= key && key < r.max) output = r;
 		});
 		return output;
 	};//method

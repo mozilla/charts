@@ -48,10 +48,10 @@
 		</tr>
 		<tr>
 			<td>
-				<div id="byTypeBeta" class="chart" style="width:600px;height:400px;"></div>
+				<div id="byTypeBeta" class="chart" style="width:600px;height:350px;"></div>
 			</td>
 			<td>
-				<div id="byTeamBeta" class="chart" style="width:600px;height:400px;"></div>
+				<div id="byTeamBeta" class="chart" style="width:600px;height:350px;"></div>
 			</td>
 		</tr>
 		<tr>
@@ -60,10 +60,10 @@
 		</tr>
 		<tr>
 			<td>
-				<div id="byTypeAurora" class="chart" style="width:600px;height:400px;"></div>
+				<div id="byTypeAurora" class="chart" style="width:600px;height:350px;"></div>
 			</td>
 			<td>
-				<div id="byTeamAurora" class="chart" style="width:600px;height:400px;"></div>
+				<div id="byTeamAurora" class="chart" style="width:600px;height:350px;"></div>
 			</td>
 		</tr>
 	</table>
@@ -125,17 +125,6 @@ function showTrain(aurora, timeDomain, offset, name, otherThread){
 	var outputThread = Thread.run(function*(){
 
 		timeDomain = Map.copy(timeDomain);
-	    timeDomain.dateMarks=Mozilla.Platform.Release.edges.map(function(e){
-			var releaseDate = Date.newInstance(e.releaseDate);
-			if (releaseDate.between(timeDomain.min, timeDomain.max)) {
-				return {
-					"name": "" + (e.version+offset),
-					"date": releaseDate,
-					"style": coalesce(e.style, {"color": "black"})
-				};
-			}//endif
-		});
-
 		var allBugs = yield(ESQuery.run({
 			"from":"bugs",
 			"select":{"name":"modified_ts", "value":"modified_ts", "aggregate":"maximum"},
@@ -211,6 +200,57 @@ function showTrain(aurora, timeDomain, offset, name, otherThread){
 		}));
 		if (otherThread) yield (Thread.join(otherThread));
 		chartMax = aMath.niceCeiling(aMath.max(chartMax, aMath.MAX(byWeek.data.bug_count)));
+
+
+		//COUNTS FOR EACH RELEASE
+		var parts = Mozilla.Platform.Release.edges.map(function(r, i, releases){
+			var min = undefined;
+			var max = undefined;
+
+			try{
+				min = Date.newInstance(releases[i - 0].releaseDate).milli();
+			}catch (e){}
+
+			try{
+				max = Date.newInstance(releases[i + 1].releaseDate).milli();
+			}catch(e){}
+
+			return {
+				"name": "" + (r.version + offset),
+				"min": min,
+				"max": max
+			};
+		});
+		var byRelease = yield (Q({
+			"from": details,
+			"select": {"name": "bug_count", "value": "bug_id", "aggregate": "count"},
+			"edges": [
+				{
+					"name": "release",
+					"value": "modified_ts",
+					"domain": {
+						"type": "range",
+						"partitions": parts
+					}
+				}
+			],
+			"meta": {"format": "cube"}
+		}));
+
+		timeDomain.dateMarks=Mozilla.Platform.Release.edges.map(function(e, i){
+			var count = byRelease.data.bug_count[i];
+			var releaseDate = Date.newInstance(e.releaseDate);
+			if (releaseDate.between(timeDomain.min, timeDomain.max)) {
+				return {
+					"name": new Template("{{release}} ({{count}} bugs)").expand({
+						"release": e.version + offset,
+						"count": count
+					}),
+					"date": releaseDate,
+					"style": coalesce(e.style, {"color": "black", horizontalAnchor: "right", forceHorizontalAnchor: true})
+				};
+			}//endif
+		});
 
 		//SHOW BY KEYWORD
 		var byType = yield (Q({

@@ -36,8 +36,8 @@ function ESQueryRunMany(queries, callback){
 
 
 importScript([
-	"modevlib/aLibrary.js",
-	"modevlib/qb/ESQuery.js"
+	"aLibrary.js",
+	"qb/ESQuery.js"
 ], function(){
 	return "done";
 });

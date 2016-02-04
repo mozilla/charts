@@ -601,13 +601,13 @@ aChart.show=function(params){
 //				return "hi there";
 //			}
 		},
-		"colors":styles.map(function(s, i){
-			var c = coalesce(s.color, styles[i%(styles.length)].color);
-			if (c.toHTML){
-				return c.toHTML();
-			}else{
+		"colors": styles.map(function(s, i){
+			var c = coalesce(s.color, styles[i % (styles.length)].color);
+			try {
+				return c.toHTML()
+			} catch (e) {
 				return c;
-			}//endif
+			}//try
 		}),
 		plotFrameVisible: false,
 		"colorNormByCategory": false,        //FOR HEAT CHARTS

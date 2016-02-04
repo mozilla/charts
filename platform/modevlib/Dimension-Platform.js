@@ -405,22 +405,22 @@ if (!Mozilla) var Mozilla = {"name": "Mozilla", "edges": []};
 
 				{"name": "Team", "isFacet": true, "esfilter": {"match_all": {}},
 					"partitions": [
-						{"name": "Desktop", "esfilter": {"or": [
+						{"name": "Desktop", "style": {"color": "#ffbb78"}, "esfilter": {"or": [
 							{"and": [
 								{"term": {"product": "firefox"}},
 								{"not": {"prefix": {"component": "dev"}}} //Anything not starting with "Developer Tools" (this is not 100% correct but should be a place to start)
 							]},
 							{"term": {"product": "toolkit"}}
 						]}},
-						{"name": "Dev Tools", "esfilter": {"and": [
+						{"name": "Dev Tools", "style": {"color": "#98df8a"},  "esfilter": {"and": [
 							{"term": {"product": "firefox"}},
 							{"prefix": {"component": "dev"}} // Component: Anything starting with "Developer Tools"
 						]}},
-						{"name": "Mobile", "esfilter": {"and": [
+						{"name": "Mobile", "style": {"color": "#e05253"},  "esfilter": {"and": [
 							{"term": {"product": "firefox for android"}},
 							{"not": {"prefix": {"component": "graphics"}}}  //All except "Graphics, Panning and Zooming"
 						]}},
-						{"name": "JS", "esfilter": {"and": [
+						{"name": "JS", "style": {"color": "#ff9896"},  "esfilter": {"and": [
 							{"term": {"product": "core"}},
 							{"or": [
 								{"prefix": {"component": "javascript"}},  //starts with "JavaScript" or "js", "MFBT", "Nanojit"
@@ -429,7 +429,7 @@ if (!Mozilla) var Mozilla = {"name": "Mozilla", "edges": []};
 								{"prefix": {"component": "nanojit"}}
 							]}
 						]}},
-						{"name": "Layout", "esfilter": {"and": [
+						{"name": "Layout", "style": {"color": "#9467bd"}, "esfilter": {"and": [
 							{"term": {"product": "core"}},
 							{"or": [
 								{"prefix": {"component": "css parsing"}},  // Component: "CSS Parsing and Computation", starts with "HTML", starts with "Image", starts with "Layout", "Selection"
@@ -439,7 +439,7 @@ if (!Mozilla) var Mozilla = {"name": "Mozilla", "edges": []};
 								{"prefix": {"component": "selection"}}
 							]}
 						]}},
-						{"name": "Graphics", "esfilter": {"or": [
+						{"name": "Graphics", "style": {"color": "#c5b0d5"},  "esfilter": {"or": [
 							//FROM MILAN: Jan 30th, 2015
 							//In Core: Canvas: 2D, Canvas: WebGL, GFX: Color Management, Graphics, Graphics: Layers, Graphics: Text, ImageLib, Panning and Zooming
 							//In Firefox for Android: Graphics, Panning and Zooming
@@ -463,15 +463,15 @@ if (!Mozilla) var Mozilla = {"name": "Mozilla", "edges": []};
 								]}
 							]}
 						]}},
-						{"name": "Necko", "description": "Network", "esfilter": {"and": [
+						{"name": "Necko", "style": {"color": "#8c564b"},  "description": "Network", "esfilter": {"and": [
 							{"term": {"product": "core"}},
 							{"prefix": {"component": "network"}}  // Product: Core, Component: starts with "Networking"
 						]}},
-						{"name": "Security", "esfilter": {"and": [
+						{"name": "Security", "style": {"color": "#c49c94"},  "esfilter": {"and": [
 							{"term": {"product": "core"}},
 							{"prefix": {"component": "security"}}  // Product: Core, Component: starts with "Security"
 						]}},
-						{"name": "DOM", "esfilter": {"and": [
+						{"name": "DOM", "style": {"color": "#e377c2"},  "esfilter": {"and": [
 							//From Andrew  Jan30 2015
 							//
 							//DOM
@@ -495,7 +495,7 @@ if (!Mozilla) var Mozilla = {"name": "Mozilla", "edges": []};
 								{"term": {"component": "html: parser"}}
 							]}
 						]}},
-						{"name": "Media", "esfilter": {"and": [
+						{"name": "Media", "style": {"color": "#f7b6d2"},  "esfilter": {"and": [
 							{"term": {"product": "core"}},
 							{"or": [
 								{"prefix": {"component": "video"}},  // starts with "Video/Audio", "Web Audio", starts with "WebRTC"
@@ -503,11 +503,11 @@ if (!Mozilla) var Mozilla = {"name": "Mozilla", "edges": []};
 								{"prefix": {"component": "webrtc"}}
 							]}
 						]}},
-						{"name": "AllY", "description": "Accessibility", "esfilter": {"and": [
+						{"name": "AllY", "style": {"color": "#bcbd22"},  "description": "Accessibility", "esfilter": {"and": [
 							{"term": {"product": "core"}},
 							{"prefix": {"component": "disability"}}  // "Disability Access APIs"
 						]}},
-						{"name": "Platform Integration", "esfilter": {"and": [
+						{"name": "Platform Integration", "style": {"color": "#dbdb8d"},  "esfilter": {"and": [
 							{"term": {"product": "core"}},
 							{"prefix": {"component": "widget"}}  // Component: starts with "Widget"
 						]}},

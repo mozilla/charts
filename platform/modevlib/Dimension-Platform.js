@@ -284,7 +284,7 @@ if (!Mozilla) var Mozilla = {"name": "Mozilla", "edges": []};
 						{
 							"name": "e10s",
 							//"style": {"color": "#d62728"},
-							"esfilter": {"term": {"cf_tracking_e10s": "+"}}
+							"esfilter": {"regexp": {"cf_tracking_e10s": ".*\\+"}}
 						},
 						{   "name":"other",
 							"style": {"color": "#CCCCCC"},

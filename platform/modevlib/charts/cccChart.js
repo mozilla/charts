@@ -525,33 +525,27 @@ aChart.show=function(params){
 	////////////////////////////////////////////////////////////////////////////
 	// STYLES
 	////////////////////////////////////////////////////////////////////////////
-	var styles = [
-		{"color":"#1f77b4"},
-		{"color":"#ff7f0e"},
-		{"color":"#2ca02c"},
-		{"color":"#d62728"},
-		{"color":"#9467bd"},
-		{"color":"#8c564b"},
-		{"color":"#e377c2"},
-		{"color":"#7f7f7f"},
-		{"color":"#bcbd22"},
-		{"color":"#17becf"}
-	];
-	if (type=="heat"){
-		styles=[
-		{"color":"#EEEEEE"},
-		{"color":"#BBBBBB"},
-		{"color":"#999999"},
-		{"color":"#666666"},
-		{"color":"#333333"}
+
+	var styles;
+	if (params.styles) {
+		styles = params.styles;
+	} else if (type == "heat") {
+		styles = [
+			{"color": "#EEEEEE"},
+			{"color": "#BBBBBB"},
+			{"color": "#999999"},
+			{"color": "#666666"},
+			{"color": "#333333"}
 		];
+	} else {
+		styles = deepCopy(DEFAULT_STYLES);
 	}//endif
 
 	if (chartCube.edges.length==1){
 		if (chartCube.select instanceof Array){
 			for(i=0;i<chartCube.select.length;i++){
 				if (chartCube.select[i].color!==undefined) Log.error("expecting color in style attribute (style.color)");
-				if (chartCube.select[i].style!==undefined) styles[i]=chartCube.select[i].style;
+				if (chartCube.select[i].style!==undefined) styles[i]=Map.setDefault(chartCube.select[i].style, styles[i]);
 			}//for
 		}else{
 			if (chartCube.select.style!==undefined){
@@ -560,7 +554,7 @@ aChart.show=function(params){
 				var parts=chartCube.edges[0].domain.partitions;
 				for(i=0;i<parts.length;i++){
 					if (parts[i].color!==undefined) Log.error("expecting color in style attribute (style.color)");
-					if (parts[i].style!==undefined) styles[i]=parts[i].style;
+					if (parts[i].style!==undefined) styles[i]=Map.setDefault(parts[i].style, styles[i]);
 				}//for
 			}//endif
 		}//endif
@@ -568,12 +562,15 @@ aChart.show=function(params){
 		var parts=chartCube.edges[0].domain.partitions;
 		for(i=0;i<parts.length;i++){
 			if (parts[i].color!==undefined) Log.error("expecting color in style attribute (style.color)");
-			if (parts[i].style!==undefined) styles[i]=parts[i].style;
+			if (parts[i].style!==undefined) styles[i]=Map.setDefault(parts[i].style, styles[i]);
 		}//for
 	}//endif
 
 
 
+	////////////////////////////////////////////////////////////////////////////
+	// DEFAULT VALUES
+	////////////////////////////////////////////////////////////////////////////
 
 	var height=$("#"+divName).height();
 	var width=$("#"+divName).width();
@@ -605,7 +602,7 @@ aChart.show=function(params){
 //			}
 		},
 		"colors":styles.map(function(s, i){
-			var c = coalesce(s.color, DEFAULT_STYLES[i%(DEFAULT_STYLES.length)].color);
+			var c = coalesce(s.color, styles[i%(styles.length)].color);
 			if (c.toHTML){
 				return c.toHTML();
 			}else{

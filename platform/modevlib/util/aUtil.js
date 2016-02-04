@@ -350,3 +350,8 @@ deepCopy = function(value) {
 	Map.forall(value, function(k, v){copy[k]=deepCopy(v);});
 	return copy;
 };
+
+
+function isFunction(f){
+	return typeof f === 'function'
+};

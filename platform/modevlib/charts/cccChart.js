@@ -277,13 +277,13 @@ aChart.showPie=function(params){
 					other+=v;
 				}//endif
 			});
-			values = Qb.sort(values, {"value" : "value", "sort" : -1});
+			values = qb.sort(values, {"value" : "value", "sort" : -1});
 			if (other > 0) values.append({"name" : "Other", "value" : other, "style":params.otherStyle});
 		} else {
 			values = cube.map(function(v, i){
 				return {"name" : seriesLabels[i], "value" : v, "style":chartCube.edges[0].domain.partitions[i].style}
 			});
-			values = Qb.sort(values, {"value" : "value", "sort" : -1});
+			values = qb.sort(values, {"value" : "value", "sort" : -1});
 		}//endif
 	} else if (chartCube.edges.length==2){
 		var aLabels=getAxisLabels(chartCube.edges[0]);
@@ -316,7 +316,7 @@ aChart.showPie=function(params){
 					allOther+=other;
 				}//endif
 			});
-			values = Qb.sort(values, {"value":"value", "sort":-1});
+			values = qb.sort(values, {"value":"value", "sort":-1});
 			if (allOther>0) values.append({"name":"Other", "value":allOther, "style":params.otherStyle});
 		}else{
 			Log.error("having hierarchical dimension without a minPercent is not implemented");
@@ -449,21 +449,21 @@ aChart.show=function(params){
 		//NUMBER OF EDGES
 		if (chartCube.edges.length==1){
 			//TYPE OF EDGES
-			if (Qb.domain.ALGEBRAIC.contains(chartCube.edges[0].domain.type)){
+			if (qb.domain.ALGEBRAIC.contains(chartCube.edges[0].domain.type)){
 				type="line";
 			}else{
 				type="bar";
 			}//endif
 		}else if (chartCube.edges.length==2){
-			if (Qb.domain.ALGEBRAIC.contains(chartCube.edges[0].domain.type)){
-				if (Qb.domain.ALGEBRAIC.contains(chartCube.edges[1].domain.type)){
+			if (qb.domain.ALGEBRAIC.contains(chartCube.edges[0].domain.type)){
+				if (qb.domain.ALGEBRAIC.contains(chartCube.edges[1].domain.type)){
 					type="heat";
 				}else{
 					type="bar";
 //					params.orientation="horizontal"
 				}//endif
 			}else{
-				if (Qb.domain.ALGEBRAIC.contains(chartCube.edges[1].domain.type)){
+				if (qb.domain.ALGEBRAIC.contains(chartCube.edges[1].domain.type)){
 					type="line";
 				}else{
 					type="bar";
@@ -587,7 +587,7 @@ aChart.show=function(params){
 		legendAlign: "center",
 		orientation: 'vertical',
 		timeSeries: (xaxis.domain.type=="time"),
-		timeSeriesFormat: JavaDateFormat2ProtoVisDateFormat(Qb.domain.time.DEFAULT_FORMAT),
+		timeSeriesFormat: JavaDateFormat2ProtoVisDateFormat(qb.domain.time.DEFAULT_FORMAT),
 		showDots:true,
 		showValues: false,
 		"stacked":stacked,
@@ -645,7 +645,7 @@ aChart.show=function(params){
 				var self=this;
 				dateMarks.forall(function(m){
 					try{
-						self.chart.markEvent(m.date.format(Qb.domain.time.DEFAULT_FORMAT), m.name, m.style);
+						self.chart.markEvent(m.date.format(qb.domain.time.DEFAULT_FORMAT), m.name, m.style);
 					}catch(e){
 						Log.warning("markEvent failed", e);
 					}
@@ -671,7 +671,7 @@ aChart.show=function(params){
 			for(var s=0;s<chartCube.select.length;s++){
 				data.push(cube[chartCube.select[s].name]);
 			}//for
-		}else if (Qb.domain.ALGEBRAIC.contains(chartCube.edges[0].domain.type)){
+		}else if (qb.domain.ALGEBRAIC.contains(chartCube.edges[0].domain.type)){
 			//ALGEBRAIC DOMAINS ARE PROBABLY NOT MULTICOLORED
 			data=[cube[chartCube.select.name]]
 		}else{
@@ -855,14 +855,14 @@ function bugClicker(query, series, x){
 			try{
 				var specific;
 				if (query.edges.length==2){
-					specific=Qb.specificBugs(query, [series, x]);
+					specific=qb.specificBugs(query, [series, x]);
 				}else{
-					specific=Qb.specificBugs(query, [x]);
+					specific=qb.specificBugs(query, [x]);
 				}//endif
 
 
 
-	//			var specific=Qb.specificBugs(query, [series, x]);
+	//			var specific=qb.specificBugs(query, [series, x]);
 				var buglist=(yield (ESQuery.run(specific)));
 	//			buglist=buglist.list.map(function(b){return b.bug_id;});
 				if (buglist.cube===undefined) buglist.cube=buglist.list;
@@ -906,7 +906,7 @@ function getAxisLabels(axis){
 	var labels;
 	if (axis.domain.type == "time"){
 		if (axis.allowNulls) Log.error("Charting lib can not handle NULL domain value.");
-		var format=Qb.domain.time.DEFAULT_FORMAT;
+		var format=qb.domain.time.DEFAULT_FORMAT;
 		labels=axis.domain.partitions.map(function(v, i){
 			if (v.value!==undefined) {
 				return Date.newInstance(v.value).format(format);

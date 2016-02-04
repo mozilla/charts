@@ -136,8 +136,8 @@ function showTrain(aurora, timeDomain, offset, name, otherThread){
 
 		//PULL ALL METADATA!!
 		var extraFields = Array.union(
-			Qb.requiredFields(Mozilla.Platform.ReleaseManagementCategories),
-			Qb.requiredFields(Mozilla.Platform.Team)
+			qb.requiredFields(Mozilla.Platform.ReleaseManagementCategories),
+			qb.requiredFields(Mozilla.Platform.Team)
 		);
 
 		//MAP FROM bug_id TO min/max PAIR
@@ -269,8 +269,8 @@ function showTrain(aurora, timeDomain, offset, name, otherThread){
 		}));
 
 		//FLIP THIS DIMENSION FOR PRESENTATION
-//		byType.edges[0].domain.partitions = Qb.reverse(byType.edges[0].domain.partitions);
-//		byType.data.bug_count = Qb.reverse(byType.data.bug_count);
+//		byType.edges[0].domain.partitions = qb.reverse(byType.edges[0].domain.partitions);
+//		byType.data.bug_count = qb.reverse(byType.data.bug_count);
 
 
 		var chart = aChart.show({
@@ -297,7 +297,7 @@ function showTrain(aurora, timeDomain, offset, name, otherThread){
 			]
 		}));
 
-		byTeam = Qb.minPercent(byTeam, "bug_count", "type", {"count": 5});
+		byTeam = qb.minPercent(byTeam, "bug_count", "type", {"count": 5});
 
 
 		aChart.show({

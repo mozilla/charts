@@ -4,7 +4,7 @@
 
 importScript("Dimension.js");
 importScript("qb/ESQuery.js");
-importScript("qb/Qb.js");
+importScript("qb/qb.js");
 
 if (!Mozilla) var Mozilla = {"name": "Mozilla", "edges": []};
 
@@ -174,7 +174,7 @@ if (!Mozilla) var Mozilla = {"name": "Mozilla", "edges": []};
 
 		]
 	};
-	releaseTracking.requiredFields = Array.union(releaseTracking.edges.select("esfilter").map(Qb.requiredFields));
+	releaseTracking.requiredFields = Array.union(releaseTracking.edges.select("esfilter").map(qb.requiredFields));
 
 	{//FIND CURRENT RELEASE, AND ENSURE WE HAVE ENOUGH RELEASES!
 		var currentRelease = undefined;

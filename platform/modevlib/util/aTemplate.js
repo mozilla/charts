@@ -6,7 +6,11 @@ importScript("convert.js");
 
 
 var Template = function Template(template){
-	this.template = template;
+	if (template instanceof Template){
+		this.template = template.template;
+	}else{
+		this.template = template;
+	}//endif
 };
 
 (function(){
@@ -67,6 +71,9 @@ var Template = function Template(template){
 		return convert.value2quote(value);
 	};
 	FUNC.format = function(value, format){
+		if (value instanceof Duration){
+			return value.format(format);
+		}
 		return Date.newInstance(value).format(format);
 	};
 	FUNC.round = function(value, digits){

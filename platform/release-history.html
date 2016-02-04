@@ -316,7 +316,7 @@ function showTrain(aurora, timeDomain, offset, name, otherThread){
 
 
 		function clicker(query){
-			return function(series, x, d, elem){
+			return function(series, date, d, elem){
 				window.self=this;
 				Thread.run(function*(){
 					var self=window.self;  //WHAT HAPPENED TO CLOSURES, NOW THEY DO NOT WORK ANYMORE WITH GENERATORS?!?
@@ -338,18 +338,38 @@ function showTrain(aurora, timeDomain, offset, name, otherThread){
 					var week;
 					query.edges[1].domain.partitions.forall(function(w){
 						if (week) return;
-						if (w.value.subtract(x).milli==0){
+						if (w.value.subtract(date).milli==0){
 							week=w;
 							filter.append({"range": {"modified_ts": {"gte": w.min, "lt": w.max}}})
 						}//endif
 					});
+
+					var release;
+					Mozilla.Platform.Release.edges.forall(function(r){
+						if (week.value.add("week").between(Date.newInstance(r.releaseDate), Date.newInstance(r.retireDate))){
+							release = r.version + offset;
+						}//endif
+					});
+
 					var buglist = yield (Q({
 						"from":details,
 						"select":"bug_id",
 						"where":{"and": filter}
 					}));
 
-					Bugzilla.showBugs(buglist.list);
+					var columns = [
+						"product",
+						"component",
+						"assigned_to",
+						"bug_status","resolution",
+						"short_desc",
+						"changeddate",
+						"keywords",
+						"cf_status_firefox"+release,
+						"cf_tracking_e10s"
+					];
+
+					Bugzilla.showBugs(buglist.list, columns);
 				});
 			};//function
 		}//function

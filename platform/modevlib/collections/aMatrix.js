@@ -42,12 +42,19 @@ Matrix=function(arg){
 		this.num=arg.dim.length;
 		this.dim=arg.dim;
 		var c = arg.constructor;
-		if (c){
-			Array.reverse(Array.newRange(0, this.num)).forall(function(i){
-				c = makeArray(self.dim[i], c);
-			});
-			this.data=c();
-		}
+		if (typeof c != "function") {
+			var value = c;
+			c = function(){return value;};
+		}else if (c.isFrozen!==undefined){  //JAVASCRIPT CONSTRUCTOR
+			c = function(){};
+		}//endif
+
+		//BUILD A STACK OF FUNCTIONS TO MAKE Matrix
+		Array.reverse(Array.newRange(0, this.num)).forall(function(i){
+			c = makeArray(self.dim[i], c);
+		});
+		//RUN OUR STACK
+		this.data=c();
 	}else if (arg instanceof Array){
 		//EXPECTING COORDINATES ARRAY
 		this.num=arg.length;
@@ -127,7 +134,7 @@ Matrix.prototype.map = function (func) {
 			return func(v, c, data);
 		} else {
 			var output=[];
-			for (var j = 0; j < v.length; j++) {
+			for (var j = 0; j < v.length; j++){
 				c[d]=j;
 				output.append(iter(v[j], d+1));
 			}//for
@@ -233,6 +240,57 @@ Matrix.prototype.filter = function (edge, func) {
 		return output;
 	}//function
 	return iter(data, 0);
+};
+
+// keep - ORDERED LIST OF DIMENSIONS WE ITERATE OVER
+// func MUST RETURN A SUBCUBE, OR undefined AND
+// MUST BE func(v, i, c, cube) WHERE
+// v - IS A SUB-CUBE
+// c - AN ARRAY OF COORDINATES v IS FOUND AT, IN keep ORDER
+// cube - THE WHOLE CUBE
+//
+// func MUST RETURN A CUBE OF EQUAL SIZE
+Matrix.prototype.mapN = function(keep, func){
+	var self = this;
+	var remainder = self.dim.map(function(d, i){if (!keep.contains(i)) return i;});
+	var perm = [].extend(keep).extend(remainder);
+	var num = keep.length;
+
+	var work = self.transpose(perm);
+	var c=[];
+	function iter(v, d) {
+		if (d == num) {
+			return func(v, c, self);
+		} else {
+			var output=[];
+			for (var j = 0; j < v.length; j++) {
+				c[d]=j;
+				output.append(iter(v[j], d+1));
+			}//for
+			return output;
+		}//endif
+	}//function
+	var result = new Matrix({"data": iter(work.data, 0)});
+
+	var rev = perm.map(function(c, i){return perm.indexOf(i);});
+	return result.transpose(rev);
+};
+
+
+// perm - ARRAY WITH DIMENSION PERMUTATION
+Matrix.prototype.transpose = function(perm){
+	var self = this;
+	if (perm.length!=self.dim.length){
+		Log.error("Expecting permulation to have length equal to cube dimensions")
+	}//endif
+	var output = new Matrix({"dim": perm.map(function(k){return self.dim[k];})});
+
+	self.forall(function(v, coord){
+		var newCoord = [];
+		for(var i=coord.length;i--;) newCoord[i]=coord[perm[i]];
+		output.set(newCoord, self.get(coord));
+	});
+	return output;
 };
 
 Matrix.prototype.get=function(coord){

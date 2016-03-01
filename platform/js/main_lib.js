@@ -13,12 +13,11 @@ importScript([
 ]);
 
 importScript("../modevlib/math/Stats.js");
-importScript("../modevlib/qb/Qb.js");
+importScript("../modevlib/qb/qb.js");
 importScript("../lib/sorttable/sorttable.js");
 
 importScript([
 	'../modevlib/Dimension-Bugzilla.js',
-	"../modevlib/Dimension-Devices.js",
 	"../modevlib/Dimension-Platform.js",
 	"../modevlib/charts/aColor.js",
 	"../modevlib/layouts/dynamic.js",

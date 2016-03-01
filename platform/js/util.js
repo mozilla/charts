@@ -1,5 +1,5 @@
 importScript("../modevlib/util/convert.js");
-importScript("../modevlib/qb/Qb.js");
+importScript("../modevlib/qb/qb.js");
 importScript("../modevlib/charts/aColor.js");
 importScript("../modevlib/gui/GUI.js");
 
@@ -21,7 +21,7 @@ function refresher(func){
 
 
 function sidebarSlider(){
-	var WIDTH = "320px";
+	var WIDTH = "340px";
 
 	$("body").css("display", "block");
 
@@ -256,7 +256,7 @@ function bugDetails(bugs, categories){
 
 	});
 
-	bugs = Qb.sort(bugs, ["release.order", "overallPriority"]);
+	bugs = qb.sort(bugs, ["release.order", "overallPriority"]);
 
 	var output = new Template([
 		"<table class='table' style='width:100%'>",

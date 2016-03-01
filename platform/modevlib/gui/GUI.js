@@ -202,7 +202,7 @@ GUI = {};
 						"from": "perfy",
 						"select": {"name": "max_date", "value": "info.started", "aggregate": "maximum"}
 					}))).cube.max_date);
-					$("#testMessage").html("Perfy Last Updated " + time.addTimezone().format("NNN dd @ HH:mm") + Date.getTimezone());
+					$("#testMessage").html("Builds Last Updated " + time.addTimezone().format("NNN dd @ HH:mm") + Date.getTimezone());
 				}else if (indexName == "talos"){
 					esHasErrorInIndex = false;
 					time = new Date((yield(ESQuery.run({
@@ -283,6 +283,8 @@ GUI = {};
 					}else{
 						simpleState[k] = undefined;
 					}//endif
+				} else if (p && p.type == "boolean") {
+					simpleState[k] = convert.value2json(v == true);
 				} else if (p && p.type == "json") {
 					v = convert.value2json(v);
 					v = v.escape(GUI.urlMap);
@@ -308,7 +310,7 @@ GUI = {};
 					if (v.id == k) return v;
 				})[0];
 
-				if (p && Qb.domain.ALGEBRAIC.contains(p.type)) {
+				if (p && qb.domain.ALGEBRAIC.contains(p.type)) {
 					v = v.escape(Map.inverse(GUI.urlMap));
 					GUI.state[k] = v;
 				} else if (p && p.type == "json") {
@@ -318,6 +320,8 @@ GUI = {};
 					} catch (e) {
 						Log.error("Malformed JSON: " + v);
 					}//try
+				} else if (p && p.type == "boolean") {
+					GUI.state[k] = convert.json2value(v);
 				} else if (p && p.type == "text") {
 					v = v.escape(Map.inverse(GUI.urlMap));
 					GUI.state[k] = v;
@@ -494,7 +498,7 @@ GUI = {};
 							GUI.refreshChart();
 						}
 					});
-					$("#" + param.id).val(defaultValue.join(","));
+					$("#" + param.id).val(Array.newInstance(defaultValue).join(","));
 				} else {
 					if (param.type == "string") param.type = "text";
 					$("#" + param.id).change(function () {

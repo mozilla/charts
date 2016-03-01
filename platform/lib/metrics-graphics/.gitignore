@@ -9,3 +9,8 @@ other/htaccess.txt
 
 bare.html
 /.svn
+.idea
+*.iml
+libs
+import.js
+

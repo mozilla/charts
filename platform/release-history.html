@@ -168,7 +168,7 @@ function showTrain(aurora, timeDomain, offset, name, otherThread){
 				{"terms": {"bug_id": Map.map(timestamps, function(bug_id, timestamp){
 					if (releaseDate <= timestamp && timestamp < retireDate) return bug_id;
 				})}},
-				{"not": {"term": {"resolution":"wontfix"}}}
+                {"not": {"term": Map.newInstance("cf_status_firefox" + (e.version + offset), "wontfix")}}
 			]};
 			if (candidate.and[1].terms.bug_id.length>0){
 				return candidate;

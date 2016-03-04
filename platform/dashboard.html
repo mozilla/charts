@@ -70,7 +70,7 @@ importScript(['js/main_lib.js', 'modevlib/layouts/layout.js'], function(){
 		]};
 
 		//PULL ALL METADATA!!
-		var extraFields = Qb.requiredFields(Mozilla.Platform.Categories);
+		var extraFields = qb.requiredFields(Mozilla.Platform.Categories);
 		var allBugs = yield (ESQuery.run({
 			"from": "bugs",
 			"select": ["bug_id", "assigned_to", "component"].union(extraFields),

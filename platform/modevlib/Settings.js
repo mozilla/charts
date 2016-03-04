@@ -23,7 +23,7 @@ importScript("charts/aColor.js");
 			"public_bugs" : {"name" : "Mozilla public bugs cluster", "style" : {"color" : "white", "background-color" : green}, "host" : "https://esfrontline.bugzilla.mozilla.org:443", "path" : "/public_bugs/bug_version"},
 			"public_bugs_backend" : {"style" : {"color" : "black", "background-color" : yellow}, "host" : "http://elasticsearch1.bugs.scl3.mozilla.com:9200", "path" : "/public_bugs/bug_version"},
 			"public_bugs_proxy" : {"style" : {"color" : "black", "background-color" : yellow}, "host" : "http://klahnakoski-es.corp.tor1.mozilla.com:9201", "path" : "/public_bugs/bug_version"},
-			"public_comments" : {"style" : {"color" : "black", "background-color" : yellow}, "host" : "http://elasticsearch1.bugs.scl3.mozilla.com:9200", "path" : "/public_comments/bug_comment"},
+			"public_comments" : {"style" : {"color" : "black", "background-color" : yellow}, "host" : "http://esfrontline.bugzilla.mozilla.org:443", "path" : "/public_comments/bug_comment"},
 			"private_bugs" : {"style" : {"color" : "black", "background-color" : yellow}, "host" : "http://elasticsearch6.bugs.scl3.mozilla.com:9200", "path" : "/private_bugs/bug_version"},
 			"private_comments" : {"style" : {"color" : "black", "background-color" : yellow}, "host" : "http://elasticsearch4.bugs.scl3.mozilla.com:9200", "path" : "/private_comments/bug_comment"},
 
@@ -91,7 +91,7 @@ importScript("charts/aColor.js");
 
 		},
 
-		//REGISTER GENERATORS THAT HANDLE Qb QUERIES
+		//REGISTER GENERATORS THAT HANDLE qb QUERIES
 		"host_types":{
 
 

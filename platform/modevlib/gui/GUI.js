@@ -310,7 +310,7 @@ GUI = {};
 					if (v.id == k) return v;
 				})[0];
 
-				if (p && Qb.domain.ALGEBRAIC.contains(p.type)) {
+				if (p && qb.domain.ALGEBRAIC.contains(p.type)) {
 					v = v.escape(Map.inverse(GUI.urlMap));
 					GUI.state[k] = v;
 				} else if (p && p.type == "json") {
@@ -498,7 +498,7 @@ GUI = {};
 							GUI.refreshChart();
 						}
 					});
-					$("#" + param.id).val(defaultValue.join(","));
+					$("#" + param.id).val(Array.newInstance(defaultValue).join(","));
 				} else {
 					if (param.type == "string") param.type = "text";
 					$("#" + param.id).change(function () {

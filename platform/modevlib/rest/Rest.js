@@ -145,7 +145,11 @@ Rest.send=function*(ajaxParam){
 	}
 
 	request.name="XMLHttpRequest";  //FOR DEBUGGING
-	request.send(ajaxParam.data);
+	try{
+		request.send(ajaxParam.data);
+	}catch(e){
+		Log.error("Can not send request", e)
+	}//try
 	yield (Thread.suspend((ajaxParam.doNotKill) ? undefined : request));
 };//method
 

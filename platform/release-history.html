@@ -43,7 +43,7 @@
 	<h1 id="title" style="display:inline-block;">Release Management Uplifts</h1>
 	<table>
 		<tr>
-			<td style="padding-top: 20px"><h2>Beta Uplifts by Keyword</h2></td>
+			<td style="padding-top: 20px"><h2>Beta Uplifts by Category</h2></td>
 			<td style="padding-top: 20px"><h2>Beta Uplifts by Team</h2></td>
 		</tr>
 		<tr>
@@ -55,7 +55,7 @@
 			</td>
 		</tr>
 		<tr>
-			<td style="padding-top: 20px"><h2>Aurora Uplifts by Keyword</h2></td>
+			<td style="padding-top: 20px"><h2>Aurora Uplifts by Category</h2></td>
 			<td style="padding-top: 20px"><h2>Aurora Uplifts by Team</h2></td>
 		</tr>
 		<tr>
@@ -136,8 +136,8 @@ function showTrain(aurora, timeDomain, offset, name, otherThread){
 
 		//PULL ALL METADATA!!
 		var extraFields = Array.union(
-			Qb.requiredFields(Mozilla.Platform.ReleaseManagementCategories),
-			Qb.requiredFields(Mozilla.Platform.Team)
+			qb.requiredFields(Mozilla.Platform.ReleaseManagementCategories),
+			qb.requiredFields(Mozilla.Platform.Team)
 		);
 
 		//MAP FROM bug_id TO min/max PAIR
@@ -247,7 +247,12 @@ function showTrain(aurora, timeDomain, offset, name, otherThread){
 						"count": count
 					}),
 					"date": releaseDate,
-					"style": coalesce(e.style, {"color": "black", horizontalAnchor: "right", forceHorizontalAnchor: true})
+					"style": coalesce(e.style, {
+						"color": "black",
+						"font-size": "15px",
+						horizontalAnchor: "right",
+						forceHorizontalAnchor: true
+					})
 				};
 			}//endif
 		});
@@ -264,8 +269,8 @@ function showTrain(aurora, timeDomain, offset, name, otherThread){
 		}));
 
 		//FLIP THIS DIMENSION FOR PRESENTATION
-//		byType.edges[0].domain.partitions = Qb.reverse(byType.edges[0].domain.partitions);
-//		byType.data.bug_count = Qb.reverse(byType.data.bug_count);
+//		byType.edges[0].domain.partitions = qb.reverse(byType.edges[0].domain.partitions);
+//		byType.data.bug_count = qb.reverse(byType.data.bug_count);
 
 
 		var chart = aChart.show({
@@ -282,6 +287,7 @@ function showTrain(aurora, timeDomain, offset, name, otherThread){
 			"clickAction": clicker(byType)
 		});
 
+
 		//SHOW BY TEAM
 		var byTeam = yield (Q({
 			"from": details,
@@ -292,7 +298,7 @@ function showTrain(aurora, timeDomain, offset, name, otherThread){
 			]
 		}));
 
-		byTeam = Qb.minPercent(byTeam, "bug_count", "type", {"count": 5});
+		byTeam = qb.minPercent(byTeam, "bug_count", "type", {"count": 5});
 
 
 		aChart.show({
@@ -310,7 +316,7 @@ function showTrain(aurora, timeDomain, offset, name, otherThread){
 
 
 		function clicker(query){
-			return function(series, x, d, elem){
+			return function(series, date, d, elem){
 				window.self=this;
 				Thread.run(function*(){
 					var self=window.self;  //WHAT HAPPENED TO CLOSURES, NOW THEY DO NOT WORK ANYMORE WITH GENERATORS?!?
@@ -332,18 +338,38 @@ function showTrain(aurora, timeDomain, offset, name, otherThread){
 					var week;
 					query.edges[1].domain.partitions.forall(function(w){
 						if (week) return;
-						if (w.value.subtract(x).milli==0){
+						if (w.value.subtract(date).milli==0){
 							week=w;
 							filter.append({"range": {"modified_ts": {"gte": w.min, "lt": w.max}}})
 						}//endif
 					});
+
+					var release;
+					Mozilla.Platform.Release.edges.forall(function(r){
+						if (week.value.add("week").between(Date.newInstance(r.releaseDate), Date.newInstance(r.retireDate))){
+							release = r.version + offset;
+						}//endif
+					});
+
 					var buglist = yield (Q({
 						"from":details,
 						"select":"bug_id",
 						"where":{"and": filter}
 					}));
 
-					Bugzilla.showBugs(buglist.list);
+					var columns = [
+						"product",
+						"component",
+						"assigned_to",
+						"bug_status","resolution",
+						"short_desc",
+						"changeddate",
+						"keywords",
+						"cf_status_firefox"+release,
+						"cf_tracking_e10s"
+					];
+
+					Bugzilla.showBugs(buglist.list, columns);
 				});
 			};//function
 		}//function

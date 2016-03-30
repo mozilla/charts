@@ -122,7 +122,7 @@ function getHistoryFilter(timeDomain, offset){
 var chartMax=-1;   // IT IS UNFORTUNATE THIS CHART LIB DOES NOT SYNCH CHARTS
 
 function showTrain(aurora, timeDomain, offset, name, otherThread){
-	var outputThread = Thread.run(function*(){
+	var outputThread = Thread.run("show train", function*(){
 
 		timeDomain = Map.copy(timeDomain);
 		var allBugs = yield(ESQuery.run({
@@ -387,7 +387,7 @@ importScript(['js/main_lib.js', 'modevlib/charts/cccChart.js', 'modevlib/layouts
 	function createChart(){
 		if (thread !== undefined)
 			thread.kill(true);
-		thread = Thread.run(__createChart());
+		thread = Thread.run("create chart", __createChart());
 	}
 
 	var __createChart = function*(){

@@ -221,9 +221,11 @@ build = function(){
       } else if (retval === Thread.Resume) {
         (function(self){
           retval = function(retval){
-            if (DEBUG) {
-              Log.note("Resuming thread " + self.name)
+            if (!self.keepRunning){
+              if (DEBUG) Log.note("Resuming dead thread " + self.name+" has no effect");
+              return;
             }//endif
+            if (DEBUG) Log.note("Resuming thread " + self.name);
             self.nextYield = currentTimestamp() + NEXT_BLOCK_TIME;
             self.currentRequest = undefined;
             self.resume(retval);
@@ -236,24 +238,6 @@ build = function(){
 
         if (this.stack.length == 0) {
           this.cleanup(retval);
-          if (this.joined.length>0) {
-            var joined = this.joined.slice();  //COPY
-            for (var f = 0; f < joined.length; f++) {
-              try {
-                joined[f](retval)
-              } catch (e) {
-                Log.warning("not expected")
-              }//try
-            }//for
-          }else if (retval instanceof Exception) {
-            if (POPUP_ON_ERROR || DEBUG) {
-              var details = retval.toString();
-              if (details == "[object Object]") details = retval.message;
-              Log.alert("Uncaught Error in thread: " + coalesce(this.name, "") + "\n  " + details);
-            } else {
-              Log.warning("Uncaught Error in thread: " + coalesce(this.name, "") + "\n  ", retval);
-            }//endif
-          }//endif
           return retval;
         }//endif
       }//endif
@@ -317,9 +301,22 @@ build = function(){
   };
 
   Thread.prototype.cleanup= function(retval){
-    if (DEBUG){
-      Log.note("Cleanup "+this.name);
-    }//endif
+    if (DEBUG) Log.note("Cleanup "+this.name);
+    if (!this.keepRunning) return;
+
+    var children = this.children.slice(); //copy
+    var exitEarly=false;
+    for (var c = 0; c < children.length; c++) {
+      var childThread = children[c];
+      if (!(childThread instanceof Thread)) continue;
+      if (childThread.keepRunning){
+        childThread.joined.push(this.cleanup);
+        exitEarly=true;
+      }//endif
+    }//for
+    if (exitEarly) return;
+    this.children=[];
+
     this.threadResponse = retval;				//REMEMBER FOR THREAD THAT JOINS WITH THIS
     this.keepRunning = false;
     this.parentThread.children.remove(this);
@@ -327,6 +324,27 @@ build = function(){
     if (Thread.isRunning.length == 0) {
       Thread.hideWorking();
     }//endif
+
+    if (this.joined.length>0) {
+      var joined = this.joined.slice();  //COPY
+      for (var f = 0; f < joined.length; f++) {
+        try {
+          joined[f](retval)
+        } catch (e) {
+          Log.warning("not expected")
+        }//try
+      }//for
+    }else if (retval instanceof Exception) {
+      if (POPUP_ON_ERROR || DEBUG) {
+        var details = retval.toString();
+        if (details == "[object Object]") details = retval.message;
+        Log.alert("Uncaught Error in thread: " + coalesce(this.name, "") + "\n  " + details);
+      } else {
+        Log.warning("Uncaught Error in thread: " + coalesce(this.name, "") + "\n  ", retval);
+      }//endif
+    }//endif
+
+
   };
 
   //PUT AT THE BEGINNING OF A GENERATOR TO ENSURE IT WILL ONLY BE CALLED USING yield()
@@ -388,16 +406,9 @@ build = function(){
 
   //WAIT FOR OTHER THREAD TO FINISH
   Thread.join = function*(otherThread, timeout){
-    var children = otherThread.children.slice(); //copy
-    for (var c = 0; c < children.length; c++) {
-      var childThread = children[c];
-      if (!(childThread instanceof Thread)) continue;
-
-      yield Thread.join(childThread, timeout);
-    }//for
-
     if (!otherThread.keepRunning) {
       yield (otherThread.threadResponse);
+      return;
     }//endif
 
     var resumeWhenDone = yield(Thread.Resume);
@@ -435,18 +446,20 @@ build = function(){
             resumeCurrentThread = null;
             immediateResponse = retval;
           }//endif
-        }else{
-          //WRAP THE RESUME FUNCTION SO IT IS ONLY RUN ONCE
-          var resumeOnce = function(retval){
-            livingThreads--;
-            if (resumeCurrentThread && (livingThreads == 0 || !(retval instanceof Exception))) {
-              if (DEBUG) Log.note(otherThread.name + " completed, resuming thread...");
-              var temp = resumeCurrentThread;
-              resumeCurrentThread = null;
-              temp(retval)
-            }//endif
-            return retval;
-          };
+        } else {
+          var resumeOnce = (function(otherThread){
+            //WRAP THE RESUME FUNCTION SO IT IS ONLY RUN ONCE
+            return function(retval){
+              livingThreads--;
+              if (resumeCurrentThread && (livingThreads == 0 || !(retval instanceof Exception))) {
+                if (DEBUG) Log.note(otherThread.name + " completed, resuming thread...");
+                var temp = resumeCurrentThread;
+                resumeCurrentThread = null;
+                temp(retval)
+              }//endif
+              return retval;
+            };
+          })(otherThreads[i]);
           otherThread.joined.push(resumeOnce);
           if (DEBUG) Log.note("pausing thread " + Thread.currentThread.name + " while joining " + otherThread.name);
         }//endif

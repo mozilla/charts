@@ -21,7 +21,7 @@ var Log = new function(){
 };
 
 (function(){
-	Log.FORMAT = new Template("{{type}} : {{timestamp|datetime('MM dd HH:mm:ss.fff')}} : {{message}}");
+	Log.FORMAT = new Template("{{type}} : {{timestamp|datetime('MM dd HH:mm:ss.fff')}} : {{trace.fileName}}@{{trace.lineNumber}} : {{message}}");
 
 	Log.loggers=[];
 
@@ -99,16 +99,25 @@ var Log = new function(){
 	//
 	// ... AND MORE
 	Log.note = function(message, params){
-		if (isString(message) && params==undefined){
-			message = {
-				"timestamp":Date.now(),
-				"message":message,
-				"params": params,
-				"type":"NOTE"
-			}
-		}else{
-			//ASSUME IT IS ALREADY A JSON OBJECT
-		}//endif
+    if (isString(message) && params == undefined) {
+
+      var stacktrace = null;
+      try {
+        throw new Error();
+      } catch (e) {
+        stacktrace = parseStack(e.stack).slice(1);
+      }//try
+
+      message = {
+        "trace": stacktrace[0],
+        "timestamp": Date.now(),
+        "message": message,
+        "params": params,
+        "type": "NOTE"
+      }
+    } else {
+      //ASSUME IT IS ALREADY A JSON OBJECT
+    }//endif
 
 		Log.loggers.forall(function(v){
 			v(message);

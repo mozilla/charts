@@ -284,16 +284,17 @@ build = function(){
           child.abort();
         }//endif
       } catch (e) {
-        Log.error("kill?", child)
+        Log.error("kill?", {}, e)
       }//try
     }//for
 
     if (this.stack.length > 0) {
       this.stack.push(DUMMY_GENERATOR); //TOP OF STACK IS THE RUNNING GENERATOR, THIS kill() CAME FROM BEYOND
       this.resume(Thread.Interrupted);  //RUN THE EXCEPTION HANDLER RIGHT NOW
-    }//endif
+     }//endif
     if (this.stack.length > 0) {
-      Log.error("Expecting thread " + self.name + " to have dealt with kill() immediately");
+      this.keepRunning = false;
+      Log.error("Expecting thread " + convert.string2quote(self.name) + " to have dealt with kill() immediately");
     }//endif
     if (this.keepRunning){
       Log.error("not expected");
@@ -304,18 +305,21 @@ build = function(){
     if (DEBUG) Log.note("Cleanup "+this.name);
     if (!this.keepRunning) return;
 
+    if (DEBUG) Log.note("Join the child threads of "+this.name);
     var children = this.children.slice(); //copy
     var exitEarly=false;
     for (var c = 0; c < children.length; c++) {
       var childThread = children[c];
       if (!(childThread instanceof Thread)) continue;
       if (childThread.keepRunning){
+        if (DEBUG) Log.note("Joining to "+childThread.name);
         childThread.joined.push(this.cleanup);
         exitEarly=true;
       }//endif
     }//for
     if (exitEarly) return;
     this.children=[];
+    if (DEBUG) Log.note("Done join of child threads of "+this.name);
 
     this.threadResponse = retval;				//REMEMBER FOR THREAD THAT JOINS WITH THIS
     this.keepRunning = false;
@@ -326,12 +330,13 @@ build = function(){
     }//endif
 
     if (this.joined.length>0) {
+      if (DEBUG) Log.note(this.name+" has "+this.joined.length+" other items waiting to join, running them now.");
       var joined = this.joined.slice();  //COPY
       for (var f = 0; f < joined.length; f++) {
         try {
           joined[f](retval)
         } catch (e) {
-          Log.warning("not expected")
+          Log.warning("not expected", e)
         }//try
       }//for
     }else if (retval instanceof Exception) {
@@ -414,7 +419,9 @@ build = function(){
     var resumeWhenDone = yield(Thread.Resume);
     otherThread.joined.push(resumeWhenDone);
     if (timeout!=null) {
+      var self = Thread.currentThread;
       setTimeout(function(){
+        if (DEBUG) Log.note("join timeout, resuming thread " + self.name);
         otherThread.joined.remove(resumeWhenDone);
         resumeWhenDone(Thread.TIMEOUT);
       }, timeout)
@@ -461,7 +468,7 @@ build = function(){
             };
           })(otherThreads[i]);
           otherThread.joined.push(resumeOnce);
-          if (DEBUG) Log.note("pausing thread " + Thread.currentThread.name + " while joining " + otherThread.name);
+          if (DEBUG) Log.note("adding thread " + otherThread.name + " to joinAny()");
         }//endif
       }//for
 
@@ -469,6 +476,7 @@ build = function(){
     })(resumeCurrentThread);
 
     if (immediateResponse === undefined) {
+      if (DEBUG) Log.note("pausing thread " + Thread.currentThread.name + " while joinAny()");
       yield (Thread.suspend());
     } else {
       yield (immediateResponse);

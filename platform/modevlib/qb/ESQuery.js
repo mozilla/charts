@@ -166,9 +166,12 @@ ESQuery.NOT_SUPPORTED = "From clause not supported \n{{from}}";
         //HOPEFULLY THE FIRST CLUSTER WILL RESPOND
         var schema = null;
         try {
-          [schema, currInfo] = yield (Thread.join(attempts[0], 900));
+          var pair = yield (Thread.join(attempts[0], 900));
+          if (pair && is_array(pair)) {
+            [schema, currInfo] = pair;
+          }//endif
         } catch (e) {
-          Log.note(e.toString())
+          Log.warning("problem with join", e)
         }//try
 
         //WE WILL ACCEPT ANY CLUSTER RESPONSE NOW
@@ -180,9 +183,21 @@ ESQuery.NOT_SUPPORTED = "From clause not supported \n{{from}}";
           }//try
         }//endif
 
+        //GOT ONE, KILL THE REST
+        Log.note("killing other requests");
+        attempts.forall(function(a){
+          try {
+            a.kill()
+          } catch (e) {
+            Log.warning("failed to kill", e)
+          }//try
+        });
+        Log.note("done killing");
+
         Map.copy(currInfo, indexInfo);
         var properties = schema.properties;
         indexInfo.columns = ESQuery.parseColumns(indexName, undefined, properties);
+        Log.note("done parse properties");
         yield(null);
       });
     }//endif

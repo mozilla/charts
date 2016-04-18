@@ -167,5 +167,5 @@ importScript("../util/convert.js");
 	Exception.TIMEOUT=new Exception("TIMEOUT");
 
 	window.Exception=Exception;
-
+  window.parseStack=parseStack;
 })();

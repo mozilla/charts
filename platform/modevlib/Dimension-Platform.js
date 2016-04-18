@@ -138,7 +138,7 @@ if (!Mozilla) var Mozilla = {"name": "Mozilla", "edges": []};
 			{
 				"name": "Firefox46",
 				"version": 46,
-				"releaseDate": "Apr 19, 2016",
+				"releaseDate": "Apr 26, 2016",
 				"esfilter": {"and": [
 					{"not": {"terms": {"cf_status_firefox46": SOLVED}}},
 					{"term": {"cf_tracking_firefox46": "+"}}

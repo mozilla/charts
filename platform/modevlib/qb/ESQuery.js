@@ -120,86 +120,91 @@ ESQuery.NOT_SUPPORTED = "From clause not supported \n{{from}}";
 	};//method
 
 
-	//ENSURE COLUMNS FOR GIVEN INDEX/QUERY ARE LOADED, AND MVEL COMPILATION WORKS BETTER
-	ESQuery.loadColumns = function*(query){
-		var indexName = null;
-		if (typeof(query) == 'string') {
-			indexName = query;
-		} else {
-			if (typeof(query.from)=='string'){
-				indexName = splitField(query.from)[0];
-			}else{
-				//COMPLEX from CLAUSE, SHUNT TO ActiveData
-				Log.error(ESQuery.NOT_SUPPORTED, {"from":query.from})
-			}//endif
-		}//endif
+  //ENSURE COLUMNS FOR GIVEN INDEX/QUERY ARE LOADED, AND MVEL COMPILATION WORKS BETTER
+  ESQuery.loadColumns = function*(query){
+    var indexName = null;
+    if (typeof(query) == 'string') {
+      indexName = query;
+    } else {
+      if (typeof(query.from) == 'string') {
+        indexName = splitField(query.from)[0];
+      } else {
+        //COMPLEX from CLAUSE, SHUNT TO ActiveData
+        Log.error(ESQuery.NOT_SUPPORTED, {"from": query.from})
+      }//endif
+    }//endif
 
-		var indexInfo = ESQuery.INDEXES[indexName];
+    var indexInfo = ESQuery.INDEXES[indexName];
 
-		if (indexInfo===undefined){
-			//DIVERT TO ActiveData SERVICE
-			Log.error(ESQuery.NOT_SUPPORTED, {"from":query.from})
-		}//endif
+    if (indexInfo === undefined) {
+      //DIVERT TO ActiveData SERVICE
+      Log.error(ESQuery.NOT_SUPPORTED, {"from": query.from})
+    }//endif
 
-		//WE MANAGE ALL THE REQUESTS FOR THE SAME SCHEMA, DELAYING THEM IF THEY COME IN TOO FAST
-		if (indexInfo.fetcher === undefined) {
-			indexInfo.fetcher = Thread.run(function*(){
-				var currInfo = indexInfo;
-				var depth = 0;
-				var attempts = [];
-				var schemas = [];
-				var info = [];
+    //WE MANAGE ALL THE REQUESTS FOR THE SAME SCHEMA, DELAYING THEM IF THEY COME IN TOO FAST
+    if (indexInfo.fetcher === undefined) {
+      indexInfo.fetcher = Thread.run("fetch columns", function*(){
+        var currInfo = indexInfo;
+        var depth = 0;
+        var attempts = [];
+        var info = [];
 
-				//TRY ALL HOSTS AND PATHS
-				while (currInfo !== undefined) {
-					info[depth] = currInfo;
-					schemas[depth] = null;
-					(function(ii, d){
-						attempts[d] = Thread.run(function*(){
-							schemas[d] = yield (ESQuery.loadSchema(query, indexName, ii));
-						});
-					})(currInfo, depth);
-					currInfo = currInfo.alternate;
-					depth++;
-				}//while
+        //TRY ALL HOSTS AND PATHS
+        while (currInfo !== undefined) {
+          info[depth] = currInfo;
+          (function(currInfo, d){
+            attempts[d] = Thread.run("load " + currInfo.name, function*(){
+              var schema = yield (ESQuery.loadSchema(query, indexName, currInfo));
+              if (!schema) Log.error("Could not get schema from " + currInfo.name);
+              yield ([schema, currInfo]);
+            });
+          })(currInfo, depth);
+          currInfo = currInfo.alternate;
+          depth++;
+        }//while
 
-				//FIND THE FIRST TO RESPOND
-				var schema = null;
-				while (schema == null) {
-					var hope = false;
-					try {
-						for (var s = 0; s < schemas.length; s++) {
-							if (attempts[s].keepRunning || schemas[s] != null) {
-								hope = true;
-								yield (attempts[s].join(900));  //WE WILL ONLY WAIT FOR THE FIRST
-							}//endif
-						}//for
-					} catch (e) {
-						//DO NOTHING
-					}//try
-					if (!hope) {
-						yield (Exception("Can not locate any cluster"));
-					}//endif
+        //HOPEFULLY THE FIRST CLUSTER WILL RESPOND
+        var schema = null;
+        try {
+          var pair = yield (Thread.join(attempts[0], 900));
+          if (pair && is_array(pair)) {
+            [schema, currInfo] = pair;
+          }//endif
+        } catch (e) {
+          Log.warning("problem with join", e)
+        }//try
 
-					for (var s = 0; s < schemas.length; s++) {
-						if (schemas[s] != null) {
-							currInfo = info[s];
-							schema = schemas[s];
-							break;
-						}//endif
-					}//for
-				}//while
+        //WE WILL ACCEPT ANY CLUSTER RESPONSE NOW
+        if (!schema) {
+          try {
+            [schema, currInfo] = yield (Thread.joinAny(attempts));
+          } catch (e) {
+            Log.error("Can not locate any cluster", e);
+          }//try
+        }//endif
 
-				Map.copy(currInfo, indexInfo);
-				var properties = schema.properties;
-				indexInfo.columns = ESQuery.parseColumns(indexName, undefined, properties);
-				yield(null);
-			});
-		}//endif
+        //GOT ONE, KILL THE REST
+        Log.note("killing other requests");
+        attempts.forall(function(a){
+          try {
+            a.kill()
+          } catch (e) {
+            Log.warning("failed to kill", e)
+          }//try
+        });
+        Log.note("done killing");
 
-		yield (Thread.join(indexInfo.fetcher));
-		yield (null);
-	};//method
+        Map.copy(currInfo, indexInfo);
+        var properties = schema.properties;
+        indexInfo.columns = ESQuery.parseColumns(indexName, undefined, properties);
+        Log.note("done parse properties");
+        yield(null);
+      });
+    }//endif
+
+    yield (Thread.join(indexInfo.fetcher));
+    yield (null);
+  };//method
 
 
 	ESQuery.loadSchema = function*(query, indexName, indexInfo){

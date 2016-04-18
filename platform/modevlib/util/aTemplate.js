@@ -20,15 +20,19 @@ var Template = function Template(template){
 			return this.template;
 		}//endif
 
-		var map = values;
-		if (typeof(values)=="object" && !(values instanceof Array) && !(values instanceof Date)) {
-			var newMap = {};
-			Map.forall(values, function(k, v){
-				newMap[k.toLowerCase()]=v;
-			});
-			map = newMap;
-		}//endif
+    function lower(v){
+      if (typeof(v)=="object" && !(v instanceof Array) && !(v instanceof Date)) {
+        var newMap = {};
+        Map.forall(v, function(k, v){
+          newMap[k.toLowerCase()] = lower(v);
+        });
+        return newMap;
+      }else{
+        return v;
+      }//endif
+    }//function
 
+    var map = lower(values);
 		return _expand(this.template, [map]);
 	};
 	Template.prototype.replace = Template.prototype.expand;

@@ -21,7 +21,7 @@ var Log = new function(){
 };
 
 (function(){
-	Log.FORMAT = new Template("{{type}} : {{timestamp|datetime('MM dd HH:mm:ss.fff')}} : {{trace.fileName}}@{{trace.lineNumber}} : {{message}}");	
+	Log.FORMAT = new Template("{{type}} : {{timestamp|datetime('MM dd HH:mm:ss.fff')}} : {{trace.fileName}}@{{trace.lineNumber}} : {{message}}");
 	Log.loggers=[];
 
 	//ACCEPT A FUNCTION THAT HANDLES OBJECT
@@ -100,15 +100,15 @@ var Log = new function(){
 	Log.note = function(message, params){
 		if (isString(message) && params==undefined){
 
-      var stacktrace = null;
-      try {
-        throw new Error();
-      } catch (e) {
-        stacktrace = parseStack(e.stack).slice(1);
-      }//try
+			var stacktrace = null;
+			try {
+				throw new Error();
+			} catch (e) {
+				stacktrace = parseStack(e.stack).slice(1);
+			}//try
 
-      message = {
-        "trace": stacktrace[0],
+			message = {
+				"trace": stacktrace[0],
 				"timestamp":Date.now(),
 				"message":message,
 				"params": params,

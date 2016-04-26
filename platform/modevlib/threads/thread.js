@@ -284,7 +284,7 @@ build = function(){
 					child.abort();
 				}//endif
 			} catch (e) {
-        Log.error("kill?", {}, e)
+				Log.error("kill?", {}, e)
 			}//try
 		}//for
 
@@ -293,8 +293,8 @@ build = function(){
 			this.resume(Thread.Interrupted);  //RUN THE EXCEPTION HANDLER RIGHT NOW
 		}//endif
 		if (this.stack.length > 0) {
-      this.keepRunning = false;
-      Log.error("Expecting thread " + convert.string2quote(self.name) + " to have dealt with kill() immediately");
+			this.keepRunning = false;
+			Log.error("Expecting thread " + convert.string2quote(self.name) + " to have dealt with kill() immediately");
 		}//endif
 		if (this.keepRunning){
 			Log.error("not expected");
@@ -305,14 +305,14 @@ build = function(){
 		if (DEBUG) Log.note("Cleanup "+this.name);
 		if (!this.keepRunning) return;
 
-    if (DEBUG) Log.note("Join the child threads of "+this.name);
+		if (DEBUG) Log.note("Join the child threads of "+this.name);
 		var children = this.children.slice(); //copy
 		var exitEarly=false;
 		for (var c = 0; c < children.length; c++) {
 			var childThread = children[c];
 			if (!(childThread instanceof Thread)) continue;
 			if (childThread.keepRunning){
-        if (DEBUG) Log.note("Joining to "+childThread.name);
+				if (DEBUG) Log.note("Joining to "+childThread.name);
 				childThread.joined.push(this.cleanup);
 				exitEarly=true;
 			}//endif

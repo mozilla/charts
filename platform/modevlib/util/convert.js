@@ -70,11 +70,18 @@ var convert = function(){
 	 */
 	convert.Map2Style = function(map){
 		return Map.map(map, function(k, v){
-					return k + ":" + v;
-				}).join(";") + ";";
+				return k + ":" + v;
+			}).join(";") + ";";
+	};
+
+	convert.value2json = function(json){
+		return _value2json(json, 30);
 	};//method
 
-	function value2json(json){
+	function _value2json(json, maxDepth){
+		if (maxDepth < 0) {
+			Log.error("json is too deep")
+		}//endif
 		try {
 			if (json instanceof Array) {
 				try {
@@ -85,12 +92,12 @@ var convert = function(){
 				}//try
 
 				if (json.length == 0) return "[]";
-				if (json.length == 1) return "[" + convert.value2json(json[0]) + "]";
+				if (json.length == 1) return "[" + _value2json(json[0], maxDepth - 1) + "]";
 
-				return "[\n" + json.map(function(v){
-							if (v === undefined) return "undefined";
-							return convert.value2json(v).indent(1);
-						}).join(",\n") + "\n]";
+				return "[\n" + json.map(function(v, i){
+						if (v === undefined) return "undefined";
+						return _value2json(v, maxDepth - 1).indent(1);
+					}).join(",\n") + "\n]";
 			} else if (typeof(json) == "function") {
 				return "undefined";
 			} else if (json instanceof Duration) {
@@ -107,7 +114,7 @@ var convert = function(){
 
 				var keys = Object.keys(json);
 				if (keys.length == 0) return "{}";
-				if (keys.length == 1) return "{\"" + keys[0] + "\":" + convert.value2json(json[keys[0]]).trim() + "}";
+				if (keys.length == 1) return "{\"" + keys[0] + "\":" + _value2json(json[keys[0]], maxDepth - 1).trim() + "}";
 
 				var output = "{\n\t";
 				for (var k in json) {  //NATURAL ORDER
@@ -115,7 +122,7 @@ var convert = function(){
 						var v = json[k];
 						if (v !== undefined) {
 							if (output.length > 3) output += ",\n\t";
-							output += "\"" + k + "\":" + convert.value2json(v).indent(1).trim();
+							output += "\"" + k + "\":" + _value2json(v, maxDepth - 1).indent(1).trim();
 						}//endif
 					}//endif
 
@@ -124,11 +131,10 @@ var convert = function(){
 			} else {
 				return JSON.stringify(json);
 			}//endif
-		} catch(e){
+		} catch (e) {
 			Log.error("Problem with jsonification", e);
 		}//try
 	}//function
-	convert.value2json = value2json;
 
 
 	convert.Object2CSS = function(value){
@@ -244,26 +250,25 @@ var convert = function(){
 	convert.number2hex = convert.int2hex;
 
 
-
 	(function(){
 		var urlMap = {"%": "%25", "{": "%7B", "}": "%7D", "[": "%5B", "]": "%5D"};
-		for(var i=0;i<33;i++) urlMap[String.fromCharCode(i)]="%"+int2hex(i, 2);
-		for(i=123;i<256;i++) urlMap[String.fromCharCode(i)]="%"+int2hex(i, 2);
+		for (var i = 0; i < 33; i++) urlMap[String.fromCharCode(i)] = "%" + int2hex(i, 2);
+		for (i = 123; i < 256; i++) urlMap[String.fromCharCode(i)] = "%" + int2hex(i, 2);
 
 		convert.Object2URLParam = function(value){
-			return Map.map(value, function(k,v){
-				if (v instanceof Array){
+			return Map.map(value, function(k, v){
+				if (v instanceof Array) {
 					return v.map(function(vv){
-						if (isString(vv)){
-							return k.escape(urlMap)+"="+vv.escape(urlMap);
-						}else{
-							return k.escape(urlMap)+"="+value2json(vv).escape(urlMap);
+						if (isString(vv)) {
+							return k.escape(urlMap) + "=" + vv.escape(urlMap);
+						} else {
+							return k.escape(urlMap) + "=" + value2json(vv).escape(urlMap);
 						}//endif
 					}).join("&");
-				}else if (Map.isObject(v)){
-					return k.escape(urlMap)+"="+value2json(v).escape(urlMap);
-				}else{
-					return k.escape(urlMap)+"="+(""+v).escape(urlMap);
+				} else if (Map.isObject(v)) {
+					return k.escape(urlMap) + "=" + value2json(v).escape(urlMap);
+				} else {
+					return k.escape(urlMap) + "=" + ("" + v).escape(urlMap);
 				}//endif
 			}).join("&");
 		};//function
@@ -272,7 +277,7 @@ var convert = function(){
 
 	(function(){
 		var entityMap = {
-			//" ": "&nbsp;",
+			" ": "&nbsp;",
 			"&": "&amp;",
 			"<": "&lt;",
 			">": "&gt;",
@@ -384,8 +389,8 @@ var convert = function(){
 			}//endif
 		}//endif
 
-		var json = JSON.stringify(value);
-		return json;
+		var json = convert.value2json(value);
+		return convert.String2Quote(json);
 	};//method
 
 
@@ -519,7 +524,7 @@ var convert = function(){
 				Log.error("Can not display cube: select clause can not be array, or there can be only one edge");
 			} else {
 
-				header += wrapWithHtmlTag("td", query.edges[1].name);	//COLUMN FOR SECOND EDGE
+				header += wrapWithHtmlTag("td", query.edges[1].name);  //COLUMN FOR SECOND EDGE
 				e.domain.partitions.forall(function(p){
 					var name = e.domain.end(p);
 					if (name == p && typeof(name) != "string") name = p.name;
@@ -532,8 +537,8 @@ var convert = function(){
 				query.edges[1].domain.partitions.forall(function(p, r){
 					var name = query.edges[1].domain.label(p);
 					if (name == p && typeof(name) != "string") name = p.name;
-//				if (p.name!==undefined && p.name!=name)
-//					Log.error("make sure part.name matches the end(part)=="+name+" codomain");
+//        if (p.name!==undefined && p.name!=name)
+//          Log.error("make sure part.name matches the end(part)=="+name+" codomain");
 					content += "<tr>" + wrapWithHtmlTag("th", name);
 					for (var c = 0; c < query.cube.length; c++) {
 						content += wrapWithHtmlTag("td", query.cube[c][r]);
@@ -551,19 +556,19 @@ var convert = function(){
 
 
 				//SHOW FIRST EDGE AS ROWS, SECOND AS COLUMNS
-//			header+=wrapWithHtmlTag(e.name);	//COLUMN FOR FIRST EDGE
-//			query.edges[1].domain.partitions.forall(function(v, i){
-//				header += "<td>" + convert.String2HTML(v.name) + "</td>";
-//			});
+//      header+=wrapWithHtmlTag(e.name);  //COLUMN FOR FIRST EDGE
+//      query.edges[1].domain.partitions.forall(function(v, i){
+//        header += "<td>" + convert.String2HTML(v.name) + "</td>";
+//      });
 //
-//			content=query.cube.map(function(r, i){
-//				return "<tr>"+
-//					wrapWithHtmlTag(e.domain.partitions[i].name, "th")+
-//					r.map(function(c, j){
-//						return wrapWithHtmlTag(c);
-//					}).join("")+
-//					"</tr>";
-//			}).join("");
+//      content=query.cube.map(function(r, i){
+//        return "<tr>"+
+//          wrapWithHtmlTag(e.domain.partitions[i].name, "th")+
+//          r.map(function(c, j){
+//            return wrapWithHtmlTag(c);
+//          }).join("")+
+//          "</tr>";
+//      }).join("");
 			}//endif
 		} else {
 			Log.error("Actual cubes not supported !!")
@@ -593,6 +598,7 @@ var convert = function(){
 			data = data.data;
 		}//endif
 
+
 		if (data.length == 0) {
 			return "<table class='table'><tbody><tr><td>no records to show</td></tr></tbody></table>";
 		}//endif
@@ -610,6 +616,7 @@ var convert = function(){
 		});
 		header = "<thead><tr><div>" + header + "</div></tr></thead>";
 
+
 		var output = "";
 		var numRows = data.length;
 		if (options !== undefined) {
@@ -617,8 +624,6 @@ var convert = function(){
 				numRows = options.limit;
 			}//endif
 		}//endif
-
-
 		//WRITE DATA
 		for (var i = 0; i < data.length; i++) {
 			var row = "";
@@ -649,10 +654,10 @@ var convert = function(){
 
 
 		if (value === undefined) {
-//		return "<"+tagName+">&lt;undefined&gt;</"+tagName+">";
+//    return "<"+tagName+">&lt;undefined&gt;</"+tagName+">";
 			return prefix + suffix;
 		} else if (value == null) {
-//		return "<"+tagName+">&lt;null&gt;</"+tagName+">";
+//    return "<"+tagName+">&lt;null&gt;</"+tagName+">";
 			return prefix + suffix;
 		} else if (value instanceof HTML) {
 			return prefix + value + suffix;
@@ -784,7 +789,6 @@ var convert = function(){
 		}//for
 		return {"columns": columns, "data": data};
 	};//method
-
 
 
 	convert.char2ASCII = function(char){
@@ -1146,7 +1150,7 @@ var convert = function(){
 			var variableName = Object.keys(pair)[0];
 			var value = pair[variableName];
 			return 'Array.OR(Array.newInstance('+variableName+').map(function(v){\n'+
-			'	return typeof(v)=="string" && v.startsWith(' + convert.Value2Quote(value) + ')\n'+
+			'  return typeof(v)=="string" && v.startsWith(' + convert.Value2Quote(value) + ')\n'+
 			'}))\n';
 		} else if (op == "match_all") {
 			return "true"
@@ -1161,5 +1165,10 @@ var convert = function(){
 		return "";
 
 
+	};//method
+
+	convert.String2RegExp=function(value){
+		//SNAGGED FROM http://stackoverflow.com/questions/3446170/escape-string-for-use-in-javascript-regex
+		return value.replace(/[\-\[\]\/\{\}\(\)\*\+\?\.\\\^\$\|]/g, "\\$&");
 	};//method
 })();

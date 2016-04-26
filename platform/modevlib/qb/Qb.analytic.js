@@ -24,7 +24,7 @@ qb.analytic.run=function(query){
 //sourceColumns IS AN ARRAY OF COLUMNS DEFINING THE TUPLES IN from
 qb.analytic.add=function(query, analytic){
 
-	var edges = analytic.edges;		//ARRAY OF COLUMN NAMES
+	var edges = analytic.edges;    //ARRAY OF COLUMN NAMES
 	if (edges===undefined) Log.error("Analytic expects 'edges' to be defined, even if empty");
 	var sourceColumns=query.columns;
 
@@ -53,12 +53,12 @@ qb.analytic.add=function(query, analytic){
 	if (analytic.where===undefined) analytic.where="true";
 	var where=qb.analytic.compile(sourceColumns, analytic.where);
 
-//	sourceColumns=sourceColumns.copy();
+//  sourceColumns=sourceColumns.copy();
 
-//	var columns={};
-//	sourceColumns.forall(function(v, i){
-//		columns[v.name]=v;
-//	});
+//  var columns={};
+//  sourceColumns.forall(function(v, i){
+//    columns[v.name]=v;
+//  });
 
 	var nullGroup=[];
 	var allGroups=[];
@@ -67,7 +67,7 @@ qb.analytic.add=function(query, analytic){
 		for(i = from.length; i --;){
 			var row = from[i];
 			if (copyEdge) row[query.edges[0].name]=parts[i];
-//			if (copyEdge) row[query.edges[0].name]=query.edges[0].domain.end(parts[i]);  CONFLICTS WITH qb.sort.compile(), WHICH EXPECTS A PARTITION OBJECT
+//      if (copyEdge) row[query.edges[0].name]=query.edges[0].domain.end(parts[i]);  CONFLICTS WITH qb.sort.compile(), WHICH EXPECTS A PARTITION OBJECT
 			if (!where(null, -1, row)){
 				nullGroup.push(row);
 				continue;
@@ -79,7 +79,7 @@ qb.analytic.add=function(query, analytic){
 		for(i = from.length; i --;){
 			var row = from[i];
 			if (copyEdge) row[query.edges[0].name]=parts[i];
-//			if (copyEdge) row[query.edges[0].name]=query.edges[0].domain.end(parts[i]);  CONFLICTS WITH qb.sort.compile(), WHICH EXPECTS A PARTITION OBJECT
+//      if (copyEdge) row[query.edges[0].name]=query.edges[0].domain.end(parts[i]);  CONFLICTS WITH qb.sort.compile(), WHICH EXPECTS A PARTITION OBJECT
 			if (!where(null, -1, row)){
 				nullGroup.push(row);
 				continue;
@@ -104,7 +104,7 @@ qb.analytic.add=function(query, analytic){
 			trunk.push(row);
 		}//for
 	}//endif
-//	yield (Thread.yield());
+//  yield (Thread.yield());
 
 	//SORT
 	var sortFunction;
@@ -118,8 +118,8 @@ qb.analytic.add=function(query, analytic){
 		if (sortFunction) group.sort(sortFunction);
 
 		for(rownum=group.length;rownum--;){
-			group[rownum][qb.analytic.ROWNUM]=rownum;		//ASSIGN ROWNUM TO EVERY ROW
-			group[rownum][qb.analytic.ROWS]=group;		//EVERY ROW HAS REFERENCE TO IT'S GROUP
+			group[rownum][qb.analytic.ROWNUM]=rownum;    //ASSIGN ROWNUM TO EVERY ROW
+			group[rownum][qb.analytic.ROWS]=group;    //EVERY ROW HAS REFERENCE TO IT'S GROUP
 		}//for
 	}//for
 	{//NULL GROUP
@@ -135,8 +135,8 @@ qb.analytic.add=function(query, analytic){
 	//PERFORM CALC
 	for(var i=from.length;i--;){
 		from[i][analytic.name]=analytic.calc(from[i][qb.analytic.ROWS], from[i][qb.analytic.ROWNUM], from[i]);
-		from[i][qb.analytic.ROWNUM]=undefined;	//CLEANUP
-		from[i][qb.analytic.ROWS]=undefined;	//CLEANUP
+		from[i][qb.analytic.ROWNUM]=undefined;  //CLEANUP
+		from[i][qb.analytic.ROWS]=undefined;  //CLEANUP
 	}//for
 
 };

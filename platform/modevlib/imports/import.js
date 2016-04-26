@@ -11,6 +11,7 @@
 //THIS FUNCTION CAN ONLY BE RUN ONCE, AFTER WHICH IT WILL REPLACE ITSELF WITH A NULL FUNCTION
 var importScript;
 
+
 (function () {
 	"use strict";
 
@@ -111,7 +112,7 @@ var importScript;
 			}//endif
 
 			var s = src.indexOf("(", found);
-			var e = src.indexOf(")", s);	//HOPEFULLY THIS WILL CATCH THE PARAMETERS (FAILS WHEN COMMENTS EXIST)
+			var e = src.indexOf(")", s);  //HOPEFULLY THIS WILL CATCH THE PARAMETERS (FAILS WHEN COMMENTS EXIST)
 
 			var f = "addDependency(" + quote(parentPath) + ", " + src.substring(s + 1, e + 1);
 			try {
@@ -190,7 +191,7 @@ var importScript;
 			relativePath.indexOf("://") > 0 ||
 				relativePath.charAt(0) == '/'
 			) {
-			absPath = relativePath;	//NOT RELATIVE
+			absPath = relativePath;  //NOT RELATIVE
 		} else {
 			absPath = parentScriptPath + "/" + relativePath;
 		}//endif
@@ -413,7 +414,7 @@ var importScript;
 		//POPULATE STRUCTURES TO DO THE SORTING
 		var graph = {};
 		for (var i = 0; i < edges.length; i++) {
-//			if (DEBUG) Log.note(JSON.stringify(e));
+//      if (DEBUG) Log.note(JSON.stringify(e));
 			var e = edges[i];
 			addVertex(e.file);
 			addVertex(e.import);

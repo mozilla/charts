@@ -41,7 +41,7 @@ if (!Mozilla) var Mozilla = {"name": "Mozilla", "edges": []};
 
 	Dimension.addEdges(true, Mozilla, [
 		{"name": "B2G",
-//				{"term": {"target_milestone": "mozilla31"}},
+//        {"term": {"target_milestone": "mozilla31"}},
 			"esfilter": {"or": [
 				{"terms": {"cf_blocking_b2g": NOM_PROJECTS.union(BLOCKER_PROJECTS)}},
 				{"terms": {"cf_blocking_loop": NOM_MILESTONES.union(BLOCKER_MILESTONE)}},
@@ -336,16 +336,16 @@ if (!Mozilla) var Mozilla = {"name": "Mozilla", "edges": []};
 				{"name": "Project", "index": "bugs", "isFacet": true,
 					"partitions": [
 						//https://wiki.mozilla.org/Release_Management/B2G_Landing
-//						{"name": "1.3",
-//							"dateMarks": [
-//								{"name": "FL", "date": "Dec 9, 2013", "style": {strokeStyle: "black", verticalOffset: 10}},
-//								{"name": "FC", "date": "Mar 17, 2014", "style": {strokeStyle: "black", verticalOffset: 10}}
-//							],
-//							"style": {"color": "#d62728"},
-//							"esfilter": {"or": [
-//								{"terms": {"cf_blocking_b2g": ["1.3+", "1.3?"]}}
-//							]}
-//						},
+//            {"name": "1.3",
+//              "dateMarks": [
+//                {"name": "FL", "date": "Dec 9, 2013", "style": {strokeStyle: "black", verticalOffset: 10}},
+//                {"name": "FC", "date": "Mar 17, 2014", "style": {strokeStyle: "black", verticalOffset: 10}}
+//              ],
+//              "style": {"color": "#d62728"},
+//              "esfilter": {"or": [
+//                {"terms": {"cf_blocking_b2g": ["1.3+", "1.3?"]}}
+//              ]}
+//            },
 						{"name": "1.3T",
 							"start_date": "Dec 9, 2013",
 							"targetDate": "Apr 28, 2014",
@@ -469,14 +469,14 @@ if (!Mozilla) var Mozilla = {"name": "Mozilla", "edges": []};
 
 				{"name": "FinalState", "index": "bugs", "isFacet": true,
 					"partitions": [
-//						{"name": "1.3",
-//							"dateMarks": [
-//								{"name": "FL", "date": "Dec 9, 2013", "style": {strokeStyle: "black", verticalOffset: 10}},
-//								{"name": "FC", "date": "Mar 17, 2014", "style": {strokeStyle: "black", verticalOffset: 10}}
-//							],
-//							"style": {"color": "#d62728"},
-//							"esfilter": {"term": {"cf_blocking_b2g": "1.3+"}}
-//						},
+//            {"name": "1.3",
+//              "dateMarks": [
+//                {"name": "FL", "date": "Dec 9, 2013", "style": {strokeStyle: "black", verticalOffset: 10}},
+//                {"name": "FC", "date": "Mar 17, 2014", "style": {strokeStyle: "black", verticalOffset: 10}}
+//              ],
+//              "style": {"color": "#d62728"},
+//              "esfilter": {"term": {"cf_blocking_b2g": "1.3+"}}
+//            },
 						{"name": "1.3T",
 							"start_date": "Dec 9, 2013",
 							"targetDate": "Apr 28, 2014",

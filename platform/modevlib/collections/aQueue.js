@@ -170,7 +170,7 @@ var aQueue_usingArray;  //SLOW, BUT GOOD FOR WHEN DEALING WITH PURE OBJECTS
 		return new aQueue_simple(data);
 	};//method
 
-	
+
 	aQueue_simple.prototype.appendArray=function(data){
 		var self=this;
 		data.forall(function(v, i){self.add(v);});
@@ -265,14 +265,14 @@ var aQueue_usingArray;  //SLOW, BUT GOOD FOR WHEN DEALING WITH PURE OBJECTS
 	};
 
 
-//	Object.defineProperty(aQueue_usingReserve.prototype, 'length', {
-//		writable: false,
-//		enumerable: false,
-//		configurable: false,
-//		get: function(){
-//			return this.array.length;
-//		}
-//	});
+//  Object.defineProperty(aQueue_usingReserve.prototype, 'length', {
+//    writable: false,
+//    enumerable: false,
+//    configurable: false,
+//    get: function(){
+//      return this.array.length;
+//    }
+//  });
 
 	aQueue_usingReserve.prototype.isEmpty=function(){
 		return this.array.length==0 && this.reserve.length==0;
@@ -331,14 +331,14 @@ var aQueue_usingArray;  //SLOW, BUT GOOD FOR WHEN DEALING WITH PURE OBJECTS
 	};
 
 
-//	Object.defineProperty(aQueue_usingReserve.prototype, 'length', {
-//		writable: false,
-//		enumerable: false,
-//		configurable: false,
-//		get: function(){
-//			return this.array.length;
-//		}
-//	});
+//  Object.defineProperty(aQueue_usingReserve.prototype, 'length', {
+//    writable: false,
+//    enumerable: false,
+//    configurable: false,
+//    get: function(){
+//      return this.array.length;
+//    }
+//  });
 
 	aQueue_usingReserve.prototype.isEmpty=function(){
 		return this.array.length==0 && this.reserve.length==0;
@@ -390,14 +390,14 @@ var aQueue_usingArray;  //SLOW, BUT GOOD FOR WHEN DEALING WITH PURE OBJECTS
 	};
 
 
-//	Object.defineProperty(aQueue_usingArray.prototype, 'length', {
-//		writable: false,
-//		enumerable: false,
-//		configurable: false,
-//		get: function(){
-//			return this.array.length;
-//		}
-//	});
+//  Object.defineProperty(aQueue_usingArray.prototype, 'length', {
+//    writable: false,
+//    enumerable: false,
+//    configurable: false,
+//    get: function(){
+//      return this.array.length;
+//    }
+//  });
 
 	aQueue_usingArray.prototype.isEmpty=function(){
 		return this.array.length==0 && this.reserve.length==0;

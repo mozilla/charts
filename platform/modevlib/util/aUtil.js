@@ -46,7 +46,7 @@ var Map = {};
 		var keys = Object.keys(from);
 		for (var k = 0; k < keys.length; k++) {
 			var v = from[keys[k]];
-			if (v === undefined) continue;	//DO NOT ADD KEYS WITH NO VALUE
+			if (v === undefined) continue;  //DO NOT ADD KEYS WITH NO VALUE
 			to[keys[k]] = v;
 		}//for
 		return to;
@@ -134,29 +134,6 @@ var Map = {};
 		return obj;
 	};//method
 
-	Map.codomain = function(map){
-		var output = [];
-		var keys = Object.keys(map);
-		for (var i = keys.length; i--;) {
-			var val = map[keys[i]];
-			if (val !== undefined) output.push(val);
-		}//for
-		return output;
-	};//method
-	Map.values = Map.codomain;
-
-	//RETURN KEYS
-	Map.domain = function(map){
-		var output = [];
-		var keys = Object.keys(map);
-		for (var i = keys.length; i--;) {
-			var key = keys[i];
-			var val = map[key];
-			if (val !== undefined) output.push(key);
-		}//for
-		return output;
-	};//method
-
 
 	//RETURN TRUE IF MAPS LOOK IDENTICAL
 	Map.equals = function(a, b){
@@ -201,7 +178,7 @@ var Map = {};
 	};
 
 
-	Map.map=function mapAllKey(map, func){
+	function mapAllKey(map, func){
 		//func MUST ACCEPT key, value, index PARAMETERS
 		var output = [];
 		var keys = Object.keys(map);
@@ -216,6 +193,7 @@ var Map = {};
 		return output;
 	};
 
+	Map.map=mapAllKey;
 
 	//RETURN ARRAY OF {"key":key, "value":val} PAIRS
 	Map.getItems = function getItems(map){
@@ -236,21 +214,60 @@ var Map = {};
 		var output = [];
 		var keys = Object.keys(map);
 		for (var i = keys.length; i--;) {
-			var key = keys[i];
-			var val = map[key];
-			if (val !== undefined) {
-				output.push(val);
-			}//endif
+			var val = map[keys[i]];
+			if (val !== undefined) output.push(val);
 		}//for
 		return output;
 	};
+	Map.codomain = Map.getValues;
+	Map.values = Map.getValues;
 
-	Map.getKeys = Object.keys;
+
+	//RETURN KEYS
+	Map.domain = function(map){
+		var output = [];
+		var keys = Object.keys(map);
+		for (var i = keys.length; i--;) {
+			var key = keys[i];
+			var val = map[key];
+			if (val !== undefined) output.push(key);
+		}//for
+		return output;
+	};//method
+	Map.keys = Map.domain;
+	Map.getKeys = Map.domain;
+
+	//RETURN LEAVES
+	Map.leafItems = function(map){
+		function _leaves(map, prefix){
+			var output = [];
+			var keys = Object.keys(map);
+			for (var i = keys.length; i--;) {
+				var key = keys[i];
+				var val = map[key];
+
+				var fullname = key.replaceAll(".", "\\.");
+				if (prefix) fullname=prefix+"."+fullname;
+
+				if (val==null){
+					//do nothing
+				}else if (Map.isObject(val)){
+					output.extend(_leaves(val, fullname))
+				}else{
+					output.append([fullname, val])
+				}//endif
+			}//for
+			return output;
+		}
+		return _leaves(map, null);
+	};//method
+	Map.getLeafItems = Map.leafItems;
+
 
 
 	Map.isObject = function (val) {
-	    if (val === null) { return false;}
-	    return ( (typeof val === 'function') || (typeof val === 'object') );
+			if (val === null) { return false;}
+			return ( (typeof val === 'function') || (typeof val === 'object') );
 	};
 	Map.isMap = Map.isObject;
 
@@ -332,21 +349,21 @@ function splitField(fieldname){
 
 
 deepCopy = function(value) {
-    if (typeof value !== "object" || !value)
-        return value;
+		if (typeof value !== "object" || !value)
+				return value;
 
 	var copy;
 	var k;
-    if (Array.isArray(value)){
-        copy = [];
-        for (k=value.length;k--;) copy[k] = deepCopy(value[k]);
-        return copy;
-    }//endif
+		if (Array.isArray(value)){
+				copy = [];
+				for (k=value.length;k--;) copy[k] = deepCopy(value[k]);
+				return copy;
+		}//endif
 
-    var cons = value.constructor;
-    if (cons === RegExp || cons === Date) return value;
+		var cons = value.constructor;
+		if (cons === RegExp || cons === Date) return value;
 
-    copy = cons();
+		copy = cons();
 	Map.forall(value, function(k, v){copy[k]=deepCopy(v);});
 	return copy;
 };

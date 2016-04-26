@@ -39,15 +39,15 @@ ElasticSearch.setRefreshInterval=function*(destination, rate){
 
 //EXPECTING THE DATA ARRAY TO ALREADY HAVE ODD ENTRIES STARTING WITH { "create":{ "_id" : ID } }
 ElasticSearch.bulkInsert=function*(destination, dataArray){
-//	try{
+//  try{
 		yield (Rest.post({
 			"url":joinPath(destination.host, destination.path, "_bulk"),
 			"data":dataArray.join("\n")+"\n",
 			dataType: "text"
 		}));
-//	} catch(e){
-//		Log.warning("problem with _bulk", e)
-//	}//try
+//  } catch(e){
+//    Log.warning("problem with _bulk", e)
+//  }//try
 };
 
 //ONLY BECAUSE I AM TOO LAZY TO ENHANCE THE ESQuery WITH MORE FACETS (A BATTERY OF FACETS PER SELECT COLUMN)
@@ -87,7 +87,7 @@ ElasticSearch.getMinMax=function*(esfilter){
 	});
 	u2.cube.forall(function(v, i){
 		u2.cube[i]=Date.newInstance(v);
-		if (u2.cube[i]==null) u2.cube[i]=undefined;		//NULL MEANS UNKNOWN, WHEREAS undefined MEANS NOT DEFINED
+		if (u2.cube[i]==null) u2.cube[i]=undefined;    //NULL MEANS UNKNOWN, WHEREAS undefined MEANS NOT DEFINED
 	});
 
 	var u = qb.merge([
@@ -141,8 +141,8 @@ ElasticSearch.makeBasicQuery=function(esfilter){
 	return {
 		"query":{
 			"filtered":{
-			  "query":{"match_all":{}},
-			  "filter":{"and": [esfilter]}
+				"query":{"match_all":{}},
+				"filter":{"and": [esfilter]}
 			}
 		},
 		"from": 0,

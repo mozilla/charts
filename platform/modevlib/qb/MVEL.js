@@ -14,7 +14,7 @@ var MVEL = function(){
 
 MVEL.prototype.code = function(query){
 	var selectList = Array.newInstance(query.select);
-	var fromPath = query.from;			//FIRST NAME IS THE INDEX
+	var fromPath = query.from;      //FIRST NAME IS THE INDEX
 	var indexName=splitField(fromPath)[0];
 	var whereClause = query.where;
 
@@ -45,7 +45,7 @@ MVEL.prototype.code = function(query){
 		func+'(_source)\n'
 	);
 
-//	if (console !== undefined && Log.note != undefined) Log.note(output);
+//  if (console !== undefined && Log.note != undefined) Log.note(output);
 	return output;
 };//method
 
@@ -73,7 +73,7 @@ MVEL.compile.setValues=function(expression, constants){
 	for(var i=0;i<constants.length;i++){
 		var value=constants[i].value;
 		var n=constants[i].name;
-		if (splitField(n).length>=3) continue;	//DO NOT GO TOO DEEP
+		if (splitField(n).length>=3) continue;  //DO NOT GO TOO DEEP
 		if (value instanceof Array) continue;  //DO NOT MESS WITH ARRAYS
 
 		if (typeof value == "object"){
@@ -108,14 +108,14 @@ MVEL.compile.expression = function(expression, query, constants){
 
 
 	if (query===undefined) Log.error("Expecting call to MVEL.compile.expression to be given a reference to the query");
-	var fromPath = query.from;			//FIRST NAME IS THE INDEX
+	var fromPath = query.from;      //FIRST NAME IS THE INDEX
 	var indexName=splitField(fromPath)[0];
-//	var whereClause = query.where;
+//  var whereClause = query.where;
 
 	var context = MVEL.compile.getFrameVariables(indexName, expression, query.isLean);
 	if (context=="") return MVEL.compile.addFunctions(expression);
 
-//	var body = "output = "+expression+"; output;\n";
+//  var body = "output = "+expression+"; output;\n";
 
 	var func=MVEL.compile.uniqueFunction();
 	var output = MVEL.compile.addFunctions(
@@ -126,7 +126,7 @@ MVEL.compile.expression = function(expression, query, constants){
 		func+'(_source)\n'
 	);
 
-//	if (console !== undefined && Log.note != undefined) Log.note(output);
+//  if (console !== undefined && Log.note != undefined) Log.note(output);
 	return output;
 };//method
 
@@ -135,25 +135,25 @@ MVEL.compile.getFrameVariables=function(indexName, body, isLean){
 	var contextVariables = "";
 	var columns = ESQuery.getColumns(indexName);
 
-	var parentVarNames={};	//ALL PARENTS OF VARIABLES WITH "." IN NAME
+	var parentVarNames={};  //ALL PARENTS OF VARIABLES WITH "." IN NAME
 
 
 	columns.forall(function(c, i){
 		var j=body.indexOf(c.name, 0);
 		while(j>=0){
 			var test0=body.substring(j-1, j+c.name.length+1);
-//			var test1=body.substring(j-5, j+c.name.length+2);
-//			var test2=body.substring(j-13, j+c.name.length+2);
+//      var test1=body.substring(j-5, j+c.name.length+2);
+//      var test2=body.substring(j-13, j+c.name.length+2);
 			var test3=body.substring(j-8, j+c.name.length+2);
-//			var test4=body.substring(j-14, j+c.name.length+2);
+//      var test4=body.substring(j-14, j+c.name.length+2);
 			j=body.indexOf(c.name, j+1);
 
 			if (test0=="\"" + c.name + "\"") continue;
 			if (test0=="\"" + c.name + "_") continue;
-//			if (test1=="doc[\"" + c.name + "\"]") continue; //BUT NOT ALREADY IN USE By doc["x"]
-//			if (test2=="getDocValue(\"" + c.name + "\")") continue;
+//      if (test1=="doc[\"" + c.name + "\"]") continue; //BUT NOT ALREADY IN USE By doc["x"]
+//      if (test2=="getDocValue(\"" + c.name + "\")") continue;
 			if (test3=="_source." + c.name) continue;
-//			if (test4=="get(_source, \"" + c.name+ "\")") continue;
+//      if (test4=="get(_source, \"" + c.name+ "\")") continue;
 
 			function defParent(name){
 				{//DO NOT MAKE THE SAME PARENT TWICE
@@ -297,7 +297,7 @@ MVEL.esFacet2List=function(facet, selectClause){
 	var output = [];
 	var T = facet.terms;
 	for(var i = T.length; i--;){
-		if (T[i].term == "") continue;		//NO DATA
+		if (T[i].term == "") continue;    //NO DATA
 		var V = T[i].term.split("|");
 		var value = {};
 		for(var v = V.length; v--;){
@@ -454,9 +454,9 @@ MVEL.isKeyword = function(value){
 
 //FROM JAVASCRIPT VALUE TO MVEL EQUIVALENT
 MVEL.Value2MVEL = function(value){/*comment*/
-	if (value.getMilli) return value.getMilli()+" /*"+value.format("yyNNNdd HHmmss")+"*/";		//TIME
+	if (value.getMilli) return value.getMilli()+" /*"+value.format("yyNNNdd HHmmss")+"*/";    //TIME
 	if (value instanceof Duration)
-		return value.milli+" /*"+value.toString()+"*/";	//DURATION
+		return value.milli+" /*"+value.toString()+"*/";  //DURATION
 
 	if (aMath.isNumeric(value)) return "" + value;
 	return convert.String2Quote(value);
@@ -474,8 +474,8 @@ MVEL.Value2Query = function(value){
 
 //CONVERT FROM JAVASCRIPT VALUE TO ES EQUIVALENT
 MVEL.Value2Value = function(value){
-	if (value.getMilli) return value.getMilli();		//TIME
-	if (value instanceof Duration) return value.milli;	//DURATION
+	if (value.getMilli) return value.getMilli();    //TIME
+	if (value instanceof Duration) return value.milli;  //DURATION
 	return value;
 };//method
 
@@ -491,7 +491,7 @@ MVEL.Parts2Term = function(
 
 	var term="";
 	domain.partitions.forall(function(v){
-		term +=	"if (" + mvel.where(v.esfilter) + ") "+ convert.Value2Quote(domain.getKey(v)) + ";\n else ";
+		term +=  "if (" + mvel.where(v.esfilter) + ") "+ convert.Value2Quote(domain.getKey(v)) + ";\n else ";
 	});
 	var id=Util.UID();
 	return {
@@ -500,9 +500,9 @@ MVEL.Parts2Term = function(
 	};
 
 	//DOES NOT WORK BECAUSE THE CONTEXT VARS ARE NOT POPULATED
-//	var name="__temp"+Util.UID();
-//	MVEL.FUNCTIONS[name]="var "+name+" = function(){"+term+convert.Value2Quote(domain.getKey(domain.NULL)) + ";};\n"; //ADD TO GENERAL SET OF FUNCTIONS
-//	return name+"()";
+//  var name="__temp"+Util.UID();
+//  MVEL.FUNCTIONS[name]="var "+name+" = function(){"+term+convert.Value2Quote(domain.getKey(domain.NULL)) + ";};\n"; //ADD TO GENERAL SET OF FUNCTIONS
+//  return name+"()";
 
 };//method
 
@@ -517,7 +517,7 @@ MVEL.Parts2TermScript=function(indexName, domain){
 
 //PREPEND THE REQUIRED MVEL FUNCTIONS TO THE CODE
 MVEL.compile.addFunctions=function(mvel){
-	var isAdded={};			//SOME FUNCTIONS DEPEND ON OTHERS
+	var isAdded={};      //SOME FUNCTIONS DEPEND ON OTHERS
 
 	var keepAdding=true;
 	while(keepAdding){
@@ -537,7 +537,7 @@ MVEL.compile.addFunctions=function(mvel){
 MVEL.FUNCTIONS={
 	"String2Quote":
 		"var String2Quote = function(str){\n" +
-			"if (!(str is String)){ str; }else{\n" +	//LAST VALUE IS RETURNED.  "return" STOPS EXECUTION COMPLETELY!
+			"if (!(str is String)){ str; }else{\n" +  //LAST VALUE IS RETURNED.  "return" STOPS EXECUTION COMPLETELY!
 			"" + MVEL.Value2MVEL("\"") + "+" +
 			"str.replace(" + MVEL.Value2MVEL("\\") + "," + MVEL.Value2MVEL("\\\\") +
 			").replace(" + MVEL.Value2MVEL("\"") + "," + MVEL.Value2MVEL("\\\"") +
@@ -558,17 +558,17 @@ MVEL.FUNCTIONS={
 			'"s"+value.replace("\\\\", "\\\\\\\\").replace("|", "\\\\p");'+  //CAN NOT ""+value TO MAKE NUMBER A STRING (OR EVEN TO PREPEND A STRING!)
 		"};\n",
 
-//	"replaceAll":
-//		"var replaceAll = function(output, find, replace){\n" +
-//			"if (output.length()==0) return output;\n"+
-//			"s = output.indexOf(find, 0);\n" +
-//			"while(s>=0){\n" +
-//				"output=output.replace(find, replace);\n" +
-//				"s=s-find.length()+replace.length();\n" +
-//				"s = output.indexOf(find, s);\n" +
-//			"}\n"+
-//			"output;\n"+
-//		'};\n',
+//  "replaceAll":
+//    "var replaceAll = function(output, find, replace){\n" +
+//      "if (output.length()==0) return output;\n"+
+//      "s = output.indexOf(find, 0);\n" +
+//      "while(s>=0){\n" +
+//        "output=output.replace(find, replace);\n" +
+//        "s=s-find.length()+replace.length();\n" +
+//        "s = output.indexOf(find, s);\n" +
+//      "}\n"+
+//      "output;\n"+
+//    '};\n',
 
 	"floorDay":
 		"var floorDay = function(value){ Math.floor(value/86400000))*86400000;};\n",
@@ -588,7 +588,7 @@ MVEL.FUNCTIONS={
 	"zero2null"://ES MAKES IT DIFFICULT TO DETECT NULL/MISSING VALUES, BUT WHEN DEALING WITH NUMBERS, ES DEFAULTS TO RETURNING ZERO FOR missing VALUES!!
 		"var zero2null = function(a){if (a==0) null; else a; \n};\n",
 
-	"get":	//MY OWN PERSONAL *FU* TO THE TWISTED MVEL PROPERTY ACCESS
+	"get":  //MY OWN PERSONAL *FU* TO THE TWISTED MVEL PROPERTY ACCESS
 		"var get = function(hash, key){\n"+
 			"if (hash==null) null; else hash[key];\n"+
 		"};\n",
@@ -596,7 +596,7 @@ MVEL.FUNCTIONS={
 	"isNumeric":
 		"var isNumeric = function(value){\n"+
 			"value = value + \"\";\n"+
-//			"try{ value-0; }catch(e){ 0; }"+
+//      "try{ value-0; }catch(e){ 0; }"+
 			"var isNum = value.length()>0;\n"+
 			"for (v : value.toCharArray()){\n" +
 			"if (\"0123456789\".indexOf(v)==-1) isNum = false;\n" +
@@ -623,13 +623,13 @@ MVEL.FUNCTIONS={
 			"output;\n"+
 		"}};\n",
 
-//	"contains":
-//		"var contains = function(array, value){\n"+
-//			"if (array==null) false; else {\n"+
-//			"var good = false;\n"+
-//			"for (v : array){ if (v==value) good=true; };\n"+
-//			"good;\n"+
-//		"}};\n",
+//  "contains":
+//    "var contains = function(array, value){\n"+
+//      "if (array==null) false; else {\n"+
+//      "var good = false;\n"+
+//      "for (v : array){ if (v==value) good=true; };\n"+
+//      "good;\n"+
+//    "}};\n",
 
 	"getFlagValue":  //SPECIFICALLY FOR cf_* FLAGS: CONCATENATE THE ATTRIBUTE NAME WITH ATTRIBUTE VALUE, IF EXISTS
 		"var getFlagValue = function(name){\n"+
@@ -643,13 +643,13 @@ MVEL.FUNCTIONS={
 		"var getDocValue = function(name){\n"+
 			"var out = [];\n"+
 			"var v = doc[name];\n"+
-//			"if (v is org.elasticsearch.common.mvel2.ast.Function) v = v();=n" +
+//      "if (v is org.elasticsearch.common.mvel2.ast.Function) v = v();=n" +
 			"if (v==null || v.value==null) { null; } else " +
 			"if (v.values.size()<=1){ v.value; } else " + //ES MAKES NO DISTINCTION BETWEEN v or [v], SO NEITHER DO I
 			"if (v is org.elasticsearch.index.fielddata.ScriptDocValues) { v=v.getValues(); for(int i =0; i < v.size(); i++) out.add(v.get(i)); out; } else "+
-//			"if (v is Long || v is Integer || v is Double) { v; } else " +
-//			"if (v.values.size()==0){ null; } else " +
-//			"if (v.values.size()<=1){ v.value; } else " + //ES MAKES NO DISTINCTION BETWEEN v or [v], SO NEITHER DO I
+//      "if (v is Long || v is Integer || v is Double) { v; } else " +
+//      "if (v.values.size()==0){ null; } else " +
+//      "if (v.values.size()<=1){ v.value; } else " + //ES MAKES NO DISTINCTION BETWEEN v or [v], SO NEITHER DO I
 			"{for(k : v.values) out.add(k); out;}" +
 		"};\n",
 
@@ -657,7 +657,7 @@ MVEL.FUNCTIONS={
 		"var getSourceValue = function(name){\n"+
 			"var out = [];\n"+
 			"var v = _source[name];\n"+
-//			"if (v is org.elasticsearch.common.mvel2.ast.Function) v = v();=n" +
+//      "if (v is org.elasticsearch.common.mvel2.ast.Function) v = v();=n" +
 			"if (v==null) { null; } else " +
 			"if (v[\"values\"]==null || v.values.size()<=1){ v.value; } else " + //ES MAKES NO DISTINCTION BETWEEN v or [v], SO NEITHER DO I
 			"{for(k : v) out.add(k); out;}" +       //.size() MUST BE USED INSTEAD OF .length, THE LATTER WILL CRASH IF JITTED (https://github.com/elasticsearch/elasticsearch/issues/3094)
@@ -693,15 +693,15 @@ MVEL.FUNCTIONS={
 			"}}}\n"+
 		"};\n"
 
-//		g.add(GregorianCalendar.DAY_OF_MONTH, +100);
-//		long t=g.getTime().getTime();
+//    g.add(GregorianCalendar.DAY_OF_MONTH, +100);
+//    long t=g.getTime().getTime();
 //
-//		System.out.println(""+System.currentTimeMillis());
-//		System.out.println(""+t);
-//		int m=g.get(java.util.GregorianCalendar.MONTH);
+//    System.out.println(""+System.currentTimeMillis());
+//    System.out.println(""+t);
+//    int m=g.get(java.util.GregorianCalendar.MONTH);
 //
-//		String output=""+g.get(java.util.GregorianCalendar.YEAR)+(m>9?"":"0")+m;
-//		System.out.println(output);
+//    String output=""+g.get(java.util.GregorianCalendar.YEAR)+(m>9?"":"0")+m;
+//    System.out.println(output);
 
 };
 

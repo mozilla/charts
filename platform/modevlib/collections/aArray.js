@@ -129,7 +129,7 @@ importScript("../util/aUtil.js");
 		if (typeof(attrName)=="string"){
 			if (attrName.indexOf(".")==-1){
 				for(var i=0;i<this.length;i++)
-					output.push(this[i][attrName]);
+					output.push(Map.get(this[i], attrName));
 			}else{
 				for(var i=0;i<this.length;i++)
 					output.push(Map.get(this[i], attrName));
@@ -227,12 +227,12 @@ importScript("../util/aUtil.js");
 		return this[0];
 	};//method
 
-//	Array.prototype.indexOf=function(value){
-//		for(var i=0;i<this.length;i++){
-//			if (this[i]==value) return i;
-//		}//for
-//		return -1;
-//	};//method
+//  Array.prototype.indexOf=function(value){
+//    for(var i=0;i<this.length;i++){
+//      if (this[i]==value) return i;
+//    }//for
+//    return -1;
+//  };//method
 
 	Array.prototype.substring=Array.prototype.slice;
 
@@ -349,7 +349,7 @@ importScript("../util/aUtil.js");
 
 	Array.prototype.subtract=function(b){
 		var c=[];
-	A:	for(var x=0;x<this.length;x++){
+	A:  for(var x=0;x<this.length;x++){
 		var v=this[x];
 			if (v!==undefined){
 				for(var y=b.length;y--;) if (v==b[y]) continue A;

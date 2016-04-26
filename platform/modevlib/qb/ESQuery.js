@@ -120,48 +120,48 @@ ESQuery.NOT_SUPPORTED = "From clause not supported \n{{from}}";
 	};//method
 
 
-  //ENSURE COLUMNS FOR GIVEN INDEX/QUERY ARE LOADED, AND MVEL COMPILATION WORKS BETTER
-  ESQuery.loadColumns = function*(query){
-    var indexName = null;
-    if (typeof(query) == 'string') {
-      indexName = query;
-    } else {
-      if (typeof(query.from) == 'string') {
-        indexName = splitField(query.from)[0];
-      } else {
-        //COMPLEX from CLAUSE, SHUNT TO ActiveData
-        Log.error(ESQuery.NOT_SUPPORTED, {"from": query.from})
-      }//endif
-    }//endif
+	//ENSURE COLUMNS FOR GIVEN INDEX/QUERY ARE LOADED, AND MVEL COMPILATION WORKS BETTER
+	ESQuery.loadColumns = function*(query){
+		var indexName = null;
+		if (typeof(query) == 'string') {
+			indexName = query;
+		} else {
+			if (typeof(query.from)=='string'){
+				indexName = splitField(query.from)[0];
+			}else{
+				//COMPLEX from CLAUSE, SHUNT TO ActiveData
+				Log.error(ESQuery.NOT_SUPPORTED, {"from":query.from})
+			}//endif
+		}//endif
 
-    var indexInfo = ESQuery.INDEXES[indexName];
+		var indexInfo = ESQuery.INDEXES[indexName];
 
-    if (indexInfo === undefined) {
-      //DIVERT TO ActiveData SERVICE
-      Log.error(ESQuery.NOT_SUPPORTED, {"from": query.from})
-    }//endif
+		if (indexInfo===undefined){
+			//DIVERT TO ActiveData SERVICE
+			Log.error(ESQuery.NOT_SUPPORTED, {"from":query.from})
+		}//endif
 
-    //WE MANAGE ALL THE REQUESTS FOR THE SAME SCHEMA, DELAYING THEM IF THEY COME IN TOO FAST
-    if (indexInfo.fetcher === undefined) {
+		//WE MANAGE ALL THE REQUESTS FOR THE SAME SCHEMA, DELAYING THEM IF THEY COME IN TOO FAST
+		if (indexInfo.fetcher === undefined) {
       indexInfo.fetcher = Thread.run("fetch columns", function*(){
-        var currInfo = indexInfo;
-        var depth = 0;
-        var attempts = [];
-        var info = [];
+				var currInfo = indexInfo;
+				var depth = 0;
+				var attempts = [];
+				var info = [];
 
-        //TRY ALL HOSTS AND PATHS
-        while (currInfo !== undefined) {
-          info[depth] = currInfo;
+				//TRY ALL HOSTS AND PATHS
+				while (currInfo !== undefined) {
+					info[depth] = currInfo;
           (function(currInfo, d){
             attempts[d] = Thread.run("load " + currInfo.name, function*(){
               var schema = yield (ESQuery.loadSchema(query, indexName, currInfo));
               if (!schema) Log.error("Could not get schema from " + currInfo.name);
               yield ([schema, currInfo]);
-            });
-          })(currInfo, depth);
-          currInfo = currInfo.alternate;
-          depth++;
-        }//while
+						});
+					})(currInfo, depth);
+					currInfo = currInfo.alternate;
+					depth++;
+				}//while
 
         //HOPEFULLY THE FIRST CLUSTER WILL RESPOND
         var schema = null;
@@ -198,13 +198,13 @@ ESQuery.NOT_SUPPORTED = "From clause not supported \n{{from}}";
         var properties = schema.properties;
         indexInfo.columns = ESQuery.parseColumns(indexName, undefined, properties);
         Log.note("done parse properties");
-        yield(null);
-      });
-    }//endif
+				yield(null);
+			});
+		}//endif
 
-    yield (Thread.join(indexInfo.fetcher));
-    yield (null);
-  };//method
+		yield (Thread.join(indexInfo.fetcher));
+		yield (null);
+	};//method
 
 
 	ESQuery.loadSchema = function*(query, indexName, indexInfo){

@@ -345,7 +345,7 @@ function joinField(path){
 
 	qb.calc2List = function*(query){
 		if (!qb.listAlert) {
-//		Log.alert("Please do not use qb.calc2List()");
+//    Log.alert("Please do not use qb.calc2List()");
 			qb.listAlert = true;
 		}//endif
 
@@ -949,7 +949,7 @@ function joinField(path){
 				Tree2List(output, tree[keys[k]], select, edges, coordinates, depth + 1)
 			}//for
 		}//endif
-//	yield (null);
+//  yield (null);
 	}//method
 
 
@@ -998,7 +998,7 @@ function joinField(path){
 
 	////ADD THE MISSING DOMAIN VALUES
 	//qb.nullToList=function(output, edges, depth){
-	//	if ()
+	//  if ()
 	//
 	//
 	//};//method
@@ -1012,7 +1012,7 @@ function joinField(path){
 			var sourceColumns;
 			if (query.from instanceof Array) {
 				sourceColumns = qb.getColumnsFromList(query.from);
-				query.from.list = query.from;	//NORMALIZE SO query.from.list ALWAYS POINTS TO AN OBJECT
+				query.from.list = query.from;  //NORMALIZE SO query.from.list ALWAYS POINTS TO AN OBJECT
 			} else if (query.from.list) {
 				sourceColumns = query.from.columns;
 			} else if (query.from.cube) {
@@ -1058,11 +1058,11 @@ function joinField(path){
 	// EXPECTING AN ARRAY OF CUBES, AND THE NAME OF THE EDGES TO MERGE
 	// THERE IS NO LOGICAL DIFFERENCE BETWEEN A SET OF CUBES, WITH IDENTICAL EDGES, EACH CELL A VALUE AND
 	// A SINGLE qb WITH EACH CELL BEING AN OBJECT: EACH ATTRIBUTE VALUE CORRESPONDING TO A qb IN THE SET
-	//	var chart=qb.merge([
-	//		{"from":requested, "edges":["time"]},
-	//		{"from":reviewed, "edges":["time"]},
-	//		{"from":open, "edges":["time"]}
-	//	]);
+	//  var chart=qb.merge([
+	//    {"from":requested, "edges":["time"]},
+	//    {"from":reviewed, "edges":["time"]},
+	//    {"from":open, "edges":["time"]}
+	//  ]);
 	qb.merge = function(query){
 		//MAP THE EDGE NAMES TO ACTUAL EDGES IN THE from QUERY
 		query.forall(function(item){
@@ -1227,7 +1227,12 @@ function joinField(path){
 			}else if (col.name=="."){
 				index = "";
 			} else if (MVEL.isKeyword(col.name)) {
-				index = "["+splitField(col.name).map(convert.String2Quote).join("][")+"]";
+				var path = splitField(col.name);
+				if (path[path.length-1]=="length"){
+					index = "["+path.substring(0, path.length-1).map(convert.String2Quote).join("][")+"].length";
+				}else{
+					index = "["+path.map(convert.String2Quote).join("][")+"]";
+				}//endif
 			} else if (columns.select("name").contains(col.name)) {
 				index = "["+convert.String2Quote(col.name)+"]";
 			} else {
@@ -1281,7 +1286,7 @@ function joinField(path){
 		Map.copy(query, newQuery);
 		newQuery.cube = undefined;
 		newQuery.list = undefined;
-		newQuery.index = undefined;			//REMOVE, MAY CAUSE PROBLEMS
+		newQuery.index = undefined;      //REMOVE, MAY CAUSE PROBLEMS
 		if (query.esfilter) {
 			if (query.esfilter.and) {
 				newQuery.esfilter = {"and": query.esfilter.and.copy()};

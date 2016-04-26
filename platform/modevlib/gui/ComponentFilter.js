@@ -39,10 +39,10 @@ ComponentFilter.prototype.refresh = function(){
 			var terms = components.map(function(v, i){return v.term;});
 
 			self.selected = self.selected.intersect(terms);
-	//		var self=this;
+	//    var self=this;
 
 
-	//		GUI.State2URL();
+	//    GUI.State2URL();
 			self.injectHTML(components);
 			$("#componentsList").selectable({
 				selected: function(event, ui){
@@ -97,7 +97,7 @@ ComponentFilter.prototype.setSimpleState=function(value){
 	}else{
 		this.selected=value.split(",").map(function(v){return v.trim();});
 	}//endif
-//	this.refresh();
+//  this.refresh();
 
 };
 

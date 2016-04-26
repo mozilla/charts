@@ -60,9 +60,9 @@ importScript("charts/aColor.js");
 			"telemetry" : {"style" : {"color" : "black", "background-color" : yellow}, "host" : "http://elasticsearch-private.bugs.scl3.mozilla.com:9200", "path" : "/telemetry_agg_valid_201305/data"},
 			"raw_telemetry" : {"style" : {"color" : "black", "background-color" : yellow}, "host" : "http://klahnakoski-es.corp.tor1.mozilla.com:9200", "path" : "/raw_telemetry/data"},
 
-//			"talos" : {"style" : {"color" : "black", "background-color" : yellow}, "host" : "http://klahnakoski-es.corp.tor1.mozilla.com:9200", "path" : "/talos/test_results"},
-//			"kyle_talos" : {"style" : {"color" : "black", "background-color" : yellow}, "host" : "http://192.168.0.98:9200", "path" : "/talos/test_results"},
-//			"local_talos" : {"style" : {"color" : "black", "background-color" : yellow}, "host" : "http://localhost:9200", "path" : "/talos/test_results"},
+//      "talos" : {"style" : {"color" : "black", "background-color" : yellow}, "host" : "http://klahnakoski-es.corp.tor1.mozilla.com:9200", "path" : "/talos/test_results"},
+//      "kyle_talos" : {"style" : {"color" : "black", "background-color" : yellow}, "host" : "http://192.168.0.98:9200", "path" : "/talos/test_results"},
+//      "local_talos" : {"style" : {"color" : "black", "background-color" : yellow}, "host" : "http://localhost:9200", "path" : "/talos/test_results"},
 			"talos" : {"style" : {"color" : "black", "background-color" : yellow}, "host" : "http://klahnakoski-es.corp.tor1.mozilla.com:9200", "path" : "/talos/test_results"},
 			"alt_talos" : {"style" : {"color" : "black", "background-color" : yellow}, "host" : "http://192.168.0.98:9200", "path" : "/talos/test_results"},
 			"alt_talos2" : {"style" : {"color" : "black", "background-color" : yellow}, "host" : "http://192.168.0.98:9200", "path" : "/talos2/test_results"},
@@ -81,13 +81,13 @@ importScript("charts/aColor.js");
 
 
 			// ACTIVE DATA TABLES
-			"branches": {"style" : {"background-color" : blue}, "host" : "http://activedata.allizom.org", "table":"branches", "host_type":"ActiveData"},
-			"jobs": {"style" : {"background-color" : blue}, "host" : "http://activedata.allizom.org", "table":"jobs", "host_type":"ActiveData"},
-			"jobs.action.timings": {"style" : {"background-color" : blue}, "host" : "http://activedata.allizom.org", "table":"jobs.action.timings", "host_type":"ActiveData"},
+			"branches": {"style" : {"background-color" : blue}, "host" : "https://activedata.allizom.org", "table":"branches", "host_type":"ActiveData"},
+			"jobs": {"style" : {"background-color" : blue}, "host" : "https://activedata.allizom.org", "table":"jobs", "host_type":"ActiveData"},
+			"jobs.action.timings": {"style" : {"background-color" : blue}, "host" : "https://activedata.allizom.org", "table":"jobs.action.timings", "host_type":"ActiveData"},
 			"local_jobs.action.timings": {"style" : {"background-color" : blue}, "host" : "http://localhost:5000", "table":"jobs.action.timings", "host_type":"ActiveData"},
-			"timings": {"style" : {"background-color" : blue}, "host" : "http://activedata.allizom.org", "table":"jobs.action.timings", "host_type":"ActiveData"},
-			"unittests": {"style" : {"background-color" : blue}, "host" : "http://activedata.allizom.org", "table":"unittest", "host_type":"ActiveData"},
-			"perf": {"style" : {"background-color" : blue}, "host" : "http://activedata.allizom.org", "table":"perf", "host_type":"ActiveData"}
+			"timings": {"style" : {"background-color" : blue}, "host" : "https://activedata.allizom.org", "table":"jobs.action.timings", "host_type":"ActiveData"},
+			"unittests": {"style" : {"background-color" : blue}, "host" : "https://activedata.allizom.org", "table":"unittest", "host_type":"ActiveData"},
+			"perf": {"style" : {"background-color" : blue}, "host" : "https://activedata.allizom.org", "table":"perf", "host_type":"ActiveData"}
 
 		},
 

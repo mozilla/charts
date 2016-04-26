@@ -38,7 +38,7 @@ ProgramFilter.prototype.makeFilter = function(indexName, selectedPrograms){
 				var value = ProgramFilter.allPrograms[j].attributeValue;
 
 				if (indexName!="bugs"){//ONLY THE ORIGINAL bugs INDEX HAS BOTH whiteboard AND keyword
-					if (name.startsWith("cf_")) value=name+value;		//FLAGS ARE CONCATENATION OF NAME AND VALUE
+					if (name.startsWith("cf_")) value=name+value;    //FLAGS ARE CONCATENATION OF NAME AND VALUE
 					name="keywords";
 				}//endif
 

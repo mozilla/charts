@@ -101,11 +101,11 @@ qb.column.compile = function(resultColumn, sourceColumns, edges, useMVEL){  //us
 	f +=
 			"   var output;\n"+
 
-			"	output = " + resultColumn.value + ";\n" +
-			"	if (output===undefined || (output!=null && aMath.isNaN(output))) Log.error(\"" + resultColumn.name + " returns \"+convert.Value2Quote(output));\n"+
-			"	return output;\n" +
+			"  output = " + resultColumn.value + ";\n" +
+			"  if (output===undefined || (output!=null && aMath.isNaN(output))) Log.error(\"" + resultColumn.name + " returns \"+convert.Value2Quote(output));\n"+
+			"  return output;\n" +
 			"}catch(e){\n" +
-			"	Log.error("+
+			"  Log.error("+
 					"\"Problem with definition of name=\\\"" + resultColumn.name +
 					"\\\" value=" + convert.String2Quote(convert.String2Quote(resultColumn.value)).leftBut(1).rightBut(1) +
 					" when operating on __source=\"+convert.value2json(__source)+\" and __result=\"+convert.value2json(__result)"+
@@ -159,9 +159,9 @@ qb.where.compile = function(whereClause, sourceColumns, edges){
 
 	f +=
 		"try{\n" +
-			"	return (" + whereClause + ");\n" +
+			"  return (" + whereClause + ");\n" +
 			"}catch(e){\n" +
-			"	Log.warning(\"Problem with definition of the where clause " + convert.String2Quote(whereClause).rightBut(1).leftBut(1) + "\", e);\n" +
+			"  Log.warning(\"Problem with definition of the where clause " + convert.String2Quote(whereClause).rightBut(1).leftBut(1) + "\", e);\n" +
 			"}}";
 	try{
 		eval(f);

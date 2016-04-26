@@ -24,7 +24,7 @@ Stats.df.percentile=function(df, percentile){
 			return part+i+1;
 		}//endif
 	}//for
-	return df.length;		//HAPPENS WHEN df[i]==0
+	return df.length;    //HAPPENS WHEN df[i]==0
 };//method
 
 //NORMALIZE TO A DISTRIBUTION FUNCTION
@@ -177,12 +177,12 @@ Stats.median=function(values){
 
 //USING ONE
 //Stats.percentile=function(values, percentile){
-//	if (values.length==0) return null;
+//  if (values.length==0) return null;
 //
-//	values.sort(function(a, b){return a-b;});
-//	var smaller=aMath.floor(values.length*percentile+0.5);
-//	if (smaller==0) return 0;
-//	return values[smaller-1];
+//  values.sort(function(a, b){return a-b;});
+//  var smaller=aMath.floor(values.length*percentile+0.5);
+//  if (smaller==0) return 0;
+//  return values[smaller-1];
 //};
 
 
@@ -274,7 +274,7 @@ Stats.regressionLine=function(terms){
 	o.Syy=o.Y2 - (o.Y1*o.Y1)/o.N;
 	o.Sxy=o.XY - (o.X1*o.Y1)/o.N;
 	o.slope=o.Sxy/o.Sxx;
-//	o.slope=-0.0208;
+//  o.slope=-0.0208;
 	o.offset=(o.Y1-o.slope*o.X1)/o.N;
 	o.r2=(o.Sxy*o.Sxy)/(o.Sxx*o.Syy);
 
@@ -337,7 +337,7 @@ if (DEBUG){
 		if (aMath.round(result.offset, 2)!=-6.39) Log.error();
 		if (aMath.round(result.slope, 4)!=0.5207) Log.error();
 
-//	if (Stats.regression([[1, 1, 1]], {"min":0, "max":3, "interval":1}, {"min":0, "max":1, "interval":1}).offset!=1) Log.error();
+//  if (Stats.regression([[1, 1, 1]], {"min":0, "max":3, "interval":1}, {"min":0, "max":1, "interval":1}).offset!=1) Log.error();
 	}catch(e){
 		Log.error("Test failure", e);
 	}//try

@@ -3,6 +3,7 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
 importScript("../../lib/d3/d3.js");
+importScript("../collections/aArray.js");
 
 (function(){ //BETTER D3
 

@@ -33,8 +33,6 @@ if (String.prototype.includes) {
 }//endif
 
 
-
-
 //RETURN THE STRING BETWEEN THE start AND end
 //IF end IS UNDEFINED, THEN GRABS TO END OF STRING
 String.prototype.between = function(start, end){

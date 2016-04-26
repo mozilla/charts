@@ -50,7 +50,7 @@ aCompile.method=function(code, contextTypes){
 		//FIRST CONTEXT OBJECT IS SPECIAL, AND WILL HAVE IT'S VARS ASSIGNED BACK
 		contextTypes[0].columns.forall(function(p){
 			if (code.indexOf(p.name) != -1){
-				f += contexTypeNames[0] + "." + p.name + "=" + p.name + ";	\n";
+				f += contexTypeNames[0] + "." + p.name + "=" + p.name + ";  \n";
 			}//endif
 		});
 

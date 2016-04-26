@@ -54,6 +54,8 @@ qb.domain.compile = function(column, sourceColumns){
 	} else{
 		Log.error("Do not know how to compile a domain of type '" + type + "'");
 	}//endif
+
+	return domain;
 };//method
 
 
@@ -137,9 +139,9 @@ qb.domain["default"] = function(column, sourceColumns){
 
 	d.type = "default";
 
-//	column.domain.equal=function(a, b){
-//		return a == b;
-//	};//method
+//  column.domain.equal=function(a, b){
+//    return a == b;
+//  };//method
 
 	d.valCMP=qb.domain.value.compare;
 	d.compare = function(a, b){
@@ -168,7 +170,7 @@ qb.domain["default"] = function(column, sourceColumns){
 		canonical.name = key;
 
 		this.partitions.push(canonical);
-//		this.partitions.sort(this.compare);
+//    this.partitions.sort(this.compare);
 		this.map[key] = canonical;
 		return canonical;
 	};
@@ -220,7 +222,7 @@ qb.domain.time = function(column, sourceColumns){
 
 		var f =
 			"d.getMatchingParts=function(__source){\n" +
-			"	if (__source==null) return [];\n";
+			"  if (__source==null) return [];\n";
 
 		for(var s = 0; s < sourceColumns.length; s++){
 			var v = sourceColumns[s].name;
@@ -231,12 +233,12 @@ qb.domain.time = function(column, sourceColumns){
 		}//for
 
 		f +=
-			"	var output=[];\n" +
-			"	for(var i=0;i<this.partitions.length;i++){\n" +
-			"		var " + d.name + "=this.partitions[i];\n" +
-			"		if (" + column.test + ")\noutput.push(" + d.name + ");\n " +
-			"	}\n " +
-			"	return output;\n " +
+			"  var output=[];\n" +
+			"  for(var i=0;i<this.partitions.length;i++){\n" +
+			"    var " + d.name + "=this.partitions[i];\n" +
+			"    if (" + column.test + ")\noutput.push(" + d.name + ");\n " +
+			"  }\n " +
+			"  return output;\n " +
 			"}";
 		eval(f);
 	}else if (column.range){
@@ -249,7 +251,7 @@ qb.domain.time = function(column, sourceColumns){
 
 		var f =
 			"d.getMatchingParts=function(__source){\n" +
-			"	if (__source==null) return [];\n";
+			"  if (__source==null) return [];\n";
 
 		for(var s = 0; s < sourceColumns.length; s++){
 			var v = sourceColumns[s].name;
@@ -263,7 +265,7 @@ qb.domain.time = function(column, sourceColumns){
 		}//for
 
 //if (column.range.max=="max"){
-//	Log.note("");
+//  Log.note("");
 //}//endif
 		var condition;
 		if (column.range.type!==undefined && column.range.type=="inclusive"){
@@ -291,12 +293,12 @@ qb.domain.time = function(column, sourceColumns){
 
 
 		f +=
-			"	var output=[];\n" +
-			"	for(var i=0;i<this.partitions.length;i++){\n" +
-			"		var " + d.name + "=this.partitions[i];\n" +
-			"		if ("+condition+") output.push(" + d.name + ");\n " +
-			"	}\n " +
-			"	return output;\n " +
+			"  var output=[];\n" +
+			"  for(var i=0;i<this.partitions.length;i++){\n" +
+			"    var " + d.name + "=this.partitions[i];\n" +
+			"    if ("+condition+") output.push(" + d.name + ");\n " +
+			"  }\n " +
+			"  return output;\n " +
 			"}";
 		eval(f);
 
@@ -489,12 +491,12 @@ qb.domain.duration = function(column, sourceColumns){
 	};//method
 
 	//PROVIDE FORMATTING FUNCTION
-//	if (d.format === undefined){
+//  if (d.format === undefined){
 		d.label = function(value){
 			if (value.toString===undefined) return convert.value2json(value);
 			return value.toString();
 		};//method
-//	}//endif
+//  }//endif
 
 
 	if (column.range){
@@ -506,7 +508,7 @@ qb.domain.duration = function(column, sourceColumns){
 
 		var f =
 			"d.getMatchingParts=function(__source){\n" +
-			"	if (__source==null) return [];\n";
+			"  if (__source==null) return [];\n";
 
 		for(var s = 0; s < sourceColumns.length; s++){
 			var v = sourceColumns[s].name;
@@ -543,12 +545,12 @@ qb.domain.duration = function(column, sourceColumns){
 		}
 
 		f +=
-			"	var output=[];\n" +
-			"	for(var i=0;i<this.partitions.length;i++){\n" +
-			"		var " + d.name + "=this.partitions[i];\n" +
-			"		if ("+condition+") output.push(" + d.name + ");\n " +
-			"	}\n " +
-			"	return output;\n " +
+			"  var output=[];\n" +
+			"  for(var i=0;i<this.partitions.length;i++){\n" +
+			"    var " + d.name + "=this.partitions[i];\n" +
+			"    if ("+condition+") output.push(" + d.name + ");\n " +
+			"  }\n " +
+			"  return output;\n " +
 			"}";
 		eval(f);
 
@@ -719,12 +721,12 @@ qb.domain.numeric = function(column, sourceColumns){
 	};//method
 
 	//PROVIDE FORMATTING FUNCTION
-//	if (d.format === undefined){
+//  if (d.format === undefined){
 		d.label = function(value){
 			if (value.toString===undefined) return convert.value2json(value);
 			return value.toString();
 		};//method
-//	}//endif
+//  }//endif
 
 
 	if (column.test === undefined){
@@ -746,7 +748,7 @@ qb.domain.numeric = function(column, sourceColumns){
 					this.max = aMath.min(this.max, floor+this.interval);
 					qb.domain.numeric.addRange(this.min, this.max, this);
 				} else if (key < this.min){
-//					var newmin=floor;
+//          var newmin=floor;
 					qb.domain.numeric.addRange(floor, this.min, this);
 					this.min = floor;
 				}//endif
@@ -972,6 +974,7 @@ qb.domain.set = function(column, sourceColumns){
 		d.NULL[v.name]=null;
 	});
 	d.NULL.name="null";
+	d.NULL.dataIndex=d.partitions.length;
 
 
 	d.compare = function(a, b){
@@ -995,18 +998,22 @@ qb.domain.set = function(column, sourceColumns){
 
 
 	//ALL PARTS MUST BE FORMAL OBJECTS SO THEY CAN BE ANNOTATED
-	if (typeof(d.partitions[0])=="string"){
+	if (typeof(d.partitions[0])=="string") {
 		d.partitions.forall(function(part, i){
-			if (typeof(part)!="string") Log.error("Partition list can not be heterogeneous");
+			if (typeof(part) != "string") Log.error("Partition list can not be heterogeneous");
 			part = {"name": part, "value": part, "dataIndex": i};
-			d.partitions[i]=part;
+			d.partitions[i] = part;
 		});
-		d.value="name";
-		d.key="value";
+		d.value = "name";
+		d.key = "value";
 
 		//COLUMNS FOR PARTITIONS MUST BE PROPERLY UPDATED
-		d.columns=[{"name":"name"}, {"name":"value"}, {"name":"dataIndex"}];
-		d.NULL.value=null;
+		d.columns = [{"name": "name"}, {"name": "value"}, {"name": "dataIndex"}];
+		d.NULL.value = null;
+	}else{
+		d.partitions.forall(function(part, i){
+			part.dataIndex=i;
+		});
 	}//endif
 
 
@@ -1032,7 +1039,7 @@ qb.domain.set = function(column, sourceColumns){
 	}//endif
 
 	if (column.test!==undefined){
-		if (d.key===undefined) d.getKey=function(value){return null;};	 //COLLAPSE EDGE TO ONE VALUE
+		if (d.key===undefined) d.getKey=function(value){return null;};   //COLLAPSE EDGE TO ONE VALUE
 
 		////////////////////////////////////////////////////////////////////////
 		//FIND A "==" OPERATOR AND USE IT TO DEFINE AN INDEX INTO THE DOMAIN'S VALUES
@@ -1045,8 +1052,8 @@ qb.domain.set = function(column, sourceColumns){
 			return;
 		} else{
 			var ands = column.test.split("&&");
-			var indexVars = [];		//THE DOMAIN VALUE TO INDEX THE LIST WITH
-			var lookupVars = [];		//THE VALUE THAT WILL BE USED TO LOOKUP
+			var indexVars = [];    //THE DOMAIN VALUE TO INDEX THE LIST WITH
+			var lookupVars = [];    //THE VALUE THAT WILL BE USED TO LOOKUP
 			for(var a = 0; a < ands.length; a++){
 				if (ands[a].indexOf("==") >= 0){
 					var equals = ands[a].split("==");
@@ -1110,7 +1117,7 @@ qb.domain.set = function(column, sourceColumns){
 
 
 qb.domain.set.compileSimpleLookup = function(column, d, sourceColumns){
-//	d.map = undefined;
+//  d.map = undefined;
 	d.getCanonicalPart = undefined;
 	d.getMatchingParts=undefined;
 	var f =
@@ -1209,7 +1216,7 @@ qb.domain.set.compileKey=function(domain){
 			var newGetKeyFunction;
 			var f =
 				"newGetKeyFunction=function(__part){\n"+
-				"	if (__part==this.NULL) return null;\n";
+				"  if (__part==this.NULL) return null;\n";
 					for(var att in partition){
 						for(var i=key.length;i--;){
 							if (key[i].indexOf(att) >= 0){
@@ -1219,7 +1226,7 @@ qb.domain.set.compileKey=function(domain){
 						}//for
 					}//for
 					var output=key.join('+"|"+');
-			f+=	"	return "+output+"\n"+
+			f+=  "  return "+output+"\n"+
 				"}";
 			eval(f);
 			this.getKey=newGetKeyFunction;
@@ -1231,11 +1238,11 @@ qb.domain.set.compileKey=function(domain){
 			var newGetKeyFunction;
 			var f =
 				"newGetKeyFunction=function(__part){\n"+
-				"	if (__part==this.NULL) return null;\n";
+				"  if (__part==this.NULL) return null;\n";
 					Map.forall(partition, function(attrName, value){
 						if (key.indexOf(attrName) >= 0) f += "var " + attrName + "=__part." + attrName + ";\n";
 					});
-			f+=	"	return "+key+"\n"+
+			f+=  "  return "+key+"\n"+
 				"}";
 			eval(f);
 			this.getKey=newGetKeyFunction;
@@ -1277,7 +1284,7 @@ qb.domain.compileEnd=function(domain){
 			return domain.end(part);
 		};//method
 	}else if (domain.end===undefined){
-		domain.end=function(p){	return p;};
+		domain.end=function(p){  return p;};
 	}//endif
 };
 

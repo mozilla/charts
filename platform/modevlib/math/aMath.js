@@ -52,7 +52,7 @@ aMath = {};
 		var d;
 		if (value===undefined || value==null){
 			return null;
- 		} else if (value==0) {
+		 } else if (value==0) {
 			return 0.0;
 		} else if (rounding.digits !== undefined) {
 			d = Math.pow(10, rounding.digits - aMath.ceiling(aMath.log10(value)));

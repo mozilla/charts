@@ -14,8 +14,8 @@ var PickDim=function(div, dimensions, callback){
 	this.cover=$('<div style="width:100%;height:100%;top:0px;left:0px;position:absolute;z-index: 1;"></div>');  //CATCH MOUSE AND CLICKS
 	this.div.append(this.cover);
 
-	this.focus=undefined;	//CURRENT SHOWN PARTITIONS (REFERENCES THE MAIN DIMENSION HIERARCHY, DO NOT CHANGE)
-	this.filters=[];		//STACK OF FILTERS
+	this.focus=undefined;  //CURRENT SHOWN PARTITIONS (REFERENCES THE MAIN DIMENSION HIERARCHY, DO NOT CHANGE)
+	this.filters=[];    //STACK OF FILTERS
 
 	this.addPart(self.dimensions);
 };
@@ -76,7 +76,7 @@ PickDim.prototype.select = function(name){
 			if (v){
 				self.unselect(k);
 			}//endif
-//			this.focus.div.find(".dim-part").removeClass("selected");
+//      this.focus.div.find(".dim-part").removeClass("selected");
 		});
 	}//endif
 	this.focus.selected[name] = selected;
@@ -109,7 +109,7 @@ PickDim.prototype.toggle = function(name){
 
 // ADD NEW TOP LEVEL DIMENSION SELECTOR
 //PickDim.prototype.addNew=function(){
-//	this.addPart(Mozilla);
+//  this.addPart(Mozilla);
 //};//method
 
 PickDim.prototype.addPart=function(edge){
@@ -162,16 +162,16 @@ PickDim.prototype.addPart=function(edge){
 	//DYNAMIC OFFSET
 		if (container.width() < pos.width()){
 //
-//			range({
-//				"domain":{
-//					"min":row.offset().left+left,
-//					"range":oWidth-left-right
-//				},
-//				"codomain":{
-//					"min": oX,
-//					"range":oWidth - iWidth
-//				}
-//			})(dx);
+//      range({
+//        "domain":{
+//          "min":row.offset().left+left,
+//          "range":oWidth-left-right
+//        },
+//        "codomain":{
+//          "min": oX,
+//          "range":oWidth - iWidth
+//        }
+//      })(dx);
 //
 			var left=pos.find(".dim-part").first().width()/2;
 			var right=pos.find(".dim-part").last().width()/2;
@@ -184,9 +184,9 @@ PickDim.prototype.addPart=function(edge){
 			dx=aMath.max(0, aMath.min(dx, oWidth-left-right));
 
 			var offset=aMath.round(oX + (oWidth - iWidth) * (dx) / (oWidth-left-right));
-//			pos.animate({"left":offset}, 400, function(){
+//      pos.animate({"left":offset}, 400, function(){
 				pos.offset({"left":offset});
-//			});
+//      });
 		}//endif
 	});
 
@@ -221,7 +221,7 @@ PickDim.prototype.addPart=function(edge){
 		var o=$(this);
 		var selected=self.toggle(o.attr("name"));
 		if (selected){
-//			self.focus.selected[name]=selected;
+//      self.focus.selected[name]=selected;
 			o.addClass("selected");
 		}else{
 			o.removeClass("selected");

@@ -20,19 +20,15 @@ var Template = function Template(template){
 			return this.template;
 		}//endif
 
-    function lower(v){
-      if (typeof(v)=="object" && !(v instanceof Array) && !(v instanceof Date)) {
-        var newMap = {};
-        Map.forall(v, function(k, v){
-          newMap[k.toLowerCase()] = lower(v);
-        });
-        return newMap;
-      }else{
-        return v;
-      }//endif
-    }//function
+		var map = values;
+		if (typeof(values)=="object" && !(values instanceof Array) && !(values instanceof Date)) {
+			var newMap = {};
+			Map.forall(values, function(k, v){
+				newMap[k.toLowerCase()]=v;
+			});
+			map = newMap;
+		}//endif
 
-    var map = lower(values);
 		return _expand(this.template, [map]);
 	};
 	Template.prototype.replace = Template.prototype.expand;
@@ -68,8 +64,8 @@ var Template = function Template(template){
 	FUNC.comma = function(value){
 		//SNAGGED FROM http://stackoverflow.com/questions/2901102/how-to-print-a-number-with-commas-as-thousands-separators-in-javascript
 		var parts = value.toString().split(".");
-        parts[0] = parts[0].replace(/\B(?=(\d{3})+(?!\d))/g, ",");
-        return parts.join(".");
+				parts[0] = parts[0].replace(/\B(?=(\d{3})+(?!\d))/g, ",");
+				return parts.join(".");
 	};
 	FUNC.quote = function(value){
 		return convert.value2quote(value);

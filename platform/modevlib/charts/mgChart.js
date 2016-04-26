@@ -5,13 +5,9 @@
 importScript("../../lib/metrics-graphics/import.js");
 importScript("../../lib/jquery.js");
 importScript("../qb/Expressions.js");
-
-
-
+importScript("tools.js");
 
 (function(){
-	var DEBUG = false;
-
 
 	window.aChart = window.aChart || {};
 
@@ -32,8 +28,6 @@ importScript("../qb/Expressions.js");
 	];
 
 
-
-
 	/*
 	 * SCATTER USES THE `select` COLUMNS FOR x AND y RESPECTIVELY
 	 * THE FIRST EDGE IS USED FOR CATEGORIES
@@ -43,9 +37,8 @@ importScript("../qb/Expressions.js");
 		var styles = Map.clone(aChart.STYLES);
 
 
-
 		var data;
-		if (isArray(params.data) || Map.get(params, "data.meta.format")=="list") {
+		if (isArray(params.data) || Map.get(params, "data.meta.format") == "list") {
 			data = coalesce(params.data.data, params.data);
 
 			params.series.forall(function(s){
@@ -54,21 +47,21 @@ importScript("../qb/Expressions.js");
 				qb.domain.compile(edge);
 				edge.domain.NULL.style = Map.get(edge, "missing.style");
 
-				if (s.axis=="color"){
+				if (s.axis == "color") {
 					//ASSIGN THE _colorIndex FOR metrics-graphics ACCESSOR
 					params.data.forall(function(d){
 						var part = edge.domain.getPartByKey(getter(d));
-						if (Map.get(part, "style.color")){
-							styles[part.dataIndex]=part.style;
+						if (Map.get(part, "style.color")) {
+							styles[part.dataIndex] = part.style;
 						}//endif
 						d["_colorIndex"] = part.dataIndex;
 					});
-				}else{
+				} else {
 					Log.error("do not know how to handle")
 				}//endif
 			});
 		} else if (params.data.meta) {
-			//ASSUME qb QUERY RESULT
+			//ASSUME Qb QUERY RESULT
 			var chartCube = params.data;
 			if (!(chartCube.select instanceof Array) || chartCube.select.length != 2) {
 				Log.error("Expecting `select` clause to have two columns");
@@ -80,6 +73,8 @@ importScript("../qb/Expressions.js");
 			var xaxis = chartCube.select[0];
 			var yaxis = chartCube.select[1];
 
+			var styles = deepcopy(STYLES);
+
 			if (chartCube.edges.length >= 1) {
 				chartCube.edges[0].domain.partitions.forall(function(p, i){
 					if (p.style !== undefined) styles[i] = Map.setDefault(p.style, styles[i]);
@@ -88,12 +83,14 @@ importScript("../qb/Expressions.js");
 
 			var edge0 = chartCube.edges[0];
 			var parts0 = edge0.domain.partitions;
-			parts0.forall(function(p, i){p.dataIndex=i});  //FIX THE LACK OF dataIndex
+			parts0.forall(function(p, i){
+				p.dataIndex = i
+			});  //FIX THE LACK OF dataIndex
 
 			if (Map.get(params, "data.meta.format") == "list") {
 				data = params.data.data;
 				data.forall(function(v){
-					v["_colorIndex"]=v[edge0.name].dataIndex;
+					v["_colorIndex"] = v[edge0.name].dataIndex;
 				});
 			} else {
 				var cube = Map.zip(Map.map(chartCube.data, function(k, v){
@@ -121,8 +118,8 @@ importScript("../qb/Expressions.js");
 		var y_accessor = coalesce(Map.get(params, "axis.y.value"), Map.get(yaxis, "name"));
 
 		//CHAIN mouseover WITH SOME HOVER STYLE
-		var mouseover=undefined;
-		var mouseout=undefined;
+		var mouseover = undefined;
+		var mouseout = undefined;
 		(function(){
 
 			//STYLE THE TOOL TIPS
@@ -147,31 +144,30 @@ importScript("../qb/Expressions.js");
 				tip = d3.select("body").append("div")
 					.attr("id", "tip")
 					.style(params.tip.style)
-					;
+				;
 			}//endif
 
 			mouseover = function(d, i){
 				//SHOW TOOLTIP
 				if (tip) {
 					tip.style({
-								"top": (d3.event.pageY + 10) + "px",
-								"left": (d3.event.pageX + 10) + "px",
-								"visibility": "visible"
-							})
-							.html(format.expand(d))
+							"top": (d3.event.pageY + 10) + "px",
+							"left": (d3.event.pageX + 10) + "px",
+							"visibility": "visible"
+						})
+						.html(format.expand(d))
 					;
 				}//endif
 
 				//HIGHLIGHT POINT
 				chartParams.hoverLayer.append("circle")
-						.cx(chartParams.scalefns.xf(d))
-						.cy(chartParams.scalefns.yf(d))
-						.attr("r", 7)
-						.attr("fill", "none")
-						.attr("stroke", "gray")
-						.attr("stroke-width", 3)
+					.cx(chartParams.scalefns.xf(d))
+					.cy(chartParams.scalefns.yf(d))
+					.attr("r", 7)
+					.attr("fill", "none")
+					.attr("stroke", "gray")
+					.attr("stroke-width", 3)
 				;
-				mouseoverOld(d, i);
 			};
 
 			mouseout = function(d, i){
@@ -188,29 +184,25 @@ importScript("../qb/Expressions.js");
 			params.click = function(d, i){
 				chartParams.selectLayer.html("");
 				chartParams.selectLayer.append("circle")
-						.cx(chartParams.scalefns.xf(d))
-						.cy(chartParams.scalefns.yf(d))
-						.attr("r", 7)
-						.attr("fill", "none")
-						.attr("stroke", "red")
-						.attr("stroke-width", 3)
+					.cx(chartParams.scalefns.xf(d))
+					.cy(chartParams.scalefns.yf(d))
+					.attr("r", 7)
+					.attr("fill", "none")
+					.attr("stroke", "red")
+					.attr("stroke-width", 3)
 				;
 				clickOld(d, i);
 			};
 		})(params.click);
 
 		//X-AXIS FORMAT
-		var xax_format=Map.get(params, "axis.x.format");
-		if (xax_format){
+		var xax_format = Map.get(params, "axis.x.format");
+		if (xax_format) {
 			xax_format = (function(t){
 				return function(d){
 					return t.expand(d);
 				};
 			})(new Template(xax_format));
-		}//endif
-
-		if (DEBUG){
-			Log.note(convert.value2json(data));
 		}//endif
 
 		var chartParams = {
@@ -250,16 +242,16 @@ importScript("../qb/Expressions.js");
 
 
 	/*
-	RETURN A NICE MAX VALUE, THAT INCLUDES THE IMPORTANT CHART VALUES
+	 RETURN A NICE MAX VALUE, THAT INCLUDES THE IMPORTANT CHART VALUES
 	 */
-	aChart.maxNice=function(values){
+	aChart.maxNice = function(values){
 		var sorted = qb.sort(values, ".");
-		var mostlyMax = sorted[aMath.ceiling(values.length*0.90)];
+		var mostlyMax = sorted[aMath.ceiling(values.length * 0.90)];
 		var max = sorted.last();
 
-		if (max <=mostlyMax*1.1){
+		if (max <= mostlyMax * 1.1) {
 			return aMath.niceCeiling(max);
-		}else{
+		} else {
 			return aMath.niceCeiling(mostlyMax);
 		}//endif
 

@@ -11,7 +11,7 @@ importScript("../math/aMath.js");
 
 
 var Duration = function(){
-	this.milli = 0;	//INCLUDES THE MONTH VALUE AS MILLISECONDS
+	this.milli = 0;  //INCLUDES THE MONTH VALUE AS MILLISECONDS
 	this.month = 0;
 	return this;
 };
@@ -28,9 +28,9 @@ Duration.DOMAIN={
 
 
 Duration.MILLI_VALUES = {
-	"year":52 * 7 * 24 * 60 * 60 * 1000,		//52weeks
-	"quarter":13 * 7 * 24 * 60 * 60 * 1000,	//13weeks
-	"month":28 * 24 * 60 * 60 * 1000,		//4weeks
+	"year":52 * 7 * 24 * 60 * 60 * 1000,    //52weeks
+	"quarter":13 * 7 * 24 * 60 * 60 * 1000,  //13weeks
+	"month":28 * 24 * 60 * 60 * 1000,    //4weeks
 	"week":7 * 24 * 60 * 60 * 1000,
 	"day":24 * 60 * 60 * 1000,
 	"hour":60 * 60 * 1000,
@@ -220,15 +220,15 @@ Duration.prototype.floor = function(interval){
 	if (interval.month != 0){
 		if (this.month!=0){
 			output.month = aMath.floor(this.month/interval.month)*interval.month;
-//			var rest=(this.milli - (Duration.MILLI_VALUES.month * output.month));
-//			if (rest>Duration.MILLI_VALUES.day*31){	//WE HOPE THIS BIGGER VALUE WILL STILL CATCH POSSIBLE LOGIC PROBLEMS
-//				Log.error("This duration has more than a month's worth of millis, can not handle this rounding");
-//			}//endif
-//			while (rest<0){
-//				output.month-=interval.month;
-//				rest=(this.milli - (Duration.MILLI_VALUES.month * output.month));
-//			}//while
-////			if (rest>Duration.MILLI_VALUES.month){ //WHEN FLOORING xmonth-1day, THE rest CAN BE 4week+1day, OR MORE.
+//      var rest=(this.milli - (Duration.MILLI_VALUES.month * output.month));
+//      if (rest>Duration.MILLI_VALUES.day*31){  //WE HOPE THIS BIGGER VALUE WILL STILL CATCH POSSIBLE LOGIC PROBLEMS
+//        Log.error("This duration has more than a month's worth of millis, can not handle this rounding");
+//      }//endif
+//      while (rest<0){
+//        output.month-=interval.month;
+//        rest=(this.milli - (Duration.MILLI_VALUES.month * output.month));
+//      }//while
+////      if (rest>Duration.MILLI_VALUES.month){ //WHEN FLOORING xmonth-1day, THE rest CAN BE 4week+1day, OR MORE.
 			output.milli = output.month * Duration.MILLI_VALUES.month;
 			return output;
 		}//endif
@@ -321,7 +321,7 @@ Duration.prototype.format=function(format_){
 };//method
 
 //Duration.prototype.format=function(interval, rounding){
-//	return this.round(Duration.newInstance(interval), rounding)+interval;
+//  return this.round(Duration.newInstance(interval), rounding)+interval;
 //};//method
 
 Duration.prototype.round=function(interval, rounding){

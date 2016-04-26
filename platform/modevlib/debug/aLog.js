@@ -21,8 +21,7 @@ var Log = new function(){
 };
 
 (function(){
-	Log.FORMAT = new Template("{{type}} : {{timestamp|datetime('MM dd HH:mm:ss.fff')}} : {{trace.fileName}}@{{trace.lineNumber}} : {{message}}");
-
+	Log.FORMAT = new Template("{{type}} : {{timestamp|datetime('MM dd HH:mm:ss.fff')}} : {{trace.fileName}}@{{trace.lineNumber}} : {{message}}");	
 	Log.loggers=[];
 
 	//ACCEPT A FUNCTION THAT HANDLES OBJECT
@@ -99,7 +98,7 @@ var Log = new function(){
 	//
 	// ... AND MORE
 	Log.note = function(message, params){
-    if (isString(message) && params == undefined) {
+		if (isString(message) && params==undefined){
 
       var stacktrace = null;
       try {
@@ -110,14 +109,14 @@ var Log = new function(){
 
       message = {
         "trace": stacktrace[0],
-        "timestamp": Date.now(),
-        "message": message,
-        "params": params,
-        "type": "NOTE"
-      }
-    } else {
-      //ASSUME IT IS ALREADY A JSON OBJECT
-    }//endif
+				"timestamp":Date.now(),
+				"message":message,
+				"params": params,
+				"type":"NOTE"
+			}
+		}else{
+			//ASSUME IT IS ALREADY A JSON OBJECT
+		}//endif
 
 		Log.loggers.forall(function(v){
 			v(message);
@@ -255,9 +254,9 @@ var Log = new function(){
 	Log.action=function(message, waitForDone){
 		var action={"message":message, "start":Date.now()};
 
-		if (message.length>30){
-			message=message.left(27)+"...";
-		}//endif
+		//if (message.length>30){
+		//  message=message.left(27)+"...";
+		//}//endif
 
 		Log.actionStack.push(action);
 		$("#status").html(message);
@@ -276,26 +275,28 @@ var Log = new function(){
 		//JUST SHOW MESSAGE FOR THREE SECONDS
 		$("#status").html(message);
 		if (!waitForDone) setTimeout(function(){Log.actionDone(action, true);}, 3000);
-		return action;		//RETURNED IF YOU WANT TO REMOVE IT SOONER
+		return action;    //RETURNED IF YOU WANT TO REMOVE IT SOONER
 	};//method
 
 
 	Log.actionDone=function(action){
-		action.end=Date.now();
+		if (action){
+			action.end=Date.now();
 
-		if (Log.actionStack.length==0) {
-			$("#status").html("Done");
-			return;
+			if (Log.actionStack.length==0) {
+				$("#status").html("Done");
+				return;
+			}//endif
+
+			var i=Log.actionStack.indexOf(action);
+			if (i>=0) Log.actionStack.splice(i, 1);
+
+			Log.note({
+				"type":"timer.stop",
+				"timestamp":action.end,
+				"message":action.message+" ("+action.end.subtract(action.start).floor(Duration.SECOND).toString()+")"
+			});
 		}//endif
-
-		var i=Log.actionStack.indexOf(action);
-		if (i>=0) Log.actionStack.splice(i, 1);
-
-		Log.note({
-			"type":"timer.stop",
-			"timestamp":action.end,
-			"message":action.message+" ("+action.end.subtract(action.start).floor(Duration.SECOND).toString()+")"
-		});
 
 		if (Log.actionStack.length==0){
 			$("#status").html("Done");

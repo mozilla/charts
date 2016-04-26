@@ -73,7 +73,7 @@ qb.cube.transpose = function(query, edges, select){
 		pre+
 		loops +
 		dest + "="+source+";\n" +
-//		"for(var i=0;i<select.length;i++) d[i]=s[smap[i]];\n" +
+//    "for(var i=0;i<select.length;i++) d[i]=s[smap[i]];\n" +
 		ends;
 	eval(f);
 
@@ -101,7 +101,7 @@ qb.cube.toList=function(query){
 				for(var s=query.select.length;s--;){
 					//I FORGET IF ELEMENTS IN qb ARE OBJECTS, OR ARRAYS
 					obj[query.select[s].name]=query.cube[p][s];
-//					obj[cube.select[s].name]=cube.cube[cube.select[s].name];
+//          obj[cube.select[s].name]=cube.cube[cube.select[s].name];
 				}//for
 			}else{
 				obj[query.select.name]=query.cube[p];

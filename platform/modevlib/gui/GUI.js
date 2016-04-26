@@ -78,7 +78,7 @@ GUI = {};
 			parameters,    //LIST OF PARAMETERS (see GUI.AddParameters FOR DETAILS)
 			relations,     //SOME RULES TO APPLY TO PARAMETERS, IN CASE THE HUMAN MAKES SMALL MISTAKES
 			indexName,     //PERFORM CHECKS ON THIS INDEX
-			showDefaultFilters,  //SHOW THE Product/Compoentn/Team FILTERS
+			showDefaultFilters,  //SHOW THE Product/Component/Team FILTERS
 			performChecks,       //PERFORM SOME CONSISTENCY CHECKS TOO
 			checkLastUpdated     //SEND QUERY TO GET THE LAST DATA?
 		) {
@@ -109,15 +109,15 @@ GUI = {};
 			function post_filter_functions(){
 				GUI.showLastUpdated(indexName);
 				GUI.AddParameters(parameters, relations); //ADD PARAM AND SET DEFAULTS
-				GUI.Parameter2State();			//UPDATE STATE OBJECT WITH THOSE DEFAULTS
+				GUI.Parameter2State();      //UPDATE STATE OBJECT WITH THOSE DEFAULTS
 
 				GUI.makeSelectionPanel();
 
 				GUI.relations = coalesce(relations, []);
 				GUI.FixState();
 
-				GUI.URL2State();				//OVERWRITE WITH URL PARAM
-				GUI.State2URL.isEnabled = true;	//DO NOT ALLOW URL TO UPDATE UNTIL WE HAVE GRABBED IT
+				GUI.URL2State();        //OVERWRITE WITH URL PARAM
+				GUI.State2URL.isEnabled = true;  //DO NOT ALLOW URL TO UPDATE UNTIL WE HAVE GRABBED IT
 
 				GUI.FixState();
 				GUI.State2URL();
@@ -170,14 +170,14 @@ GUI = {};
 					tm.html(new Template("<div style={{style|style}}>{{name}}</div>").expand(result.index));
 					tm.append("<br>ES Last Updated " + time.addTimezone().format("NNN dd @ HH:mm") + Date.getTimezone());
 				} else if (indexName == "reviews") {
-                    var result = yield (ESQuery.run({
-                        "from": "reviews",
-                        "select": [
-                            {"name": "last_request", "value": "request_time", "aggregate": "maximum"}
-                        ]
-                    }));
-                    time = Date.newInstance(result.cube.last_request);
-                    $("#testMessage").html("Reviews Last Updated " + time.addTimezone().format("NNN dd @ HH:mm") + Date.getTimezone());
+										var result = yield (ESQuery.run({
+												"from": "reviews",
+												"select": [
+														{"name": "last_request", "value": "request_time", "aggregate": "maximum"}
+												]
+										}));
+										time = Date.newInstance(result.cube.last_request);
+										$("#testMessage").html("Reviews Last Updated " + time.addTimezone().format("NNN dd @ HH:mm") + Date.getTimezone());
 				} else if (indexName == "bug_tags") {
 					esHasErrorInIndex = false;
 					time = yield (BUG_TAGS.getLastUpdated());
@@ -466,7 +466,7 @@ GUI = {};
 						if (this.isChanging) return;
 						this.isChanging = true;
 						try {
-							codeDiv = $("#" + param.id);	//JUST TO BE SURE WE GOT THE RIGHT ONE
+							codeDiv = $("#" + param.id);  //JUST TO BE SURE WE GOT THE RIGHT ONE
 							//USE JSONLINT TO FORMAT AND TEST-COMPILE THE code
 							var code = jsl.format.formatJson(codeDiv.val());
 							codeDiv.val(code);
@@ -636,7 +636,7 @@ GUI = {};
 			$("#summary").html(html);
 		};
 
-		GUI.refreshInProgress = false;	//TRY TO AGGREGATE MULTIPLE refresh() REQUESTS INTO ONE
+		GUI.refreshInProgress = false;  //TRY TO AGGREGATE MULTIPLE refresh() REQUESTS INTO ONE
 
 		GUI.refresh = function (refresh) {
 			if (GUI.refreshInProgress) return;

@@ -68,7 +68,7 @@ $(document).ready(function () {
 		}
 
 		var self=$(this);
-		if (self.attr("dynamic-style"))	styler.apply(self);
+		if (self.attr("dynamic-style"))  styler.apply(self);
 		self.find("[dynamic-style]").each(styler);
 		if (styles.length>0) {
 			$("head").append('"<style type="text/css">' + styles.join("\n") + "</style>");

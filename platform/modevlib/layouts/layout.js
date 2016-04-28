@@ -3,7 +3,7 @@ var dynamicLayout;   //SUBSEQUENT LAYOUT WHEN DOM CHANGES
 
 (function(){
 	var DELAY_JAVASCRIPT = 200;
-	var DEBUG = true;
+	var DEBUG = false;
 
 	var allExpression = undefined;
 	var mapSelf2DynamicFormula = undefined;
@@ -61,7 +61,7 @@ var dynamicLayout;   //SUBSEQUENT LAYOUT WHEN DOM CHANGES
 				if (formula.length == 0) {
 					//DEFAULT IS TO CENTER EVERYTHING
 					self.css(mapper.left, "50%");
-					self.css("transform", translate(-0.5, dim));
+					addTransform(self, translate(-0.5, dim));
 					return;
 				}//endif
 
@@ -86,7 +86,7 @@ var dynamicLayout;   //SUBSEQUENT LAYOUT WHEN DOM CHANGES
 					if (DEBUG) {
 						Log.note(selfID + ".width=" + width)
 					}//endif
-					self[mapper.width]((100 * (formula[0].r.coord - formula[1].r.coord) / (formula[0].l.coord - formula[1].l.coord)) + "%");
+					self.css(mapper.width, width);
 
 					if (formula[0].l.coord == formula[0].r.coord) {
 						formula = formula[0];
@@ -111,7 +111,7 @@ var dynamicLayout;   //SUBSEQUENT LAYOUT WHEN DOM CHANGES
 						Log.note(selfID + ".transform=translate(" + (-formula.l.coord) + "," + dim + ")");
 					}//endif
 					self.css(mapper.left, (100 * formula.r.coord) + "%");
-					self.css("transform", translate(-formula.l.coord, dim));
+					addTransform(self, translate(-formula.l.coord, dim));
 				} else if (formula.l.coord == 1.0) {
 					if (DEBUG) {
 						Log.note(selfID + "." + mapper.right + "=" + (100 * (1 - formula.r.coord)) + "%");
@@ -127,15 +127,6 @@ var dynamicLayout;   //SUBSEQUENT LAYOUT WHEN DOM CHANGES
 		//APPLY ALL FORMULA
 		positionDynamic();
 	};//function
-
-	function translate(amount, dim){
-		if (dim == "h") {
-			return "translate(" + (amount * 100) + "%, 0)";
-		} else {
-			return "translate(0, " + (amount * 100) + "%)";
-		}//endif
-	}//function
-
 
 	var dimMap = {
 		"v": {
@@ -559,6 +550,25 @@ var dynamicLayout;   //SUBSEQUENT LAYOUT WHEN DOM CHANGES
 		});
 		return sorted;
 	}
+
+	function translate(amount, dim){
+		if (dim == "h") {
+			return "translateX(" + (amount * 100) + "%)";
+		} else {
+			return "translateY(" + (amount * 100) + "%)";
+		}//endif
+	}//function
+
+	function addTransform(self, transform){
+		var existing = self.existingTransform;
+		if (!existing) {
+			self.existingTransform = transform;
+			self.css("transform", transform);
+		}else{
+			self.existingTransform = existing + " " + transform;
+			self.css("transform", existing + " " + transform);
+		}//endif
+	}//function
 
 	function uniqueNodes(arr){
 		var res = {};

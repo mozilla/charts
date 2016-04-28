@@ -1,4 +1,3 @@
-
 var layoutAll;       //INITIAL LAYOUT
 var dynamicLayout;   //SUBSEQUENT LAYOUT WHEN DOM CHANGES
 
@@ -24,8 +23,8 @@ var dynamicLayout;   //SUBSEQUENT LAYOUT WHEN DOM CHANGES
 		var mapSelf2TrueParents = {};
 		var mapSelf2StaticFormula = {};
 		forall(allExpression, function(e){
-			if (!mapSelf2TrueParents[e.l.id]) mapSelf2TrueParents[e.l.id]=[];
-			if (mapSelf2TrueParents[e.l.id].indexOf(e.r.id)==-1) mapSelf2TrueParents[e.l.id].push(e.r.id);
+			if (!mapSelf2TrueParents[e.l.id]) mapSelf2TrueParents[e.l.id] = [];
+			if (mapSelf2TrueParents[e.l.id].indexOf(e.r.id) == -1) mapSelf2TrueParents[e.l.id].push(e.r.id);
 		});
 
 		//PICK A SINGLE PARENT FOR EACH ELEMENT
@@ -39,15 +38,15 @@ var dynamicLayout;   //SUBSEQUENT LAYOUT WHEN DOM CHANGES
 		forall(['v', 'h'], function(dim){
 			forall(allExpression, function(e){
 				if (e.d != dim) return;
-				var lhsID=e.l.id;
-				if (e.r.id == mapSelf2TrueParents[lhsID][0]){
+				var lhsID = e.l.id;
+				if (e.r.id == mapSelf2TrueParents[lhsID][0]) {
 					if (!mapSelf2StaticFormula[lhsID]) mapSelf2StaticFormula[lhsID] = {"v": [], "h": []};
 					mapSelf2StaticFormula[lhsID][dim].push(e);
 					e.dynamic = false;
 				} else {
 					e.dynamic = true;
 				}//endif
-				if (!mapSelf2DynamicFormula[dim][lhsID]) mapSelf2DynamicFormula[dim][lhsID]=[];
+				if (!mapSelf2DynamicFormula[dim][lhsID]) mapSelf2DynamicFormula[dim][lhsID] = [];
 				mapSelf2DynamicFormula[dim][lhsID].push(e);
 			});
 		});
@@ -76,7 +75,7 @@ var dynamicLayout;   //SUBSEQUENT LAYOUT WHEN DOM CHANGES
 						Log.error("Constraint is wrong");
 					}//endif
 
-					if (formula[0].l.coord > formula[0].r.coord){
+					if (formula[0].l.coord > formula[0].r.coord) {
 						var temp = formula[0];
 						formula[0] = formula[1];
 						formula[1] = temp;
@@ -98,19 +97,19 @@ var dynamicLayout;   //SUBSEQUENT LAYOUT WHEN DOM CHANGES
 
 				//POSITION
 				if (formula.l.coord == 0.0) {
-					if (DEBUG){
-						Log.note(selfID+"."+mapper.left+"="+ (100 * formula.r.coord) + "%");
+					if (DEBUG) {
+						Log.note(selfID + "." + mapper.left + "=" + (100 * formula.r.coord) + "%");
 					}//endif
 					self.css(mapper.left, (100 * formula.r.coord) + "%");
 				} else if (formula.l.coord != 1.0) {
-					if (DEBUG){
+					if (DEBUG) {
 						Log.note(selfID + "." + mapper.left + "=" + (100 * (1 - formula.r.coord)) + "%");
 						Log.note(selfID + ".transform=translate(" + (-formula.l.coord) + "," + dim + ")");
 					}//endif
 					self.css(mapper.left, (100 * formula.r.coord) + "%");
 					self.css("transform", translate(-formula.l.coord, dim));
 				} else if (formula.l.coord == 1.0) {
-					if (DEBUG){
+					if (DEBUG) {
 						Log.note(selfID + "." + mapper.right + "=" + (100 * (1 - formula.r.coord)) + "%");
 					}//endif
 					self.css(mapper.right, (100 * (1 - formula.r.coord)) + "%");
@@ -155,7 +154,7 @@ var dynamicLayout;   //SUBSEQUENT LAYOUT WHEN DOM CHANGES
 		items(dimMap, function(dim, mapper){
 
 			//TOPOSORT THE EXPRESSIONS IN THIS DIMENSION
-			var edges=map(allExpression, function(e){
+			var edges = map(allExpression, function(e){
 				if (e.d != dim) return;
 				return [e.r.id, e.l.id];
 			});
@@ -171,10 +170,10 @@ var dynamicLayout;   //SUBSEQUENT LAYOUT WHEN DOM CHANGES
 
 				//FIGURE OUT IF WE ARE SETTING THE WIDTH, OR POSITION, OR BOTH
 				//formula==true MEANS THE FORMULA IS ENCODED AS CSS RULES, SO NOT DYNAMIC
-				if (formula.length==1){
+				if (formula.length == 1) {
 					if (!formula[0].dynamic) return;  //NOTHING DYNAMIC
 					position = formula[0];
-				}else if (formula.length == 2) {
+				} else if (formula.length == 2) {
 					if (!formula[0].dynamic) {
 						if (!formula[1].dynamic) {
 							return;  //NOTHING DYNAMIC
@@ -191,13 +190,13 @@ var dynamicLayout;   //SUBSEQUENT LAYOUT WHEN DOM CHANGES
 							width = formula[1];  //DYNAMIC
 						}//endif
 					}//endif
-				}else{
+				} else {
 					Log.error("More than two expressions along one dimension can not be solved.");
 				}//endif
 
 				//RHS WIDTH
 				var points = map([position, width], function(e){
-					if (e===undefined) return;
+					if (e === undefined) return;
 					var leftPosition = '$("#' + e.r.id + '").offset().' + mapper.left;
 					var pixelWidth = '$("#' + e.r.id + '").' + mapper.outerWidth + '()';
 
@@ -221,12 +220,12 @@ var dynamicLayout;   //SUBSEQUENT LAYOUT WHEN DOM CHANGES
 				if (width) {
 					selfWidth = '((' + points[0].rcode + '-' + points[1].rcode + ')/' + (points[0].l - points[1].l) + ')';
 					layoutFunction += '$("#' + lhsID + '").' + mapper.outerWidth + '(' + selfWidth + ');\n';
-				}else{
+				} else {
 					selfWidth = '$("#' + lhsID + '").' + mapper.outerWidth + '()';
 				}//endif
 
 				//POSITION ALWAYS EXISTS
-				if (position.dynamic){
+				if (position.dynamic) {
 					var leftMost;
 					if (points[1]) {
 						leftMost = 'Math.min(' + points[0].rcode + ',' + points[1].rcode + ')';
@@ -234,11 +233,11 @@ var dynamicLayout;   //SUBSEQUENT LAYOUT WHEN DOM CHANGES
 						leftMost = points[0].rcode
 					}//endif
 
-					if (points[0].l==0){
-						layoutFunction += '$("#' + lhsID + '").offset({"' + mapper.left+'": '+ leftMost+ '});\n';
-					}else{
+					if (points[0].l == 0) {
+						layoutFunction += '$("#' + lhsID + '").offset({"' + mapper.left + '": ' + leftMost + '});\n';
+					} else {
 						selfWidth = '$("#' + lhsID + '").' + mapper.outerWidth + '()';
-						layoutFunction += '$("#' + lhsID + '").offset({"' + mapper.left+'": '+ leftMost+'-'+selfWidth+'*'+points[0].l+'});\n';
+						layoutFunction += '$("#' + lhsID + '").offset({"' + mapper.left + '": ' + leftMost + '-' + selfWidth + '*' + points[0].l + '});\n';
 					}//endif
 				}//endif
 
@@ -246,8 +245,8 @@ var dynamicLayout;   //SUBSEQUENT LAYOUT WHEN DOM CHANGES
 		});
 		layoutFunction += "};";
 
-		if (DEBUG){
-			Log.note("dynamicLayout="+layoutFunction)
+		if (DEBUG) {
+			Log.note("dynamicLayout=" + layoutFunction)
 		}//endif
 
 		eval("dynamicLayout=" + layoutFunction);
@@ -258,16 +257,16 @@ var dynamicLayout;   //SUBSEQUENT LAYOUT WHEN DOM CHANGES
 
 
 	function prep(self, parent){
-		var parentID=parent.attr("id");
-		if (DEBUG) Log.note(self.attr("id")+" is child of "+parentID);
+		var parentID = parent.attr("id");
+		if (DEBUG) Log.note(self.attr("id") + " is child of " + parentID);
 
-		if (parentID=="window"){
+		if (parentID == "window") {
 			self.css({"position": "fixed"});
 			return;
 		}//endif
 
 		var p = parent.css("position");
-		if (p === undefined || p=="static") {
+		if (p === undefined || p == "static") {
 			parent.css({"position": "relative"});
 		}//endif
 
@@ -333,7 +332,7 @@ var dynamicLayout;   //SUBSEQUENT LAYOUT WHEN DOM CHANGES
 		if (expr.trim().length == 0) return;
 
 		var temp = expr.split("=");
-		if (temp.length!=2) Log.error("Formula "+convert.value2json(expr)+" is not in <lhs> \"=\" <rhs> format");
+		if (temp.length != 2) Log.error("Formula " + convert.value2json(expr) + " is not in <lhs> \"=\" <rhs> format");
 		var lhs = temp[0].trim();
 		var rhs = temp[1].trim();
 
@@ -345,8 +344,8 @@ var dynamicLayout;   //SUBSEQUENT LAYOUT WHEN DOM CHANGES
 
 		var selfID = getID(self);
 		var coord = canonical[lhs];
-		if (coord===undefined){
-			Log.error("Can not recognize "+convert.value2json(lhs))
+		if (coord === undefined) {
+			Log.error("Can not recognize " + convert.value2json(lhs))
 		}//endif
 		rhs = parseRHS(self, rhs);
 
@@ -400,9 +399,9 @@ var dynamicLayout;   //SUBSEQUENT LAYOUT WHEN DOM CHANGES
 				} else if (parentID == "window") {
 					var w = $("#window");
 					if (w.length == 0) {
-						$("html").css({"height":"100%"});
+						$("html").css({"height": "100%"});
 						body = $("body");
-						body.css({"position": "relative", "height":"100%"});
+						body.css({"position": "relative", "height": "100%"});
 						body.prepend('<div id="window" style="position:fixed;top:0;left:0;right:0;bottom:0;z-index:-1000"></div>');
 					}//endif
 				}//endif
@@ -428,8 +427,8 @@ var dynamicLayout;   //SUBSEQUENT LAYOUT WHEN DOM CHANGES
 			}//endif
 
 			return {"id": parentID, "coord": coord};
-		}catch(e){
-			Log.error("Problem parsing "+convert.value2json(rhs), e);
+		} catch (e) {
+			Log.error("Problem parsing " + convert.value2json(rhs), e);
 		}//try
 	}//function
 
@@ -437,13 +436,13 @@ var dynamicLayout;   //SUBSEQUENT LAYOUT WHEN DOM CHANGES
 		var output = [];
 		for (var i = 0; i < formula.length; i++) {
 			var g = formula[i];
-			for (var u = 0; u < i; u++){
+			for (var u = 0; u < i; u++) {
 				try {
 					if (g.l.coord == formula[u].l.coord && g.r.coord == formula[u].r.coord && g.r.id == formula[u].r.id) {
 						g = undefined;
 						break;
 					}//endif
-				}catch(e){
+				} catch (e) {
 					Log.error("Logic error!");
 				}//try
 			}//for
@@ -463,16 +462,16 @@ var dynamicLayout;   //SUBSEQUENT LAYOUT WHEN DOM CHANGES
 			var self = this;
 			var args = arguments;
 
-			if (running){
+			if (running) {
 				pending = pending || true;
 				return;
 			}//endif
-			running=true;
-			pending=false;
+			running = true;
+			pending = false;
 
 			var g = function(){
 				f.apply(self, args);
-				running=false;
+				running = false;
 			};
 			setTimeout(g, 0);
 			output();
@@ -489,29 +488,29 @@ var dynamicLayout;   //SUBSEQUENT LAYOUT WHEN DOM CHANGES
 
 	function items(map, func){
 		//func MUST ACCEPT key, value PARAMETERS
-		var keys=Object.keys(map);
-		for(var i=keys.length;i--;){
-			var key=keys[i];
-			var val=map[key];
-			if (val!==undefined) func(key, val);
+		var keys = Object.keys(map);
+		for (var i = keys.length; i--;) {
+			var key = keys[i];
+			var val = map[key];
+			if (val !== undefined) func(key, val);
 		}//for
 	}//function
 
 	var UID;
 	(function(){
-		var next=0;
+		var next = 0;
 
-		UID=function(){
+		UID = function(){
 			next++;
 			return next;
 		};//method
 	})();
 
 	function map(arr, func){
-		var output=[];
-		for(var i=0;i<arr.length;i++){
-			var v=func(arr[i], i);
-			if (v===undefined || v==null) continue;
+		var output = [];
+		for (var i = 0; i < arr.length; i++) {
+			var v = func(arr[i], i);
+			if (v === undefined || v == null) continue;
 			output.push(v);
 		}//for
 		return output;
@@ -519,10 +518,10 @@ var dynamicLayout;   //SUBSEQUENT LAYOUT WHEN DOM CHANGES
 
 	function toposort(edges, nodes){
 		/*
-		edges IS AN ARRAY OF [parent, child] PAIRS
-		nodes IS AN OPTIONAL ARRAY OF ALL NODES
+		 edges IS AN ARRAY OF [parent, child] PAIRS
+		 nodes IS AN OPTIONAL ARRAY OF ALL NODES
 		 */
-		if (!nodes){
+		if (!nodes) {
 			nodes = uniqueNodes(edges);
 		}//endif
 		var sorted = [];

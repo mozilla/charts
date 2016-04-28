@@ -39,34 +39,26 @@
 <div id="sidebar_name" class="sidebar_name" layout="top=window.top;bottom=footer.top;left=sidebar.right;">
 	<div>Configuration</div>
 </div>
-<div class="content" layout="top=page.top;left=sidebar_name.right;" style="padding: 10px 10px 50px 10px;">
+<div id="content" class="content" layout="top=page.top;left=sidebar_name.right;" style="padding: 10px 10px 50px 10px;">
 	<h1 id="title" style="display:inline-block;">Release Management Uplifts</h1>
-	<table>
-		<tr>
-			<td style="padding-top: 20px"><h2>Beta Uplifts by Category</h2></td>
-			<td style="padding-top: 20px;padding-left: 20px;"><h2>Beta Uplifts by Team</h2></td>
-		</tr>
-		<tr>
-			<td>
-				<div id="byTypeBeta" class="chart" style="width:600px;height:350px;"></div>
-			</td>
-			<td style="padding-left: 20px;">
-				<div id="byTeamBeta" class="chart" style="width:600px;height:350px;"></div>
-			</td>
-		</tr>
-		<tr>
-			<td style="padding-top: 20px"><h2>Aurora Uplifts by Category</h2></td>
-			<td style="padding-top: 20px;padding-left: 20px;"><h2>Aurora Uplifts by Team</h2></td>
-		</tr>
-		<tr>
-			<td>
-				<div id="byTypeAurora" class="chart" style="width:600px;height:350px;"></div>
-			</td>
-			<td style="padding-left: 20px;">
-				<div id="byTeamAurora" class="chart" style="width:600px;height:350px;"></div>
-			</td>
-		</tr>
-	</table>
+	<div id="charts" layout="br=content.br;bl=content.bl;top=title.bottom;">
+		<div layout="br=charts.tm">
+			<h2>Beta Uplifts by Category</h2></td>
+			<div id="byTypeBeta" class="chart" style="width:600px;height:350px;"></div>
+		</div>
+		<div layout="bl=charts.tm">
+			<h2>Beta Uplifts by Team</h2></td>
+			<div id="byTeamBeta" class="chart" style="width:600px;height:350px;"></div>
+		</div>
+		<div layout="tr=charts.tm">
+			<h2>Aurora Uplifts by Category</h2>
+			<div id="byTypeAurora" class="chart" style="width:600px;height:350px;"></div>
+		</div>
+		<div layout="tl=charts.tm">
+			<h2>Aurora Uplifts by Team</h2>
+			<div id="byTeamAurora" class="chart" style="width:600px;height:350px;"></div>
+		</div>
+	</div>
 </div>
 
 <div id="footer" style="height:50px;text-align: center;padding: 5px 0 5px 0;background-color: #fff;z-index: 12;" layout="bl=window.bl;br=window.br;">

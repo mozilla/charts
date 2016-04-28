@@ -39,34 +39,10 @@
 <div id="sidebar_name" class="sidebar_name" layout="top=window.top;bottom=footer.top;left=sidebar.right;">
 	<div>Configuration</div>
 </div>
-<div class="content" layout="top=page.top;left=sidebar_name.right;" style="padding: 10px 10px 50px 10px;">
+<div id="content" class="content" layout="top=page.top;left=sidebar_name.right;right=window.right;bottom=footer.top" style="padding: 10px;">
 	<h1 id="title" style="display:inline-block;">Release Management Uplifts</h1>
-	<table>
-		<tr>
-			<td style="padding-top: 20px"><h2>Beta Uplifts by Category</h2></td>
-			<td style="padding-top: 20px;padding-left: 20px;"><h2>Beta Uplifts by Team</h2></td>
-		</tr>
-		<tr>
-			<td>
-				<div id="byTypeBeta" class="chart" style="width:600px;height:350px;"></div>
-			</td>
-			<td style="padding-left: 20px;">
-				<div id="byTeamBeta" class="chart" style="width:600px;height:350px;"></div>
-			</td>
-		</tr>
-		<tr>
-			<td style="padding-top: 20px"><h2>Aurora Uplifts by Category</h2></td>
-			<td style="padding-top: 20px;padding-left: 20px;"><h2>Aurora Uplifts by Team</h2></td>
-		</tr>
-		<tr>
-			<td>
-				<div id="byTypeAurora" class="chart" style="width:600px;height:350px;"></div>
-			</td>
-			<td style="padding-left: 20px;">
-				<div id="byTeamAurora" class="chart" style="width:600px;height:350px;"></div>
-			</td>
-		</tr>
-	</table>
+	<div id="charts" layout="left=content.left;br=content.br;top=title.bottom;" style="padding:20px;">
+	</div>
 </div>
 
 <div id="footer" style="height:50px;text-align: center;padding: 5px 0 5px 0;background-color: #fff;z-index: 12;" layout="bl=window.bl;br=window.br;">
@@ -76,6 +52,57 @@
 
 
 <script type="application/javascript">
+
+var ALL_CHARTS =
+	'<div layout="br=charts.cm" style="padding: 20px;">' +
+	'<h2>Beta Uplifts by Category</h2></td>' +
+	'<div id="byTypeBeta" class="chart" style="width:600px;height:350px;"></div>' +
+	'</div>' +
+	'<div layout="bl=charts.cm" style="padding: 20px;">' +
+	'<h2>Beta Uplifts by Team</h2></td>' +
+	'<div id="byTeamBeta" class="chart" style="width:600px;height:350px;"></div>' +
+	'</div>' +
+	'<div layout="tr=charts.cm" style="padding: 20px;">' +
+	'<h2>Aurora Uplifts by Category</h2>' +
+	'<div id="byTypeAurora" class="chart" style="width:600px;height:350px;"></div>' +
+	'</div>' +
+	'<div layout="tl=charts.cm" style="padding: 20px;">' +
+	'<h2>Aurora Uplifts by Team</h2>' +
+	'<div id="byTeamAurora" class="chart" style="width:600px;height:350px;"></div>' +
+	'</div>';
+
+var PLATFORM = [
+	'<div layout="right=charts.center" style="padding:20px;text-align: center;">' +
+	'<h2 style="padding:20px;font-size: 3em;">Beta Uplifts by Category</h2></td>' +
+	'<div id="byTypeBeta" style="width:800px;height:600px;"></div>' +
+	'</div>' +
+	'<div layout="left=charts.center" style="padding:20px;text-align: center;">' +
+	'<h2 style="padding:20px;font-size: 3em;">Beta Uplifts by Team</h2></td>' +
+	'<div id="byTeamBeta" style="width:800px;height:600px;"></div>' +
+	'</div>',
+
+	'<div layout="right=charts.center" style="padding: 20px;text-align: center;">' +
+	'<h2 style="padding:20px;font-size: 3em;">Aurora Uplifts by Category</h2>' +
+	'<div id="byTypeAurora" style="width:800px;height:600px;"></div>' +
+	'</div>' +
+	'<div layout="left=charts.center" style="padding: 20px;text-align: center;">' +
+	'<h2 style="padding:20px;font-size: 3em;">Aurora Uplifts by Team</h2>' +
+	'<div id="byTeamAurora" style="width:800px;height:600px;"></div>' +
+	'</div>'
+];
+
+var AMBIENT = [
+	'<div layout="cm=charts.cm" style="padding: 20px;">' +
+	'<h2 style="text-align: center;font-size: 3em;">Beta Uplifts by Category</h2></td>' +
+	'<div id="byTypeBeta" style="width:1200px;height:700px;"></div>' +
+	'</div>',
+
+	'<div layout="cm=charts.cm" style="padding: 20px;">' +
+	'<h2 style="text-align: center;font-size: 3em;">Aurora Uplifts by Category</h2>' +
+	'<div id="byTypeAurora" style="width:1200px;height:700px;"></div>' +
+	'</div>'
+];
+
 
 function getHistoryFilter(timeDomain, offset){
 	var showLables = false;
@@ -121,7 +148,8 @@ function getHistoryFilter(timeDomain, offset){
 
 var chartMax=-1;   // IT IS UNFORTUNATE THIS CHART LIB DOES NOT SYNCH CHARTS
 
-function showTrain(aurora, timeDomain, offset, name, otherThread){
+function showTrain(aurora, timeDomain, offset, name, showMode_, otherThread){
+	var showMode=showMode_;
 	var outputThread = Thread.run("show train", function*(){
 
 		timeDomain = Map.copy(timeDomain);
@@ -199,7 +227,11 @@ function showTrain(aurora, timeDomain, offset, name, otherThread){
 			],
 			"meta": {"format": "cube"}
 		}));
-		if (otherThread) yield (Thread.join(otherThread));
+		try {
+			if (otherThread) yield (Thread.join(otherThread));
+		}catch(e){
+			//DO NOTHING
+		}//try
 		chartMax = aMath.niceCeiling(aMath.max(chartMax, aMath.MAX(byWeek.data.bug_count)));
 
 
@@ -281,10 +313,12 @@ function showTrain(aurora, timeDomain, offset, name, otherThread){
 			isReversed: true,
 		    valuesOptimizeLegibility: true,
 //			orthoAxisFixedMax: chartMax,
+			yAxisDesiredTickCount: 8,
 			"stacked": true,
 			"cube": byType,
 			xAxisSize: 40,
-			legendSize: 50,
+			legendSize: showMode=="all" ? 50 : 80,
+			legendFont : showMode=="all" ? undefined : '20px sans-serif',
 			"clickAction": clicker(byType)
 		});
 
@@ -308,10 +342,12 @@ function showTrain(aurora, timeDomain, offset, name, otherThread){
 			valuesVisible: showLabels,
 		    valuesOptimizeLegibility: true,
 //			orthoAxisFixedMax: chartMax,
+			yAxisDesiredTickCount: 8,
 			"stacked": true,
 			"cube": byTeam,
 			xAxisSize: 40,
-			legendSize: 50,
+			legendSize: showMode=="all" ? 50 : 80,
+			legendFont : showMode=="all" ? undefined : '20px sans-serif',
 			"clickAction": clicker(byTeam)
 		});
 
@@ -401,7 +437,19 @@ importScript(['js/main_lib.js', 'modevlib/charts/cccChart.js', 'modevlib/layouts
 //		$("#title").html(team);
 		var startTime = Date.newInstance(GUI.state["sampleMin"]);
 		var endTime = Date.newInstance(GUI.state["sampleMax"]).ceilingWeek();
+		var showMode = GUI.state["show"];
 		showLabels = GUI.state["showLabels"];
+
+		if (showMode=="ambient") {
+			showLabels = true;
+			$("#charts").html(AMBIENT[aMath.floor(Math.random()*AMBIENT.length)]);
+		}else if (showMode=="platform") {
+			showLabels = true;
+			$("#charts").html(PLATFORM[aMath.floor(Math.random() * PLATFORM.length)]);
+		}else{
+			$("#charts").html(ALL_CHARTS);
+		}//endif
+		layoutAll();
 
 		var timeDomain = {
 			"type": "time",
@@ -414,8 +462,8 @@ importScript(['js/main_lib.js', 'modevlib/charts/cccChart.js', 'modevlib/layouts
 		var beta = getHistoryFilter(timeDomain, 1);
 		var aurora = getHistoryFilter(timeDomain, 2);
 
-		var auroraThread = showTrain(aurora, timeDomain, 2, "Aurora");
-		showTrain(beta, timeDomain, 1, "Beta", auroraThread);
+		var auroraThread = showTrain(aurora, timeDomain, 2, "Aurora", showMode);
+		showTrain(beta, timeDomain, 1, "Beta", showMode, auroraThread);
 
 	};
 	$(document).ready(function(){
@@ -424,7 +472,8 @@ importScript(['js/main_lib.js', 'modevlib/charts/cccChart.js', 'modevlib/layouts
 			[
 				{"id":"sampleMin", "name":"Start Date", "type":"time", "default":Date.eod().add("-18week")},
 				{"id":"sampleMax", "name":"End Date", "type":"time", "default":Date.today().ceilingWeek()},
-				{"id":"showLabels", "name":"Show Labels", "type":"boolean", "default":false}
+				{"id":"showLabels", "name":"Show Labels", "type":"boolean", "default":false},
+				{"id":"show", "name":"Display Mode", "type":"string", "default":"ambient"}  //ONE OF ambient, platform, detailed
 			],
 			[
 				"sampleMin=Date.newInstance(sampleMin).floor(Duration.WEEK).format('yyyy-MM-dd')",

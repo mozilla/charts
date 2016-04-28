@@ -39,22 +39,22 @@
 <div id="sidebar_name" class="sidebar_name" layout="top=window.top;bottom=footer.top;left=sidebar.right;">
 	<div>Configuration</div>
 </div>
-<div id="content" class="content" layout="top=page.top;left=sidebar_name.right;" style="padding: 10px 10px 50px 10px;">
+<div id="content" class="content" layout="top=page.top;left=sidebar_name.right;right=window.right;bottom=footer.top" style="padding: 10px 10px 50px 10px;">
 	<h1 id="title" style="display:inline-block;">Release Management Uplifts</h1>
 	<div id="charts" layout="br=content.br;bl=content.bl;top=title.bottom;">
-		<div layout="br=charts.tm">
+		<div layout="br=charts.cm" style="padding: 10px 10px 10px 10px;">
 			<h2>Beta Uplifts by Category</h2></td>
 			<div id="byTypeBeta" class="chart" style="width:600px;height:350px;"></div>
 		</div>
-		<div layout="bl=charts.tm">
+		<div layout="bl=charts.cm" style="padding: 10px 10px 10px 10px;">
 			<h2>Beta Uplifts by Team</h2></td>
 			<div id="byTeamBeta" class="chart" style="width:600px;height:350px;"></div>
 		</div>
-		<div layout="tr=charts.tm">
+		<div layout="tr=charts.cm" style="padding: 10px 10px 10px 10px;">
 			<h2>Aurora Uplifts by Category</h2>
 			<div id="byTypeAurora" class="chart" style="width:600px;height:350px;"></div>
 		</div>
-		<div layout="tl=charts.tm">
+		<div layout="tl=charts.cm" style="padding: 10px 10px 10px 10px;">
 			<h2>Aurora Uplifts by Team</h2>
 			<div id="byTeamAurora" class="chart" style="width:600px;height:350px;"></div>
 		</div>
@@ -416,7 +416,8 @@ importScript(['js/main_lib.js', 'modevlib/charts/cccChart.js', 'modevlib/layouts
 			[
 				{"id":"sampleMin", "name":"Start Date", "type":"time", "default":Date.eod().add("-18week")},
 				{"id":"sampleMax", "name":"End Date", "type":"time", "default":Date.today().ceilingWeek()},
-				{"id":"showLabels", "name":"Show Labels", "type":"boolean", "default":false}
+				{"id":"showLabels", "name":"Show Labels", "type":"boolean", "default":false},
+				{"id":"random", "name":"Show Random Chart", "type":"boolean", "default":false}
 			],
 			[
 				"sampleMin=Date.newInstance(sampleMin).floor(Duration.WEEK).format('yyyy-MM-dd')",

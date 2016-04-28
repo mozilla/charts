@@ -3,7 +3,7 @@ var dynamicLayout;   //SUBSEQUENT LAYOUT WHEN DOM CHANGES
 
 (function(){
 	var DELAY_JAVASCRIPT = 200;
-	var DEBUG = false;
+	var DEBUG = true;
 
 	var allExpression = undefined;
 	var mapSelf2DynamicFormula = undefined;
@@ -82,6 +82,10 @@ var dynamicLayout;   //SUBSEQUENT LAYOUT WHEN DOM CHANGES
 					}//endif
 
 					self.css("box-sizing", "border-box");
+					var width = (100 * (formula[0].r.coord - formula[1].r.coord) / (formula[0].l.coord - formula[1].l.coord)) + "%";
+					if (DEBUG) {
+						Log.note(selfID + ".width=" + width)
+					}//endif
 					self[mapper.width]((100 * (formula[0].r.coord - formula[1].r.coord) / (formula[0].l.coord - formula[1].l.coord)) + "%");
 
 					if (formula[0].l.coord == formula[0].r.coord) {
@@ -219,6 +223,9 @@ var dynamicLayout;   //SUBSEQUENT LAYOUT WHEN DOM CHANGES
 				var selfWidth;
 				if (width) {
 					selfWidth = '((' + points[0].rcode + '-' + points[1].rcode + ')/' + (points[0].l - points[1].l) + ')';
+					if (DEBUG){
+						layoutFunction += `Log.note("set `+lhsID+'.' + mapper.outerWidth + '="+('+selfWidth+'));\n';
+					}//endif
 					layoutFunction += '$("#' + lhsID + '").' + mapper.outerWidth + '(' + selfWidth + ');\n';
 				} else {
 					selfWidth = '$("#' + lhsID + '").' + mapper.outerWidth + '()';
@@ -347,13 +354,13 @@ var dynamicLayout;   //SUBSEQUENT LAYOUT WHEN DOM CHANGES
 		if (coord === undefined) {
 			Log.error("Can not recognize " + convert.value2json(lhs))
 		}//endif
-		rhs = parseRHS(self, rhs);
+		parsed_rhs = parseRHS(self, rhs);
 
 		forall(["v", "h"], function(d){
 			if (coord[d] !== undefined) {
 				allExpression.push({
 					"l": {"id": selfID, "coord": coord[d]},
-					"r": {"id": rhs.id, "coord": rhs.coord[d]},
+					"r": {"id": parsed_rhs.id, "coord": parsed_rhs.coord[d]},
 					"d": d
 				});
 			}//endif
@@ -423,7 +430,11 @@ var dynamicLayout;   //SUBSEQUENT LAYOUT WHEN DOM CHANGES
 				}//endif
 			} else {
 				//EXPECTING <h-position> <v-position>
-				coord = canonical[coord]
+				var lookup = coord;
+				coord = canonical[lookup];
+				if (coord === undefined) {
+					Log.error("Can not recognize " + convert.value2json(lookup))
+				}//endif
 			}//endif
 
 			return {"id": parentID, "coord": coord};

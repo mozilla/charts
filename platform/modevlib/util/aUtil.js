@@ -16,6 +16,9 @@ var Map = {};
 ////////////////////////////////////////////////////////////////////////////////
 (function(){
 	Map.newInstance = function(key, value){
+		if (key==null){
+			Log.error("expecting a string key")
+		}//endif
 		var output = {};
 		output[key] = value;
 		return output;

@@ -147,7 +147,7 @@ if (!Mozilla) var Mozilla = {"name": "Mozilla", "edges": []};
 			{
 				"name": "Firefox47",
 				"version": 47,
-				"releaseDate": "May 31, 2016",
+				"releaseDate": "June 7, 2016",
 				"esfilter": {"and": [
 					{"not": {"terms": {"cf_status_firefox47": SOLVED}}},
 					{"term": {"cf_tracking_firefox47": "+"}}
@@ -156,7 +156,7 @@ if (!Mozilla) var Mozilla = {"name": "Mozilla", "edges": []};
 			{
 				"name": "Firefox48",
 				"version": 48,
-				"releaseDate": "Jul 12, 2016",
+				"releaseDate": "Aug 2, 2016",
 				"esfilter": {"and": [
 					{"not": {"terms": {"cf_status_firefox48": SOLVED}}},
 					{"term": {"cf_tracking_firefox48": "+"}}
@@ -165,13 +165,30 @@ if (!Mozilla) var Mozilla = {"name": "Mozilla", "edges": []};
 			{//SOURCE https://wiki.mozilla.org/RapidRelease/Calendar
 				"name": "Firefox49",
 				"version": 49,
-				"releaseDate": "Aug 23, 2016",
+				"releaseDate": "Sep 13, 2016",
 				"esfilter": {"and": [
 					{"not": {"terms": {"cf_status_firefox49": SOLVED}}},
 					{"term": {"cf_tracking_firefox49": "+"}}
 				]}
+			},
+			{
+				"name": "Firefox50",
+				"version": 50,
+				"releaseDate": "Nov 8, 2016",
+				"esfilter": {"and": [
+					{"not": {"terms": {"cf_status_firefox50": SOLVED}}},
+					{"term": {"cf_tracking_firefox50": "+"}}
+				]}
+			},
+			{
+				"name": "Firefox51",
+				"version": 51,
+				"releaseDate": "Jan 24, 2017",
+				"esfilter": {"and": [
+					{"not": {"terms": {"cf_status_firefox51": SOLVED}}},
+					{"term": {"cf_tracking_firefox51": "+"}}
+				]}
 			}
-
 		]
 	};
 	releaseTracking.requiredFields = Array.union(releaseTracking.edges.select("esfilter").map(qb.requiredFields));

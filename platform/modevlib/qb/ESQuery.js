@@ -705,6 +705,9 @@ ESQuery.NOT_SUPPORTED = "From clause not supported \n{{from}}";
 				condition.and.push({
 					"range": Map.newInstance(edge.value, {"gte": MVEL.Value2Query(partition.min), "lt": MVEL.Value2Query(partition.max)})
 				});
+			} else if (edge.value === undefined) {
+				//MUST USE THIS' esFacet, AND NOT(ALL THOSE ABOVE)
+				return ESFilter.simplify(partition.esfilter);
 			} else if (edge.domain.type == "set") {
 				condition.and.push({
 					"term": Map.newInstance(edge.value, edge.domain.getKey(partition))

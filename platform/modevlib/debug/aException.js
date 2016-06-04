@@ -65,21 +65,18 @@ importScript("../util/convert.js");
 	Exception.wrap = wrap;
 
 
-
-
-
-
 	//window.Exception@file:///C:/Users/klahnakoski/git/MoDevMetrics/html/modevlib/debug/aException.js:14:4
 	//build@file:///C:/Users/klahnakoski/git/MoDevMetrics/html/modevlib/threads/thread.js:76:2
 	//@file:///C:/Users/klahnakoski/git/MoDevMetrics/html/modevlib/threads/thread.js:442:1
 	//window.Exception@file:///C:/Users/klahnakoski/git/MoDevMetrics/html/modevlib/debug/aException.js:14:4
 	//@file:///C:/Users/klahnakoski/git/MoDevMetrics/html/modevlib/debug/aException.js:77:2
 	//@file:///C:/Users/klahnakoski/git/MoDevMetrics/html/modevlib/debug/aException.js:9:2
-	var stackPattern=/(.*)@(.*):(\d+):(\d+)/;
+	var stackPatterns = [/(.*)@(.*):(\d+):(\d+)/];
 
 	//IS THIS GOOGLE CHROME?
-	if (navigator.userAgent.toLowerCase().indexOf('chrome') > -1){
+	if (navigator.userAgent.toLowerCase().indexOf('chrome') > -1) {
 		//TypeError: Converting circular structure to JSON
+		//    at http://localhost:63342/charts/platform/modevlib/util/aUtil.js:83:26
 		//    at Object.stringify (native)
 		//    at Object.Map.jsonCopy (http://localhost:63342/charts/platform/modevlib/util/aUtil.js:83:26)
 		//    at http://localhost:63342/charts/platform/modevlib/Dimension.js:58:22
@@ -91,29 +88,38 @@ importScript("../util/convert.js");
 		//    at Object.Thread.resume.retval [as success] (http://localhost:63342/charts/platform/modevlib/threads/thread.js:226:11)
 		//    at XMLHttpRequest.request.onreadystatechange (http://localhost:63342/charts/platform/modevlib/rest/Rest.js:93:15)"
 
-		stackPattern=/\s*at (.*) \((.*):(\d+):(\d+)\)/;
+		//PLETHORA PATTERNS, JUST TO BE SPECIAL
+		stackPatterns = [
+			/\s*at (.*) \((.*):(\d+):(\d+)\)/,
+			/\s*at (.*) \((.*)\)/,
+			/\s*at( )(.*):(\d+):(\d+)/
+		];
 	}//endif
 
 	function parseStack(stackString){
 		var output = [];
-		if (stackString===undefined || stackString==null) return output;
+		if (stackString === undefined || stackString == null) return output;
 		stackString.split("\n").forEach(function(l){
-			var parts=stackPattern.exec(l);
-			if (parts==null) return;
-			output.append({
-				"function":parts[1],
-				"fileName":parts[2],
-				"lineNumber":parts[3],
-				"columnNumber":parts[4]
-			});
+			for (var p = 0; p < stackPatterns.length; p++) {
+				var stackPattern = stackPatterns[p];
+				var parts = stackPattern.exec(l);
+				if (parts == null) continue;
+				output.append({
+					"function": parts[1],
+					"fileName": parts[2],
+					"lineNumber": parts[3],
+					"columnNumber": parts[4]
+				});
+				break;
+			}//for
 		});
 		return output;
 	}//function
 
 	//MAKE A GENERIC ERROR OBJECT DESCRIBING THE ARGUMENTS PASSED
-	Exception.error=function(){
-		var args = Array.prototype.slice.call(arguments).map(function(v,i){
-			if (typeof(v)=="string") return v;
+	Exception.error = function(){
+		var args = Array.prototype.slice.call(arguments).map(function(v, i){
+			if (typeof(v) == "string") return v;
 			return convert.value2json(v);
 		});
 		return new Exception("error called with arguments("+args.join(",\n"+")"), null);

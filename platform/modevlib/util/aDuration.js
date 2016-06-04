@@ -164,6 +164,10 @@ Duration.prototype.lte = function(val){
 	return this.milli <= val.milli;
 };//method
 
+Duration.prototype.seconds = function(){
+  return this.milli/1000.0;
+};//method
+
 Duration.prototype.multiply=function(amount){
 	var output=new Duration();
 	output.milli=this.milli*amount;

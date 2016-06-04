@@ -12,6 +12,7 @@ importScript("../util/aUtil.js");
 importScript("../debug/aLog.js");
 importScript("../collections/aMatrix.js");
 importScript("MVEL.js");
+importScript("Expressions.js");
 importScript("qb.aggregate.js");
 importScript("qb.column.js");
 importScript("qb.cube.js");
@@ -334,8 +335,7 @@ function joinField(path){
 			if (edges[g].outOfDomainCount > 0)
 				Log.warning(edges[g].name + " has " + edges[g].outOfDomainCount + " records outside domain " + edges[g].domain.name);
 		}//for
-		if (DEBUG) Log.note("Where clause rejected " + numWhereFalse + " rows");
-
+		if (DEBUG && numWhereFalse!=0) Log.note("Where clause rejected " + numWhereFalse + " rows");
 
 		yield query;
 	}
@@ -460,6 +460,7 @@ function joinField(path){
 		});
 
 		//MAKE THE EMPTY DATA GRID
+		if (!query.select) Log.error("Expecting a select clause");
 		query.cube = qb.cube.newInstance(edges, 0, query.select);
 		Tree2Cube(query, query.cube, query.tree, 0);
 		qb.analytic.run(query);
@@ -1265,11 +1266,33 @@ function joinField(path){
 		}//try
 	};//method
 
+  qb.groupby=function(data, columns){
+    var sorted = qb.sort(data, columns);
+    if (MVEL.isKeyword(columns)){
+      var extract=qb.get(columns);
+      var last=extract(sorted[0]);
+      var start=0;
+      var end=1;
+      var output=[];
+      while (end < sorted.length) {
+        var curr = extract(sorted[end]);
+        if (last != curr) {
+          output.append([last, sorted.substring(start, end)]);
+          start = end;
+          last = curr;
+        }//endif
+        end++;
+      }//while
+      output.append([last, sorted.substring(start, end)]);
+      return output;
+    }else{
+      Log.error("not handled yet")
+    }
+  };
 
 	//RETURN A NEW QUERY WITH ADDITIONAL FILTERS LIMITING VALUES
 	//TO series AND category SELECTION *AND* TRANSFORMING TO AN SET OPERATION
 	qb.specificBugs = function(query, filterParts){
-
 		var newQuery = qb.drill(query, filterParts);
 		newQuery.edges = [];
 

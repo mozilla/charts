@@ -876,4 +876,20 @@ Date.tryParse=function(val, isFutureDate){
 Date.EPOCH=Date.newInstance("1/1/1970");
 
 
+Date.range=function(min, max, interval){
+  if (min instanceof Object){
+    interval=min.interval;
+    max=min.max;
+    min=min.min;
+  }//endif
 
+  var output=[];
+  min=Date.newInstance(min);
+  max=Date.newInstance(max);
+  interval = Duration.newInstance(interval);
+  var acc=min;
+  for(;acc<max;acc=acc.add(interval)){
+    output.append(acc);
+  }//for
+  return output;
+};

@@ -300,7 +300,6 @@ GUI = {};
 
 		GUI.State2URL.isEnabled = false;
 
-
 		GUI.URL2State = function () {
 			var urlState = Session.URL.getFragment();
 			Map.forall(urlState, function (k, v) {
@@ -311,7 +310,7 @@ GUI = {};
 				})[0];
 
 				if (p && qb.domain.ALGEBRAIC.contains(p.type)) {
-					v = v.escape(Map.inverse(GUI.urlMap));
+					//v = v.escape(Map.inverse(GUI.urlMap));
 					GUI.state[k] = v;
 				} else if (p && p.type == "json") {
 					try {
@@ -330,7 +329,7 @@ GUI = {};
 					if (v.trim()==""){
 						GUI.state[k]=[];
 					}else{
-						GUI.state[k] = v.split(",").map(String.trim);
+						GUI.state[k] = v.split(",").map(String.trim).unwrap();
 					}//endif
 				} else if (p && p.type == "code") {
 					v = v.escape(Map.inverse(GUI.urlMap));
@@ -338,12 +337,10 @@ GUI = {};
 				} else if (GUI.state[k].isFilter) {
 					GUI.state[k].setSimpleState(v);
 				} else {
-					GUI.state[k] = v.split(",");
+					GUI.state[k] = v.split(",").unwrap();
 				}//endif
 			});
 		};
-
-
 
 		///////////////////////////////////////////////////////////////////////////
 		// ADD INTERACTIVE PARAMETERS TO THE PAGE
@@ -427,7 +424,7 @@ GUI = {};
 							GUI.refreshChart();
 						}
 					});
-					defaultValue = defaultValue.format("yyyy-MM-dd");
+					defaultValue = Date.newInstance(defaultValue).format("yyyy-MM-dd");
 					$("#" + param.id).val(defaultValue);
 					////////////////////////////////////////////////////////////////////////
 					// DURATION
@@ -518,7 +515,6 @@ GUI = {};
 		//RETURN TRUE IF ANY CHANGES HAVE BEEN MADE
 		GUI.State2Parameter = function () {
 			GUI.parameters.forEach(function (param) {
-
 				if (param.type == "json") {
 					$("#" + param.id).val(convert.value2json(GUI.state[param.id]));
 				} else if (param.type == "boolean") {
@@ -526,14 +522,13 @@ GUI = {};
 				} else if (param.type == "datetime") {
 					$("#" + param.id).val(Date.newInstance(GUI.state[param.id]).format("yyyy-MM-dd HH:mm:ss"))
 				} else if (param.type == "set") {
-					$("#" + param.id).val(GUI.state[param.id].join(","))
+					$("#" + param.id).val(Array.newInstance(GUI.state[param.id]).join(","))
 				} else {
 				//if (param.type.getSimpleState) return;  //param.type===GUI.state[param.id] NO ACTION REQUIRED
 					$("#" + param.id).val(GUI.state[param.id]);
 				}//endif
 			});
 		};
-
 
 		//RETURN TRUE IF ANY CHANGES HAVE BEEN MADE
 		GUI.Parameter2State = function () {

@@ -8,7 +8,7 @@ importScript("../qb/Expressions.js");
 importScript("tools.js");
 
 (function(){
-
+	var DEBUG = false;
 	window.aChart = window.aChart || {};
 
 	////////////////////////////////////////////////////////////////////////////
@@ -203,6 +203,10 @@ importScript("tools.js");
 					return t.expand(d);
 				};
 			})(new Template(xax_format));
+		}//endif
+
+		if (DEBUG) {
+			Log.note(convert.value2json(data));
 		}//endif
 
 		var chartParams = {

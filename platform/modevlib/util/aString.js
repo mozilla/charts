@@ -11,6 +11,10 @@ String.prototype.trim = function(values){
 	return this.substring(s, Math.max(s, e + 1));
 };
 
+String.toLowerCase = function(value){
+	return value.toLowerCase()
+};
+
 String.join = function(list, seperator){
 	var output = "";
 	for (var i = 0; i < list.length; i++) {
@@ -22,6 +26,11 @@ String.join = function(list, seperator){
 
 String.trim = function(v){
 	return v.trim();
+};
+
+String.percent = function(value, places){
+	var output = aMath.round({"digits":places});
+	return output+"%";
 };
 
 if (String.prototype.includes) {

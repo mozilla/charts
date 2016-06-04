@@ -1,3 +1,4 @@
+importScript("convert.js");
 importScript("../collections/aArray.js");
 importScript("aUtil.js");
 importScript("aString.js");
@@ -6,9 +7,9 @@ importScript("convert.js");
 
 
 var Template = function Template(template){
-	if (template instanceof Template){
+	if (template instanceof Template) {
 		this.template = template.template;
-	}else{
+	} else {
 		this.template = template;
 	}//endif
 };
@@ -16,19 +17,23 @@ var Template = function Template(template){
 (function(){
 
 	Template.prototype.expand = function expand(values){
-		if (values === undefined){
+		if (values === undefined) {
 			return this.template;
 		}//endif
 
-		var map = values;
-		if (typeof(values)=="object" && !(values instanceof Array) && !(values instanceof Date)) {
-			var newMap = {};
-			Map.forall(values, function(k, v){
-				newMap[k.toLowerCase()]=v;
-			});
-			map = newMap;
-		}//endif
+		function lower(v){
+			if (typeof(v) == "object" && !(v instanceof Array) && !(v instanceof Date) && !(v instanceof Duration)) {
+				var newMap = {};
+				Map.forall(v, function(k, v){
+					newMap[k.toLowerCase()] = lower(v);
+				});
+				return newMap;
+			} else {
+				return v;
+			}//endif
+		}//function
 
+		var map = lower(values);
 		return _expand(this.template, [map]);
 	};
 	Template.prototype.replace = Template.prototype.expand;
@@ -64,26 +69,26 @@ var Template = function Template(template){
 	FUNC.comma = function(value){
 		//SNAGGED FROM http://stackoverflow.com/questions/2901102/how-to-print-a-number-with-commas-as-thousands-separators-in-javascript
 		var parts = value.toString().split(".");
-				parts[0] = parts[0].replace(/\B(?=(\d{3})+(?!\d))/g, ",");
-				return parts.join(".");
+		parts[0] = parts[0].replace(/\B(?=(\d{3})+(?!\d))/g, ",");
+		return parts.join(".");
 	};
 	FUNC.quote = function(value){
 		return convert.value2quote(value);
 	};
 	FUNC.format = function(value, format){
-		if (value instanceof Duration){
+		if (value instanceof Duration) {
 			return value.format(format);
 		}
 		return Date.newInstance(value).format(format);
 	};
 	FUNC.round = function(value, digits){
-		return aMath.round(value, {"digits":digits});
+		return aMath.round(value, {"digits": digits});
 	};
 	FUNC.metric = aMath.roundMetric;
 	FUNC.upper = function(value){
-		if (isString(value)){
+		if (isString(value)) {
 			return value.toUpperCase();
-		}else{
+		} else {
 			return convert.value2json();
 		}
 	};
@@ -97,7 +102,7 @@ var Template = function Template(template){
 			return _expand_items(template, namespaces);
 		} else if (template.from) {
 			return _expand_loop(template, namespaces);
-		}else{
+		} else {
 			Log.error("Not recognized {{template}}", {"template": template})
 		}//endif
 	}
@@ -133,7 +138,7 @@ var Template = function Template(template){
 	}
 
 	/*
-	LOOP THROUGH THEN key:value PAIRS OF THE OBJECT
+	 LOOP THROUGH THEN key:value PAIRS OF THE OBJECT
 	 */
 	function _expand_items(loop, namespaces){
 		Map.expecting(loop, ["from_items", "template"]);
@@ -180,13 +185,13 @@ var Template = function Template(template){
 				if (FUNC[func] === undefined) {
 					Log.error(func + " is an unknown string function for template expansion")
 				}//endif
-				if (path[p].split("(").length==1){
+				if (path[p].split("(").length == 1) {
 					val = FUNC[func](val)
-				}else{
+				} else {
 					try {
 						val = eval("FUNC[func](val, " + path[p].split("(")[1]);
-					}catch (f){
-						Log.warning("Can not evaluate "+convert.String2Quote(output.substring(s + 2, e)), f)
+					} catch (f) {
+						Log.warning("Can not evaluate " + convert.String2Quote(output.substring(s + 2, e)), f)
 					}//try
 				}//endif
 			}//for
@@ -195,11 +200,11 @@ var Template = function Template(template){
 				val = "undefined"
 			} else if (val == null) {
 				val = "";  //NULL IS NOTHING
-			} else if (typeof(val)=="string"){
+			} else if (typeof(val) == "string") {
 				//do nothing
-			}else if (val.toString){
-				val=val.toString()
-			}else{
+			} else if (val.toString) {
+				val = val.toString()
+			} else {
 				val = "" + val;
 			}//endif
 

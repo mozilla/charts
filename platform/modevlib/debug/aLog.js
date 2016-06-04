@@ -97,15 +97,15 @@ var Log = new function(){
 	Log.note = function(message, params){
 		if (isString(message) && params == undefined) {
 
-			var stacktrace = null;
+			var trace = null;
 			try {
 				throw new Error();
 			} catch (e) {
-				stacktrace = parseStack(e.stack).slice(1);
+				trace = parseStack(e.stack)[1];
 			}//try
 
 			message = {
-				"trace": stacktrace[0],
+				"trace": trace,
 				"timestamp": Date.now(),
 				"message": message,
 				"params": params,
@@ -262,7 +262,15 @@ var Log = new function(){
 			return;
 		}//endif
 
+		var trace = null;
+		try {
+			throw new Error();
+		} catch (e) {
+			trace = parseStack(e.stack)[1];
+		}//try
+
 		Log.note({
+			"trace": trace,
 			"type": "timer.start",
 			"timestamp": action.start,
 			"message": message
@@ -290,7 +298,15 @@ var Log = new function(){
 			var i = Log.actionStack.indexOf(action);
 			if (i >= 0) Log.actionStack.splice(i, 1);
 
+			var trace = null;
+			try {
+				throw new Error();
+			} catch (e) {
+				trace = parseStack(e.stack)[1];
+			}//try
+
 			Log.note({
+				"trace": trace,
 				"type": "timer.stop",
 				"timestamp": action.end,
 				"message": action.message + " (" + action.end.subtract(action.start).floor(Duration.SECOND).toString() + ")"

@@ -1,0 +1,165 @@
+
+.blockers {
+    font-family: Arial, Helvetica, sans-serif;
+    font-weight: normal;
+    text-align: left;
+    width:100%;
+}
+
+#totals {
+    background-color: #DDDDDD;
+    height: 95px;
+}
+
+
+.blocker {
+    color:white;
+    display: inline-block;
+    font-weight: normal;
+    padding: 10px;
+    text-align: center
+}
+
+.project {
+    cursor: pointer;
+    position: relative;
+    color:white;
+    display: inline-block;
+    font-weight: normal;
+    padding: 10px;
+    text-align: center;
+    width: 50px;
+    height:50px;
+    margin: 2px;
+
+}
+.component {
+    font-family: Arial, Helvetica, sans-serif;
+    font-weight: bold;
+    color:black;
+    display: inline-block;
+    padding: 10px 10px 0px;
+    text-align: center;
+}
+
+.componentowner {
+    color:black;
+    font-weight: bold;
+    font-size: 70%;
+    font-style: italic;
+    padding: 0 10px 0px;
+}
+
+.componentmanager {
+    color:black;
+    font-weight: bold;
+    font-size: 70%;
+    font-style: italic;
+    padding: 0 10px 0px;
+}
+
+
+.release{
+    padding: 0 0 3px 0;
+}
+
+
+.count {
+    font-family: Arial, Helvetica, sans-serif;
+    display: inline-block;
+    color:white;
+    font-size: 200%;
+    font-weight: bold;
+}
+
+.unassigned{
+    position: absolute;
+    right:0px;
+    bottom:0px;
+
+    width: 0px;
+    height: 0px;
+    border-style: solid;
+    border-width: 0 0 40px 40px;
+    border-color: transparent transparent #000000 transparent;
+
+}
+
+/*for the grid dashboard*/
+table.grid td div.small_unassigned {
+    position: absolute;
+    right:0;
+    bottom:0;
+
+    width: 0;
+    height: 0;
+    border-style: solid;
+    border-width: 0 0 20px 20px;
+    border-color: transparent transparent #000000 transparent;
+    margin: 0;
+    padding: 0;
+    vertical-align:baseline;
+}
+
+.count:hover {
+    color:white;
+}
+
+.count_unassigned {
+    position: absolute;
+    right:3px;
+    bottom:-37px;
+
+    font-family: Arial, Helvetica, sans-serif;
+    display: inline-block;
+    color:white;
+    font-size: 100%;
+    font-weight: normal;
+}
+
+.count_unassigned:hover {
+    color:white;
+    font-weight: bold;
+}
+
+
+.lost {
+    position: absolute;
+    right:0;
+    top:0;
+
+    width: 0;
+    height: 0;
+    border-style: solid;
+    border-width: 0 40px 40px 0;
+    border-color: transparent #000000 transparent transparent;
+}
+
+.count_lost {
+    position: absolute;
+    right:-37px;
+    top:3px;
+
+    font-family: Arial, Helvetica, sans-serif;
+    display: inline-block;
+    color:white;
+    font-size: 100%;
+    font-weight: normal;
+}
+
+.count_lost:hover {
+    color:white;
+    font-weight: bold;
+}
+
+
+
+#noms {
+    background-color: #56C5FF;
+}
+#triage {
+    background-color: #008287;
+}
+#blockers {
+
+}

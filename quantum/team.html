@@ -1,0 +1,613 @@
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+<!-- This Source Code Form is subject to the terms of the Mozilla Public
+   - License, v. 2.0. If a copy of the MPL was not distributed with this
+   - file, You can obtain one at http://mozilla.org/MPL/2.0/. -->
+<HTML>
+<HEAD>
+<title>Teams - FxOS</title>
+<script type="text/javascript">function importScript(dep, func) {
+	if (func !== undefined) func();
+}</script>
+<script type="text/javascript" src="modevlib/Settings.js"></script>
+
+<script type="text/javascript" src="modevlib/rest/BugzillaClient.js"></script>
+<script type="text/javascript" src="modevlib/collections/aArray.js"></script>
+<script type="text/javascript" src="modevlib/util/aUtil.js"></script>
+<script type="text/javascript" src="modevlib/util/aParse.js"></script>
+<script type="text/javascript" src="modevlib/collections/aMatrix.js"></script>
+<script type="text/javascript" src="modevlib/qb/Qb.aggregate.js"></script>
+<script type="text/javascript" src="modevlib/qb/Qb.column.js"></script>
+<script type="text/javascript" src="modevlib/qb/Qb.cube.js"></script>
+<script type="text/javascript" src="modevlib/qb/Qb.analytic.js"></script>
+<script type="text/javascript" src="modevlib/gui/Filter.js"></script>
+<script type="text/javascript" src="modevlib/gui/ComponentFilter.js"></script>
+<script type="text/javascript" src="modevlib/gui/PartitionFilter.js"></script>
+<script type="text/javascript" src="modevlib/qb/aCompiler.js"></script>
+<script type="text/javascript" src="modevlib/collections/aRelation.js"></script>
+<script type="text/javascript" src="modevlib/math/aMath.js"></script>
+<script type="text/javascript" src="modevlib/util/aString.js"></script>
+<script type="text/javascript" src="modevlib/collections/aQueue.js"></script>
+<script type="text/javascript" src="modevlib/collections/aSet.js"></script>
+<script type="text/javascript" src="modevlib/util/CNV.js"></script>
+<script type="text/javascript" src="modevlib/charts/aColor.js"></script>
+
+<script type="text/javascript" src="modevlib/util/aTemplate.js"></script>
+<script type="text/javascript" src="modevlib/util/aDate.js"></script>
+<script type="text/javascript" src="lib/jquery.js"></script>
+<script type="text/javascript" src="modevlib/debug/aException.js"></script>
+<script type="text/javascript" src="modevlib/qb/Qb.domain.js"></script>
+<script type="text/javascript" src="modevlib/util/aDuration.js"></script>
+<script type="text/javascript" src="lib/jquery.numberformatter.js"></script>
+<script type="text/javascript" src="lib/jquery-ui/js/jquery-ui-1.10.2.custom.js"></script>
+<script type="text/javascript" src="lib/jstree/jquery.jstree.js"></script>
+<script type="text/javascript" src="lib/ccc/lib/protovis-d3.3.js"></script>
+<script type="text/javascript" src="modevlib/aFormat.js"></script>
+<link type="text/css" rel="stylesheet" href="lib/jquery-ui/css/start/jquery-ui-1.10.2.custom.css">
+<script type="text/javascript" src="modevlib/gui/TeamFilter.js"></script>
+<script type="text/javascript" src="lib/ccc/lib/protovis-msie.js"></script>
+<script type="text/javascript" src="lib/jquery.ba-bbq/jquery.ba-bbq.js"></script>
+<script type="text/javascript" src="modevlib/debug/aLog.js"></script>
+<script type="text/javascript" src="lib/ccc/lib/jquery.tipsy.js"></script>
+<script type="text/javascript" src="modevlib/threads/thread.js"></script>
+<script type="text/javascript" src="modevlib/gui/ProgramFilter.js"></script>
+<script type="text/javascript" src="modevlib/util/aTimer.js"></script>
+
+<script type="text/javascript" src="lib/ccc/lib/tipsy.js"></script>
+<script type="text/javascript" src="modevlib/rest/Rest.js"></script>
+<script type="text/javascript" src="modevlib/aLibrary.js"></script>
+
+<link type="text/css" rel="stylesheet" href="lib/ccc/lib/tipsy.css">
+<script type="text/javascript" src="modevlib/rest/ElasticSearch.js"></script>
+<script type="text/javascript" src="modevlib/Bugzilla.js"></script>
+<script type="text/javascript" src="modevlib/Hierarchy.js"></script>
+<script type="text/javascript" src="modevlib/math/Stats.js"></script>
+<script type="text/javascript" src="modevlib/ScrumBugs.js"></script>
+<script type="text/javascript" src="modevlib/qb/MVEL.js"></script>
+<link type="text/css" rel="stylesheet" href="lib/jquery-linedtextarea/jquery-linedtextarea.css">
+<script type="text/javascript" src="lib/ccc/def/def.js"></script>
+<script type="text/javascript" src="modevlib/qb/Qb.js"></script>
+<script type="text/javascript" src="lib/jquery-linedtextarea/jquery-linedtextarea.js"></script>
+<script type="text/javascript" src="lib/ccc/pvc/pvc.js"></script>
+<script type="text/javascript" src="modevlib/qb/ESQuery.js"></script>
+<script type="text/javascript" src="lib/ccc/pvc/pvc.text.js"></script>
+<script type="text/javascript" src="modevlib/Dimension.js"></script>
+<script type="text/javascript" src="lib/ccc/pvc/pvc.color.js"></script>
+<script type="text/javascript" src="lib/ccc/pvc/pvc.trends.js"></script>
+<script type="text/javascript" src="lib/ccc/pvc/pvc.options.js"></script>
+<script type="text/javascript" src="lib/ccc/pvc/data/_data.js"></script>
+<script type="text/javascript" src="lib/ccc/pvc/data/meta/DimensionType.js"></script>
+<script type="text/javascript" src="lib/ccc/pvc/data/meta/ComplexType.js"></script>
+<script type="text/javascript" src="lib/ccc/pvc/data/meta/ComplexTypeProject.js"></script>
+<script type="text/javascript" src="lib/ccc/pvc/data/translation/TranslationOper.js"></script>
+<script type="text/javascript" src="lib/ccc/pvc/data/translation/MatrixTranslationOper.js"></script>
+<script type="text/javascript" src="lib/ccc/pvc/data/translation/CrosstabTranslationOper.js"></script>
+<script type="text/javascript" src="lib/ccc/pvc/data/translation/RelationalTranslationOper.js"></script>
+<script type="text/javascript" src="lib/ccc/pvc/data/Atom.js"></script>
+<script type="text/javascript" src="lib/ccc/pvc/data/Complex.js"></script>
+<script type="text/javascript" src="lib/ccc/pvc/data/ComplexView.js"></script>
+<script type="text/javascript" src="lib/ccc/pvc/data/Datum.js"></script>
+<script type="text/javascript" src="lib/ccc/pvc/data/Dimension.js"></script>
+<script type="text/javascript" src="lib/ccc/pvc/data/Data.js"></script>
+<script type="text/javascript" src="lib/ccc/pvc/data/Data.selected.js"></script>
+<script type="text/javascript" src="lib/ccc/pvc/data/GroupingSpec.js"></script>
+<script type="text/javascript" src="lib/ccc/pvc/data/DataOper.js"></script>
+<script type="text/javascript" src="lib/ccc/pvc/data/GroupingOper.js"></script>
+<script type="text/javascript" src="lib/ccc/pvc/data/LinearInterpolationOper.js"></script>
+<script type="text/javascript" src="lib/ccc/pvc/data/LinearInterpolationOperSeriesState.js"></script>
+<script type="text/javascript" src="lib/ccc/pvc/data/ZeroInterpolationOper.js"></script>
+<script type="text/javascript" src="lib/ccc/pvc/data/ZeroInterpolationOperSeriesState.js"></script>
+<script type="text/javascript" src="lib/ccc/pvc/data/Data.operations.js"></script>
+<script type="text/javascript" src="lib/ccc/pvc/data/Data.compat.js"></script>
+<script type="text/javascript" src="lib/ccc/pvc/visual/Role.js"></script>
+<script type="text/javascript" src="lib/ccc/pvc/visual/Scene.js"></script>
+<script type="text/javascript" src="lib/ccc/pvc/visual/Var.js"></script>
+<script type="text/javascript" src="lib/ccc/pvc/visual/sign/BasicSign.js"></script>
+<script type="text/javascript" src="lib/ccc/pvc/visual/sign/Sign.js"></script>
+<script type="text/javascript" src="lib/ccc/pvc/visual/sign/Panel.js"></script>
+<script type="text/javascript" src="lib/ccc/pvc/visual/sign/Label.js"></script>
+<script type="text/javascript" src="lib/ccc/pvc/visual/sign/Dot.js"></script>
+<script type="text/javascript" src="lib/ccc/pvc/visual/sign/Line.js"></script>
+<script type="text/javascript" src="lib/ccc/pvc/visual/sign/Area.js"></script>
+<script type="text/javascript" src="lib/ccc/pvc/visual/sign/Bar.js"></script>
+<script type="text/javascript" src="lib/ccc/pvc/visual/sign/PieSlice.js"></script>
+<script type="text/javascript" src="lib/ccc/pvc/visual/sign/Rule.js"></script>
+<script type="text/javascript" src="lib/ccc/pvc/visual/Context.js"></script>
+<script type="text/javascript" src="lib/ccc/pvc/visual/OptionsBase.js"></script>
+<script type="text/javascript" src="lib/ccc/pvc/visual/Axis.js"></script>
+<script type="text/javascript" src="lib/ccc/pvc/visual/CartesianAxis.js"></script>
+<script type="text/javascript" src="lib/ccc/pvc/visual/CartesianAxisRootScene.js"></script>
+<script type="text/javascript" src="lib/ccc/pvc/visual/CartesianAxisTickScene.js"></script>
+<script type="text/javascript" src="lib/ccc/pvc/visual/CartesianFocusWindow.js"></script>
+<script type="text/javascript" src="lib/ccc/pvc/visual/ColorAxis.js"></script>
+<script type="text/javascript" src="lib/ccc/pvc/visual/SizeAxis.js"></script>
+<script type="text/javascript" src="lib/ccc/pvc/visual/Legend.js"></script>
+<script type="text/javascript" src="lib/ccc/pvc/visual/legend/BulletRootScene.js"></script>
+<script type="text/javascript" src="lib/ccc/pvc/visual/legend/BulletGroupScene.js"></script>
+<script type="text/javascript" src="lib/ccc/pvc/visual/legend/BulletItemScene.js"></script>
+<script type="text/javascript" src="lib/ccc/pvc/visual/legend/BulletItemSceneSelection.js"></script>
+<script type="text/javascript" src="lib/ccc/pvc/visual/legend/BulletItemSceneVisibility.js"></script>
+<script type="text/javascript" src="lib/ccc/pvc/visual/legend/BulletItemRenderer.js"></script>
+<script type="text/javascript" src="lib/ccc/pvc/visual/legend/BulletItemDefaultRenderer.js"></script>
+<script type="text/javascript" src="lib/ccc/pvc/visual/plot/Plot.js"></script>
+<script type="text/javascript" src="lib/ccc/pvc/visual/plot/CartesianPlot.js"></script>
+<script type="text/javascript" src="lib/ccc/pvc/visual/plot/CategoricalPlot.js"></script>
+<script type="text/javascript" src="lib/ccc/pvc/visual/plot/BarPlotAbstract.js"></script>
+<script type="text/javascript" src="lib/ccc/pvc/visual/plot/BarPlot.js"></script>
+<script type="text/javascript" src="lib/ccc/pvc/visual/plot/NormalizedBarPlot.js"></script>
+<script type="text/javascript" src="lib/ccc/pvc/visual/plot/WaterfallPlot.js"></script>
+<script type="text/javascript" src="lib/ccc/pvc/visual/plot/PointPlot.js"></script>
+<script type="text/javascript" src="lib/ccc/pvc/visual/plot/MetricXYPlot.js"></script>
+<script type="text/javascript" src="lib/ccc/pvc/visual/plot/MetricPointPlot.js"></script>
+<script type="text/javascript" src="lib/ccc/pvc/visual/plot/PiePlot.js"></script>
+<script type="text/javascript" src="lib/ccc/pvc/visual/plot/HeatGridPlot.js"></script>
+<script type="text/javascript" src="lib/ccc/pvc/visual/plot/BoxPlot.js"></script>
+<script type="text/javascript" src="lib/ccc/pvc/visual/plot/BulletPlot.js"></script>
+<script type="text/javascript" src="lib/ccc/pvc/pvcAbstract.js"></script>
+<script type="text/javascript" src="lib/ccc/pvc/pvcBaseChart.js"></script>
+<script type="text/javascript" src="lib/ccc/pvc/pvcBaseChart.visualRoles.js"></script>
+<script type="text/javascript" src="lib/ccc/pvc/pvcBaseChart.data.js"></script>
+<script type="text/javascript" src="lib/ccc/pvc/pvcBaseChart.plots.js"></script>
+<script type="text/javascript" src="lib/ccc/pvc/pvcBaseChart.axes.js"></script>
+<script type="text/javascript" src="lib/ccc/pvc/pvcBaseChart.panels.js"></script>
+<script type="text/javascript" src="lib/ccc/pvc/pvcBaseChart.selection.js"></script>
+<script type="text/javascript" src="lib/ccc/pvc/pvcBaseChart.extension.js"></script>
+<script type="text/javascript" src="lib/ccc/pvc/pvcBasePanel.js"></script>
+<script type="text/javascript" src="lib/ccc/pvc/pvcPlotPanel.js"></script>
+<script type="text/javascript" src="lib/ccc/pvc/pvcMultiChartPanel.js"></script>
+<script type="text/javascript" src="lib/ccc/pvc/pvcTitlePanelAbstract.js"></script>
+<script type="text/javascript" src="lib/ccc/pvc/pvcTitlePanel.js"></script>
+<script type="text/javascript" src="lib/ccc/pvc/pvcLegendPanel.js"></script>
+<script type="text/javascript" src="lib/ccc/pvc/pvcCartesianAbstract.js"></script>
+<script type="text/javascript" src="lib/ccc/pvc/pvcGridDockingPanel.js"></script>
+<script type="text/javascript" src="lib/ccc/pvc/pvcCartesianGridDockingPanel.js"></script>
+<script type="text/javascript" src="lib/ccc/pvc/pvcCartesianAbstractPanel.js"></script>
+<script type="text/javascript" src="lib/ccc/pvc/pvcPlotBgPanel.js"></script>
+<script type="text/javascript" src="lib/ccc/pvc/pvcCategoricalAbstract.js"></script>
+<script type="text/javascript" src="lib/ccc/pvc/pvcCategoricalAbstractPanel.js"></script>
+<script type="text/javascript" src="lib/ccc/pvc/pvcAxisPanel.js"></script>
+<script type="text/javascript" src="lib/ccc/pvc/pvcAxisTitlePanel.js"></script>
+<script type="text/javascript" src="lib/ccc/pvc/pvcPiePanel.js"></script>
+<script type="text/javascript" src="lib/ccc/pvc/pvcPieChart.js"></script>
+<script type="text/javascript" src="lib/ccc/pvc/pvcBarAbstractPanel.js"></script>
+<script type="text/javascript" src="lib/ccc/pvc/pvcBarAbstract.js"></script>
+<script type="text/javascript" src="lib/ccc/pvc/pvcBarPanel.js"></script>
+<script type="text/javascript" src="lib/ccc/pvc/pvcBarChart.js"></script>
+<script type="text/javascript" src="lib/ccc/pvc/pvcNormalizedBarPanel.js"></script>
+<script type="text/javascript" src="lib/ccc/pvc/pvcNormalizedBarChart.js"></script>
+<script type="text/javascript" src="lib/ccc/pvc/visual/legend/WaterfallBulletGroupScene.js"></script>
+<script type="text/javascript" src="lib/ccc/pvc/pvcWaterfallPanel.js"></script>
+<script type="text/javascript" src="lib/ccc/pvc/pvcWaterfallChart.js"></script>
+<script type="text/javascript" src="lib/ccc/pvc/pvcPointPanel.js"></script>
+<script type="text/javascript" src="lib/ccc/pvc/pvcPoint.js"></script>
+<script type="text/javascript" src="lib/ccc/pvc/pvcHeatGridPanel.js"></script>
+<script type="text/javascript" src="lib/ccc/pvc/pvcHeatGridChart.js"></script>
+<script type="text/javascript" src="lib/ccc/pvc/pvcMetricXYAbstract.js"></script>
+<script type="text/javascript" src="lib/ccc/pvc/data/translation/MetricPointChartTranslationOper.js"></script>
+<script type="text/javascript" src="lib/ccc/pvc/pvcMetricPointPanel.js"></script>
+<script type="text/javascript" src="lib/ccc/pvc/pvcMetricPoint.js"></script>
+<script type="text/javascript" src="lib/ccc/pvc/pvcBulletChart.js"></script>
+<script type="text/javascript" src="lib/ccc/pvc/pvcParallelCoordinates.js"></script>
+<script type="text/javascript" src="lib/ccc/pvc/pvcDataTree.js"></script>
+<script type="text/javascript" src="lib/ccc/pvc/data/translation/BoxplotChartTranslationOper.js"></script>
+<script type="text/javascript" src="lib/ccc/pvc/pvcBoxplotPanel.js"></script>
+<script type="text/javascript" src="lib/ccc/pvc/pvcBoxplotChart.js"></script>
+<script type="text/javascript" src="lib/ccc/data/q01-01.js"></script>
+<script type="text/javascript" src="modevlib/main.js"></script>
+<script type="text/javascript" src="modevlib/Dimension-Bugzilla.js"></script>
+<script type="text/javascript" src="modevlib/Dimension-Quantum.js"></script>
+<script type="text/javascript" src="modevlib/gui/accordion.js"></script>
+<script type="text/javascript" src="modevlib/gui/dynamic.js"></script>
+<script type="text/javascript" src="modevlib/gui/GUI.js"></script>
+<script type="text/javascript" src="modevlib/charts/aColor.js"></script>
+<script type="text/javascript" src="modevlib/charts/aChart.js"></script>
+<script type="text/javascript" src="modevlib/gui/ProductFilter.js"></script>
+<script type="text/javascript" src="js/heat.js"></script>
+<script type="text/javascript" src="js/grid.js"></script>
+<script type="text/javascript" src="js/blockerCharts.js"></script>
+<link type="text/css" rel="stylesheet" href="css/menu.css">
+<script type="text/javascript" src="js/nominationCharts.js"></script>
+<script type="text/javascript" src="js/regressionCharts.js"></script>
+<script type="text/javascript" src="js/chart_lib.js"></script>
+<link rel="icon" href="images/fxos.ico" type="image/x-icon" />
+<style id="vakata-stylesheet" type="text/css"></style>
+<style id="jstree-stylesheet" type="text/css"></style>
+<link rel="stylesheet" type="text/css" media="all" href="file://lib/jstree/themes/default/style.css">
+<link type="text/css" rel="stylesheet" href="js/blockers.css">
+
+<script>
+  (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+  (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+  m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+  })(window,document,'script','//www.google-analytics.com/analytics.js','ga');
+
+  ga('create', 'UA-49796218-5', 'mozilla.org');
+  ga('send', 'pageview');
+</script>
+</HEAD>
+<BODY>
+
+<div id="sidebar" style="width:300px;">
+	<br>
+	<br>
+
+	<div style="height: 30px; text-align: center;vertical-align:middle;">
+		<span id="status" style="height:30px"></span><span class="loading"><img src="images/spinner.gif" alt=""></span>
+	</div>
+
+	<hr>
+	<div id="description">
+		<div id="day0" style="display:inline-block;height:10px;width:10px;background-color:#008E00;"></div>
+		New<br>
+
+		<div id="day1" style="display:inline-block;height:10px;width:10px;background-color:#318000;"></div>
+		1 day old<br>
+
+		<div id="day2" style="display:inline-block;height:10px;width:10px;background-color:#638700;"></div>
+		2 days old<br>
+
+		<div id="day3" style="display:inline-block;height:10px;width:10px;background-color:#857B00;"></div>
+		3 days old<br>
+
+		<div id="day4" style="display:inline-block;height:10px;width:10px;background-color:#A05700;"></div>
+		4 days old<br>
+
+		<div id="day5" style="display:inline-block;height:10px;width:10px;background-color:#8B3C00;"></div>
+		5 days old<br>
+
+		<div id="day6" style="display:inline-block;height:10px;width:10px;background-color:#8A1C00;"></div>
+		6 days old<br>
+
+		<div id="day7" style="display:inline-block;height:10px;width:10px;background-color:#980303;"></div>
+		7+ days old<br>
+
+		<div style="display:inline-block;bottom:0;width: 0;height: 0; border-style: solid; border-width: 0 0 10px 10px; border-color: transparent transparent #000000 transparent;"></div>
+		Nobody Assigned<br>
+	</div>
+	<hr>
+	<div id="parameters" class="parameters">
+	</div>
+	<div id="filters" class="menu"></div>
+</div>
+
+
+<div style="align:left;position:relative;float:left;width:800px;padding-top: 10px;">
+	<div class="accordion_header_open" accordion_id="overview" accordion_group="main">
+		<div class="arrow"></div>
+		Overview
+	</div>
+	<div id="overview" style="padding-left: 10px">
+	</div>
+	<div class="accordion_header_closed" accordion_id="nom_history" accordion_group="main">
+		<div class="arrow"></div>
+		Nomination History
+	</div>
+	<div class="accordion_body" id="nom_history" style="display:none;">
+		<div id="chartNomChurn" class="chart" style="width:800px;height:250px;"></div>
+		<div id="chartNomCount" class="chart" style="width:800px;height:250px;"></div>
+	</div>
+	<div class="accordion_header_closed" accordion_id="blocker_history" accordion_group="main">
+		<div class="arrow"></div>
+		Blocker History
+	</div>
+	<div class="accordion_body" id="blocker_history" style="display:none;">
+		<div id="chartBlockerChurn" class="chart" style="width:800px;height:250px;"></div>
+		<div id="chartBlockerCount" class="chart" style="width:800px;height:250px;"></div>
+		<div id="chartBlockerAge" class="chart" style="width:800px;height:250px;"></div>
+	</div>
+	<div class="accordion_header_closed" accordion_id="regression_history" accordion_group="main">
+		<div class="arrow"></div>
+		Regression History
+	</div>
+	<div class="accordion_body" id="regression_history" style="display:none;">
+		<div id="chartRegressionChurn" class="chart" style="width:800px;height:250px;"></div>
+		<div id="chartRegressionCount" class="chart" style="width:800px;height:250px;"></div>
+		<div id="chartRegressionAge" class="chart" style="width:800px;height:250px;"></div>
+	</div>
+	<div class="footer">Source code at
+		<a href="https://github.com/mozilla/charts/blob/master/fxos/team.html">https://github.com/mozilla/charts/blob/master/fxos/team.html</a></div>
+</div>
+
+
+<script type="application/javascript">
+
+
+importScript("js/chart_lib.js", function () {
+	var thread;
+	var createChart = function () {
+		if (thread !== undefined)
+			thread.kill();
+		thread = Thread.run(__createChart());
+	};
+
+	var __createChart = function*() {
+		var SCOPE = Mozilla.Quantum.esfilter;
+
+		var sampleMin = Date.newInstance(GUI.state.sampleMin);
+		var sampleMax = Date.newInstance(GUI.state.sampleMax).addDay(1);
+		var sampleInterval = Duration.newInstance(GUI.state.sampleInterval);
+
+		var teamName = GUI.state.team.getSelectedParts().select("name").join(" and ");
+
+		var mainFilter = {"and": [
+			GUI.getFilters("bugs")
+		]};
+
+		if (teamName == "") {
+			teamSummary({"name": "All Teams", "esfilter": {"match_all": {}}});
+			mainFilter.and.append(SCOPE);  //WE NEED MINIMUM SCOPE
+		} else {
+			teamSummary({"name": teamName, "esfilter": GUI.getFilters("bugs")});
+		}//endif
+
+		var timeDomain = {
+			"type": "time",
+			"min": sampleMin,
+			"max": sampleMax,
+			"interval": sampleInterval
+		};
+
+		//BLOCKERS
+		showOpenCount({
+			"chart": {
+				"id": "chartBlockerCount",
+				"name": "Open Blocker Count"
+			},
+			"esfilter": {"and": [
+				GUI.getFilters("bugs"),
+				Mozilla.Quantum.esfilter
+			]},
+			"timeDomain": timeDomain
+		});
+
+		showChurn({
+			"chart": {
+				"id": "chartBlockerChurn",
+				"name": "Resolved Fixed Bugs"
+			},
+			"esfilter": mainFilter,
+			"timeDomain": timeDomain
+		});
+
+		showAges({
+			"chart": {
+				"id": "chartBlockerAge",
+				"name": "Average Age of Blockers (Days)"
+			},
+			"esfilter": mainFilter,
+			"timeDomain": timeDomain
+		});
+
+		//NOMINATIONS
+		showOpenNomCount({
+			"chartID": "chartNomCount",
+			"esfilter": {"and": [
+				GUI.getFilters("bugs"),
+				Mozilla.Quantum.Nominations.esfilter
+			]},
+			"timeDomain": timeDomain
+		});
+
+
+		showNomChurn({
+			"chartID": "chartNomChurn",
+			"esfilter": {"and": [
+				GUI.getFilters("bugs")
+			]},
+			"timeDomain": timeDomain
+		});
+
+		//REGRESIONS
+		showOpenCount({
+			"chart": {
+				"id": "chartRegressionCount",
+				"name": "Open Regression Count"
+			},
+			"esfilter": {"and": [
+				GUI.getFilters("bugs"),
+				Mozilla.Quantum.Regressions.esfilter,
+				Mozilla.Quantum.esfilter
+			]},
+			"timeDomain": timeDomain
+		});
+
+		showChurn({
+			"chart": {
+				"name": "Resolved Fixed Regressions",
+				"id": "chartRegressionChurn"
+			},
+			"esfilter": {"and": [
+				GUI.getFilters("bugs"),
+				Mozilla.Quantum.Regressions.esfilter
+			]},
+			"timeDomain": timeDomain
+		});
+
+
+		showRegressionAge({
+			"chart": {
+				"id": "chartRegressionAge",
+				"name": "Average Age of Regressions (Days)"
+			},
+			"esfilter": mainFilter,
+			"timeDomain": timeDomain
+		});
+
+	};
+
+
+	$(document).ready(function () {
+		GUI.setup(
+				createChart,
+				[
+					{"id": "sampleMin", "name": "Start Date", "type": "time", "default": Date.eod().add("-18week")},
+					{"id": "sampleMax", "name": "End Date", "type": "time", "default": Date.today().ceilingWeek()},
+					{"id": "sampleInterval", "name": "Interval", "type": "duration", "default": "week"},
+					{"id": "team", "name": "Team", "type": PartitionFilter.newInstance({
+						"id": "teams",
+						"name": "All Teams",
+						"dimension": Mozilla.Quantum.Team,
+						"onlyOne": false,
+						"expandAll": true
+					})}
+				],
+				[
+					"sampleMin=Date.newInstance(sampleMin).floor(Duration.newInstance(sampleInterval)).format('yyyy-MM-dd')",
+					"sampleMax=Date.newInstance(sampleMax).addDay(1).floor(Duration.newInstance(sampleInterval)).addDay(-1).format('yyyy-MM-dd')"
+				],
+				"bugs",
+				false,		//SHOW DEFAULT FILTERS?
+				false       //DO NOT PERFORM STANDARD CONSISTENCY CHECKS
+		);
+	});
+
+
+	function teamSummary(team) {
+		//MAKE CONTAINER DIV
+		var teamFilter = {"and": [
+			Mozilla.Quantum.esfilter,
+			Mozilla.CurrentRecords.esfilter,
+			Mozilla.BugStatus.Open.esfilter,
+			team.esfilter
+		]};
+
+		Thread.run(function*() {
+			var components;
+			var componentThread = Thread.run(function*() {
+				components = yield(ESQuery.run({
+					"from": "bugs",
+					"select": {"value": "bug_id", "aggregate": "count"},
+					"edges": [
+						"component"
+					],
+					"esfilter": {"and": [
+						Mozilla.Quantum.esfilter,
+						Mozilla.CurrentRecords.esfilter,
+						team.esfilter
+					]}
+				}));
+			});
+
+			var allBugs;
+			var allBugsThread = Thread.run(function*() {
+				allBugs = yield(ESQuery.run({
+					"from": "bugs",
+					"select": [
+						"bug_id",
+						"cf_blocking_b2g",
+						"cf_blocking_loop",
+						"product",
+						"component",
+						"assigned_to",
+						"modified_ts",
+						"status_whiteboard",
+						"keywords"
+					],
+					"esfilter": teamFilter
+				}));
+			});
+
+			yield(Thread.join(allBugsThread));
+			yield(Thread.join(componentThread));
+
+			var componentDomain = {"type": "set", "partitions": components.edges[0].domain.partitions.select("value")};
+
+			var counting = null;
+			var countingThread = Thread.run(function*() {
+				counting = yield(Q({
+					"from": allBugs,
+					"select": {"name": "count", "value": "bug_id", "aggregate": "count"},
+					"edges": [
+						{"name": "Component", "value": "component", "domain": componentDomain},
+						{"name": "Project", "domain": Mozilla.Quantum.Project.getDomain()},
+						{"name": "State", "domain": Mozilla.Quantum.State.getDomain()}
+					]
+				}));
+				yield (null);
+			});
+
+			var ages = null;
+			var ageThread = Thread.run(function*() {
+				var a = Log.action("Get " + team.name + " Ages", true);
+				ages = yield(Q({
+					"from": allBugs,
+					"select": [
+						{"name": "oldest", "value": "modified_ts", "aggregate": "minimum"},
+						{"name": "age", "value": "Date.now().subtract(Date.newInstance(modified_ts)).divideBy(Duration.DAY)", "aggregate": "maximum"}
+					],
+					"edges": [
+						{"name": "Component", "value": "component", "domain": componentDomain},
+						{"name": "Project", "domain": Mozilla.Quantum.Project.getDomain()},
+						{"name": "State", "domain": Mozilla.Quantum.State.getDomain()}
+					]
+				}));
+				Log.actionDone(a);
+			});
+
+			var uBlocker = null;
+			var uBlockerThread = Thread.run(function*() {
+				var a = Log.action("Get " + team.name + " uBlockers", true);
+				uBlocker = yield(Q({
+					"from": allBugs,
+					"select": {"name": "unassigned", "value": "bug_id", "aggregate": "count"},
+					"edges": [
+						{"name": "Component", "value": "component", "domain": componentDomain},
+						{"name": "Project", "domain": Mozilla.Quantum.Project.getDomain()},
+						{"name": "State", "domain": Mozilla.Quantum.State.getDomain()}
+					],
+					"esfilter": {"and": [
+						{"term": {"assigned_to": "nobody@mozilla.org"}},
+						Mozilla.Quantum.Blockers.esfilter
+					]}
+				}));
+				Log.actionDone(a);
+			});
+
+			yield (Thread.join(countingThread));
+			yield (Thread.join(ageThread));
+			yield (Thread.join(uBlockerThread));
+
+			var both = Qb.merge([
+				{"from": counting, "edges": ["Component", "Project", "State"]},
+				{"from": ages, "edges": ["Component", "Project", "State"]},
+				{"from": uBlocker, "edges": ["Component", "Project", "State"]}
+			]);
+
+			//LIMIT OURSELVES TO 4 PROJECTS, AND MOVE EXTRAS TO LAST
+			var m = new Matrix({"data":both.cube});
+			var first = both.edges[1].domain.partitions.length-4;
+			var last = both.edges[1].domain.partitions.length-1;
+			m.forall(function(v, c){
+				if (c[1]<first){
+					m.get([c[0], last, c[2]]).count+= v.count;
+					v.count=0;
+				}//endif
+			});
+			Qb.removeZeroParts(both, 1, "count");
+
+			//SHOW GRID
+			both.name = team.name;
+			if (["All Others", "All Teams"].contains(team.name)) {
+				Qb.removeZeroParts(both, 0, "count");
+			}//endif
+
+
+			var html = cube2grid({
+				"cube": both,
+				"rows": ["Component"],
+				"columns": ["Project", "State"]
+			});
+			$("#overview").html(html).updateAccordion();
+			$("#overview").updateDynamicStyle();
+			addNumberClickers(both, teamFilter);
+		});
+	}//function
+
+
+});
+
+</script>
+
+
+</BODY>
+</HTML>
+

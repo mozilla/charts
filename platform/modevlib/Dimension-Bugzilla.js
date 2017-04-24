@@ -363,10 +363,6 @@ Dimension.addEdges(true,  Mozilla, [
 					]}
 				]}
 			}
-
-
-//			{"name" : "Other", "esfilter" : {"terms" : {"product" : ["firefox", "thunderbird", "firefox for android", "firefox for metro", "boot2gecko", "core", "nspr", "jss", "nss", "toolkit"]}}
-//				}
 		]}
 	]}
 ]);

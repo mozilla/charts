@@ -196,10 +196,11 @@ importScript('js/main_lib.js', function(){
       });
       String.property_tokenized[d.status_whiteboard] = tokens;
     });
-    if (!String.prototype.tokenized) {
+    if (!"".tokenized) {
       Object.defineProperty(String.prototype, 'tokenized', {
         get: function(){
-          return String.property_tokenized[this];
+          let output =String.property_tokenized[this];
+          return output ? output : [];
         }
       });
     }//endif
@@ -209,6 +210,8 @@ importScript('js/main_lib.js', function(){
       "from": allDetails,
       "select": [
         {"name": "show", "value": 'bug_id', "aggregate": "exists"},
+        {"name": "component", "value": 'component', "aggregate": "one"},
+        {"name": "product", "value": 'product', "aggregate": "one"},
         {"name": "count", "value": "bug_id", "aggregate": "count"},
         {"name": "bugs", "value": "bug_id", "aggregate": "array"},
         {"name": "age", "value": "Date.now().subtract(Date.newInstance(modified_ts)).divideBy(Duration.DAY)", "aggregate": "maximum"},
@@ -216,7 +219,7 @@ importScript('js/main_lib.js', function(){
         {"name": "unassignedBugs", "value": '(assigned_to=="nobody@mozilla.org" ? bug_id : null)', "aggregate": "array"}
       ],
       "edges": [
-        {"name": "component", "value": 'component=="general" ? component+" ("+product+")" : component'},
+        {"name": "component_name", "value": 'component=="general" ? component+" ("+product+")" : component'},
         {"name": "project", "domain": Mozilla.Quantum.Project.getDomain()}
       ]
     }));

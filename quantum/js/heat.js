@@ -30,14 +30,19 @@ if (typeof OWNERS != 'undefined'){
 	}));
 }//endif
 
-function getComponentDetails(comp) {
-	var output = OWNERS[comp.deformat()];
-	if (output !== undefined) return output;
+function getComponentDetails(c) {
+	let candidates = Mozilla.Quantum.Team.partitions.mapExists(function(team){
+		if (!team._fullFilter){
+			team._fullFilter = Qb.where.compile(team.fullFilter);
+		}
+		if (team._fullFilter(c)) return team.manager;
+	});
 
-	var name = comp.replaceLast(["::", ": ", ":"], "<br>").replaceLast([" ("], "<br>(");
-	output = {"name": name, "owner": {"name": "", "manager": ""}};
-	OWNERS[comp.deformat()] = output;
-	return output;
+    let manager = coalesce(candidates[0], "");
+    return {
+      "name": c.component == "general" ? c.component + " (" + c.product + ")" : c.component,
+      "owner":{"name":"", "manager":manager }
+    };
 }//function
 
 
@@ -51,7 +56,7 @@ function showComponent(detail, showTYPE) {
 		'</div>');
 
 	var component = Map.copy(detail[0]);
-	var meta =  getComponentDetails(component.component);
+	var meta =  getComponentDetails(component);
 	component.component = meta.name;
 	component.manager = meta.owner.manager;
 	component.owner = meta.owner.name=="" ? "": "(" + meta.owner.name + ")";

@@ -18,7 +18,7 @@ if (!Mozilla) var Mozilla = {"name": "Mozilla", "edges": []};
           "name": "Project", "index": "bugs", "isFacet": true,
           "partitions": [
             {
-              "name": "Quantum",
+              "name": "QF",
               "start_date": "Jan 1, 2017",
               "targetDate": "Nov 28, 2017",
               "dateMarks": [],
@@ -135,7 +135,9 @@ if (!Mozilla) var Mozilla = {"name": "Mozilla", "edges": []};
             }
             },
             {
-              "name": "Graphics", "style": {"color": "#B276B2"}, "esfilter": {
+              "name": "Graphics", "style": {"color": "#B276B2"},
+              "manager": "Milan Sreckovic",
+              "esfilter": {
               "or": [
                 //FROM MILAN: Jan 30th, 2015
                 //In Core: Canvas: 2D, Canvas: WebGL, GFX: Color Management, Graphics, Graphics: Layers, Graphics: Text, ImageLib, Panning and Zooming
@@ -187,7 +189,9 @@ if (!Mozilla) var Mozilla = {"name": "Mozilla", "edges": []};
             }
             },
             {
-              "name": "DOM", "style": {"color": "#4D4D4D"}, "esfilter": {
+              "name": "DOM", "style": {"color": "#4D4D4D"},
+              "manager":"Andrew Overholt",
+              "esfilter": {
               "and": [
                 //From Andrew  Jan30 2015
                 //

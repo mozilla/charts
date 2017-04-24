@@ -306,7 +306,7 @@ PartitionFilter.prototype.makeHTML=function(){
 PartitionFilter.prototype.makeFilter = function(){
 	var selected = this.getSelectedParts();
 	if (selected.length == 0) return ESQuery.TrueFilter;
-	return {"or":selected.map(function(v){return v.esfilter;})};
+	return {"or":selected.map(function(v){return v.fullFilter;})};
 };//method
 
 

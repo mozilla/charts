@@ -917,7 +917,11 @@ CNV.esFilter2Expression=function(esFilter){
 		var pair = esFilter[op];
 		var variableName = Object.keys(pair)[0];
 		var value = pair[variableName];
-		return "(typeof("+variableName+")==\"string\" && "+variableName+".startsWith(" + CNV.Value2Quote(value)+"))";
+
+		let arr = "("+variableName+" instanceof Array && Array.OR("+variableName+".map(function(v){return v.startsWith(" + CNV.Value2Quote(value)+")})))";
+		let ind = "(typeof("+variableName+")==\"string\" && "+variableName+".startsWith(" + CNV.Value2Quote(value)+"))";
+
+        return "(" + ind + " || " + arr + ")"
 	}else if (op=="match_all"){
 		return "true"
 	}else if (op=="regexp"){

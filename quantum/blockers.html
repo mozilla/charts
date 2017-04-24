@@ -170,7 +170,7 @@ importScript('js/main_lib.js', function(){
           "assigned_to",
           "component",
           "product",
-          "status_whiteboard.tokenized"
+          "status_whiteboard"
         ],
         "esfilter": {
           "and": [
@@ -184,6 +184,26 @@ importScript('js/main_lib.js', function(){
     } finally {
       Log.actionDone(a);
     }//try
+
+
+    // DEFINE status_whiteboard.tokenized
+    String.property_tokenized = function(){};
+    allDetails.list.forall(function(d){
+      let preTokens = d.status_whiteboard.split("[");
+      let tokens = preTokens.mapExists(function(t){
+        if (t.trim() == "") return;
+        return t.split("]")[0].trim();
+      });
+      String.property_tokenized[d.status_whiteboard] = tokens;
+    });
+    if (!String.prototype.tokenized) {
+      Object.defineProperty(String.prototype, 'tokenized', {
+        get: function(){
+          return String.property_tokenized[this];
+        }
+      });
+    }//endif
+
 
     let components = yield(Q({
       "from": allDetails,
@@ -248,7 +268,7 @@ importScript('js/main_lib.js', function(){
       "additionalClass": "project-summary"
     };
 
-    let blockerHTML = showSummary("Blockers", GUI.state.team.getSelectedParts(), totals, grandTotal, specialBlockers, showBlocker);
+    let blockerHTML = showSummary("Blockers", GUI.state.team.getSelectedParts(), totals, grandTotal, null, showBlocker);
     $("#totals").html(blockerHTML);
 
     addProjectClickers(components);

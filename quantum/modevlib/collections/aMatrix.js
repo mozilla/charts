@@ -38,7 +38,7 @@ Matrix=function(arg){
 function forall1(edge, func){
 	var data = this.data;
 	var num = this.num;
-	var c = Uint32Array(this.num);
+	var c = Array(this.num);
 
 	function iter(v, d){
 		if (d == num) {
@@ -65,7 +65,7 @@ Matrix.prototype.forall = function(func, other){
 
 	var data = this.data;
 	var num = this.num;
-	var c = Uint32Array(this.num);
+	var c = Array(this.num);
 
 	function iter(v, d){
 		if (d == num) {
@@ -89,7 +89,7 @@ Matrix.prototype.forall = function(func, other){
 Matrix.prototype.map = function (func) {
 	var data=this.data;
 	var num = this.num;
-	var c = Uint32Array(this.num);
+	var c = Array(this.num);
 
 	function iter(v, d) {
 		if (d == num) {
@@ -114,7 +114,7 @@ Matrix.prototype.map = function (func) {
 // func MUST RETURN A SUBCUBE, OR undefined
 Matrix.prototype.filter = function (edge, func) {
 	var data=this.data;
-	var c = new Uint32Array(edge);
+	var c = Array(edge);
 
 	function iter(v, d) {
 		var output=[];

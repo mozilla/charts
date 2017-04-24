@@ -59,17 +59,17 @@ importScript("../util/aUtil.js");
 	};//method
 
 
+  Array.prototype.map=function(func){
+ 		var output=[];
+ 		for(var i=0;i<this.length;i++){
+ 			var v=func(this[i], i);
+ 			if (v===undefined || v==null) continue;
+ 			output.push(v);
+ 		}//for
+ 		return output;
+ 	};//method
 
-	Array.prototype.map=function(func){
-		var output=[];
-		for(var i=0;i<this.length;i++){
-			var v=func(this[i], i);
-			if (v===undefined || v==null) continue;
-			output.push(v);
-		}//for
-		return output;
-	};//method
-
+    Array.prototype.mapExists = Array.prototype.map;
 
 	Array.prototype.select=function(attrName){
 		var output=[];
@@ -272,14 +272,23 @@ importScript("../util/aUtil.js");
 	};
 
 
-	function AND(values){
-		for(var i=values.length;i--;){
-			var v=values[i];
-			if (v==false) return false;
-		}//for
-		return true;
-	}
-	Array.AND=AND;
+  function AND(values){
+ 		for(var i=values.length;i--;){
+ 			var v=values[i];
+ 			if (v==false) return false;
+ 		}//for
+ 		return true;
+ 	}
+ 	Array.AND=AND;
+
+  function OR(values){
+ 		for(var i=values.length;i--;){
+ 			var v=values[i];
+ 			if (v==true) return true;
+ 		}//for
+ 		return true;
+ 	}
+ 	Array.OR=OR;
 
 
 	Array.extend=function extend(){

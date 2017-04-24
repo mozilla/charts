@@ -5,7 +5,7 @@
    - file, You can obtain one at http://mozilla.org/MPL/2.0/. -->
 <HTML>
 <HEAD>
-	<title>Blockers - FxOS</title>
+	<title>Blockers - Quantum</title>
 	<script type="text/javascript">function importScript(dep, func){
       if (func !== undefined) func();
     }</script>
@@ -119,7 +119,7 @@
 		<div>Filters</div>
 	</div>
 	<div class="content" style="position:inherit;">
-		<div id="totals"><h3 style="display:inline-block;">FxOS Blockers</h3></div>
+		<div id="totals"><h3 style="display:inline-block;">Quantum Blockers</h3></div>
 		<div style="position:absolute;top:5px;right:10px;">
 			Age:
 			<div style="vertical-align:middle;height:15px; width:150px; background: -moz-linear-gradient(left, #009F00,#699B00,  #CA7900,#954000, #A50303);position: relative;display:inline-block;">
@@ -133,7 +133,7 @@
 		<div id="blockers"></div>
 	</div>
 	<div class="footer">
-		Source at <a href="https://github.com/mozilla/charts/blob/master/fxos/blockers.html">https://github.com/mozilla/charts/blob/master/fxos/blockers.html</a>
+		Source at <a href="https://github.com/mozilla/charts/blob/master/quantum/blockers.html">https://github.com/mozilla/charts/blob/master/quantum/blockers.html</a>
 	</div>
 </div>
 
@@ -157,10 +157,11 @@ importScript('js/main_lib.js', function(){
 
 
     a = Log.action("Get Bug Details", true);
+    let allDetails = null;
     try {
       //PULL THE RAW DATA, AND THEN OPERATE ON IT 112K, 2.17sec time
       //THE AGGREGATES ARE SPENDING ABOUT 2/3 THE TIME TRANSMITTING THE QUERY
-      let allDetails = yield(ESQuery.run({
+      allDetails = yield(ESQuery.run({
         "from": "bugs",
         "select": [
           "bug_id",
@@ -169,17 +170,11 @@ importScript('js/main_lib.js', function(){
           "assigned_to",
           "component",
           "product",
-          "cf_blocking_b2g",
-          "cf_blocking_loop"
+          "status_whiteboard.tokenized"
         ],
         "esfilter": {
           "and": [
-            {
-              "or": [
-                Mozilla.Quantum.Blockers.esfilter,
-                {"terms": {"bug_id": CABlockers}}
-              ]
-            },
+            Mozilla.Quantum.Blockers.esfilter,
             Mozilla.BugStatus.Open.esfilter,
             Mozilla.CurrentRecords.esfilter,
             GUI.getFilters("bugs")
@@ -265,15 +260,6 @@ importScript('js/main_lib.js', function(){
       createChart,
       [
         {
-          "id": "project", "name": "Releases", "default": "2.0,2.1,2.2,2.5,2.6", "type": PartitionFilter.newInstance({
-          "id": "Projects",
-          "name": "All Projects",
-          "dimension": Mozilla.Quantum.Project,
-          "onlyOne": false,
-          "expandAll": true
-        })
-        },
-        {
           "id": "team", "name": "Teams", "type": PartitionFilter.newInstance({
           "id": "Teams",
           "name": "All Teams",
@@ -290,16 +276,8 @@ importScript('js/main_lib.js', function(){
           "onlyOne": false,
           "expandAll": true
         })
-        },
-        {
-          "id": "responsibility", "name": "Responsibility", "default": "FxOS_Team", "type": PartitionFilter.newInstance({
-          "id": "Responsibility",
-          "name": "All Bugs",
-          "dimension": Mozilla.Quantum.Responsibility,
-          "onlyOne": true,
-          "expandAll": true
-        })
         }
+
       ],
       [],
       null,

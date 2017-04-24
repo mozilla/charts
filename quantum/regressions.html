@@ -4,7 +4,7 @@
    - file, You can obtain one at http://mozilla.org/MPL/2.0/. -->
 <HTML>
 <HEAD>
-	<title>Regressions - FxOS</title>
+	<title>Regressions - Quantum</title>
 	<script type="text/javascript">function importScript(dep, func){if (func!==undefined) func();}</script>
 	<script type="text/javascript" src="modevlib/Settings.js"></script>
 	<script type="text/javascript" src="modevlib/rest/BugzillaClient.js"></script>
@@ -106,7 +106,7 @@
 		<div>Filters</div>
 	</div>
 	<div class="content" style="position:inherit;">
-		<div id="totals"><h3 style="display:inline-block;">FxOS Regressions</h3></div>
+		<div id="totals"><h3 style="display:inline-block;">Quantum Regressions</h3></div>
 		<div style="position:absolute;top:5px;right:10px;">
 			Age: <div style="vertical-align:middle;height:15px; width:150px; background: -moz-linear-gradient(left, #009F00,#699B00,  #CA7900,#954000, #A50303);position: relative;display:inline-block;"><div style="top:-3px;left:1px;color:white;position: absolute;font-size: 15px">New</div><div style="top:-3px;right:1px;color:white;position: absolute;font-size: 15px">7days+</div></div><br>
 			Unassigned Bugs:<div style="display:inline-block;bottom:0;width: 0;height: 0; border-style: solid; border-width: 0 0 15px 15px; border-color: transparent transparent #000000 transparent;"></div>
@@ -114,7 +114,7 @@
 		<div id="blockers"></div>
 	</div>
 	<div class="footer">
-		Source at <a href="https://github.com/mozilla/charts/blob/master/fxos/regressions.html">https://github.com/mozilla/charts/blob/master/fxos/regressions.html</a>
+		Source at <a href="https://github.com/mozilla/charts/blob/master/quantum/regressions.html">https://github.com/mozilla/charts/blob/master/quantum/regressions.html</a>
 	</div>
 </div>
 <script type="application/javascript">
@@ -253,13 +253,6 @@
 							"name": "All Components",
 							"dimension": Mozilla.Quantum.Component,
 							"onlyOne": false,
-							"expandAll": true
-						})},
-						{"id": "responsibility", "name": "Responsibility", "default": "FxOS_Team", "type": PartitionFilter.newInstance({
-							"id": "Responsibility",
-							"name": "All Bugs",
-							"dimension": Mozilla.Quantum.Responsibility,
-							"onlyOne": true,
 							"expandAll": true
 						})}
 					],

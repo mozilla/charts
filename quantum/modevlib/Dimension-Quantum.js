@@ -5,628 +5,258 @@
 importScript("Dimension.js");
 importScript("qb/ESQuery.js");
 
-if (!Mozilla) var Mozilla={"name":"Mozilla", "edges":[]};
+if (!Mozilla) var Mozilla = {"name": "Mozilla", "edges": []};
 
-(function () {
-	//webRTC MARKS BUGS A LITTLE DIFFERENT
-	var webRTCFilter = {"or": [
-		{"and": [
-			{"term": {"product": "loop"}},
-			{"terms": {"component": ["general", "client", "server"]}}
-		]},
-		{"and": [
-			{"term": {"product": "core"}},
-			{"prefix": {"component": "webrtc"}}
-		]}
-	]};
+(function(){
 
-	//ADD PROJECTS AND MILESTONES HERE
-	//BUT REMEMBER TO ADD DETAILED ENTRIES (AT BOTTOM)
-	var PROJECTS = ["1.3", "1.3t", "1.4", "2.0", "2.1", "2.2", "2.5", "2.6", "3.0"];
-	var NOM_PROJECTS = PROJECTS.map(function (p) {
-		return p + "?";
-	});
-	var BLOCKER_PROJECTS = PROJECTS.map(function (p) {
-		return p + "+";
-	});
+  Dimension.addEdges(true, Mozilla, [
+    {
+      "name": "Quantum",
+      "esfilter": {"match_all": {}},
+      "edges": [
+        {
+          "name": "Project", "index": "bugs", "isFacet": true,
+          "partitions": [
+            {
+              "name": "Quantum",
+              "start_date": "Jan 1, 2017",
+              "targetDate": "Nov 28, 2017",
+              "dateMarks": [],
+              "style": {"color": "#ff7f0e"},
+              "esfilter": {"prefix": {"status_whiteboard.tokenized": "qf"}}
+            }
+          ]
+        },
 
-	var MILESTONES = ["fx30", "fx31", "fx32", "fx33", "fx34", "fx35", "fx36", "fx37", "fx38", "fx39", "fx40", "fx41", "fx42", "fx43", "fx44, "];
-	var NOM_MILESTONES = MILESTONES.map(function (p) {
-		return p + "?";
-	});
-	var BLOCKER_MILESTONE = MILESTONES.map(function (p) {
-		return p + "+";
-	});
+        {"name": "Nominations", "index": "bugs", "esfilter": {"term": {"status_whiteboard.tokenized": "qf"}}},
+        {"name": "AllNominations", "index": "bugs", "esfilter": {"terms": {"status_whiteboard.tokenized": ["qf:investigate:p1", "qf", "qf:investigate"]}}},
+        {"name": "Blockers", "index": "bugs", "esfilter": {"term": {"status_whiteboard.tokenized": "qf:p1"}}},
+        {"name": "Regressions", "index": "bugs", "esfilter": {"term": {"keywords": "regression"}}},
+        {"name": "Unassigned", "index": "bugs", "esfilter": {"term": {"assigned_to": "nobody@mozilla.org"}}},
 
-	Dimension.addEdges(true, Mozilla, [
-		{"name": "Quantum",
-//				{"term": {"target_milestone": "mozilla31"}},
-			"esfilter": {"or": [
-				{"terms": {"cf_blocking_b2g": NOM_PROJECTS.union(BLOCKER_PROJECTS)}},
-				{"terms": {"cf_blocking_loop": NOM_MILESTONES.union(BLOCKER_MILESTONE)}},
-				{"term": {"product": "firefox os"}},
-				webRTCFilter
-			]},
-			"edges": [
-				{"name": "Nominations", "index": "bugs", "esfilter": {"and":[
-					Mozilla.BugStatus.Open.esfilter,
-					{"or": [
-						{"terms": {"cf_blocking_b2g": NOM_PROJECTS}},
-						{"terms": {"cf_blocking_loop": NOM_MILESTONES}}
-					]}
-				]}},
-				{"name": "AllNominations", "index": "bugs", "esfilter": {"and":[
-					{"or": [
-						{"terms": {"cf_blocking_b2g": NOM_PROJECTS}},
-						{"terms": {"cf_blocking_loop": NOM_MILESTONES}}
-					]}
-				]}},
-				{"name": "Blockers", "index": "bugs", "esfilter": {"or": [
-					{"terms": {"cf_blocking_b2g": BLOCKER_PROJECTS}},
-					{"terms": {"cf_blocking_loop": BLOCKER_MILESTONE}}
-				]}},
-				{"name": "Regressions", "index": "bugs", "esfilter": {"term": {"keywords": "regression"}}},
-				{"name": "Unassigned", "index": "bugs", "esfilter": {"term": {"assigned_to": "nobody@mozilla.org"}}},
-				{"name": "Responsibility", "index": "bugs", "isFacet": true, "partitions": [
-					{"name": "FxOS Team", "esfilter": {"not": {"terms": {"status_whiteboard.tokenized": ["NPOTB", "POVB"]}}}},
-					{"name": "Vendor (POVB)", "esfilter": {"term": {"status_whiteboard.tokenized": "POVB"}}},
-					{"name": "Not Part of the Build (NPOTB)", "esfilter": {"term": {"status_whiteboard.tokenized": "NPOTB"}}}
-				]},
-
-				{"name": "CA Blocker", "index": "bug-hierarchy", "esfilter": {"term": {"blocked_by": 984663}}},
-
-				//AN UNFORTUNATE DISTINCTION BETWEEN DIMENSIONS (ABOVE, THAT OVERLAP), AND PARTITIONS THAT DO NOT OVERLAP
-				{"name": "State", "index": "bugs", "isFacet": true,
-					"partitions": [
-						{"name": "Nominated", "esfilter": {"and": [
-							{"or": [
-								{"terms": {"cf_blocking_b2g": NOM_PROJECTS}},
-								{"terms": {"cf_blocking_loop": NOM_MILESTONES}}
-							]},
-							{"not": {"term": {"keywords": "regression"}}}
-						]}},
-						{"name": "Blocker", "esfilter": {"and": [
-							{"or": [
-								{"terms": {"cf_blocking_b2g": BLOCKER_PROJECTS}},
-								{"terms": {"cf_blocking_loop": BLOCKER_MILESTONE}}
-							]},
-							{"not": {"term": {"keywords": "regression"}}}
-						]}},
-						{"name": "Regression", "esfilter": {"term": {"keywords": "regression"}}}
-					]
-				},
+        //AN UNFORTUNATE DISTINCTION BETWEEN DIMENSIONS (ABOVE, THAT OVERLAP), AND PARTITIONS THAT DO NOT OVERLAP
+        {
+          "name": "State", "index": "bugs", "isFacet": true,
+          "partitions": [
+            {
+              "name": "Nominated", "esfilter": {
+              "and": [
+                {"term": {"status_whiteboard.tokenized": "qf"}},
+                {"not": {"term": {"keywords": "regression"}}}
+              ]
+            }
+            },
+            {
+              "name": "Blocker", "esfilter": {
+              "and": [
+                {"term": {"status_whiteboard.tokenized": "qf:p1"}},
+                {"not": {"term": {"keywords": "regression"}}}
+              ]
+            }
+            },
+            {"name": "Regression", "esfilter": {"term": {"keywords": "regression"}}}
+          ]
+        },
 
 
-				{"name": "Component",
-					"field": "component",
-					"type": "set",
-					"esfilter": ESQuery.TrueFilter,
-					"index": "bugs",
-					"limit": 200,
-					"end": function (p) {
-						return p.name;
-					}
-				},
+        {
+          "name": "Component",
+          "field": "component",
+          "type": "set",
+          "esfilter": ESQuery.TrueFilter,
+          "index": "bugs",
+          "limit": 200,
+          "end": function(p){
+            return p.name;
+          }
+        },
 
-				{"name": "Team", "isFacet": true, "partitions": [
+        {
+          "name": "Team", "isFacet": true, "esfilter": {"match_all": {}},
+          "partitions": [
+            {
+              "name": "Desktop", "style": {"color": "#5DA5DA"}, "esfilter": {
+              "or": [
+                {
+                  "and": [
+                    {"term": {"product": "firefox"}},
+                    {"not": {"prefix": {"component": "dev"}}} //Anything not starting with "Developer Tools" (this is not 100% correct but should be a place to start)
+                  ]
+                },
+                {"term": {"product": "toolkit"}}
+              ]
+            }
+            },
+            {
+              "name": "Dev Tools", "style": {"color": "#FAA43A"}, "esfilter": {
+              "and": [
+                {"term": {"product": "firefox"}},
+                {"prefix": {"component": "dev"}} // Component: Anything starting with "Developer Tools"
+              ]
+            }
+            },
+            {
+              "name": "Mobile", "style": {"color": "#60BD68"}, "esfilter": {
+              "and": [
+                {"term": {"product": "firefox for android"}},
+                {"not": {"prefix": {"component": "graphics"}}}  //All except "Graphics, Panning and Zooming"
+              ]
+            }
+            },
+            {
+              "name": "JS", "style": {"color": "#F17CB0"}, "esfilter": {
+              "and": [
+                {"term": {"product": "core"}},
+                {
+                  "or": [
+                    {"prefix": {"component": "javascript"}},  //starts with "JavaScript" or "js", "MFBT", "Nanojit"
+                    {"prefix": {"component": "js"}},
+                    {"prefix": {"component": "mfbt"}},
+                    {"prefix": {"component": "nanojit"}}
+                  ]
+                }
+              ]
+            }
+            },
+            {
+              "name": "Layout", "style": {"color": "#B2912F"}, "esfilter": {
+              "and": [
+                {"term": {"product": "core"}},
+                {
+                  "or": [
+                    {"prefix": {"component": "css parsing"}},  // Component: "CSS Parsing and Computation", starts with "HTML", starts with "Image", starts with "Layout", "Selection"
+                    {"prefix": {"component": "html"}},
+                    {"prefix": {"component": "image"}},
+                    {"prefix": {"component": "layout"}},
+                    {"prefix": {"component": "selection"}}
+                  ]
+                }
+              ]
+            }
+            },
+            {
+              "name": "Graphics", "style": {"color": "#B276B2"}, "esfilter": {
+              "or": [
+                //FROM MILAN: Jan 30th, 2015
+                //In Core: Canvas: 2D, Canvas: WebGL, GFX: Color Management, Graphics, Graphics: Layers, Graphics: Text, ImageLib, Panning and Zooming
+                //In Firefox for Android: Graphics, Panning and Zooming
 
-					{"name": "Comms", "esfilter": {"and": [
-						{"term": {"product": "firefox os"}},
-						{"terms": {"component": [
-							"dom: contacts",
-							"gaia::contacts",
-							"gaia::cost control",
-							"gaia::dialer",
-							"gaia::sms"
-						]}}
-					]}},
+                {
+                  "and": [
+                    {"term": {"product": "firefox for android"}},
+                    {
+                      "or": [
+                        {"prefix": {"component": "graphics"}},
+                        {"term": {"component": "panning and zooming"}}
+                      ]
+                    }
+                  ]
+                },
+                {
+                  "and": [
+                    {"term": {"product": "core"}},
+                    {
+                      "or": [
+                        {"prefix": {"component": "canvas"}},  // Anything starting with "Canvas", "Graphics", "Panning and Zooming", "SVG"
+                        {"prefix": {"component": "graphics"}},
+                        {"prefix": {"component": "panning"}},
+                        {"prefix": {"component": "svg"}},
+                        {"prefix": {"component": "gfx: color"}},
+                        {"terms": {"component": ["color management", "imagelib", "panning and zooming"]}}
+                      ]
+                    }
+                  ]
+                }
+              ]
+            }
+            },
+            {
+              "name": "Necko", "style": {"color": "#DECF3F"}, "description": "Network", "esfilter": {
+              "and": [
+                {"term": {"product": "core"}},
+                {"prefix": {"component": "network"}}  // Product: Core, Component: starts with "Networking"
+              ]
+            }
+            },
+            {
+              "name": "Security", "style": {"color": "#F15854"}, "esfilter": {
+              "and": [
+                {"term": {"product": "core"}},
+                {"prefix": {"component": "security"}}  // Product: Core, Component: starts with "Security"
+              ]
+            }
+            },
+            {
+              "name": "DOM", "style": {"color": "#4D4D4D"}, "esfilter": {
+              "and": [
+                //From Andrew  Jan30 2015
+                //
+                //DOM
+                //DOM: Content Processes
+                //DOM: Core & HTML
+                //DOM: Device Interfaces (but this category is very messy)
+                //DOM: Events
+                //DOM: IndexedDB
+                //DOM: Push Notifications
+                //DOM: Workers
+                //HTML: Parser
+                //IPC
 
-					{"name": "Media", "esfilter": {"and": [
-						{"term": {"product": "firefox os"}},
-						{"terms": {"component": [
-							"gaia::camera",
-							"gaia::fmradio",
-							"gaia::gallery",
-							"gaia::music",
-							"gaia::video",
-							"gaia::ringtones"
-						]}}
-					]}},
-
-					{"name": "System Front-End", "esfilter": {"and": [
-						{"regexp": {"status_whiteboard": ".*systemsfe.*"}}
-					]}},
-
-					{"name":"Stream3", "esfilter": {"term":{"status_whiteboard.tokenized":"ft:stream3"}}},
-
-					{"name": "Productivity", "esfilter": {"and": [
-						{"not": {"term": {"keywords": "perf"}}}, //AN UNFORTUNATE REDUNDANCY
-						{"term": {"product": "firefox os"}},
-						{"terms": {"component": [
-							"gaia::e-mail",
-							"gaia::clock",
-							"gaia::calculator",
-							"gaia::calendar",
-							"gaia::notes"
-						]}}
-					]}},
-
-					{"name": "Telephony", "esfilter": {"and": [
-						{"not": {"term": {"keywords": "perf"}}}, //AN UNFORTUNATE REDUNDANCY
-						{"terms": {"component": [
-							"ril"
-						]}}
-					]}},
-                                        {"name": "Connectivity", "esfilter": {"and": [
-                                                {"not": {"term": {"keywords": "perf"}}}, //AN UNFORTUNATE REDUNDANCY
-                                                {"terms": {"component": [
-                                                        "nfc",
-                                                        "wifi",
-                                                        "rtsp"
-                                                ]}}
-                                        ]}},
-					{"name": "System Platform", "esfilter": {"and": [
-						{"not": {"term": {"keywords": "perf"}}}, //AN UNFORTUNATE REDUNDANCY
-						{"term": {"product": "firefox os"}},
-						{"terms": {"component": [
-							"gaia::settings",
-							"gaia::system::window mgmt",
-							"gaia::keyboard",
-							"gaia::system::input mgmt",
-							"gaia::system::lockscreen"
-						]}}
-					]}},
-					{"name": "Multi-media Platform", "esfilter": {"and": [
-						{"not": {"term": {"keywords": "perf"}}}, //AN UNFORTUNATE REDUNDANCY
-						{"terms": {"component": [
-							"video/audio: recording",
-							"audiochannel",
-							"video/audio"
-						]}}
-					]}},
-					{"name": "System", "esfilter": {"and": [
-						{"not": {"term": {"keywords": "perf"}}}, //AN UNFORTUNATE REDUNDANCY
-						{"term": {"product": "firefox os"}},
-						{"terms": {"component": [
-							"bluetooth",
-							"hardware",
-							"geolocation"
-						]}}
-					]}},
-
-					{"name": "Networking (Necko)", "esfilter": {"and": [
-						{"not": {"term": {"keywords": "perf"}}}, //AN UNFORTUNATE REDUNDANCY
-						{"terms": {"component": [
-							"Networking".toLowerCase(),
-							"networking: cache",
-							"networking: http",
-							"networking: websockets"
-						]}}
-					]}},
-					{"name": "WebRTC Loop",
-						"esfilter": {"and": [
-							{"term": {"product": "loop"}},
-							{"terms": {"component": ["general", "client", "server"]}}
-						]}
-					},
-					{"name": "WebRTC Platform",
-						"esfilter": {"and": [
-							{"term": {"product": "core"}},
-							{"prefix": {"component": "webrtc"}}
-						]}
-					},
-					{"name": "Layout", "esfilter": {"and": [
-						{"not": {"term": {"keywords": "perf"}}}, //AN UNFORTUNATE REDUNDANCY
-						{"terms": {"component": [
-							"CSS Parsing and Computation".toLowerCase(),
-							"Layout".toLowerCase()
-						]}}
-					]}},
-
-					{"name": "Javascript", "esfilter": {"and": [
-						{"not": {"term": {"keywords": "perf"}}}, //AN UNFORTUNATE REDUNDANCY
-						{"terms": {"component": [
-							"JavaScript Engine".toLowerCase(),
-							"JavaScript: GC".toLowerCase(),
-							"javascript engine: jit"
-						]}}
-					]}},
-
-					{"name": "DOM", "esfilter": {"and": [
-						{"not": {"term": {"keywords": "perf"}}}, //AN UNFORTUNATE REDUNDANCY
-						{"terms": {"component": [
-							"dom".toLowerCase(),
-							"dom: apps".toLowerCase(),
-							"dom: events".toLowerCase(),
-							"dom: devices interfaces".toLowerCase(),
-							"dom: push notifications".toLowerCase(),
-							"dom: device interfaces"
-						]}}
-					]}},
-
-					{"name": "Graphics", "esfilter": {"and": [
-						{"not": {"term": {"keywords": "perf"}}}, //AN UNFORTUNATE REDUNDANCY
-						{"terms": {"component": [
-							"Graphics".toLowerCase(),
-							"Graphics: Layers".toLowerCase(),
-							"Graphics: text".toLowerCase(),
-							"Canvas: 2D".toLowerCase(),
-							"Canvas: WebGL".toLowerCase(),
-							"ImageLib".toLowerCase(),
-							"Panning and Zooming".toLowerCase()
-						]}}
-					]}},
+                {"term": {"product": "core"}},
+                {
+                  "or": [
+                    {"prefix": {"component": "dom"}},  // Lawrence, Nov 11, 2014: Anything starting with "DOM", "Document Navigation", "IPC", "XBL", "XForms"
+                    {"prefix": {"component": "document"}},
+                    {"prefix": {"component": "ipc"}},
+                    {"prefix": {"component": "xbl"}},
+                    {"prefix": {"component": "xform"}},
+                    {"term": {"component": "html: parser"}}
+                  ]
+                }
+              ]
+            }
+            },
+            {
+              "name": "Media", "style": {"color": "#60BDB1"}, "esfilter": {
+              "and": [
+                {"term": {"product": "core"}},
+                {
+                  "or": [
+                    {"prefix": {"component": "video"}},  // starts with "Video/Audio", "Web Audio", starts with "WebRTC"
+                    {"prefix": {"component": "web audio"}},
+                    {"prefix": {"component": "webrtc"}}
+                  ]
+                }
+              ]
+            }
+            },
+            {
+              "name": "AllY", "style": {"color": "#BA7659"}, "description": "Accessibility", "esfilter": {
+              "and": [
+                {"term": {"product": "core"}},
+                {"prefix": {"component": "disability"}}  // "Disability Access APIs"
+              ]
+            }
+            },
+            {
+              "name": "Platform Integration", "style": {"color": "#757EBA"}, "esfilter": {
+              "and": [
+                {"term": {"product": "core"}},
+                {"prefix": {"component": "widget"}}  // Component: starts with "Widget"
+              ]
+            }
+            },
+            {
+              "name": "Other",
+              "style": {"color": "#CCCCCC"},
+              "esfilter": {"match_all": {}} // Any tracked bug not in one of the product/component combinations above.
+            }
+          ]
+        }
+      ]
+    }
 
 
-					{"name": "All Others", "esfilter": {"and": [
-						{"not": {"term": {"keywords": "perf"}}},     //AN UNFORTUNATE REDUNDANCY
-						{"not": {"term": {"product": "loop"}}},        //NO WebRTC Loop Product
-						{"not": {"prefix": {"component": "webrtc"}}},  //NO WebRTC
-						{"not": {"term": {"status_whiteboard": "ft:stream3"}}},  //NO Stream3
-						{"not": {"term": {"status_whiteboard": "systemsfe"}}},  //NO SYSTEM FRONTEND
-						{"not": {"terms": {"component": [
-							//AN UNFORTUNATE LIST OF EVERYTHING, SHOULD BE AUTO-GENERATED, BUT I NEED A EQUATION SIMPLIFIER, OR ELSE I BREAK ES
-							"Canvas: 2D".toLowerCase(),
-							"Canvas: WebGL".toLowerCase(),
-							"CSS Parsing and Computation".toLowerCase(),
-							"dom".toLowerCase(),
-							"dom: apps".toLowerCase(),
-							"dom: events".toLowerCase(),
-							"dom: devices interfaces".toLowerCase(),
-							"dom: push notifications".toLowerCase(),
-							"dom: device interfaces",
-							"Graphics".toLowerCase(),
-							"Graphics: Layers".toLowerCase(),
-							"Graphics: text".toLowerCase(),
-							"Hardware Abstraction Layer (HAL)".toLowerCase(),
-							"ImageLib".toLowerCase(),
-							"IPC".toLowerCase(),
-							"JavaScript Engine".toLowerCase(),
-							"JavaScript: GC".toLowerCase(),
-							"Layout".toLowerCase(),
-							"MFBT".toLowerCase(),
-							"Networking".toLowerCase(),
-							"Panning and Zooming".toLowerCase(),
-							"performance",
-							"gaia::browser",
-							"gaia::everything.me",
-							"gaia::first time experience",
-							"gaia::homescreen",
-							"gaia::search",
-							"gaia::system",
-							"gaia::system::browser chrome",
-							"gaia::e-mail",
-							"gaia::clock",
-							"gaia::calculator",
-							"gaia::calendar",
-							"gaia::notes",
-							"gaia::camera",
-							"gaia::fmradio",
-							"gaia::gallery",
-							"gaia::music",
-							"gaia::video",
-							"gaia::ringtones",
-							"ril",
-							"nfc",
-							"wifi",
-							"rtsp",
-							"gaia::settings",
-							"gaia::system::window mgmt",
-							"gaia::keyboard",
-							"gaia::system::input mgmt",
-							"gaia::system::lockscreen",
-							"video/audio: recording",
-							"video/audio",
-							"webrtc",
-							"webrtc: video/audio",
-							"webrtc: audio/video",
-							"dom: contacts",
-							"gaia::contacts",
-							"gaia::cost control",
-							"gaia::dialer",
-							"gaia::sms",
-							"audiochannel",
-							"bluetooth",
-							"hardware",
-							"geolocation",
-							"javascript engine: jit",
-							"networking: cache",
-							"networking: http",
-							"networking: websockets"
-						]}}}
-					]}}
-				]},
-
-				{"name": "Project", "index": "bugs", "isFacet": true,
-					"partitions": [
-						//https://wiki.mozilla.org/Release_Management/B2G_Landing
-//						{"name": "1.3",
-//							"dateMarks": [
-//								{"name": "FL", "date": "Dec 9, 2013", "style": {strokeStyle: "black", verticalOffset: 10}},
-//								{"name": "FC", "date": "Mar 17, 2014", "style": {strokeStyle: "black", verticalOffset: 10}}
-//							],
-//							"style": {"color": "#d62728"},  //red
-//							"esfilter": {"or": [
-//								{"terms": {"cf_blocking_b2g": ["1.3+", "1.3?"]}}
-//							]}
-//						},
-						{"name": "1.3T",
-							"start_date":"Dec 9, 2013",
-							"targetDate":"Apr 28, 2014",
-							"dateMarks": [
-								{"name": "FL", "date": "Dec 9, 2013", "style": {strokeStyle: "black", verticalOffset: 20}},
-								{"name": "FC", "date": "Mar 17, 2014", "style": {strokeStyle: "black", verticalOffset: 20}}
-							],
-							"style": {"color": "#ff7f0e"},
-							"esfilter": {"or": [
-								{"terms": {"cf_blocking_b2g": ["1.3t+", "1.3t?"]}}
-							]}
-						},
-						{"name": "1.4",
-							"start_date":"Dec 9, 2013",
-							"targetDate":"Jun 9, 2014",
-							"dateMarks": [
-								{"name":"Start", "date": "Dec 9, 2013"},
-								{"name": "FL", "date": "Mar 17, 2014", "style": {strokeStyle: "black", verticalOffset: 30}},
-								{"name": "FC", "date": "Apr 28, 2014", "style": {strokeStyle: "black", verticalOffset: 30}},
-								{"name": "CF", "date": "Jun 9, 2014", "style": {strokeStyle: "black", verticalOffset: 30}}
-							],
-							"style": {"color": "#2ca02c"},
-							"esfilter": {"or": [
-								{"terms": {"cf_blocking_b2g": ["1.4+", "1.4?"]}},
-								{"terms": {"cf_blocking_loop": ["fx30+", "fx30?"]}}
-							]}
-						},
-						{"name": "2.0",
-							"start_date":"Apr 28, 2014",
-							"targetDate":"Sep 01, 2014",
-							"dateMarks": [
-								{"name":"Start", "date": "Apr 28, 2014"},
-								{"name":"FL", "date": "Jun 9, 2014"},
-								{"name":"FC", "date": "Jul 21, 2014"},
-								{"name":"CF", "date": "Sep 01, 2014"}
-							],
-							"style": {"color": "#1f77b4"},
-							"esfilter": {"or": [
-								{"terms": {"cf_blocking_b2g": ["2.0+", "2.0?"]}},
-								{"terms": {"cf_blocking_loop": ["fx31?", "fx32?", "fx31+", "fx32+"]}}
-							]}
-						},
-						{"name": "2.1",
-							"start_date":"Jul 21, 2014",
-							"targetDate":"Nov 24, 2014",
-							"dateMarks": [
-								{"Start":"Jul 21, 2014"},
-								{"FL": "Sep 01, 2014"},
-								{"FC": "Oct 10, 2014"},
-								{"CS": "Nov 14, 2014"},  //partner delivery
-								{"CC": "Nov 24, 2014"}
-							],
-							"style": {"color": "#9467bd"},
-							"esfilter": {"or": [
-								{"terms": {"cf_blocking_b2g": ["2.1+", "2.1?"]}},
-								{"terms": {"cf_blocking_loop": ["fx33?", "fx34?", "fx33+", "fx34+"]}}
-							]}
-						},
-						{"name": "2.2",
-							"start_date":"Oct 10, 2014",
-							"targetDate":"Nov 24, 2014",
-							"dateMarks": [
-							],
-							"style": {"color": "#d62728"},
-							"esfilter": {"or": [
-								{"terms": {"cf_blocking_b2g": ["2.2+", "2.2?"]}},
-								{"terms": {"cf_blocking_loop": ["fx35?", "fx36?", "fx35+", "fx36+"]}}
-							]}
-						},
-						{"name": "2.5",
-							"start_date":"Jun 29, 2015",
-							"targetDate":"Jan 04, 2016",
-							"dateMarks": [
-								{"name":"Start", "date":"Jun 29, 2015", "style":{"color":"black"}},
-								{"name":"FC", "date":"Nov 02, 2015", "style":{"color":"black"}},
-								{"name":"CC", "date":"Jan 04, 2016", "style":{"color":"black"}}
-							],
-							"style": {"color": "#d62728"},
-							"esfilter": {"or": [
-								{"terms": {"cf_blocking_b2g": ["2.5+", "3.0+", "2.5?", "3.0?"]}},
-								{"terms": {"cf_blocking_loop": ["fx37?", "fx38?", "fx39?", "fx40?", "fx41?", "fx42?", "fx43?", "fx44?", "fx37+", "fx38+", "fx39+", "fx40+", "fx41+", "fx42+", "fx43+", "fx44+"]}}
-							]}
-						},
-						{"name": "2.6",
-							"start_date":"Nov 9, 2015",
-							"targetDate":"May 30, 2016",
-							"dateMarks": [
-								{"Start": "Nov 9, 2015"},
-								{"FC": "Apr 18, 2015"},
-								{"RA": "May 30, 2016"}
-							],
-							"style": {"color": "#ff7f0e"},
-							"esfilter": {"or": [
-								{"terms": {"cf_blocking_b2g": ["2.6+", "2.6?"]}},
-								{"terms": {"cf_blocking_loop": ["fx45?", "fx46?", "fx47?", "fx48?", "fx45+", "fx46+", "fx47+", "fx48+"]}}
-							]}
-						},
-						{"name": "Other", "style": {"color": "#9467bd"}, "esfilter": {"and": [
-							{"not": {"terms": {"cf_blocking_b2g": NOM_PROJECTS.union(BLOCKER_PROJECTS)}}},  //TODO: No way to select 1.3
-							{"not": {"terms": {"cf_blocking_loop": NOM_MILESTONES.union(BLOCKER_MILESTONE)}}}
-
-						]}}
-					]
-				},
-
-			{"name": "Targeted", "index": "bugs", "isFacet": true,
-				"partitions": [
-					//https://wiki.mozilla.org/Release_Management/B2G_Landing
-					{"name": "1.3",
-						"esfilter": {"or":[
-							{"terms": {"cf_blocking_b2g": ["1.3+"]}}
-						]}
-					},
-					{"name": "1.3T",
-						"esfilter": {"or":[
-							{"terms": {"cf_blocking_b2g": ["1.3t+"]}}
-						]}
-					},
-					{"name": "1.4",
-						"esfilter": {"or":[
-							{"terms": {"cf_blocking_b2g": ["1.4+"]}},
-							{"terms": {"cf_blocking_loop": ["fx30+"]}}
-						]}
-					},
-					{"name": "2.0",
-						"esfilter": {"or":[
-							{"terms": {"cf_blocking_b2g": ["2.0+"]}},
-							{"terms": {"cf_blocking_loop": ["fx31+", "fx32+"]}}
-						]}
-					},
-					{"name": "2.1",
-						"esfilter": {"or":[
-							{"terms": {"cf_blocking_b2g": ["2.1+"]}},
-							{"terms": {"cf_blocking_loop": ["fx33+", "fx34+"]}}
-						]}
-					},
-					{"name": "2.2",
-						"esfilter": {"or":[
-							{"terms": {"cf_blocking_b2g": ["2.2+"]}},
-							{"terms": {"cf_blocking_loop": ["fx35+", "fx36+"]}}
-						]}
-					},
-					{"name": "2.5",
-						"esfilter": {"or":[
-							{"terms": {"cf_blocking_b2g": ["2.5+", "3.0+"]}},
-							{"terms": {"cf_blocking_loop": ["fx37?", "fx38?", "fx39?", "fx40?", "fx41?", "fx42?", "fx43?", "fx44?", "fx37+", "fx38+", "fx39+", "fx40+", "fx41+", "fx42+", "fx43+", "fx44+"]}}
-						]}
-					},
-					{"name": "2.6",
-						"esfilter": {"or":[
-							{"terms": {"cf_blocking_b2g": ["2.6+"]}},
-							{"terms": {"cf_blocking_loop": ["fx45?", "fx46?", "fx47?", "fx448", "fx45+", "fx46+", "fx47+", "fx48+"]}}
-						]}
-					},
-					{"name": "Targeted", "style": {"color": "#9467bd"}, "esfilter": {"and": [
-						{"not": {"terms": {"cf_blocking_b2g": BLOCKER_PROJECTS}}},
-						{"not": {"terms": {"cf_blocking_loop": BLOCKER_MILESTONE}}}
-					]}}
-				]
-			},
-
-				{"name": "FinalState", "index": "bugs", "isFacet": true,
-					"partitions": [
-//						{"name": "1.3",
-//							"dateMarks": [
-//								{"name": "FL", "date": "Dec 9, 2013", "style": {strokeStyle: "black", verticalOffset: 10}},
-//								{"name": "FC", "date": "Mar 17, 2014", "style": {strokeStyle: "black", verticalOffset: 10}}
-//							],
-//							"style": {"color": "#d62728"},
-//							"esfilter": {"term": {"cf_blocking_b2g": "1.3+"}}
-//						},
-						{"name": "1.3T",
-							"start_date":"Dec 9, 2013",
-							"targetDate":"Apr 28, 2014",
-							"dateMarks": [
-								{"name": "FL", "date": "Dec 9, 2013", "style": {strokeStyle: "black", verticalOffset: 20}},
-								{"name": "FC", "date": "Mar 17, 2014", "style": {strokeStyle: "black", verticalOffset: 20}}
-							],
-							"style": {"color": "#ff7f0e"},
-							"esfilter": {"terms": {"cf_blocking_b2g": ["1.3t+", "1.3t?"]}}},
-						{"name": "1.4",
-							"start_date":"Dec 9, 2013",
-							"targetDate":"Jun 9, 2014",
-							"style": {"color": "#2ca02c"},
-							"esfilter": {"or": [
-								{"terms": {"cf_blocking_b2g": ["1.4+", "1.4?"]}},
-								{"terms": {"cf_blocking_loop": ["fx30+", "fx30?"]}}
-							]},
-							"dateMarks": [
-								{"name":"Start", "date":"Dec 9, 2013"},
-								{"name": "FL", "date": "Mar 17, 2014", "style": {strokeStyle: "black", verticalOffset: 30}},
-								{"name": "FC", "date": "Apr 28, 2014", "style": {strokeStyle: "black", verticalOffset: 30}},
-								{"name": "CF", "date": "Jun 9, 2014", "style": {strokeStyle: "black", verticalOffset: 30}}
-							]
-						},
-						{"name": "2.0",
-							"start_date":"Apr 28, 2014",
-							"targetDate":"Sep 01, 2014",
-							"dateMarks": [
-								{"name":"Start", "date": "Apr 28, 2014"},
-								{"name":"FL", "date": "Jun 9, 2014"},
-								{"name":"FC", "date": "Jul 21, 2014"},
-								{"name":"CF", "date": "Sep 01, 2014"}
-							],
-							"style": {"color": "#1f77b4"},
-							"esfilter": {"or": [
-								{"terms": {"cf_blocking_b2g": ["2.0+", "2.0?"]}},
-								{"terms": {"cf_blocking_loop": ["fx31?", "fx32?", "fx31+", "fx32+"]}}
-							]}
-						},
-						{"name": "2.1",
-							"start_date":"Jul 21, 2014",
-							"targetDate":"Nov 24, 2014",
-							"dateMarks": [
-								{"Start":"Jul 21, 2014"},
-								{"FL": "Sep 01, 2014"},
-								{"FC": "Oct 10, 2014"},
-								{"CS": "Nov 14, 2014"},
-								{"CC": "Nov 24, 2014"}
-							],
-							"style": {"color": "#d62728"},
-							"esfilter": {"or": [
-								{"terms": {"cf_blocking_b2g": ["2.1+", "2.1?"]}},
-								{"terms": {"cf_blocking_loop": ["fx33?", "fx34?", "fx33+", "fx34+"]}}
-							]}
-						},
-						{"name": "2.2",
-							"start_date":"Oct 10, 2014",
-							"targetDate":"Nov 24, 2014",
-							"dateMarks": [
-							],
-							"style": {"color": "#ff7f0e"},
-							"esfilter": {"or": [
-								{"terms": {"cf_blocking_b2g": ["2.2+", "2.2?"]}},
-								{"terms": {"cf_blocking_loop": ["fx35?", "fx36?", "fx35+", "fx36+"]}}
-							]}
-						},
-						{"name": "2.5",
-							"start_date":"Jun 29, 2015",
-							"targetDate":"Jan 04, 2016",
-							"dateMarks": [
-								{"Start": "Jun 29, 2015"},
-								{"FC": "Nov 02, 2015"},
-								{"CC": "Jan 04, 2016"}
-							],
-							"style": {"color": "#2ca02c"},
-							"esfilter": {"or": [
-								{"terms": {"cf_blocking_b2g": ["2.5+", "3.0+", "2.5?", "3.0?"]}},
-								{"terms": {"cf_blocking_loop": ["fx37?", "fx38?", "fx39?", "fx40?", "fx41?", "fx42?", "fx43?", "fx44?", "fx37+", "fx38+", "fx39+", "fx40+", "fx41+", "fx42+", "fx43+", "fx44+"]}}
-							]}
-						},
-						{"name": "2.6",
-							"start_date":"Nov 9, 2015",
-							"targetDate":"May 30, 2016",
-							"dateMarks": [
-								{"Start": "Nov 9, 2015"},
-								{"FC": "Apr 18, 2015"},
-								{"RA": "May 30, 2016"}
-							],
-							"style": {"color": "#2ca02c"},
-							"esfilter": {"or": [
-								{"terms": {"cf_blocking_b2g": ["2.6+", "2.6?"]}},
-								{"terms": {"cf_blocking_loop": ["fx45?", "fx46?", "fx47?", "fx48?", "fx45+", "fx46+", "fx47+", "fx48+"]}}
-							]}
-						},
-						{"name": "Targeted",
-							"style": {"color": "#9467bd", "visibility": "hidden"},
-							"esfilter": {"and": [
-								{"exists": {"field": "target_milestone"}},
-								{"not": {"term": {"target_milestone": "---"}}}
-							]}
-						},
-						{"name": "Others", "style": {"color": "#dddddd", "visibility": "hidden"}, "esfilter": {"match_all": {}}}
-					]
-				}
-			]
-		}
-	]);
+  ]);
 })();
 

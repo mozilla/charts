@@ -80,7 +80,7 @@ function showSummary(type, team, detail, grandTotal, specialBugs, showTYPE) {
 	component.type = type;
 
 	if (team.length==0){
-		component.name = "FxOS"
+		component.name = "Quantum"
 	}else{
 		component.name = team.map(function(t){return t.name;}).join(", ")
 	}//endif

@@ -5,7 +5,7 @@
    - file, You can obtain one at http://mozilla.org/MPL/2.0/. -->
 <HTML>
 <HEAD>
-	<title>Blockers - Quantum</title>
+	<title>Quantum Flow P1 Bugs</title>
 	<script type="text/javascript">function importScript(dep, func){
       if (func !== undefined) func();
     }</script>
@@ -119,7 +119,7 @@
 		<div>Filters</div>
 	</div>
 	<div class="content" style="position:inherit;">
-		<div id="totals"><h3 style="display:inline-block;">Quantum Blockers</h3></div>
+		<div id="totals"><h3 style="display:inline-block;">Quantum Flow P1 Bugs</h3></div>
 		<div style="position:absolute;top:5px;right:10px;">
 			Age:
 			<div style="vertical-align:middle;height:15px; width:150px; background: -moz-linear-gradient(left, #009F00,#699B00,  #CA7900,#954000, #A50303);position: relative;display:inline-block;">
@@ -206,12 +206,10 @@ importScript('js/main_lib.js', function(){
     }//endif
 
 
-    let components = yield(Q({
+    let components = yield(Qb.calc2List({
       "from": allDetails,
       "select": [
         {"name": "show", "value": 'bug_id', "aggregate": "exists"},
-        {"name": "component", "value": 'component', "aggregate": "one"},
-        {"name": "product", "value": 'product', "aggregate": "one"},
         {"name": "count", "value": "bug_id", "aggregate": "count"},
         {"name": "bugs", "value": "bug_id", "aggregate": "array"},
         {"name": "age", "value": "Date.now().subtract(Date.newInstance(modified_ts)).divideBy(Duration.DAY)", "aggregate": "maximum"},
@@ -219,25 +217,16 @@ importScript('js/main_lib.js', function(){
         {"name": "unassignedBugs", "value": '(assigned_to=="nobody@mozilla.org" ? bug_id : null)', "aggregate": "array"}
       ],
       "edges": [
-        {"name": "component_name", "value": 'component=="general" ? component+" ("+product+")" : component'},
-        {"name": "project", "domain": Mozilla.Quantum.Project.getDomain()}
+        {"name": "team", "domain": Mozilla.Quantum.Team.getDomain()}
       ]
     }));
 
+    components.list = Qb.sort(components.list, "team.ordering");
 
     $("#blockers").html("");
-    components.cube.forall(function(component, i){
-      let total = aMath.SUM(component.select("count"));
-      if (total > 0) {
-        component.forall(function(project, j){
-          project.component = components.edges[0].domain.partitions[i].name;
-          project.project = components.edges[1].domain.partitions[j].name;
-          project.total = total;
-          project.additionalClass = "";
-        });
-        let blockerHTML = showComponent(component, showBlocker);
-        $("#blockers").append(blockerHTML);
-      }//endif
+    components.list.forall(function(team, i){
+      let blockerHTML = showTeam(team, showBlocker);
+      $("#blockers").append(blockerHTML);
     });
 
     let projectDomain = Mozilla.Quantum.Project.getDomain();

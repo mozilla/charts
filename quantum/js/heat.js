@@ -68,6 +68,22 @@ function showComponent(detail, showTYPE) {
 	return TEMPLATE.replace(component)
 }//function
 
+
+// SHOW COUNT FOR ONE TEAM
+function showTeam(team, showTYPE){
+  var TEMPLATE = new Template('<div class="blocker">' +
+    '<div class="component">{{team_name}}</div>' +
+    '<div class="componentmanager">{{team_manager}}</div>' +
+    '{{projectDetail}}' +
+    '</div>');
+
+  team.team_name=team.team.name;
+  team.team_manager=team.team.manager;
+  team.projectDetail = showTYPE(team);
+  return TEMPLATE.replace(team);
+}//function
+
+
 // SHOW SUMMARY COUNT
 function showSummary(type, team, detail, grandTotal, specialBugs, showTYPE) {
 
@@ -111,21 +127,6 @@ function showSummary(type, team, detail, grandTotal, specialBugs, showTYPE) {
 	return TEMPLATE.replace(component)
 }//function
 
-// SHOW TRIAGE COUNT FOR ONE COMPONENT, ONE PROJECT
-function showNominations(detail) {
-	detail.bugsList = detail.bugs.join(",");
-	detail.bugsURL = Bugzilla.searchBugsURL(detail.bugs);
-	detail.unassignedURL = Bugzilla.searchBugsURL(detail.unassignedBugs);
-	detail.color = age2color(detail.age).toHTML();
-
-	var TEMPLATE = new Template(
-		'<div class="project {{additionalClass}}"  style="background-color:{{color}}" href="{{bugsURL}}" bugsList="{{bugsList}}" project="{{project}}">' +
-		'<div class="release">{{project}}</div>' +
-		'<div class="count">{{count}}</div>' +
-		'</div>');
-
-	return TEMPLATE.replace(detail)
-}//function
 
 // SHOW BLOCKER COUNT FOR ONE COMPONENT, ONE PROJECT
 function showBlocker(detail) {
@@ -135,7 +136,6 @@ function showBlocker(detail) {
 	detail.color = age2color(detail.age).toHTML();
 
 	var TEMPLATE = new Template('<div class="project {{additionalClass}}"  style="background-color:{{color}}" href="{{bugsURL}}" bugsList="{{bugsList}}" project="{{project}}">' +
-		'<div class="release">{{project}}</div>' +
 		'<div class="count">{{count}}</div>' +
 		(detail.unassignedCount > 0 ? '<div class="unassigned"><a class="count_unassigned" href="{{unassignedURL}}">{{unassignedCount}}</a></div>' : '') +
 		'</div>');
@@ -143,43 +143,6 @@ function showBlocker(detail) {
 	return TEMPLATE.replace(detail)
 }//function
 
-
-// SHOW BLOCKER COUNT FOR ONE COMPONENT, ONE PROJECT
-function showTargeted(detail) {
-	detail.bugsList=detail.bugs.join(", ");
-	detail.bugsURL = detail.bugs.length==0 ? "" : Bugzilla.searchBugsURL(detail.bugs);
-	detail.unassignedURL = Bugzilla.searchBugsURL(detail.unassignedBugs);
-	detail.lostURL = Bugzilla.searchBugsURL(detail.lostBugs);
-	detail.color = age2color(detail.age).toHTML();
-
-	var TEMPLATE = new Template(
-		'<div class="project {{additionalClass}}"  style="background-color:{{color}}" href="{{bugsURL}}" bugsList="{{bugsList}}" project="{{project}}">' +
-		'<div class="release">{{project}}</div>' +
-		'<div class="count">{{count}}</div>' +
-		(detail.unassignedCount > 0 ? '<div class="unassigned"><a class="count_unassigned" href="{{unassignedURL}}">{{unassignedCount}}</a></div>' : '') +
-		(detail.lostCount > 0 ? '<div class="lost"><a class="count_lost" href="{{lostURL}}">{{lostCount}}</a></div>' : '') +
-		'</div>'
-	);
-
-	return TEMPLATE.replace(detail)
-}//function
-
-
-// SHOW BLOCKER COUNT FOR ONE COMPONENT, ONE PROJECT
-function showRegression(detail) {
-	detail.bugsList = detail.bugs.join(",");
-	detail.bugsURL = Bugzilla.searchBugsURL(detail.bugs);
-	detail.unassignedURL = Bugzilla.searchBugsURL(detail.unassignedBugs);
-	detail.color = age2color(detail.age).toHTML();
-
-	var TEMPLATE = new Template('<div class="project {{additionalClass}}"  style="background-color:{{color}}" href="{{bugsURL}}" bugsList="{{bugsList}}" project="{{project}}">' +
-		'<div class="release">{{project}}</div>' +
-		'<div class="count">{{count}}</div>' +
-		(detail.unassignedCount > 0 ? '<div class="unassigned"><a class="count_unassigned" href="{{unassignedURL}}">{{unassignedCount}}</a></div>' : '') +
-		'</div>');
-
-	return TEMPLATE.replace(detail)
-}//function
 
 function addProjectClickers(cube) {
 	$(".project").hover(function (e) {

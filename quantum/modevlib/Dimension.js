@@ -34,6 +34,8 @@ Dimension.prototype = {
 				if (v.esfilter === undefined) return;
 				return {
 					"name": v.name,
+					"manager": v.manager,
+					"ordering": i,
 					"value": v.name,
 					"esfilter": v.esfilter,
 					"fullFilter": v.fullFilter,
@@ -41,7 +43,7 @@ Dimension.prototype = {
 					"start_date": v.start_date,
 					"targetDate": v.targetDate,
 					"style": Map.clone(v.style),
-					"weight": v.weight //YO! WHAT DO WE *NOT* COPY?
+					"weight": v.weight //YO! WHAT TO NOT COPY?
 				};
 			});
 			self.isFacet = true;
@@ -50,6 +52,8 @@ Dimension.prototype = {
 				if (i >= nvl(self.limit, DEFAULT_QUERY_LIMIT)) return undefined;
 				return {
 					"name": v.name,
+				    "manager": v.manager,
+				    "ordering": i,
 					"value": v.value,
 					"esfilter": v.esfilter,
 					"fullFilter": v.fullFilter,
@@ -68,6 +72,8 @@ Dimension.prototype = {
 				part.partitions.forall(function (subpart, j) {
 					partitions.append({
 						"name": [subpart.name, subpart.parent.name].join(param.separator),
+					    "manager": subpart.manager,
+					    "ordering": j,
 						"value": subpart.value,
 						"esfilter": subpart.esfilter,
 						"fullFilter": subpart.fullFilter,
@@ -86,6 +92,8 @@ Dimension.prototype = {
 		var output = {
 			"type": this.type,
 			"name": this.name,
+		    "manager": this.manager,
+			"ordering": this.ordering,
 			"partitions": partitions,
 			"min": this.min,
 			"max": this.max,

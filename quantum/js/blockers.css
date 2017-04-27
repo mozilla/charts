@@ -16,19 +16,24 @@
     color:white;
     display: inline-block;
     font-weight: normal;
-    padding: 10px;
-    text-align: center
-}
-
-.summary_tile {
-    color:white;
-    display: inline-block;
-    font-weight: normal;
-    padding: 10px;
+    padding: 10px 50px 30px 50px;
     text-align: center
 }
 
 .project {
+    cursor: pointer;
+    position: relative;
+    color:white;
+    display: inline-block;
+    font-weight: normal;
+    padding: 10px;
+    text-align: center;
+    width: 150px;
+    height:150px;
+    margin: 20px;
+
+}
+.total {
     cursor: pointer;
     position: relative;
     color:white;
@@ -45,6 +50,7 @@
     font-family: Arial, Helvetica, sans-serif;
     font-weight: bold;
     color:black;
+    font-size: 200%;
     display: inline-block;
     padding: 10px 10px 0px;
     text-align: center;
@@ -53,7 +59,7 @@
 .componentowner {
     color:black;
     font-weight: bold;
-    font-size: 70%;
+    font-size: 170%;
     font-style: italic;
     padding: 0 10px 0px;
 }
@@ -61,7 +67,7 @@
 .componentmanager {
     color:black;
     font-weight: bold;
-    font-size: 70%;
+    font-size: 170%;
     font-style: italic;
     padding: 0 10px 0px;
 }
@@ -76,7 +82,8 @@
     font-family: Arial, Helvetica, sans-serif;
     display: inline-block;
     color:white;
-    font-size: 200%;
+    line-height: 1em;
+    font-size: 800%;
     font-weight: bold;
 }
 
@@ -88,7 +95,7 @@
     width: 0px;
     height: 0px;
     border-style: solid;
-    border-width: 0 0 40px 40px;
+    border-width: 0 0 80px 80px;
     border-color: transparent transparent #000000 transparent;
 
 }
@@ -116,13 +123,14 @@ table.grid td div.small_unassigned {
 .count_unassigned {
     position: absolute;
     right:3px;
-    bottom:-37px;
+    bottom:-76px;
 
     font-family: Arial, Helvetica, sans-serif;
     display: inline-block;
     color:white;
-    font-size: 100%;
+    font-size: 200%;
     font-weight: normal;
+    line-height: 1em;
 }
 
 .count_unassigned:hover {

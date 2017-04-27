@@ -90,9 +90,9 @@ body {
     float: none;
     text-align: center;
     vertical-align: bottom;
-    bottom: 0;
+    bottom: 10px;
     width: 100%;
-    height: 15px;
+    height: 25px;
     padding-top: 15px;
     display: block;
 

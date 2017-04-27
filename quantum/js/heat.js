@@ -88,7 +88,7 @@ function showTeam(team, showTYPE){
 function showSummary(type, team, detail, grandTotal, specialBugs, showTYPE) {
 
 	var TEMPLATE = new Template(
-		'<h3 style="padding: 20px 0 0 10px;vertical-align: top; display:inline-block">{{name}} {{type}}</h3><div class="summary_tile">' +
+		'<h3 style="padding: 20px 0 0 10px;vertical-align: top; display:inline-block">{{name}} {{type}}</h3><div class="blocker">' +
 		'{{projectDetail}}' +
 		'<div style="display:inline-block;width:50px">&nbsp;</div>' +
 		'{{total}}' +
@@ -144,14 +144,13 @@ function showBlocker(detail) {
 }//function
 
 
-// SHOW BLOCKER COUNT FOR ONE COMPONENT, ONE PROJECT
 function showTotal(detail) {
 	detail.bugsList=detail.bugs.join(", ");
 	detail.bugsURL = Bugzilla.searchBugsURL(detail.bugs);
 	detail.unassignedURL = Bugzilla.searchBugsURL(detail.unassignedBugs);
 	detail.color = age2color(detail.age).toHTML();
 
-	let TEMPLATE = new Template('<div class="project {{additionalClass}}"  style="background-color:{{color}}" href="{{bugsURL}}" bugsList="{{bugsList}}" project="{{project}}">' +
+	let TEMPLATE = new Template('<div class="total {{additionalClass}}"  style="background-color:{{color}}" href="{{bugsURL}}" bugsList="{{bugsList}}" project="{{project}}">' +
 		'<div class="count">{{count}}</div>' +
 		(detail.unassignedCount > 0 ? '<div class="unassigned"><a class="count_unassigned" href="{{unassignedURL}}">{{unassignedCount}}</a></div>' : '') +
 		'</div>');

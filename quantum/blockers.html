@@ -96,42 +96,25 @@
 </HEAD>
 <BODY style="display: none;">
 <div style="overflow:hidden;">
-	<div id="sidebar">
-		<div id="description" style="width:300px;">
-			Each component is colored on a continuous scale (
-			<div style="vertical-align:middle;height:15px; width:150px; background: -moz-linear-gradient(left, #009F00,#699B00,  #CA7900,#954000, #A50303);position: relative;display:inline-block;">
-				<div style="top:-3px;left:1px;color:white;position: absolute;font-size: 15px">New</div>
-				<div style="top:-3px;right:1px;color:white;position: absolute;font-size: 15px">Old</div>
-			</div>
-			)
-			according to the time since the most stale one has changed. Green is new, while red is 7days or older.
-			If the component has unassigned members, then it is marked with a
-			<div style="display:inline-block;bottom:0;width: 0;height: 0; border-style: solid; border-width: 0 0 15px 15px; border-color: transparent transparent #000000 transparent;"></div>
-			along with the count.
-		</div>
-		<hr>
-		<div id="last-updated" style="text-align: center;width:300px;"></div>
-		<hr>
-		<div id="filters" style="width:300px;" class="menu">
-		</div>
-	</div>
-	<div class="sidebar_name">
-		<div>Filters</div>
-	</div>
 	<div class="content" style="position:inherit;">
-		<div id="totals"><h3 style="display:inline-block;">Quantum Flow P1 Bugs</h3></div>
-		<div style="position:absolute;top:5px;right:10px;">
-			Age:
-			<div style="vertical-align:middle;height:15px; width:150px; background: -moz-linear-gradient(left, #009F00,#699B00,  #CA7900,#954000, #A50303);position: relative;display:inline-block;">
-				<div style="top:-3px;left:1px;color:white;position: absolute;font-size: 15px">New</div>
-				<div style="top:-3px;right:1px;color:white;position: absolute;font-size: 15px">7days+</div>
-			</div>
-			<br>
-			Unassigned Bugs:
-			<div style="display:inline-block;bottom:0;width: 0;height: 0; border-style: solid; border-width: 0 0 15px 15px; border-color: transparent transparent #000000 transparent;"></div>
-		</div>
-		<div id="blockers"></div>
+		<div style="width:100%;"><h1 style="display:inline-block;text-align: center;width:100%;">Quantum Flow P1 Bugs</h1></div>
+		<div id="blockers" style="text-align: center;"></div>
 	</div>
+	<div id="description" style="width:100%;text-align: center;">
+		<span style="font-weight: bold;font-size: 120%">Legend:</span>&nbsp;
+		<span id="day0" style="display:inline-block;height:10px;width:10px;background-color:#008E00;"></span> New&nbsp;&nbsp;
+		<span id="day1" style="display:inline-block;height:10px;width:10px;background-color:#318000;"></span> 1 day old&nbsp;&nbsp;
+		<span id="day2" style="display:inline-block;height:10px;width:10px;background-color:#638700;"></span> 2 days old&nbsp;&nbsp;
+		<span id="day3" style="display:inline-block;height:10px;width:10px;background-color:#857B00;"></span> 3 days old&nbsp;&nbsp;
+		<span id="day4" style="display:inline-block;height:10px;width:10px;background-color:#A05700;"></span> 4 days old&nbsp;&nbsp;
+		<span id="day5" style="display:inline-block;height:10px;width:10px;background-color:#8B3C00;"></span> 5 days old&nbsp;&nbsp;
+		<span id="day6" style="display:inline-block;height:10px;width:10px;background-color:#8A1C00;"></span> 6 days old&nbsp;&nbsp;
+		<span id="day7" style="display:inline-block;height:10px;width:10px;background-color:#980303;"></span> 7+ days old&nbsp;&nbsp;
+
+		<span style="display:inline-block;bottom:0;width: 0;height: 0; border-style: solid; border-width: 0 0 10px 10px; border-color: transparent transparent #000000 transparent;"></span>
+		Nobody Assigned
+	</div>
+
 	<div class="footer">
 		Source at <a href="https://github.com/mozilla/charts/tree/quantum/quantum">https://github.com/mozilla/charts/tree/quantum/quantum</a>
 	</div>
@@ -259,9 +242,6 @@ importScript('js/main_lib.js', function(){
       "unassignedBugs": totals.from.list.filter(Mozilla.Quantum.Unassigned.esfilter).select("bug_id"),
       "additionalClass": "project-summary"
     };
-
-    let blockerHTML = showSummary("Blockers", GUI.state.team.getSelectedParts(), totals, grandTotal, null, showTotal);
-    $("#totals").html(blockerHTML);
 
     addProjectClickers(components);
     showLastUpdated();

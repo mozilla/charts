@@ -90,7 +90,6 @@ if (!Mozilla) var Mozilla = {"name": "Mozilla", "edges": []};
               "style": {"color": "#FAA43A"},
               "esfilter": {
                 "and": [
-                  {"term": {"product": "firefox"}},
                   {
                     "or": [
                       {"prefix": {"component": "dev"}}, // Component: Anything starting with "Developer Tools"
@@ -202,18 +201,48 @@ if (!Mozilla) var Mozilla = {"name": "Mozilla", "edges": []};
               }
             },
             {
-              "name": "General",
+              "name": "Core",
               "manager":"",
               "style": {"color": "#757EBA"},
               "esfilter": {
                 "and": [
-                  {"prefix": {"component": "general"}}
+                  {"prefix": {"product": "core"}}
+                ]
+              }
+            },
+            {
+              "name": "Firefox",
+              "manager":"",
+              "style": {"color": "#757EBA"},
+              "esfilter": {
+                "and": [
+                  {"prefix": {"product": "firefox"}}
+                ]
+              }
+            },
+            {
+              "name": "Toolkit",
+              "manager":"",
+              "style": {"color": "#757EBA"},
+              "esfilter": {
+                "and": [
+                  {"prefix": {"product": "toolkit"}}
+                ]
+              }
+            },
+            {
+              "name": "Webtools",
+              "manager":"",
+              "style": {"color": "#757EBA"},
+              "esfilter": {
+                "and": [
+                  {"prefix": {"product": "webtools"}}
                 ]
               }
             },
             {
               "name": "Other",
-              "manager": "Naveed/Jean",
+              "manager": "",
               "style": {"color": "#CCCCCC"},
               "esfilter": {"match_all": {}} // Any tracked bug not in one of the product/component combinations above.
             }

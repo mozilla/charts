@@ -260,7 +260,7 @@ importScript('js/main_lib.js', function(){
       "additionalClass": "project-summary"
     };
 
-    let blockerHTML = showSummary("Blockers", GUI.state.team.getSelectedParts(), totals, grandTotal, null, showBlocker);
+    let blockerHTML = showSummary("Blockers", GUI.state.team.getSelectedParts(), totals, grandTotal, null, showTotal);
     $("#totals").html(blockerHTML);
 
     addProjectClickers(components);

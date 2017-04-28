@@ -46,29 +46,6 @@ function getComponentDetails(c) {
 }//function
 
 
-// SHOW COUNT FOR ONE COMPONENT
-function showComponent(detail, showTYPE) {
-	var TEMPLATE = new Template('<div class="blocker">' +
-		'<div class="component">{{component}}</div>' +
-		'<div class="componentmanager">{{manager}}</div>' +
-		'<div class="componentowner">{{owner}}</div>' +
-		'{{projectDetail}}' +
-		'</div>');
-
-	var component = Map.copy(detail[0]);
-	var meta =  getComponentDetails(component);
-	component.component = meta.name;
-	component.manager = meta.owner.manager;
-	component.owner = meta.owner.name=="" ? "": "(" + meta.owner.name + ")";
-	component.projectDetail = detail.map(function (project, i) {
-		if (project.show) {
-			return showTYPE(project);
-		}//endif
-	}).join("");
-	return TEMPLATE.replace(component)
-}//function
-
-
 // SHOW COUNT FOR ONE TEAM
 function showTeam(team, showTYPE){
   var TEMPLATE = new Template('<div class="blocker">' +
@@ -88,41 +65,14 @@ function showTeam(team, showTYPE){
 function showSummary(type, team, detail, grandTotal, specialBugs, showTYPE) {
 
 	var TEMPLATE = new Template(
-		'<h3 style="padding: 20px 0 0 10px;vertical-align: top; display:inline-block">{{name}} {{type}}</h3><div class="blocker">' +
-		'{{projectDetail}}' +
-		'<div style="display:inline-block;width:50px">&nbsp;</div>' +
-		'{{total}}' +
-		'<div style="display:inline-block;width:50px">&nbsp;</div>' +
-		'{{specialDetail}}' +
-		'</div>');
+		'<h1 style="text-align:center; padding: 20px 0 0 10px;vertical-align: top; display:inline-block">{{type}}&nbsp;&nbsp;</h1>' +
+		'{{total}}'
+	);
 
 	var total = aMath.SUM(detail.cube.select("count"));
 	var component = {};
 	component.type = type;
-
-	if (team.length==0){
-		component.name = "Quantum"
-	}else{
-		component.name = team.map(function(t){return t.name;}).join(", ")
-	}//endif
-
-	var numSummary=0;
-	component.projectDetail = detail.cube.map(function (project, i) {
-		project.project = detail.edges[0].domain.partitions[i].name;
-		if (project.show) {
-			numSummary++;
-			return showTYPE(project);
-		}//endif
-	}).join("");
-	if (numSummary<2) component.projectDetail="";
-
-	if (specialBugs){
-		component.specialDetail = showTYPE(specialBugs);
-	}else{
-		component.specialDetail = "";
-	}//endif
-
-	component.total=showTYPE(grandTotal);
+    component.total=showTYPE(grandTotal);
 
 	return TEMPLATE.replace(component)
 }//function
@@ -151,16 +101,18 @@ function showTotal(detail) {
 	detail.color = age2color(detail.age).toHTML();
 
 	let TEMPLATE = new Template('<div class="total {{additionalClass}}"  style="background-color:{{color}}" href="{{bugsURL}}" bugsList="{{bugsList}}" project="{{project}}">' +
-		'<div class="count">{{count}}</div>' +
-		(detail.unassignedCount > 0 ? '<div class="unassigned"><a class="count_unassigned" href="{{unassignedURL}}">{{unassignedCount}}</a></div>' : '') +
-		'</div>');
+	  '<div style="font-weight: bold;">Total</div>' +
+	  '<div class="total_count">{{count}}</div>' +
+	  (detail.unassignedCount > 0 ? '<div class="total_unassigned"><a class="total_count_unassigned" href="{{unassignedURL}}">{{unassignedCount}}</a></div>' : '') +
+	  '</div>'
+	);
 
 	return TEMPLATE.replace(detail)
 }//function
 
 
 function addProjectClickers(cube) {
-	$(".project").hover(function (e) {
+	$(".project, .total").hover(function (e) {
 		var old_color = $(this).attr("old_color");
 		if (old_color == undefined) {
 			old_color = $(this).css("background-color");
@@ -176,7 +128,7 @@ function addProjectClickers(cube) {
 		window.open(link);
 	});
 
-	$(".count_unassigned").click(function (e) {
+	$(".count_unassigned, .total_count_unassigned").click(function (e) {
 		var link = $(this).attr("href");
 		window.open(link);
 		return false;

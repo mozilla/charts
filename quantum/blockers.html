@@ -97,10 +97,10 @@
 <BODY style="display: none;">
 <div style="overflow:hidden;">
 	<div class="content" style="position:inherit;">
-		<div style="width:100%;"><h1 style="display:inline-block;text-align: center;width:100%;">Quantum Flow P1 Bugs</h1></div>
+		<div id="totals", style="width:100%;text-align:center;"><h1>Quantum Flow P1 Bugs</h1></div>
 		<div id="blockers" style="text-align: center;"></div>
 	</div>
-	<div id="description" style="width:100%;text-align: center;">
+	<div id="description" style="width:100%;text-align: center;font-size: 150%">
 		<span style="font-weight: bold;font-size: 120%">Legend:</span>&nbsp;
 		<span id="day0" style="display:inline-block;height:10px;width:10px;background-color:#008E00;"></span> New&nbsp;&nbsp;
 		<span id="day1" style="display:inline-block;height:10px;width:10px;background-color:#318000;"></span> 1 day old&nbsp;&nbsp;
@@ -195,7 +195,7 @@ importScript('js/main_lib.js', function(){
         {"name": "show", "value": 'bug_id', "aggregate": "exists"},
         {"name": "count", "value": "bug_id", "aggregate": "count"},
         {"name": "bugs", "value": "bug_id", "aggregate": "array"},
-        {"name": "age", "value": "Date.now().subtract(Date.newInstance(modified_ts)).divideBy(Duration.DAY)", "aggregate": "maximum"},
+        {"name": "age", "value": "Date.now().subtract(Date.newInstance(modified_ts)).divideBy(Duration.DAY)", "aggregate": "median"},
         {"name": "unassignedCount", "value": '(assigned_to=="nobody@mozilla.org" ? 1 : 0)', "aggregate": "sum"},
         {"name": "unassignedBugs", "value": '(assigned_to=="nobody@mozilla.org" ? bug_id : null)', "aggregate": "array"}
       ],
@@ -224,7 +224,7 @@ importScript('js/main_lib.js', function(){
         {"name": "additionalClass", "value": '"project-summary"', "aggregate": "one"},
         {"name": "count", "value": "bug_id", "aggregate": "count"},
         {"name": "bugs", "value": "bug_id", "aggregate": "array"},
-        {"name": "age", "value": "Date.now().subtract(Date.newInstance(modified_ts)).divideBy(Duration.DAY)", "aggregate": "maximum"},
+        {"name": "age", "value": "Date.now().subtract(Date.newInstance(modified_ts)).divideBy(Duration.DAY)", "aggregate": "median"},
         {"name": "unassignedCount", "value": '(assigned_to=="nobody@mozilla.org" ? 1 : 0)', "aggregate": "sum"},
         {"name": "unassignedBugs", "value": '(assigned_to=="nobody@mozilla.org" ? bug_id : null)', "aggregate": "array"}
       ],
@@ -232,6 +232,7 @@ importScript('js/main_lib.js', function(){
         {"name": "project", "domain": projectDomain}
       ]
     }));
+
 
     let grandTotal = {
       "project": "Total",
@@ -242,6 +243,9 @@ importScript('js/main_lib.js', function(){
       "unassignedBugs": totals.from.list.filter(Mozilla.Quantum.Unassigned.esfilter).select("bug_id"),
       "additionalClass": "project-summary"
     };
+
+    var blockerHTML = showSummary("Quantum Flow P1 Bugs", GUI.state.team.getSelectedParts(), totals, grandTotal, null, showTotal);
+    $("#totals").html(blockerHTML);
 
     addProjectClickers(components);
     showLastUpdated();

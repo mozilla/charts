@@ -93,7 +93,7 @@ Stats.ageOverTime=function(data, timeEdge, sampleSize, statFunction){
 	newdata.sort(function(a, b){return a[0]-b[0]});
 
 
-	var start=0;  //SINCE i IS STRICTLY INCREASING, NO NEED TO REVISIT d<start 
+	var start=0;  //SINCE i IS STRICTLY INCREASING, NO NEED TO REVISIT d<start
 	var output=[];
 	for(var i=timeEdge.min;i.getMilli()<timeEdge.max.getMilli();i=i.add(timeEdge.interval)){
 		var min=i.subtract(sampleSize).getMilli();
@@ -153,7 +153,7 @@ Stats.percentile=function(values, percentile){
 
 Stats.middle=function(values, percentile){
 	if (values.length==0) return null;
-	if (values.length==1) return {"min":values[0], "max":values[0]};
+	if (values.length==1) return values[0];
 
 	values.sort(function(a, b){return a-b;});
 	var numIgnored=Math.floor(values.length*(1-percentile)/2+0.01);
@@ -164,7 +164,7 @@ Stats.middle=function(values, percentile){
 
 Stats.median=function(values){
 	if (values.length==0) return null;
-	if (values.length==1) return {"min":values[0], "max":values[0]};
+	if (values.length==1) return values[0];
 
 	var i=Math.floor(values.length/2);
 	if (values.length %2==0){

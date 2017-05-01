@@ -86,7 +86,7 @@ if (!Mozilla) var Mozilla = {"name": "Mozilla", "edges": []};
           "partitions": [
             {
               "name": "DevTools",
-              "manager": "TBD",
+              "manager": "Patrick Brosset",
               "style": {"color": "#FAA43A"},
               "esfilter": {
                 "and": [
@@ -192,7 +192,7 @@ if (!Mozilla) var Mozilla = {"name": "Mozilla", "edges": []};
             },
             {
               "name": "WebExtensions",
-              "manager": "Jan Odvarko",
+              "manager": "Andy McKay",
               "style": {"color": "#757EBA"},
               "esfilter": {
                 "and": [
@@ -202,7 +202,7 @@ if (!Mozilla) var Mozilla = {"name": "Mozilla", "edges": []};
             },
             {
               "name": "Core",
-              "manager":"",
+              "manager":"Selena Deckelmann",
               "style": {"color": "#757EBA"},
               "esfilter": {
                 "and": [
@@ -212,7 +212,7 @@ if (!Mozilla) var Mozilla = {"name": "Mozilla", "edges": []};
             },
             {
               "name": "Firefox",
-              "manager":"",
+              "manager":"Justin Dolske, ?mconley? ",
               "style": {"color": "#757EBA"},
               "esfilter": {
                 "and": [

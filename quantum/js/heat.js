@@ -177,24 +177,6 @@ function age2color(age) {
 }//function
 
 
-//JUNK FOR THE Blockers/Regressions/Nominations
-function heatCommon() {
-	$("body").css("display", "block");
-
-	$('.sidebar_name').click(function () {
-		var self = $(this);
-		if (self.hasClass("selected")) {
-			self.removeClass("selected");
-			$("#sidebar").animate({"width": "0px"}, 500);
-			$(".content").animate({"padding-left":"40px"}, 500);
-		} else {
-			self.addClass("selected");
-			$("#sidebar").animate({"width": "300px"}, 500);
-			$(".content").animate({"padding-left":"340px"}, 500);
-		}//endif
-	});
-}
-
 function refresher(func){
 	function callMe(){
 		try{

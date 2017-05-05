@@ -201,7 +201,7 @@ if (!Mozilla) var Mozilla = {"name": "Mozilla", "edges": []};
               }
             },
             {
-              "name": "Core",
+              "name": "Runtime",
               "manager":"Selena Deckelmann",
               "style": {"color": "#757EBA"},
               "esfilter": {
@@ -211,22 +211,13 @@ if (!Mozilla) var Mozilla = {"name": "Mozilla", "edges": []};
               }
             },
             {
-              "name": "Firefox",
-              "manager":"Justin Dolske, ?mconley? ",
+              "name": "Front End",
+              "manager":"Justin Dolske",
               "style": {"color": "#757EBA"},
               "esfilter": {
-                "and": [
+                "or": [
+                  {"prefix": {"product": "toolkit"}},
                   {"prefix": {"product": "firefox"}}
-                ]
-              }
-            },
-            {
-              "name": "Toolkit",
-              "manager":"",
-              "style": {"color": "#757EBA"},
-              "esfilter": {
-                "and": [
-                  {"prefix": {"product": "toolkit"}}
                 ]
               }
             },

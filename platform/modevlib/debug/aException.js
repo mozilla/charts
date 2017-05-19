@@ -27,7 +27,7 @@ importScript("../util/convert.js");
 	function pythonExcept2Exception(except){
 		var output = new Exception(
 			new Template(except.template).expand(except.params),
-			Array.newInstance(except.cause).map(pythonExcept2Exception).unwrap()
+			Array.newInstance(except.cause).mapExists(pythonExcept2Exception).unwrap()
 		);
 		output.stack = pythonTrace2Stack(except.trace);
 		return output;
@@ -35,7 +35,7 @@ importScript("../util/convert.js");
 
 	function pythonTrace2Stack(stack){
 		if (stack===undefined || stack==null) return [];
-		var output = stack.map(function(s){
+		var output = stack.mapExists(function(s){
 			return {
 				"function":s.method,
 				"fileName":s.file,
@@ -118,7 +118,7 @@ importScript("../util/convert.js");
 
 	//MAKE A GENERIC ERROR OBJECT DESCRIBING THE ARGUMENTS PASSED
 	Exception.error = function(){
-		var args = Array.prototype.slice.call(arguments).map(function(v, i){
+		var args = Array.prototype.slice.call(arguments).mapExists(function(v, i){
 			if (typeof(v) == "string") return v;
 			return convert.value2json(v);
 		});
@@ -148,7 +148,7 @@ importScript("../util/convert.js");
 		var output = this.message + "\n";
 
 		if (this.stack){
-			output = output + this.stack.map(function(s){
+			output = output + this.stack.mapExists(function(s){
 				try{
 					return "File " + s.fileName.split("/").last() + ", line " + s.lineNumber + ", in " + s.function + "\n";
 				}catch(e){

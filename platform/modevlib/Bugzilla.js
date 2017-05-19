@@ -69,10 +69,10 @@ Bugzilla.search=function*(bugList, fields){
 				}
 			}
 
-			result.appendArray(data);
+			result.extend(data);
 			if (numCalls==0){
-				var missing=bugList.subtract(result.map(function(b){return b.id;}));
-				result.appendArray(missing.map(function(m){
+				var missing=bugList.subtract(result.mapExists(function(b){return b.id;}));
+				result.extend(missing.mapExists(function(m){
 					var output={};
 					for(var c=fields.length;c--;) output[fields[c]]=null;
 					output.id=m;

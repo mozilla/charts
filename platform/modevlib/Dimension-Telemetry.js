@@ -15,7 +15,7 @@ function string2path(fieldName, separator){
 		var list=v.split(separator);
 		list[0]={"name":list[0], "path":list[0]};
 		for(var i=1;i<list.length;i++) list[i]={"name":list[i], "path":list[i-1].path+separator+list[i]};
-		return list.map(function(v, i){
+		return list.mapExists(function(v, i){
 			return {
 				"name":v.name, //ONLY WANT THE LAST ONE FOR
 				"esfilter":{"prefix":Map.newInstance(fieldName, v.path)}
@@ -154,7 +154,7 @@ Dimension.addEdges(false, Mozilla, [
 			{"name":"MemSize (Category)", "field":"info.memsize",
 				"type":"set",
 				"allowNulls":true,
-				"partitions":Array.newRange(0, 9).map(function(v){
+				"partitions":Array.newRange(0, 9).mapExists(function(v){
 					return {
 						"name":(128*Math.pow(2, v))+"meg",
 						"value":(128*Math.pow(2, v))+"meg",

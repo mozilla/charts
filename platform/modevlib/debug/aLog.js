@@ -127,7 +127,12 @@ var Log = new function(){
 
 	Log.error = function(description, params, cause, stackOffset){
 		var ex;
-		if (params instanceof Exception) {
+		if (params instanceof Error){
+			stackOffset = cause;
+			cause = params;
+			params = null;
+			ex = new Exception(description, cause, coalesce(stackOffset, 0) + 1);
+		}else if (params instanceof Exception) {
 			stackOffset = cause;
 			cause = params;
 			ex = new Exception(description, cause, coalesce(stackOffset, 0) + 1);

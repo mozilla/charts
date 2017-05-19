@@ -276,7 +276,7 @@ var aChart = {};
 				values = qb.sort(values, {"value": "value", "sort": -1});
 				if (other > 0) values.append({"name": "Other", "value": other, "style": params.otherStyle});
 			} else {
-				values = cube.map(function(v, i){
+				values = cube.mapExists(function(v, i){
 					return {"name": seriesLabels[i], "value": v, "style": chartCube.edges[0].domain.partitions[i].style}
 				});
 				values = qb.sort(values, {"value": "value", "sort": -1});
@@ -289,7 +289,7 @@ var aChart = {};
 				var allOther = 0;
 
 				//COLAPSE INTO 'OTHER' CATEEGORY
-				var total = aMath.SUM(cube.map(aMath.SUM));
+				var total = aMath.SUM(cube.mapExists(aMath.SUM));
 				values = [];
 				cube.forall(function(s, i){
 					var other = 0;
@@ -322,7 +322,7 @@ var aChart = {};
 		}//endif
 
 
-		var colors = values.map(function(v, i){
+		var colors = values.mapExists(function(v, i){
 			var c = "black";
 			if (v.style && v.style.color) {
 				c = v.style.color;
@@ -374,7 +374,7 @@ var aChart = {};
 
 		//FILL THE CROSS TAB DATASTUCTURE TO THE FORMAT EXPECTED (2D array of rows
 		//first row is series names, first column of each row is category name
-		var data = values.map(function(v, i){
+		var data = values.mapExists(function(v, i){
 			return [v.name, v.value]
 		});
 
@@ -516,7 +516,7 @@ var aChart = {};
 			//LOOK FOR DATES TO MARKUP
 
 			var dateMarks = [];
-			dateMarks.appendArray(findDateMarks(xaxis.domain));  //WE CAN PLUG SOME dateMarks RIGHT INTO TIME DOMAIN FOR DISPLAY
+			dateMarks.extend(findDateMarks(xaxis.domain));  //WE CAN PLUG SOME dateMarks RIGHT INTO TIME DOMAIN FOR DISPLAY
 			if (dateMarks.length > 0) {
 				chartParams.renderCallback = function(){
 					var self = this;
@@ -549,7 +549,7 @@ var aChart = {};
 				{"colIndex": 2, "colName": valueName, "colType": "Numeric"}
 			];
 			//GIVE EACH SELECT A ROW
-			data = cube.map(function(v, i){
+			data = cube.mapExists(function(v, i){
 				return [
 					"",
 					seriesFormatter(v[seriesName]),
@@ -558,7 +558,7 @@ var aChart = {};
 			});
 		} else {
 			categoryLabels = getAxisLabels(chartCube.edges[0]);
-			seriesLabels = xaxis.domain.partitions.map(xaxis.domain.label);
+			seriesLabels = xaxis.domain.partitions.mapExists(xaxis.domain.label);
 			valueName = Array.newInstance(chartCube.select)[0].name;
 			metadata = [
 				{"colIndex": 0, "colName": chartCube.edges[0].name, "colType": "String"},
@@ -569,7 +569,7 @@ var aChart = {};
 			//GIVE EACH SELECT A ROW
 			data = [];
 			cube.forall(function(row, category){
-				var temp = row.map(function(v, i){
+				var temp = row.mapExists(function(v, i){
 					var val = v[valueName];
 					if (val !== undefined && val != null) {
 						return [
@@ -595,7 +595,7 @@ var aChart = {};
 		//STARTS AS VISIBLE, SO TOGGLE TO HIDE
 		styles.forall(function(s, i){
 			if (s.visibility && s.visibility == "hidden" && chart.legendPanel != null) {
-				var datums = chart.legendPanel.data._datums.map(function(d){
+				var datums = chart.legendPanel.data._datums.mapExists(function(d){
 					if (d.key.indexOf("," + categoryLabels[i] + ",") >= 0) return d;
 				});
 				pvc.data.Data.setVisible(datums, false);
@@ -651,7 +651,7 @@ var aChart = {};
 			//MoDevMetric CUBE
 			if (chartCube.select instanceof Array) {
 				var m = new Matrix({"data": cube});
-				cube = Map.zip(Array.newInstance(chartCube.select).map(function(s){
+				cube = Map.zip(Array.newInstance(chartCube.select).mapExists(function(s){
 					return [
 						s.name,
 						m.map(function(v){
@@ -713,7 +713,7 @@ var aChart = {};
 		var categoryLabels;
 		if (chartCube.edges.length == 1 || chartCube.edges[0].domain.partitions.length == 0) {
 			categoryAxis = {"domain": {"type": "set", "partitions": Array.newInstance(chartCube.select)}};
-			categoryLabels = Array.newInstance(chartCube.select).map(function(v){
+			categoryLabels = Array.newInstance(chartCube.select).mapExists(function(v){
 				return v.name;
 			});
 		} else if (chartCube.edges.length == 2) {
@@ -825,7 +825,7 @@ var aChart = {};
 //        return "hi there";
 //      }
 			},
-			"colors": styles.map(function(s, i){
+			"colors": styles.mapExists(function(s, i){
 				var c = coalesce(s.color, styles[i % (styles.length)].color);
 				try {
 					return c.toHTML()
@@ -860,9 +860,9 @@ var aChart = {};
 			//LOOK FOR DATES TO MARKUP
 
 			var dateMarks = [];
-			dateMarks.appendArray(findDateMarks(xaxis.domain));  //WE CAN PLUG SOME dateMarks RIGHT INTO TIME DOMAIN FOR DISPLAY
+			dateMarks.extend(findDateMarks(xaxis.domain));  //WE CAN PLUG SOME dateMarks RIGHT INTO TIME DOMAIN FOR DISPLAY
 			categoryAxis.domain.partitions.forall(function(part){  //EACH CATEGORY CAN HAVE IT'S OWN dateMarks to SHOW
-				dateMarks.appendArray(findDateMarks(part))
+				dateMarks.extend(findDateMarks(part))
 			});
 			if (dateMarks.length > 0) {
 				defaultParam.renderCallback = function(){
@@ -904,7 +904,7 @@ var aChart = {};
 				var temp = seriesLabels;
 				seriesLabels = categoryLabels;
 				categoryLabels = temp;
-				data = cube[chartCube.select.name].map(function(v){
+				data = cube[chartCube.select.name].mapExists(function(v){
 					return [v];
 				});
 			}//endif
@@ -937,7 +937,7 @@ var aChart = {};
 			d[i] = v;
 		});
 
-		var metadata = seriesLabels.map(function(v, i){
+		var metadata = seriesLabels.mapExists(function(v, i){
 			return {"colName": v};
 		});
 		metadata.splice(0, 0, {"colName": "x"});
@@ -953,7 +953,7 @@ var aChart = {};
 		//STARTS AS VISIBLE, SO TOGGLE TO HIDE
 		styles.forall(function(s, i){
 			if (s.visibility && s.visibility == "hidden" && chart.legendPanel != null) {
-				var datums = chart.legendPanel.data._datums.map(function(d){
+				var datums = chart.legendPanel.data._datums.mapExists(function(d){
 					if (d.key.indexOf("," + categoryLabels[i] + ",") >= 0) return d;
 				});
 				pvc.data.Data.setVisible(datums, false);
@@ -965,7 +965,6 @@ var aChart = {};
 
 		//ADD BUTTON TO SHOW SHEET
 		if (params.sheetDiv) {
-
 
 			var sheetButtonID = divName + "-showSheet";
 			var html = '<div id=' + convert.String2Quote(sheetButtonID) + ' class="toolbutton" style="right:3;bottom:3" title="Show Table"><img src="' + Settings.imagePath + '/Spreadsheet.png"></div>';
@@ -1092,12 +1091,10 @@ var aChart = {};
 						specific = qb.specificBugs(query, [x]);
 					}//endif
 
-
-					//      var specific=qb.specificBugs(query, [series, x]);
 					var buglist = (yield (ESQuery.run(specific)));
-					//      buglist=buglist.list.map(function(b){return b.bug_id;});
-					if (buglist.cube === undefined) buglist.cube = buglist.list;
-
+					if (buglist.cube===undefined){
+						buglist.cube=buglist.list.select("bug_id");
+					}//endif
 
 					if (buglist.cube.length > BZ_SHOW_BUG_LIMIT) {
 						Log.alert("Too many bugs. Truncating to " + BZ_SHOW_BUG_LIMIT + ".", function(){
@@ -1137,7 +1134,7 @@ var aChart = {};
 		if (axis.domain.type == "time") {
 			if (axis.allowNulls) Log.error("Charting lib can not handle NULL domain value.");
 			var format = qb.domain.time.DEFAULT_FORMAT;
-			labels = axis.domain.partitions.map(function(v, i){
+			labels = axis.domain.partitions.mapExists(function(v, i){
 				if (v.value !== undefined) {
 					return Date.newInstance(v.value).format(format);
 				} else if (v.min !== undefined) {
@@ -1147,7 +1144,7 @@ var aChart = {};
 				}//endif
 			});
 		} else if (axis.domain.type == "duration") {
-			labels = axis.domain.partitions.map(function(v, i){
+			labels = axis.domain.partitions.mapExists(function(v, i){
 				if (v instanceof String) {
 					return v;
 				} else if (v.milli === undefined) {
@@ -1157,7 +1154,7 @@ var aChart = {};
 				}//endif
 			});
 		} else if (["range", "count"].contains(axis.domain.type)) {
-			labels = axis.domain.partitions.map(function(v, i){
+			labels = axis.domain.partitions.mapExists(function(v, i){
 				if (v instanceof String) {
 					return v;
 				} else {
@@ -1169,7 +1166,7 @@ var aChart = {};
 		} else if (Array.UNION(axis.domain.partitions.select("value")).length < axis.domain.partitions.length) {
 			Log.warning("Some unsual domain of type=" + axis.domain.type + " and some parts are missing `value` property");
 		} else {
-			labels = axis.domain.partitions.map(function(v, i){
+			labels = axis.domain.partitions.mapExists(function(v, i){
 				if (v instanceof String) {
 					return v;
 				} else if (aMath.isNumeric(v)) {

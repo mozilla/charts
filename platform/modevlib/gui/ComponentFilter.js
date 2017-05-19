@@ -2,7 +2,9 @@
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
-ComponentFilter = function(){
+ComponentFilter = function(indexName, productFilter){
+	this.indexName=coalesce(indexName, "bugs");
+	this.productFilter = productFilter;
 	this.name="Components";
 	this.isFilter=true;
 	this.selected=[];
@@ -23,7 +25,7 @@ ComponentFilter.prototype.refresh = function(){
 	this.refreshThread=Thread.run("get components", function*(){
 		try{
 			var components=yield (ESQuery.run({
-				"from":"bugs",
+				"from":self.indexName,
 				"select":{"name":"count", "value":"bug_id", "aggregate":"count"},
 				"edges":[
 					{"name":"term", "value":"component"}
@@ -31,12 +33,12 @@ ComponentFilter.prototype.refresh = function(){
 				"esfilter":{"and":[
 					Mozilla.CurrentRecords.esfilter,
 					Mozilla.BugStatus.Open.esfilter,
-					GUI.state.productFilter.makeFilter()   //PULL DATA FROM THE productFilter
+					self.productFilter.makeFilter()   //PULL DATA FROM THE productFilter
 				]}
 			}));
 
 			components = qb.Cube2List(components);
-			var terms = components.map(function(v, i){return v.term;});
+			var terms = components.mapExists(function(v, i){return v.term;});
 
 			self.selected = self.selected.intersect(terms);
 	//    var self=this;
@@ -95,7 +97,7 @@ ComponentFilter.prototype.setSimpleState=function(value){
 	if (!value || value==""){
 		this.selected=[];
 	}else{
-		this.selected=value.split(",").map(function(v){return v.trim();});
+		this.selected=value.split(",").mapExists(function(v){return v.trim();});
 	}//endif
 //  this.refresh();
 

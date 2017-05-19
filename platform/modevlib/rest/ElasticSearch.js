@@ -7,7 +7,7 @@ importScript("Rest.js");
 
 ElasticSearch={};
 
-//ElasticSearch.pushURL="http://elasticsearch-private.bugs.scl3.mozilla.com:9200";
+//ElasticSearch.pushURL="http://esfrontline-private-vip.bugs.scl3.mozilla.com:9200";
 //ElasticSearch.pushURL="http://elasticsearch7.metrics.scl3.mozilla.com:9200";
 ElasticSearch.pushURL="http://klahnakoski-es.corp.tor1.mozilla.com:9200";
 
@@ -113,9 +113,9 @@ ElasticSearch.getOpenMinMax=function*(esfilter, timeDomain, selects){
 		]}
 	}));
 
-	var allSelects = selects.map(function(s){
+	var allSelects = selects.mapExists(function(s){
 		return {"name":s, "value":'expires_on>Date.now().getMilli() ? '+s+' : null', "aggregate":"minimum"};  //aggregate===minimum due to es corruption
-	}).appendArray([
+	}).extend([
 		{"name":"min", "value":'["new", "assigned", "unconfirmed", "reopened"].contains(bug_status) ? modified_ts : null', "aggregate":"minimum"},
 		{"name":"max", "value":'["new", "assigned", "unconfirmed", "reopened"].contains(bug_status) ? expires_on  : null', "aggregate":"maximum"}
 	]);

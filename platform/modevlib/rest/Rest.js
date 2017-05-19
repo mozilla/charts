@@ -85,7 +85,12 @@ Rest.send=function*(ajaxParam){
 			if ([200, 201].contains(request.status)){
 				var response = request.responseText;
 				if (ajaxParam.dataType == 'json'){
-					response = convert.json2value(response);
+					try{
+						response = convert.json2value(response);
+					}catch(e){
+						ajaxParam.error(e);
+						return
+					}//try
 				}//endif
 				if (response === undefined){
 					Log.warning("Appears to have no response!!")

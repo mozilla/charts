@@ -163,7 +163,7 @@ var aQueue_usingArray;  //SLOW, BUT GOOD FOR WHEN DEALING WITH PURE OBJECTS
 		this.array=[];
 		this.map={};
 
-		if (data!==undefined) this.appendArray(data);
+		if (data!==undefined) this.extend(data);
 	};
 
 	aQueue_simple.newInstance=function(data){
@@ -171,7 +171,7 @@ var aQueue_usingArray;  //SLOW, BUT GOOD FOR WHEN DEALING WITH PURE OBJECTS
 	};//method
 
 
-	aQueue_simple.prototype.appendArray=function(data){
+	aQueue_simple.prototype.extend=function(data){
 		var self=this;
 		data.forall(function(v, i){self.add(v);});
 		return this;
@@ -223,7 +223,7 @@ var aQueue_usingArray;  //SLOW, BUT GOOD FOR WHEN DEALING WITH PURE OBJECTS
 		this.reserve=[];    //PACK IN REVERSE ORDER FOR SPEED
 
 		var self=this;
-		if (data!==undefined) this.array.appendArray(data);
+		if (data!==undefined) this.array.extend(data);
 	};
 
 	aQueue_usingReserve.prototype.add=function(v){
@@ -289,7 +289,7 @@ var aQueue_usingArray;  //SLOW, BUT GOOD FOR WHEN DEALING WITH PURE OBJECTS
 		this.reserve=[];    //PACK IN REVERSE ORDER FOR SPEED
 
 		var self=this;
-		if (data!==undefined) this.array.appendArray(data);
+		if (data!==undefined) this.array.extend(data);
 	};
 
 	aQueue_usingReserve.prototype.add=function(v){
@@ -357,10 +357,10 @@ var aQueue_usingArray;  //SLOW, BUT GOOD FOR WHEN DEALING WITH PURE OBJECTS
 		this.array=[];
 
 		var self=this;
-		if (data!==undefined) this.array.appendArray(data);
+		if (data!==undefined) this.array.extend(data);
 	};
 
-	aQueue_usingArray.prototype.appendArray=function(data){
+	aQueue_usingArray.prototype.extend=function(data){
 		var self=this;
 		data.forall(function(v, i){self.add(v);});
 		return this;

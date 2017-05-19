@@ -982,10 +982,22 @@ qb.domain.set = function(column, sourceColumns){
 
 
 	//ALL PARTS MUST BE FORMAL OBJECTS SO THEY CAN BE ANNOTATED
-	if (typeof(d.partitions[0]) == "string") {
+	if (isString(d.partitions[0])) {
 		d.partitions.forall(function(part, i){
-			if (typeof(part) != "string") Log.error("Partition list can not be heterogeneous");
+			if (!isString(part)) Log.error("Partition list can not be heterogeneous");
 			part = {"name": part, "value": part, "dataIndex": i};
+			d.partitions[i] = part;
+		});
+		d.value = "name";
+		d.key = "value";
+
+		//COLUMNS FOR PARTITIONS MUST BE PROPERLY UPDATED
+		d.columns = [{"name": "name"}, {"name": "value"}, {"name": "dataIndex"}];
+		d.NULL.value = null;
+	}else if (aMath.isNumeric(d.partitions[0])) {
+		d.partitions.forall(function(part, i){
+			if (!aMath.isNumeric(part)) Log.error("Partition list can not be heterogeneous");
+			part = {"name": part, "value": convert.value2number(part), "dataIndex": i};
 			d.partitions[i] = part;
 		});
 		d.value = "name";

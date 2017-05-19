@@ -23,18 +23,18 @@ if (!Mozilla) var Mozilla = {"name": "Mozilla", "edges": []};
 	//ADD PROJECTS AND MILESTONES HERE
 	//BUT REMEMBER TO ADD DETAILED ENTRIES (AT BOTTOM)
 	var PROJECTS = ["1.3", "1.3t", "1.4", "2.0", "2.1", "2.2"];
-	var NOM_PROJECTS = PROJECTS.map(function(p){
+	var NOM_PROJECTS = PROJECTS.mapExists(function(p){
 		return p + "?";
 	});
-	var BLOCKER_PROJECTS = PROJECTS.map(function(p){
+	var BLOCKER_PROJECTS = PROJECTS.mapExists(function(p){
 		return p + "+";
 	});
 
 	var MILESTONES = ["fx30", "fx31", "fx32", "fx33", "fx34", "fx35", "fx36"];
-	var NOM_MILESTONES = MILESTONES.map(function(p){
+	var NOM_MILESTONES = MILESTONES.mapExists(function(p){
 		return p + "?";
 	});
-	var BLOCKER_MILESTONE = MILESTONES.map(function(p){
+	var BLOCKER_MILESTONE = MILESTONES.mapExists(function(p){
 		return p + "+";
 	});
 

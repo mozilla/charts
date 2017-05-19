@@ -78,7 +78,7 @@ function convertToTreeLater(self, treeNode, dimension){
 			GUI.pleaseRefreshLater = refreshNow;
 		}//endif
 		var pleaseUpdate = (treeNode.children==WAITING_FOR_RESULTS);
-		treeNode.children = dimension.partitions.map(function (v, i) {
+		treeNode.children = dimension.partitions.mapExists(function (v, i) {
 			if (i < coalesce(dimension.limit, DEFAULT_CHILD_LIMIT)){
 				v.limit = coalesce(v.limit, dimension.limit, DEFAULT_CHILD_LIMIT);
 				return convertToTree(self, {}, 1, v);
@@ -115,7 +115,7 @@ function convertToTree(self, parent, depth, dimension){
 			convertToTreeLater(self, node, dimension);
 		}else{
 			if (depth < self.treeDepth){
-				node.children=dimension.partitions.map(function(v,i){
+				node.children=dimension.partitions.mapExists(function(v,i){
 					if (i<coalesce(dimension.limit, DEFAULT_CHILD_LIMIT))
 						v.limit = coalesce(v.limit, dimension.limit, DEFAULT_CHILD_LIMIT);
 						return convertToTree(self, depth==0 ? {} : node, depth+1, v);
@@ -129,7 +129,7 @@ function convertToTree(self, parent, depth, dimension){
 		}//endif
 	}//endif
 	if (dimension.edges){
-		node.children=dimension.edges.map(function(v,i){
+		node.children=dimension.edges.mapExists(function(v,i){
 			v.limit = coalesce(v.limit, dimension.limit, DEFAULT_CHILD_LIMIT);
 			return convertToTree(self, node, 0, v);
 		});
@@ -145,7 +145,7 @@ PartitionFilter.prototype.getSelectedNodes=function(){
 	var self=this;
 
 	//CONVERT SELECTED LIST INTO PART OBJECTS
-	return this.selectedIDs.map(function(id){
+	return this.selectedIDs.mapExists(function(id){
 		return self.id2node[id];
 	});
 };//method
@@ -155,7 +155,7 @@ PartitionFilter.prototype.getSelectedNodes=function(){
 PartitionFilter.prototype.getSelectedParts=function(){
 	var self=this;
 
-	return this.selectedIDs.map(function(id){
+	return this.selectedIDs.mapExists(function(id){
 		if (id !="__all__")  return self.id2part[id];
 	});
 };//method
@@ -180,7 +180,7 @@ PartitionFilter.prototype.setSimpleState=function(value){
 
 	//SOME VALUES WILL BE IMPOSSIBLE, SO SHOULD BE REMOVED
 	if (this.hierarchy!=WAITING_FOR_RESULTS){
-		this.selectedIDs=this.getSelectedNodes().map(function(v, i){return v.id;});
+		this.selectedIDs=this.getSelectedNodes().mapExists(function(v, i){return v.id;});
 	}//endif
 	if (this.selectedIDs.length==0){
 		this.selectedIDs=["__all__"];
@@ -190,7 +190,7 @@ PartitionFilter.prototype.setSimpleState=function(value){
 
 PartitionFilter.prototype.getSummary=function(){
 	if (this.selectedIDs.length==0) return this.name+": All";
-	return this.name+": "+this.getSelectedNodes().map(function(p){return p.data;}).join(", ");
+	return this.name+": "+this.getSelectedNodes().mapExists(function(p){return p.data;}).join(", ");
 };//method
 
 
@@ -314,7 +314,7 @@ PartitionFilter.prototype.makeHTML=function(){
 PartitionFilter.prototype.makeFilter = function(){
 	var selected = this.getSelectedParts();
 	if (selected.length == 0) return true;
-	return {"or":selected.map(function(v){return v.esfilter;})};
+	return {"or":selected.mapExists(function(v){return v.esfilter;})};
 };//method
 
 

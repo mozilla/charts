@@ -133,9 +133,10 @@ GUI = {};
 				GUI.pleaseRefreshLater=true;
 				//USE DEFAULT FILTERS
 				importScript(["ComponentFilter.js", "ProductFilter.js", "ProgramFilter.js"], function(){
-					GUI.state.programFilter = new ProgramFilter();
-					GUI.state.productFilter = new ProductFilter();
-					GUI.state.componentFilter = new ComponentFilter();
+					let programs = coalesce(showDefaultFilters.programs, MozillaPrograms);
+					GUI.state.programFilter = new ProgramFilter(indexName, programs);
+					GUI.state.productFilter = new ProductFilter(indexName);
+					GUI.state.componentFilter = new ComponentFilter(indexName, GUI.state.productFilter);
 
 					GUI.customFilters.push(GUI.state.programFilter);
 					GUI.customFilters.push(GUI.state.productFilter);
@@ -158,9 +159,10 @@ GUI = {};
 			Thread.run("show last updated timestamp", function*() {
 				var time;
 
-				if (indexName === undefined || indexName == null || indexName == "bugs") {
+				if (indexName === undefined || indexName == null || indexName == "bugs" || indexName == "private_bugs") {
+					indexName = coalesce(indexName, "bugs");
 					var result = yield (ESQuery.run({
-						"from": "bugs",
+						"from": indexName,
 						"select": {"name": "max_date", "value": "modified_ts", "aggregate": "maximum"},
 						"esfilter": {"range": {"modified_ts": {"gte": Date.eod().addMonth(-1).getMilli()}}}
 					}));
@@ -271,7 +273,7 @@ GUI = {};
 			var simpleState = {};
 			Map.forall(GUI.state, function (k, v) {
 
-				var p = GUI.parameters.map(function (v, i) {
+				var p = GUI.parameters.mapExists(function (v, i) {
 					if (v.id == k) return v;
 				})[0];
 
@@ -305,7 +307,7 @@ GUI = {};
 			Map.forall(urlState, function (k, v) {
 				if (GUI.state[k] === undefined) return;
 
-				var p = GUI.parameters.map(function (v, i) {
+				var p = GUI.parameters.mapExists(function (v, i) {
 					if (v.id == k) return v;
 				})[0];
 
@@ -329,7 +331,7 @@ GUI = {};
 					if (v.trim()==""){
 						GUI.state[k]=[];
 					}else{
-						GUI.state[k] = v.split(",").map(String.trim).unwrap();
+						GUI.state[k] = v.split(",").mapExists(String.trim).unwrap();
 					}//endif
 				} else if (p && p.type == "code") {
 					v = v.escape(Map.inverse(GUI.urlMap));
@@ -352,7 +354,7 @@ GUI = {};
 		///////////////////////////////////////////////////////////////////////////
 		GUI.AddParameters = function (parameters, relations) {
 			//KEEP SIMPLE PARAMETERS GUI.parameters AND REST IN customFilters
-			GUI.parameters = parameters.map(function (param) {
+			GUI.parameters = parameters.mapExists(function (param) {
 				if (param.type.isFilter) {
 					GUI.state[param.id] = param.type;
 					if (param.name) param.type.name = param.name;
@@ -542,7 +544,7 @@ GUI = {};
 					if (v.trim() == "") {
 						GUI.state[param.id]=[];
 					}else{
-						GUI.state[param.id]=v.split(",").map(String.trim);
+						GUI.state[param.id]=v.split(",").mapExists(String.trim);
 					}//endif
 				} else {
 					v = $("#" + param.id).val();
@@ -644,7 +646,7 @@ GUI = {};
 
 				var threads = [];
 				GUI.customFilters.forall(function (f, i) {
-					var t = Thread.run(function*() {
+					var t = Thread.run("refresh filter", function*() {
 						yield (f.refresh());
 					});
 					t.name = GUI.customFilters[i].name;
@@ -697,7 +699,7 @@ GUI = {};
 			var output = {"and": []};
 			GUI.customFilters.forall(function (f, i) {
 				if (f.makeFilter){
-					output.and.push(f.makeFilter());
+					output.and.push(f.makeFilter(indexName));
 				}//endif
 			});
 			return output;

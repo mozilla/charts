@@ -1,5 +1,6 @@
-var layoutAll;       //INITIAL LAYOUT
-var dynamicLayout;   //SUBSEQUENT LAYOUT WHEN DOM CHANGES
+var layoutAll;        //INITIAL LAYOUT
+var dynamicLayout;    //SUBSEQUENT LAYOUT WHEN DOM CHANGES
+var onDynamicLayout;  //CALL THIS WITH A FUNCTION THAT WILL BE CALLED AFTER EACH LAYOUT
 
 (function(){
 	var DELAY_JAVASCRIPT = 200;
@@ -7,6 +8,7 @@ var dynamicLayout;   //SUBSEQUENT LAYOUT WHEN DOM CHANGES
 
 	var allExpression = undefined;
 	var mapSelf2DynamicFormula = undefined;
+	var postLayoutFunctions=[];
 
 	layoutAll = function layout_all(){
 		allExpression = [];
@@ -58,10 +60,12 @@ var dynamicLayout;   //SUBSEQUENT LAYOUT WHEN DOM CHANGES
 			items(dimMap, function(dim, mapper){
 				//formula IS A {"l":{}, "r":{}} OBJECT DESCRIBING THE LHS AND RHS OF THE EQUATION RESPECTIVLY
 				var formula = rel[dim];
-				if (formula.length == 0) {
-					//DEFAULT IS TO CENTER EVERYTHING
-					self.css(mapper.left, "50%");
-					addTransform(self, translate(-0.5, dim));
+				if (formula.length == 0){
+					if (mapSelf2DynamicFormula[dim][selfID].length==0) {
+						//DEFAULT IS TO CENTER EVERYTHING
+						self.css(mapper.left, "50%");
+						addTransform(self, translate(-0.5, dim));
+					}//endif
 					return;
 				}//endif
 
@@ -248,6 +252,12 @@ var dynamicLayout;   //SUBSEQUENT LAYOUT WHEN DOM CHANGES
 		}//endif
 
 		eval("dynamicLayout=" + layoutFunction);
+		postLayoutFunctions.push(dynamicLayout);
+		dynamicLayout = function(){
+			forall(postLayoutFunctions, function(f){
+				f();
+			});
+		};
 		dynamicLayout();
 		dynamicLayout = debounce(dynamicLayout, DELAY_JAVASCRIPT);
 		window.onresize = dynamicLayout;
@@ -578,5 +588,9 @@ var dynamicLayout;   //SUBSEQUENT LAYOUT WHEN DOM CHANGES
 		});
 		return Object.keys(res);
 	}//function
+
+	onDynamicLayout=function(func){
+		postLayoutFunctions.push(func);
+	};//function
 
 })();

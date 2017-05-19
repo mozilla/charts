@@ -372,7 +372,7 @@ MVEL.prototype.where = function(esFilter){
 		if (valueList.length == 0) Log.error("Expecting something in 'terms' array");
 		if (valueList.length == 1) return "(" + testNotNull(variableName) + " && " + variableName + "==" + MVEL.Value2MVEL(valueList[0])+")";
 		output = "((" + testNotNull(variableName) + ") &&\n("+
-		valueList.map(function(v){
+		valueList.mapExists(function(v){
 			return "(" + variableName + "==" + MVEL.Value2MVEL(v) + ")";
 		}).join(" ||\n ")+"))";
 		return output;

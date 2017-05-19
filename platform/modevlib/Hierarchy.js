@@ -53,7 +53,7 @@ Hierarchy.fromList = function(args){
 	deleteMe.forall(function(pair){
 		childList[pair[0]] = childList[pair[0]].filter({"not" : {"term" : {"id" : pair[1].id}}});
 	});
-	roots.appendArray(deleteMe.select("1"));
+	roots.extend(deleteMe.select("1"));
 
 
 	var heir = function(children){
@@ -208,11 +208,11 @@ Hierarchy.topologicalSort = function(args){
 				//HAVE __parent DEFINED, AND IN THEORY WE SHOULD BE ABLE CONTINUE
 				//WORKING ON THOSE
 				if (queue.length == 0 && unprocessed.length > 0) {
-					var hasParent = unprocessed.map(function(v, i){
+					var hasParent = unprocessed.mapExists(function(v, i){
 						if (graph[v].__parent !== undefined) return v;
 					});
 					if (hasParent.length == 0) Log.error("Isolated cycle found");
-					queue.appendArray(hasParent);
+					queue.extend(hasParent);
 				}//endif
 			}//END OF HACK
 
@@ -330,7 +330,7 @@ function* getRawDependencyData(esfilter, dateRange, selects){
 	var data = yield (Q(
 		{
 			"from" : raw_data,
-			"select" : allSelects.subtract(["bug_id"]).map(
+			"select" : allSelects.subtract(["bug_id"]).mapExists(
 				function(v){
 					return {"value" : v, "aggregate" : "minimum"};  //aggregate==min BECAUSE OF ES CORRUPTION
 				}
@@ -387,7 +387,7 @@ function* getDailyDependencies(data, topBugFilter){
 			"descendants_field" : "dependencies"
 		});  //yield (Thread.YIELD);
 
-		var allDescendantsForToday = Array.union(allTopBugs.select("dependencies")).union(allTopBugs.select("bug_id")).map(function(v){
+		var allDescendantsForToday = Array.union(allTopBugs.select("dependencies")).union(allTopBugs.select("bug_id")).mapExists(function(v){
 			return v - 0;
 		});
 		todayBugs.forall(function(detail, i){
@@ -399,7 +399,7 @@ function* getDailyDependencies(data, topBugFilter){
 		});
 
 		var openTopBugs = [];
-		var openBugs = todayBugs.map(function(detail){
+		var openBugs = todayBugs.mapExists(function(detail){
 			if (["new", "assigned", "unconfirmed", "reopened"].contains(detail.bug_status)) {
 				if (topBugFilter(detail)) openTopBugs.append(detail);
 				return detail;
@@ -415,7 +415,7 @@ function* getDailyDependencies(data, topBugFilter){
 			"descendants_field" : "dependencies"
 		});  //yield (Thread.YIELD);
 
-		var openDescendantsForToday = Array.union(openTopBugs.select("dependencies")).union(openTopBugs.select("bug_id")).map(function(v){
+		var openDescendantsForToday = Array.union(openTopBugs.select("dependencies")).union(openTopBugs.select("bug_id")).mapExists(function(v){
 			return v - 0;
 		});
 		var todayTotal = 0;  // FOR DEBUG

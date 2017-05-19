@@ -96,7 +96,7 @@ var TEST_COLOR;
 	};//function
 
 	ColorSRGB.prototype.lighter=function(){
-		return new ColorSRGB(this.rgb.map(function(v){
+		return new ColorSRGB(this.rgb.mapExists(function(v){
 			return Math.min(Math.round(v+30), 255);
 		}));
 	};
@@ -114,10 +114,10 @@ var TEST_COLOR;
 	Color.newInstance=function(value){
 		if (value.startsWith("lhs(")){
 			value=value.between("lhs(", ")");
-			var lhs = value.split(",").map(function(v){return v.trim()-0;});
+			var lhs = value.split(",").mapExists(function(v){return v.trim()-0;});
 			return new Color(lhs[0], lhs[1], lhs[2]);
 		}else if (value.startsWith("#")){
-			var rgb = Array.newRange(0, 3).map(function(i){
+			var rgb = Array.newRange(0, 3).mapExists(function(i){
 				return convert.hex2int(value.substring(i*2+1, i*2+3))
 			});
 			return new ColorSRGB(rgb);
@@ -133,7 +133,7 @@ var TEST_COLOR;
 	Color.newHTML=function(value){
 		if (value.startsWith("rgb(")){
 			value=value.between("rgb(", ")");
-			var rgb = value.split(",").map(function(v){return v.trim()-0;});
+			var rgb = value.split(",").mapExists(function(v){return v.trim()-0;});
 			return new ColorSRGB(rgb[0], rgb[1], rgb[2]);
 		}//endif
 
@@ -187,7 +187,7 @@ var TEST_COLOR;
 		var xL = COLOR_MESH[Lfloor_2][hfloor];
 		var xHL = COLOR_MESH[Lfloor_2][hfloor_2];
 
-		return hex(Map.zip(["r", "g", "b"].map(function (c) {
+		return hex(Map.zip(["r", "g", "b"].mapExists(function (c) {
 			return [c, x0[c] * (1 - Lpart) * (1 - hpart) + xH[c] * hpart * (1 - Lpart) + xL[c] * Lpart * (1 - hpart) + xHL[c] * hpart * Lpart];
 		})));
 	};

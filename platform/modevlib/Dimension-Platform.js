@@ -191,7 +191,7 @@ if (!Mozilla) var Mozilla = {"name": "Mozilla", "edges": []};
 			}
 		]
 	};
-	releaseTracking.requiredFields = Array.union(releaseTracking.edges.select("esfilter").map(qb.requiredFields));
+	releaseTracking.requiredFields = Array.union(releaseTracking.edges.select("esfilter").mapExists(qb.requiredFields));
 
 	{//FIND CURRENT RELEASE, AND ENSURE WE HAVE ENOUGH RELEASES!
 		var currentRelease = undefined;
@@ -207,7 +207,7 @@ if (!Mozilla) var Mozilla = {"name": "Mozilla", "edges": []};
 	}
 
 	//NOT IN ANY OF THE THREE TRAINS
-	var otherFilter = {"or": releaseTracking.edges.map(function(r, i){
+	var otherFilter = {"or": releaseTracking.edges.mapExists(function(r, i){
 		if (currentRelease.version <= r.version && r.version <= currentRelease.version + 2) return undefined;
 		return r.esfilter;
 	})};
@@ -224,7 +224,7 @@ if (!Mozilla) var Mozilla = {"name": "Mozilla", "edges": []};
 		"name": "Release Tracking - Desktop",
 		"esFacet": true,
 		"requiredFields": releaseTracking.requiredFields,
-		"edges": trains.leftBut(1).map(function(t, track){
+		"edges": trains.leftBut(1).mapExists(function(t, track){
 			var release = releaseTracking.edges[currentRelease.dataIndex + track];
 			return Map.setDefault({}, t, release);
 		})
@@ -243,7 +243,7 @@ if (!Mozilla) var Mozilla = {"name": "Mozilla", "edges": []};
 		"columnName": "train",
 		"isFacet": true,
 		"requiredFields": releaseTracking.requiredFields,
-		"partitions": trains.leftBut(1).map(function(t, track){
+		"partitions": trains.leftBut(1).mapExists(function(t, track){
 			var release = releaseTracking.edges[currentRelease.dataIndex + track];
 			var output = Map.setDefault({}, t, release);
 			return output;

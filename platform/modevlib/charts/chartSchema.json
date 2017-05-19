@@ -13,7 +13,7 @@
 			"type": "string"
 		},
 		"axis": {
-			"description": "list of axis, property names not limited to 'x' and 'y', ",
+			"description": "list of axis, property names not limited to 'x' and 'y'",
 			"type": "object",
 			"properties": {
 				"x": {
@@ -25,9 +25,19 @@
 			}
 		},
 		"area": {
-			"description": "details regarding the plot area, but nothing about the series",
+			"description": "details regarding the plot area, but nothing about the series.  Multiple areas are allowed, and may share axis.",
 			"type": "object",
 			"properties": {
+				"target": {
+					"description": "for when this area is not in the chart target div",
+					"type":"string"
+				},
+				"x":{
+					"description": "The axis used for the horizontal dimension. (default = x)"
+				},
+				"y":{
+					"description": "The axis used for the vertical dimension. (default = y)"
+				},
 				"style": {
 					"$ref": "#definitions.object_style"
 				}
@@ -90,15 +100,51 @@
 			"type": "function"
 		},
 		"series": {
-			"description": "what is ploted ",
+			"description": "what is plotted ",
 			"type": "object",
 			"properties": {
+				"select":{
+					"description":"selector(s) for this series.  Use an array of selectors to plot multiple dimensions",
+					"type":"nested",
+					"properties":{
+						"value": {
+							"description": "expression to extract from data and chart",
+							"type": "string"
+						},
+						"range": {
+							"description": "use for range-of-values display, like whisker charts, or gantt charts.  Can not use with `series.select.value`.  Makes no sense with `dot` charts",
+							"type": "object",
+							"properties":{
+								"min":{
+									"description":"minimum value of the range, if any",
+									"type":"number"
+								},
+								"max":{
+									"description":"maximum value of the range, if any",
+									"type":"number"
+								}
+							}
+						},
+						"axis": {
+							"description": "name of the axis to apply against: can be any #chart.axis property name.  Use tuple if plotting more than one dimension.",
+							"type": "string"
+						},
+						"name": {
+							"description": "same as `axis` but standard with JSON query expressions",
+							"type": "string"
+						}
+					}
+				},
 				"value": {
-					"description": "expression to extract from data and chart, use tuple if plotting more than one dimension",
+					"description": "a shortcut for `select.value`",
 					"type": "string"
 				},
 				"axis": {
-					"description": "name of the axis to apply against: can be any #chart.axis property name.  Use tuple if plotting more than one dimension.",
+					"description": "a shortcut for `select.axis`",
+					"type": "string"
+				},
+				"area": {
+					"description": "in the event this chart has multiple draw areas, this is the name of area this series will show in",
 					"type": "string"
 				},
 				"type": {
@@ -106,6 +152,10 @@
 					"type": "string"
 				},
 				"label": {
+					"description": "template for the each element's name",
+					"type": "string"
+				},
+				"name": {
 					"description": "name of the series",
 					"type": "string"
 				},
@@ -125,6 +175,9 @@
 							"$ref": "#definitions.object_style"
 						}
 					}
+				},
+				"style": {
+					"$ref": "#definitions.object_style"
 				},
 				"hoverStyle": {
 					"description": "for when hovering over datapoint",
@@ -170,7 +223,7 @@
 			"type": "object",
 			"properties": {
 				"position": {
-					"description": "where to place the axis, relative to plot area (top/right/bottom/left)",
+					"description": "where to place the axis, relative to plot area (top/right/bottom/left), default=bottom",
 					"type": "string"
 				},
 				"rug": {
@@ -183,7 +236,7 @@
 					"type": "string"
 				},
 				"value": {
-					"description": "expression to evaluate, or name of the property",
+					"description": "common expression to evaluate, or name of the property",
 					"type": "string"
 				},
 				"unit": {
@@ -264,7 +317,7 @@
 						"type": "string"
 					},
 					"id": {
-						"description": "id for programatic reference",
+						"description": "id for programmatic reference",
 						"type": "string"
 					},
 					"min": {
@@ -323,7 +376,11 @@
 					},
 					"showZero": {
 						"description": "show zero coordinate, even if calculated range would not",
-						"type": "bolean"
+						"type": "boolean"
+					},
+					"partitions": {
+						"description": "categorical dimensions require an explict list of strings",
+						"type": "string"
 					}
 				}
 			}
@@ -333,10 +390,15 @@
 		"object_style": {
 			"type": "object",
 			"properties": {
-				"$ref":"#definitions.style.properties",
 				"line": {
 					"$ref": "#definitions.style"
-				}
+				},
+				"bar-spacing": {
+					"description": "spacing between bars, either as pixels, or a percent of bar width.",
+					"type": "string",
+					"default": "10%"
+				},
+				"$ref":"#definitions.style.properties"
 			}
 		},
 		"style": {

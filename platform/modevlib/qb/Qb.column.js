@@ -109,6 +109,7 @@ qb.column.compile = function(resultColumn, sourceColumns, edges, useMVEL){  //us
 					"\"Problem with definition of name=\\\"" + resultColumn.name +
 					"\\\" value=" + convert.String2Quote(convert.String2Quote(resultColumn.value)).leftBut(1).rightBut(1) +
 					" when operating on __source=\"+convert.value2json(__source)+\" and __result=\"+convert.value2json(__result)"+
+					"+\" caused by (\"+e.message+\")\""+
 					"+\" Are you trying to get an attribute value from a NULL part?\"" +
 				", e)"+
 			"}}";

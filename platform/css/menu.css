@@ -94,10 +94,7 @@ body {
     width: 100%;
     height: 15px;
     padding-top: 15px;
-    padding-bottom: 5px;
     display: block;
-    position: relative;
-    z-index:100;
 
 }
 
@@ -383,7 +380,7 @@ table.grid td.vSeperatorA {
 }
 
 
-.chart {
+#chart, .chart {
     width: 800px;
     position: relative;
     border: 1px solid #aaaaaa;
@@ -459,14 +456,13 @@ table.grid td.vSeperatorA {
 
 
 .parameters {
-    width: 320px;
     margin-left: auto;
     margin-right: auto;
 }
 
 span.parameter_name {
     float: left;
-    width: 150px;
+    width: 120px;
     text-align: right;
     margin-right: 10px;
 }
@@ -504,8 +500,9 @@ SIDE BAR
 
 
 #sidebar {
-    padding: 0;
+    padding: 5px;
     margin: 0;
+    float: left;
 }
 
 #sidebar h2 {
@@ -537,10 +534,10 @@ SIDE BAR
 .sidebar_name div{
     position: absolute;
     top: 50px;
-    /*left: -2px;*/
+    left: -2px;
     height: 18px;
     width: 100%;
-    transform: rotate(270deg);
+    -moz-transform: rotate(270deg);
     /*color: white;*/
     color: #dddddd;
 
@@ -549,10 +546,7 @@ SIDE BAR
 
 
 .content{
-    display:block;
-    padding-left:60px;
-    top:0;
-    vertical-align: top
+    display:block;padding-left:60px;top:0;vertical-align: top
 }
 
 

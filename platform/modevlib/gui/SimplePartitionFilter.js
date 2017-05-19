@@ -72,7 +72,7 @@ SimplePartitionFilter = function () {
 		var self = this;
 
 		//CONVERT SELECTED LIST INTO PART OBJECTS
-		return this.selectedIDs.map(function (id) {
+		return this.selectedIDs.mapExists(function (id) {
 			return self.id2node[id];
 		});
 	};//method
@@ -81,7 +81,7 @@ SimplePartitionFilter = function () {
 	SimplePartitionFilter.prototype.getSelectedParts = function () {
 		var self = this;
 
-		return this.selectedIDs.map(function (id) {
+		return this.selectedIDs.mapExists(function (id) {
 			return self.id2part[id];
 		});
 	};//method
@@ -103,7 +103,7 @@ SimplePartitionFilter = function () {
 
 		//SOME VALUES WILL BE IMPOSSIBLE, SO SHOULD BE REMOVED
 		if (this.hierarchy != WAITING_FOR_RESULTS)
-			this.selectedIDs = this.getSelectedNodes().map(function (v, i) {
+			this.selectedIDs = this.getSelectedNodes().mapExists(function (v, i) {
 				return v.id;
 			});
 	};
@@ -111,7 +111,7 @@ SimplePartitionFilter = function () {
 
 	SimplePartitionFilter.prototype.getSummary = function () {
 		if (this.selectedIDs.length == 0) return this.name + ": All";
-		return this.name + ": " + this.getSelectedNodes().map(function (p) {
+		return this.name + ": " + this.getSelectedNodes().mapExists(function (p) {
 			return p.data;
 		}).join(", ");
 	};//method
@@ -130,7 +130,7 @@ SimplePartitionFilter = function () {
 		if (selected.length == 0) return ESQuery.TrueFilter;
 
 		var self = this;
-		return {"or": selected.map(function (v) {
+		return {"or": selected.mapExists(function (v) {
 			return v.esfilter;
 		})};
 	};//method

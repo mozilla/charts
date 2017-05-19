@@ -34,7 +34,7 @@ $(document).ready(function () {
 
 	//RETURN LIST OF {"selector":<selector>, "style":<style>}
 	function parseCSS(css) {
-		return css.split("}").map(function (rule) {
+		return css.split("}").mapExists(function (rule) {
 			if (rule.trim()=="") return undefined;
 
 			var info = rule.split("{");

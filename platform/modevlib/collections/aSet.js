@@ -49,7 +49,7 @@ var aSet=function(data){
 	};
 
 	aSet.prototype.map=function(func){
-		return this.getArray().map(func);
+		return this.getArray().mapExists(func);
 	};
 
 

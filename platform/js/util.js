@@ -354,8 +354,7 @@ function setReleaseHTML(data){
 
 	var scale = aMath.min(30, MAX_VERTICAL_HEIGHT / aMath.MAX(data.cube[1]), MAX_VERTICAL_HEIGHT / aMath.MAX(data.cube[2]));
 	var BETA = data.edges[0].domain.partitions[1];
-	var AURORA = data.edges[0].domain.partitions[2];
-	var ESR = data.edges[0].domain.partitions[3];
+	var NIGHTLY = data.edges[0].domain.partitions[2];
 
 	var beta = data.edges[1].domain.partitions.map(function(p, i){
 		var style = {
@@ -392,47 +391,15 @@ function setReleaseHTML(data){
 			"vertical-align": "bottom",
 			"text-align": "center",
 			"display": "inline-block",
-			"background-color": AURORA.style.color
+			"background-color": NIGHTLY.style.color
 		};
 		return devTemplate.replace({
 			"id": "tracking_2_" + i,
 			"value": data.cube[2][i],
 			"style": style,
-			"lighter": Color.newInstance(AURORA.style.color).lighter()
+			"lighter": Color.newInstance(NIGHTLY.style.color).lighter()
 		});
 	}).join("");
-
-
-	var esrTemplate = new Template([
-		'<td style="vertical-align:middle;text-align: center; width:'+WIDTH+'px;">',
-		'<div id="{{id}}" class="hoverable tracking" style="{{style|style}}" dynamic-style=":hover{background-color:{{lighter}}}">',
-		'<div style="padding-top:6px;">{{value}}</div>',
-		'</div>',
-		'</td>'
-	]);
-	var esr = data.edges[1].domain.partitions.map(function(p, i){
-		var style = {
-			"width": BAR_WIDTH+"px",
-			"height": BAR_WIDTH+"px",
-			"color": "white",
-			"vertical-align": "middle",
-			"text-align": "center",
-			"display": "inline-block",
-			"background-color": ESR.style.color
-		};
-		if (data.cube[3][i] > 0) {
-			return esrTemplate.replace({
-				"id": "tracking_3_" + i,
-				"value": data.cube[3][i],
-				"style": style,
-				"lighter": Color.newInstance(ESR.style.color).lighter()
-			});
-		} else {
-			return "<td></td>";
-		}//endif
-
-	}).join("");
-
 
 	$("#teams").html(
 			'<div></div>' +
@@ -447,7 +414,7 @@ function setReleaseHTML(data){
 			'</table>'
 	);
 	$("#beta_title").html('<h3 style="position:absolute;display:block;bottom:40px;right:0;">Beta&nbsp;(' + BETA.version + ')</h3>');
-	$("#aurora_title").html('<h3 style="position:absolute;display:block;top:40px;right:0;">Aurora&nbsp;(' + AURORA.version + ')</h3>');
+	$("#nightly_title").html('<h3 style="position:absolute;display:block;top:40px;right:0;">Nightly&nbsp;(' + NIGHTLY.version + ')</h3>');
 
 	//ADD CLICKERS
 	$(".tracking").click(function(){

@@ -13,4 +13,4 @@ bare.html
 *.iml
 libs
 import.js
-
+npm-debug.log

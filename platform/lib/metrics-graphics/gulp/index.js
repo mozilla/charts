@@ -6,8 +6,8 @@ var
   uglify = require('gulp-uglify'),
   concat = require('gulp-concat'),
   rename = require('gulp-rename'),
-//sass = require('gulp-sass'), // for building css from scss
-//minifycss = require('gulp-minify-css'), // for minifiing css
+  //sass = require('gulp-sass'), // for building css from scss
+  //minifycss = require('gulp-minify-css'), // for minifiing css
   jshint = require('gulp-jshint'),
   testem = require('gulp-testem'),
   connect = require('gulp-connect'),
@@ -22,11 +22,13 @@ var
   dist = './dist/',
   jsFiles = [
     src + 'MG.js',
+    src + 'misc/utility.js',
     src + 'common/register.js',
     src + 'common/hooks.js',
     src + 'common/data_graphic.js',
     src + 'common/bootstrap_tooltip_popover.js',
     src + 'common/chart_title.js',
+    src + 'common/scales.js',
     src + 'common/y_axis.js',
     src + 'common/x_axis.js',
     src + 'common/scales.js',
@@ -46,7 +48,6 @@ var
     src + 'misc/smoothers.js',
     src + 'misc/formatters.js',
     src + 'misc/transitions.js',
-    src + 'misc/utility.js',
     src + 'misc/error.js'
   ];
 
@@ -79,13 +80,6 @@ gulp.task('build:js', ['clean'], function () {
               cjs: 'd3',
               global: 'd3',
               param: 'd3'
-            },
-            {
-              name: 'jquery',
-              amd: 'jquery',
-              cjs: 'jquery',
-              global: 'jQuery',
-              param: '$'
             }];
           },
           exports: function() {

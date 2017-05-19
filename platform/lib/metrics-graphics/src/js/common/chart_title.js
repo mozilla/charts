@@ -9,7 +9,7 @@ function chart_title(args) {
   if (args.target && args.title) {
     var chartTitle = svg.insert('text')
       .attr('class', 'mg-header')
-      .attr('x', (args.width + args.left - args.right) / 2)
+      .attr('x', args.center_title_full_width ? args.width /2 : (args.width + args.left - args.right) / 2)
       .attr('y', args.title_y_position)
       .attr('text-anchor', 'middle')
       .attr('dy', '0.55em');
@@ -20,7 +20,7 @@ function chart_title(args) {
       .text(args.title);
 
     //show and activate the description icon if we have a description
-    if (args.show_tooltips && args.description) {
+    if (args.show_tooltips && args.description && mg_jquery_exists()) {
       chartTitle.append('tspan')
         .attr('class', 'mg-chart-description')
         .attr('dx', '0.3em')
@@ -43,7 +43,7 @@ function chart_title(args) {
           .remove();
 
         $(this).popover('show');
-        $(args.target).select('.popover')
+        $(d3.select(args.target).select('.popover').node())
           .on('mouseleave', function () {
             $chartTitle.popover('hide');
           });
@@ -54,6 +54,8 @@ function chart_title(args) {
           }
         }, 120);
       });
+    } else if (args.show_tooltips && args.description && typeof $ === 'undefined') {
+      args.error = 'In order to enable tooltips, please make sure you include jQuery.';
     }
   }
 

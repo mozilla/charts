@@ -2,9 +2,10 @@
   "framework": "qunit",
   "src_files": [
     "node_modules/jquery/dist/jquery.js",
-    "node_modules/d3/d3.js",
+    "node_modules/d3/build/d3.js",
 
     "src/js/MG.js",
+    "src/js/misc/utility.js",
     "src/js/common/register.js",
     "src/js/common/hooks.js",
     "src/js/common/data_graphic.js",
@@ -13,6 +14,7 @@
     "src/js/common/y_axis.js",
     "src/js/common/x_axis.js",
     "src/js/common/init.js",
+    "src/js/common/scales.js",
     "src/js/common/rollover.js",
     "src/js/common/markers.js",
     "src/js/common/window_listeners.js",
@@ -28,7 +30,6 @@
     "src/js/misc/smoothers.js",
     "src/js/misc/formatters.js",
     "src/js/misc/transitions.js",
-    "src/js/misc/utility.js",
     "src/js/misc/error.js",
 
     "tests/helpers.js",

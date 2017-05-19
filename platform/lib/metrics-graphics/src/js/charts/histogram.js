@@ -8,6 +8,23 @@
       raw_data_transformation(args);
       process_histogram(args);
       init(args);
+
+      new MG.scale_factory(args)
+        .namespace('x')
+        .numericalDomainFromData()
+        .numericalRange('bottom');
+
+      var baselines = (args.baselines || []).map(function(d) {
+        return d[args.y_accessor]
+      });
+
+      new MG.scale_factory(args)
+        .namespace('y')
+        .zeroBottom(true)
+        .inflateDomain(true)
+        .numericalDomainFromData(baselines)
+        .numericalRange('left');
+
       x_axis(args);
       y_axis(args);
 
@@ -30,24 +47,22 @@
 
       var bar = g.selectAll('.mg-bar')
         .data(args.data[0])
-          .enter().append('g')
-            .attr('class', 'mg-bar')
-            .attr('transform', function(d) {
-              return "translate(" + args.scales.X(d[args.x_accessor]).toFixed(2)
-                + "," + args.scales.Y(d[args.y_accessor]).toFixed(2) + ")";
-            });
+        .enter().append('g')
+        .attr('class', 'mg-bar')
+        .attr('transform', function(d) {
+          return "translate(" + args.scales.X(d[args.x_accessor]).toFixed(2) + "," + args.scales.Y(d[args.y_accessor]).toFixed(2) + ")";
+        });
 
       //draw bars
       bar.append('rect')
         .attr('x', 1)
         .attr('width', function(d, i) {
           if (args.data[0].length === 1) {
-              return (args.scalefns.xf(args.data[0][0])
-                - args.bar_margin).toFixed(2);
+            return (args.scalefns.xf(args.data[0][0]) - args.bar_margin).toFixed(0);
+          } else if (i !== args.data[0].length - 1) {
+            return (args.scalefns.xf(args.data[0][i + 1]) - args.scalefns.xf(d)).toFixed(0);
           } else {
-            return (args.scalefns.xf(args.data[0][1])
-            - args.scalefns.xf(args.data[0][0])
-            - args.bar_margin).toFixed(2);
+            return (args.scalefns.xf(args.data[0][1]) - args.scalefns.xf(args.data[0][0])).toFixed(0);
           }
         })
         .attr('height', function(d) {
@@ -55,8 +70,7 @@
             return 0;
           }
 
-          return (args.height - args.bottom - args.buffer
-            - args.scales.Y(d[args.y_accessor])).toFixed(2);
+          return (args.height - args.bottom - args.buffer - args.scales.Y(d[args.y_accessor])).toFixed(2);
         });
 
       return this;
@@ -69,19 +83,14 @@
 
     this.rollover = function() {
       var svg = mg_get_svg_child_of(args.target);
-      var $svg = $($(args.target).find('svg').get(0));
+
+      if (svg.selectAll('.mg-active-datapoint-container').nodes().length === 0) {
+        mg_add_g(svg, 'mg-active-datapoint-container');
+      }
 
       //remove the old rollovers if they already exist
       svg.selectAll('.mg-rollover-rect').remove();
       svg.selectAll('.mg-active-datapoint').remove();
-
-      //rollover text
-      svg.append('text')
-        .attr('class', 'mg-active-datapoint')
-        .attr('xml:space', 'preserve')
-        .attr('x', args.width - args.right)
-        .attr('y', args.top * 0.75)
-        .attr('text-anchor', 'end');
 
       var g = svg.append('g')
         .attr('class', 'mg-rollover-rect');
@@ -89,17 +98,17 @@
       //draw rollover bars
       var bar = g.selectAll('.mg-bar')
         .data(args.data[0])
-          .enter().append('g')
-            .attr('class', function(d, i) {
-              if (args.linked) {
-                return 'mg-rollover-rects roll_' + i;
-              } else {
-                return 'mg-rollover-rects';
-              }
-            })
-            .attr('transform', function(d) {
-              return "translate(" + (args.scales.X(d[args.x_accessor])) + "," + 0 + ")";
-            });
+        .enter().append('g')
+        .attr('class', function(d, i) {
+          if (args.linked) {
+            return 'mg-rollover-rects roll_' + i;
+          } else {
+            return 'mg-rollover-rects';
+          }
+        })
+        .attr('transform', function(d) {
+          return "translate(" + (args.scales.X(d[args.x_accessor])) + "," + 0 + ")";
+        });
 
       bar.append('rect')
         .attr('x', 1)
@@ -107,14 +116,11 @@
         .attr('width', function(d, i) {
           //if data set is of length 1
           if (args.data[0].length === 1) {
-            return (args.scalefns.xf(args.data[0][0])
-              - args.bar_margin).toFixed(2);
+            return (args.scalefns.xf(args.data[0][0]) - args.bar_margin).toFixed(0);
           } else if (i !== args.data[0].length - 1) {
-            return (args.scalefns.xf(args.data[0][i + 1])
-              - args.scalefns.xf(d)).toFixed(2);
+            return (args.scalefns.xf(args.data[0][i + 1]) - args.scalefns.xf(d)).toFixed(0);
           } else {
-            return (args.scalefns.xf(args.data[0][1])
-              - args.scalefns.xf(args.data[0][0])).toFixed(2);
+            return (args.scalefns.xf(args.data[0][1]) - args.scalefns.xf(args.data[0][0])).toFixed(0);
           }
         })
         .attr('height', function(d) {
@@ -154,30 +160,23 @@
           //trigger mouseover on matching bars in .linked charts
           d3.selectAll('.mg-rollover-rects.roll_' + i + ' rect')
             .each(function(d) { //use existing i
-              d3.select(this).on('mouseover')(d,i);
+              d3.select(this).on('mouseover')(d, i);
             });
         }
 
         //update rollover text
         if (args.show_rollover_text) {
-          svg.select('.mg-active-datapoint')
-            .text(function() {
-              if (args.time_series) {
-                var dd = new Date(+d[args.x_accessor]);
-                dd.setDate(dd.getDate());
+          var mo = mg_mouseover_text(args, { svg: svg });
+          var row = mo.mouseover_row();
+          row.text('\u259F  ').elem()
+            .classed('hist-symbol', true);
 
-                return fmt(dd) + '  ' + args.yax_units
-                  + num(d[args.y_accessor]);
-              }
-              else {
-                return args.x_accessor + ': ' + num(d[args.x_accessor])
-                  + ', ' + args.y_accessor + ': ' + args.yax_units
-                  + num(d[args.y_accessor]);
-              }
-            });
+          row.text(mg_format_x_mouseover(args, d)); // x
+          row.text(mg_format_y_mouseover(args, d, args.time_series === false));
         }
 
         if (args.mouseover) {
+          mg_setup_mouseover_container(svg, args);
           args.mouseover(d, i);
         }
       };
@@ -193,7 +192,7 @@
           //trigger mouseout on matching bars in .linked charts
           d3.selectAll('.mg-rollover-rects.roll_' + i + ' rect')
             .each(function(d) { //use existing i
-              d3.select(this).on('mouseout')(d,i);
+              d3.select(this).on('mouseout')(d, i);
             });
         }
 
@@ -202,8 +201,7 @@
           .classed('active', false);
 
         //reset active data point text
-        svg.select('.mg-active-datapoint')
-          .text('');
+        mg_clear_mouseover_container(svg);
 
         if (args.mouseout) {
           args.mouseout(d, i);
@@ -228,10 +226,6 @@
   }
 
   var defaults = {
-    mouseover: function(d, i) {
-      d3.select('#histogram svg .mg-active-datapoint')
-        .text('Frequency Count: ' + d.y);
-    },
     binned: false,
     bins: null,
     processed_x_accessor: 'x',

@@ -31,10 +31,13 @@ text.mg-barplot-group-label {
 
 .mg-barplot rect.mg-bar {
     shape-rendering: auto;
+}
+
+.mg-barplot rect.mg-bar.default-bar {
     fill: #b6b6fc;
 }
 
-.mg-barplot rect.mg-bar.active {
+.mg-barplot rect.mg-bar.default-active {
     fill: #9e9efc;
 }
 
@@ -45,6 +48,13 @@ text.mg-barplot-group-label {
 .mg-barplot .mg-bar-baseline {
     stroke: #5b5b5b;
     stroke-width: 2;
+}
+
+.mg-bar-target-element {
+    font-size:11px;
+    padding-left:5px;
+    padding-right:5px;
+    font-weight:300;
 }
 
 .mg-baselines line {
@@ -65,12 +75,22 @@ text.mg-barplot-group-label {
     font-size: 0.6rem;
 }
 
+.mg-category-guides line {
+    stroke: #b3b2b2;
+}
+
 .mg-header {
     cursor: default;
     font-size: 1.2rem;
 }
 
 .mg-header .mg-chart-description {
+    fill: #ccc;
+    font-family: FontAwesome;
+    font-size: 1.2rem;
+}
+
+.mg-header .mg-warning {
     fill: #ccc;
     font-family: FontAwesome;
     font-size: 1.2rem;
@@ -127,11 +147,11 @@ text.mg-barplot-group-label {
     padding-left: 30px;
 }
 
-.mg-y-axis line.mg-extended-y-ticks {
+.mg-y-axis line.mg-extended-yax-ticks {
     opacity: 0.4;
 }
 
-.mg-x-axis line.mg-extended-x-ticks {
+.mg-x-axis line.mg-extended-xax-ticks {
     opacity: 0.4;
 }
 
@@ -141,6 +161,10 @@ text.mg-barplot-group-label {
     opacity: 0.7;
     shape-rendering: auto;
     stroke: #ccc;
+}
+
+tspan.hist-symbol {
+    fill: #9e9efc;
 }
 
 .mg-histogram .mg-bar rect {
@@ -294,6 +318,11 @@ path.mg-main-line {
 }
 
 circle.mg-points-mono {
+    fill: #0000ff;
+    stroke: #0000ff;
+}
+
+tspan.mg-points-mono {
     fill: #0000ff;
     stroke: #0000ff;
 }

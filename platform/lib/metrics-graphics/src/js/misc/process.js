@@ -1,3 +1,63 @@
+function mg_process_scale_ticks(args, axis) {
+  var accessor;
+  var scale_ticks;
+  var max;
+
+  if (axis === 'x') {
+    accessor = args.x_accessor;
+    scale_ticks = args.scales.X.ticks(args.xax_count);
+    max = args.processed.max_x;
+  } else if (axis === 'y') {
+    accessor = args.y_accessor;
+    scale_ticks = args.scales.Y.ticks(args.yax_count)
+    max = args.processed.max_y;
+  }
+
+  function log10(val) {
+    if (val === 1000) {
+      return 3;
+    }
+    if (val === 1000000) {
+      return 7;
+    }
+    return Math.log(val) / Math.LN10;
+  }
+
+  if ((axis === 'x' && args.x_scale_type === 'log') || (axis === 'y' && args.y_scale_type === 'log')) {
+    // get out only whole logs
+    scale_ticks = scale_ticks.filter(function(d) {
+      return Math.abs(log10(d)) % 1 < 1e-6 || Math.abs(log10(d)) % 1 > 1 - 1e-6;
+    });
+  }
+
+  // filter out fraction ticks if our data is ints and if xmax > number of generated ticks
+  var number_of_ticks = scale_ticks.length;
+
+  // is our data object all ints?
+  var data_is_int = true;
+  args.data.forEach(function(d, i) {
+    d.forEach(function(d, i) {
+      if (d[accessor] % 1 !== 0) {
+        data_is_int = false;
+        return false;
+      }
+    });
+  });
+
+  if (data_is_int && number_of_ticks > max && args.format === 'count') {
+    // remove non-integer ticks
+    scale_ticks = scale_ticks.filter(function(d) {
+      return d % 1 === 0;
+    });
+  }
+
+  if (axis === 'x') {
+    args.processed.x_ticks = scale_ticks;
+  } else if (axis === 'y') {
+    args.processed.y_ticks = scale_ticks;
+  }
+}
+
 function raw_data_transformation(args) {
   'use strict';
 
@@ -10,7 +70,7 @@ function raw_data_transformation(args) {
   // #2 [[{key:__, value:__}, ...], [{key:__, value:__}, ...]]  // nested obj-arrays
   // #3 [[4323, 2343],..]                                       // unnested 2d array
   // #4 [[[4323, 2343],..] , [[4323, 2343],..]]                 // nested 2d array
-  args.single_object    = false; // for bar charts.
+  args.single_object = false; // for bar charts.
   args.array_of_objects = false;
   args.array_of_arrays = false;
   args.nested_array_of_arrays = false;
@@ -21,13 +81,13 @@ function raw_data_transformation(args) {
   if (is_array_of_arrays(args.data)) {
     args.nested_array_of_objects = args.data.map(function(d) {
       return is_array_of_objects_or_empty(d);
-    });                               // Case #2
+    }); // Case #2
     args.nested_array_of_arrays = args.data.map(function(d) {
       return is_array_of_arrays(d);
-    });                               // Case #4
+    }); // Case #4
   } else {
-    args.array_of_objects = is_array_of_objects(args.data);     // Case #1
-    args.array_of_arrays = is_array_of_arrays(args.data);     // Case #3
+    args.array_of_objects = is_array_of_objects(args.data); // Case #1
+    args.array_of_arrays = is_array_of_arrays(args.data); // Case #3
   }
 
   if (args.chart_type === 'line') {
@@ -67,30 +127,35 @@ function raw_data_transformation(args) {
 }
 
 function mg_process_multiple_accessors(args, which_accessor) {
+  // turns an array of accessors into ...
   if (args[which_accessor] instanceof Array) {
-      args.data = args.data.map(function(_d) {
-        return args[which_accessor].map(function(ya) {
-          return _d.map(function(di) {
-            di = MG.clone(di);
+    args.data = args.data.map(function(_d) {
+      return args[which_accessor].map(function(ya) {
+        return _d.map(function(di) {
+          di = MG.clone(di);
 
-            if (di[ya] === undefined) {
-              return undefined;
-            }
+          if (di[ya] === undefined) {
+            return undefined;
+          }
 
-            di['multiline_' + which_accessor] = di[ya];
-            return di;
-          }).filter(function(di) {
-            return di !== undefined;
-          });
+          di['multiline_' + which_accessor] = di[ya];
+          return di;
+        }).filter(function(di) {
+          return di !== undefined;
         });
-      })[0];
-      args[which_accessor] = 'multiline_' + which_accessor;
-
-    } 
+      });
+    })[0];
+    args[which_accessor] = 'multiline_' + which_accessor;
+  }
 }
 
-function mg_process_multiple_x_accessors(args) { mg_process_multiple_accessors(args, 'x_accessor'); }
-function mg_process_multiple_y_accessors(args) { mg_process_multiple_accessors(args, 'y_accessor'); }
+function mg_process_multiple_x_accessors(args) {
+  mg_process_multiple_accessors(args, 'x_accessor');
+}
+
+function mg_process_multiple_y_accessors(args) {
+  mg_process_multiple_accessors(args, 'y_accessor');
+}
 
 MG.raw_data_transformation = raw_data_transformation;
 
@@ -104,16 +169,8 @@ function process_line(args) {
     return series.length > 0 && series[0][args.x_accessor] instanceof Date;
   })) > 0;
 
-  // force linear interpolation when missing_is_hidden is enabled
-  if (args.missing_is_hidden) {
-    args.interpolate = 'linear';
-  }
-
   // are we replacing missing y values with zeros?
-  if ((args.missing_is_zero || args.missing_is_hidden)
-      && args.chart_type === 'line'
-      && is_time_series
-    ) {
+  if ((args.missing_is_zero || args.missing_is_hidden) && args.chart_type === 'line' && is_time_series) {
     for (var i = 0; i < args.data.length; i++) {
       // we need to have a dataset of length > 2, so if it's less than that, skip
       if (args.data[i].length <= 1) {
@@ -121,7 +178,7 @@ function process_line(args) {
       }
 
       var first = args.data[i][0];
-      var last = args.data[i][args.data[i].length-1];
+      var last = args.data[i][args.data[i].length - 1];
 
       // initialize our new array for storing the processed data
       var processed_data = [];
@@ -133,9 +190,9 @@ function process_line(args) {
       var from = (args.min_x) ? args.min_x : start_date;
       var upto = (args.max_x) ? args.max_x : last[args.x_accessor];
 
-      time_frame = mg_get_time_frame((upto-from)/1000);
+      time_frame = mg_get_time_frame((upto - from) / 1000);
 
-      if (time_frame == 'default' && args.missing_is_hidden_accessor === null) {
+      if (['four-days', 'many-days', 'many-months', 'years', 'default'].indexOf(time_frame) !== -1 && args.missing_is_hidden_accessor === null) {
         for (var d = new Date(from); d <= upto; d.setDate(d.getDate() + 1)) {
           var o = {};
           d.setHours(0, 0, 0, 0);
@@ -165,9 +222,7 @@ function process_line(args) {
 
           // if the data point has, say, a 'missing' attribute set or if its
           // y-value is null identify it internally as missing
-          else if (existing_o[args.missing_is_hidden_accessor]
-              || existing_o[args.y_accessor] === null
-            ) {
+          else if (existing_o[args.missing_is_hidden_accessor] || existing_o[args.y_accessor] === null) {
             existing_o['_missing'] = true;
             processed_data.push(existing_o);
           }
@@ -227,35 +282,34 @@ function process_histogram(args) {
       return;
     }
 
-    var hist = d3.layout.histogram();
+    var hist = d3.histogram();
     if (args.bins) {
-      hist = hist.bins(args.bins);
+      hist.thresholds(args.bins);
     }
 
-    args.processed_data = hist(extracted_data)
-      .map(function(d) {
-        // extract only the data we need per data point.
-        return {'x': d.x, 'y': d.y, 'dx': d.dx};
-      });
+    var bins = hist(extracted_data);
+    args.processed_data = bins.map(function(d) {
+      return { 'x': d.x0, 'y': d.length };
+    });
   } else {
     // here, we just need to reconstruct the array of objects
     // take the x accessor and y accessor.
     // pull the data as x and y. y is count.
 
     args.processed_data = our_data.map(function(d) {
-      return {'x': d[args.x_accessor], 'y': d[args.y_accessor]};
+      return { 'x': d[args.x_accessor], 'y': d[args.y_accessor] };
     });
 
     var this_pt;
     var next_pt;
 
     // we still need to compute the dx component for each data point
-    for (var i=0; i < args.processed_data.length; i++) {
+    for (var i = 0; i < args.processed_data.length; i++) {
       this_pt = args.processed_data[i];
       if (i === args.processed_data.length - 1) {
-        this_pt.dx = args.processed_data[i-1].dx;
+        this_pt.dx = args.processed_data[i - 1].dx;
       } else {
-        next_pt = args.processed_data[i+1];
+        next_pt = args.processed_data[i + 1];
         this_pt.dx = next_pt.x - this_pt.x;
       }
     }
@@ -282,50 +336,12 @@ MG.process_histogram = process_histogram;
 function process_categorical_variables(args) {
   'use strict';
 
-  var extracted_data, processed_data={}, pd=[];
+  var extracted_data, processed_data = {},
+    pd = [];
   //var our_data = args.data[0];
   var label_accessor = args.bar_orientation === 'vertical' ? args.x_accessor : args.y_accessor;
-  var data_accessor =  args.bar_orientation === 'vertical' ? args.y_accessor : args.x_accessor;
+  var data_accessor = args.bar_orientation === 'vertical' ? args.y_accessor : args.x_accessor;
 
-  if (args.binned === false) {
-    args.categorical_variables = [];
-    if (typeof(our_data[0]) === 'object') {
-      // we are dealing with an array of objects, extract the data value of interest
-      extracted_data = our_data
-        .map(function(d) {
-          return d[label_accessor];
-        });
-    } else {
-      extracted_data = our_data;
-    }
-
-    var this_dp;
-
-    for (var i = 0; i < extracted_data.length; i++) {
-      this_dp=extracted_data[i];
-      if (args.categorical_variables.indexOf(this_dp) === -1) args.categorical_variables.push(this_dp);
-      if (!processed_data.hasOwnProperty(this_dp)) processed_data[this_dp] = 0;
-
-      processed_data[this_dp] += 1;
-    }
-
-    processed_data = Object.keys(processed_data).map(function(d) {
-      var obj = {};
-      obj[data_accessor] = processed_data[d];
-      obj[label_accessor] = d;
-      return obj;
-    });
-  } else {
-
-    processed_data = args.data[0];
-    args.categorical_variables = d3.set(processed_data.map(function(d) {
-      return d[label_accessor];
-    })).values();  
-    
-    args.categorical_variables.reverse();
-  }
-
-  args.data = [processed_data];
   return this;
 }
 
@@ -335,11 +351,15 @@ function process_point(args) {
   'use strict';
 
   var data = args.data[0];
-  var x = data.map(function(d) { return d[args.x_accessor]; });
-  var y = data.map(function(d) { return d[args.y_accessor]; });
+  var x = data.map(function(d) {
+    return d[args.x_accessor];
+  });
+  var y = data.map(function(d) {
+    return d[args.y_accessor];
+  });
 
   if (args.least_squares) {
-    args.ls_line = least_squares(x,y);
+    args.ls_line = least_squares(x, y);
   }
 
   return this;

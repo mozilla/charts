@@ -4,14 +4,14 @@ MG.convert = {};
 
 MG.convert.date = function(data, accessor, time_format) {
   time_format = (typeof time_format === "undefined") ? '%Y-%m-%d' : time_format;
+  var parse_time = d3.timeParse(time_format);
   data = data.map(function(d) {
-    var fff = d3.time.format(time_format);
-    d[accessor] = fff.parse(d[accessor]);
+    d[accessor] = parse_time(d[accessor].trim());
     return d;
   });
 
   return data;
-};
+}
 
 MG.convert.number = function(data, accessor) {
   data = data.map(function(d) {
@@ -20,38 +20,46 @@ MG.convert.number = function(data, accessor) {
   });
 
   return data;
-};
+}
 
 MG.time_format = function(utc, specifier) {
-  return utc ? d3.time.format.utc(specifier) : d3.time.format(specifier);
-};
+  return utc ? d3.utcFormat(specifier) : d3.timeFormat(specifier);
+}
+
+function mg_jquery_exists() {
+  if (typeof jQuery !== 'undefined' || typeof $ !== 'undefined') {
+    return true;
+  } else {
+    return false;
+  }
+}
 
 function mg_get_rollover_time_format(args) {
   var fmt;
   switch (args.processed.x_time_frame) {
-  case 'millis':
-    fmt = MG.time_format(args.utc_time, '%b %e, %Y  %H:%M:%S.%L');
-    break;
-  case 'seconds':
-    fmt = MG.time_format(args.utc_time, '%b %e, %Y  %H:%M:%S');
-    break;
-  case 'less-than-a-day':
-    fmt = MG.time_format(args.utc_time, '%b %e, %Y  %I:%M%p');
-    break;
-  case 'four-days':
-    fmt = MG.time_format(args.utc_time, '%b %e, %Y  %I:%M%p');
-    break;
-  default:
-    fmt = MG.time_format(args.utc_time, '%b %e, %Y');
+    case 'millis':
+      fmt = MG.time_format(args.utc_time, '%b %e, %Y  %H:%M:%S.%L');
+      break;
+    case 'seconds':
+      fmt = MG.time_format(args.utc_time, '%b %e, %Y  %H:%M:%S');
+      break;
+    case 'less-than-a-day':
+      fmt = MG.time_format(args.utc_time, '%b %e, %Y  %I:%M%p');
+      break;
+    case 'four-days':
+      fmt = MG.time_format(args.utc_time, '%b %e, %Y  %I:%M%p');
+      break;
+    default:
+      fmt = MG.time_format(args.utc_time, '%b %e, %Y');
   }
   return fmt;
 }
 
-function mg_data_in_plot_bounds (datum, args) {
+function mg_data_in_plot_bounds(datum, args) {
   return datum[args.x_accessor] >= args.processed.min_x &&
-      datum[args.x_accessor] <= args.processed.max_x &&
-      datum[args.y_accessor] >= args.processed.min_y &&
-      datum[args.y_accessor] <= args.processed.max_y;
+    datum[args.x_accessor] <= args.processed.max_x &&
+    datum[args.y_accessor] >= args.processed.min_y &&
+    datum[args.y_accessor] <= args.processed.max_y;
 }
 
 function is_array(thing) {
@@ -81,7 +89,7 @@ function is_array_of_arrays(data) {
 function is_array_of_objects(data) {
   // is every element of data an object?
   var all_elements = data.map(function(d) {
-    return is_object(d)===true;
+    return is_object(d) === true;
   });
 
   return d3.sum(all_elements) === data.length;
@@ -91,61 +99,63 @@ function is_array_of_objects_or_empty(data) {
   return is_empty_array(data) || is_array_of_objects(data);
 }
 
-function pluck(arr,accessor){
-  return arr.map(function(d){ return d[accessor]});
+function pluck(arr, accessor) {
+  return arr.map(function(d) {
+    return d[accessor] });
 }
 
-function count_array_elements (arr) {
-  return arr.reduce(function (a,b) { a[b] = a[b]+1 || 1; return a; }, {});
+function count_array_elements(arr) {
+  return arr.reduce(function(a, b) { a[b] = a[b] + 1 || 1;
+    return a; }, {});
 }
 
-function mg_get_bottom (args) {
+function mg_get_bottom(args) {
   return args.height - args.bottom;
 }
 
-function mg_get_plot_bottom (args) {
+function mg_get_plot_bottom(args) {
   // returns the pixel location of the bottom side of the plot area.
   return mg_get_bottom(args) - args.buffer;
 }
 
-function mg_get_top (args) {
+function mg_get_top(args) {
   return args.top;
 }
 
-function mg_get_plot_top (args) {
+function mg_get_plot_top(args) {
   // returns the pixel location of the top side of the plot area.
   return mg_get_top(args) + args.buffer;
 }
 
-function mg_get_left (args) {
+function mg_get_left(args) {
   return args.left;
 }
 
-function mg_get_plot_left (args) {
+function mg_get_plot_left(args) {
   // returns the pixel location of the left side of the plot area.
   return mg_get_left(args) + args.buffer;
 }
 
-function mg_get_right (args) {
+function mg_get_right(args) {
   return args.width - args.right;
 }
 
-function mg_get_plot_right (args) {
+function mg_get_plot_right(args) {
   // returns the pixel location of the right side of the plot area.
   return mg_get_right(args) - args.buffer;
 }
 
 //////// adding elements, removing elements /////////////
 
-function mg_exit_and_remove (elem) {
+function mg_exit_and_remove(elem) {
   elem.exit().remove();
 }
 
-function mg_selectAll_and_remove (svg, cl) {
+function mg_selectAll_and_remove(svg, cl) {
   svg.selectAll(cl).remove();
 }
 
-function mg_add_g (svg, cl) {
+function mg_add_g(svg, cl) {
   return svg.append('g').classed(cl, true);
 }
 
@@ -153,16 +163,17 @@ function mg_remove_element(svg, elem) {
   svg.select(elem).remove();
 }
 
-
 //////// axis helper functions ////////////
 
 function mg_make_rug(args, rug_class) {
   var svg = mg_get_svg_child_of(args.target);
   var all_data = mg_flatten_array(args.data);
-  var rug = svg.selectAll('line.'+rug_class).data(all_data);
+  var rug = svg.selectAll('line.' + rug_class).data(all_data);
 
-  //set the attributes that do not change after initialization, per
-  rug.enter().append('svg:line').attr('class', rug_class).attr('opacity', 0.3);
+  rug.enter()
+    .append('line')
+      .attr('class', rug_class)
+      .attr('opacity', 0.3);
 
   //remove rug elements that are no longer in use
   mg_exit_and_remove(rug);
@@ -172,15 +183,9 @@ function mg_make_rug(args, rug_class) {
   return rug;
 }
 
-function mg_add_scale_function(args, scalefcn_name, scale, accessor) {
-  args.scalefns[scalefcn_name] = function(di) {
-    return args.scales[scale](di[accessor]);
-  };
-}
-
-function mg_add_color_accessor_to_rug (rug, args, rug_mono_class) {
+function mg_add_color_accessor_to_rug(rug, args, rug_mono_class) {
   if (args.color_accessor) {
-    rug.attr('stroke', args.scalefns.color);
+    rug.attr('stroke', args.scalefns.colorf);
     rug.classed(rug_mono_class, false);
   } else {
     rug.attr('stroke', null);
@@ -188,19 +193,13 @@ function mg_add_color_accessor_to_rug (rug, args, rug_mono_class) {
   }
 }
 
-function mg_add_categorical_scale (args, scale_name, categorical_variables, low, high, padding, outer_padding) {
-  args.scales[scale_name] = d3.scale.ordinal()
-    .domain(categorical_variables)
-    .rangeBands([low, high], padding, outer_padding);
-}
-
-function mg_rotate_labels (labels, rotation_degree) {
+function mg_rotate_labels(labels, rotation_degree) {
   if (rotation_degree) {
     labels.attr({
       dy: 0,
       transform: function() {
         var elem = d3.select(this);
-        return 'rotate('+rotation_degree+' '+elem.attr('x')+','+elem.attr('y')+')';
+        return 'rotate(' + rotation_degree + ' ' + elem.attr('x') + ',' + elem.attr('y') + ')';
       }
     });
   }
@@ -208,11 +207,14 @@ function mg_rotate_labels (labels, rotation_degree) {
 
 //////////////////////////////////////////////////
 
-
 function mg_elements_are_overlapping(labels) {
-  labels = labels[0];
-  for (var i =0; i < labels.length; i++) {
-    if ( mg_is_horizontally_overlapping(labels[i], labels)) return true;
+  labels = labels.node();
+  if (!labels) {
+    return false;
+  }
+
+  for (var i = 0; i < labels.length; i++) {
+    if (mg_is_horizontally_overlapping(labels[i], labels)) return true;
   }
 
   return false;
@@ -242,7 +244,7 @@ function mg_prevent_vertical_overlap(labels, args) {
     return;
   }
 
-  labels.sort(function(b,a) {
+  labels.sort(function(b, a) {
     return d3.select(a).attr('y') - d3.select(b).attr('y');
   });
 
@@ -255,7 +257,7 @@ function mg_prevent_vertical_overlap(labels, args) {
     //if so, nudge it up a bit, if the label it intersects hasn't already been nudged
     label_i = d3.select(labels[i]).text();
 
-    for (var j = 0; j < labels.length; j ++) {
+    for (var j = 0; j < labels.length; j++) {
       label_j = d3.select(labels[j]).text();
       overlap_amount = mg_is_vertically_overlapping(labels[i], labels[j]);
 
@@ -301,14 +303,22 @@ function mg_is_horizontally_overlapping(element, labels) {
     //check to see if this label overlaps with any of the other labels
     var sibling_bbox = labels[i].getBoundingClientRect();
     if (element_bbox.top === sibling_bbox.top &&
-        !(sibling_bbox.left > element_bbox.right || sibling_bbox.right < element_bbox.left)
-      ) {
+      !(sibling_bbox.left > element_bbox.right || sibling_bbox.right < element_bbox.left)
+    ) {
       return true;
     }
   }
 
   return false;
 }
+
+function mg_infer_type(args, ns) {
+    // must return categorical or numerical.
+    var testPoint = mg_flatten_array(args.data);
+
+    testPoint = testPoint[0][args[ns + '_accessor']];
+    return typeof testPoint === 'string' ? 'categorical' : 'numerical';
+  }
 
 function mg_get_svg_child_of(selector_or_node) {
   return d3.select(selector_or_node).select('svg');
@@ -324,7 +334,7 @@ function mg_next_id() {
     MG._next_elem_id = 0;
   }
 
-  return 'mg-'+(MG._next_elem_id++);
+  return 'mg-' + (MG._next_elem_id++);
 }
 
 function mg_target_ref(target) {
@@ -391,9 +401,9 @@ function merge_with_defaults(obj) {
   // taken from underscore
   each(Array.prototype.slice.call(arguments, 1), function(source) {
     if (source) {
-    for (var prop in source) {
-      if (obj[prop] === void 0) obj[prop] = source[prop];
-    }
+      for (var prop in source) {
+        if (obj[prop] === void 0) obj[prop] = source[prop];
+      }
     }
   });
 
@@ -460,7 +470,7 @@ MG.clone = function(obj) {
 
 //give us the difference of two int arrays
 //http://radu.cotescu.com/javascript-diff-function/
-function arr_diff(a,b) {
+function arr_diff(a, b) {
   var seen = [],
     diff = [],
     i;
@@ -496,7 +506,7 @@ MG.warn_deprecation = warn_deprecation;
 */
 function truncate_text(textObj, textString, width) {
   var bbox,
-  position = 0;
+    position = 0;
 
   textObj.textContent = textString;
   bbox = textObj.getBBox();
@@ -533,10 +543,10 @@ function wrap_text(text, width, token, tspanAttrs) {
       y = text.attr("y"),
       dy = 0,
       tspan = text.text(null)
-        .append("tspan")
-        .attr("x", 0)
-        .attr("y", dy + "em")
-        .attr(tspanAttrs || {});
+      .append("tspan")
+      .attr("x", 0)
+      .attr("y", dy + "em")
+      .attr(tspanAttrs || {});
 
     while (!!(word = words.pop())) {
       line.push(word);

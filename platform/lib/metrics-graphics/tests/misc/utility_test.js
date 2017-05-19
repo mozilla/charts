@@ -33,8 +33,8 @@ test('mg_get_svg_child_of', function(){
     var svg_element_with_node = mg_get_svg_child_of(document.querySelector('#qunit-fixture'));
     var svg_element_with_text = mg_get_svg_child_of('#qunit-fixture');
 
-    equal(svg_element_with_node.length, 1, 'Node-based argument should return a d3 selection with svg.');
-    equal(svg_element_with_node.length, 1, 'Selector-based argument should return a d3 selection with svg.');
+    equal(svg_element_with_node.nodes().length, 1, 'Node-based argument should return a d3 selection with svg.');
+    equal(svg_element_with_node.nodes().length, 1, 'Selector-based argument should return a d3 selection with svg.');
 });
 
 
@@ -42,4 +42,31 @@ test('mg_target_ref', function() {
     var chart_area2 = document.createElement('div');
     mg_target_ref(chart_area2);
     ok(chart_area2.getAttribute('data-mg-uid').match(/mg-[\d]/), 'applies generated ID to DOM element');
+});
+
+test('Overlapping markers are taken care of', function() {
+    var params = {
+      data: [{
+        "date": new Date('2016-01-01'),
+        "value": 6
+      },
+      {
+        "date": new Date('2016-01-02'),
+        "value": 8
+      },
+      {
+        "date": new Date('2016-01-03'),
+        "value": 34
+      },
+      {
+        "date": new Date('2016-01-04'),
+        "value": 38
+      }],
+      markers: [{'date': new Date('2016-01-02'), 'label': 'A happened'},{'date': new Date('2016-01-02'), 'label': 'B happened'}],
+      target: "#qunit-fixture"
+    };
+
+    MG.data_graphic(params);
+
+    equal(mg_is_horizontally_overlapping(d3.selectAll('.mg-marker-text').node(), d3.selectAll('.mg-marker-text').nodes()), false, 'Markers aren\'t overlapping');
 });

@@ -1,19 +1,185 @@
+function point_mouseover(args, svg, d) {
+  var mouseover = mg_mouseover_text(args, { svg: svg });
+  var row = mouseover.mouseover_row();
+
+  if (args.color_accessor !== null && args.color_type === 'category') {
+    var label = d[args.color_accessor];
+    row.text(label + '  ').bold().elem().attr('fill', args.scalefns.colorf(d));
+  }
+
+  mg_color_point_mouseover(args, row.text('\u25CF   ').elem(), d); // point shape
+
+  row.text(mg_format_x_mouseover(args, d)); // x
+  row.text(mg_format_y_mouseover(args, d, args.time_series === false));
+}
+
+function mg_color_point_mouseover(args, elem, d) {
+  if (args.color_accessor !== null) {
+    elem.attr('fill', args.scalefns.colorf(d));
+    elem.attr('stroke', args.scalefns.colorf(d));
+  } else {
+    elem.classed('mg-points-mono', true);
+  }
+}
+
 
 (function() {
   'use strict';
+
+  function mg_filter_out_plot_bounds(data, args) {
+    // max_x, min_x, max_y, min_y;
+    var x = args.x_accessor;
+    var y = args.y_accessor;
+    var new_data = data.filter(function(d) {
+      return (args.min_x === null || d[x] >= args.min_x) &&
+        (args.max_x === null || d[x] <= args.max_x) &&
+        (args.min_y === null || d[y] >= args.min_y) &&
+        (args.max_y === null || d[y] <= args.max_y);
+    })
+    return new_data;
+  }
 
   function pointChart(args) {
     this.init = function(args) {
       this.args = args;
 
+      // infer y_axis and x_axis type;
+      args.x_axis_type = mg_infer_type(args, 'x');
+      args.y_axis_type = mg_infer_type(args, 'y');
+
       raw_data_transformation(args);
+
       process_point(args);
       init(args);
-      x_axis(args);
-      y_axis(args);
+
+      var xMaker, yMaker;
+
+      if (args.x_axis_type === 'categorical') {
+        xMaker = MG.scale_factory(args)
+          .namespace('x')
+          .categoricalDomainFromData()
+          .categoricalRangeBands([0, args.xgroup_height], args.xgroup_accessor === null);
+
+        if (args.xgroup_accessor) {
+          new MG.scale_factory(args)
+            .namespace('xgroup')
+            .categoricalDomainFromData()
+            .categoricalRangeBands('bottom');
+
+        } else {
+          args.scales.XGROUP = function(d) {
+            return mg_get_plot_left(args) };
+          args.scalefns.xgroupf = function(d) {
+            return mg_get_plot_left(args) };
+        }
+
+        args.scalefns.xoutf = function(d) {
+          return args.scalefns.xf(d) + args.scalefns.xgroupf(d)
+        };
+      } else {
+        xMaker = MG.scale_factory(args)
+          .namespace('x')
+          .inflateDomain(true)
+          .zeroBottom(args.y_axis_type === 'categorical')
+          .numericalDomainFromData((args.baselines || []).map(function(d) {
+            return d[args.x_accessor] }))
+          .numericalRange('bottom');
+
+        args.scalefns.xoutf = args.scalefns.xf;
+      }
+
+      // y-scale generation. This needs to get simplified.
+      if (args.y_axis_type === 'categorical') {
+        yMaker = MG.scale_factory(args)
+          .namespace('y')
+          .zeroBottom(true)
+          .categoricalDomainFromData()
+          .categoricalRangeBands([0, args.ygroup_height], true);
+
+        if (args.ygroup_accessor) {
+
+          new MG.scale_factory(args)
+            .namespace('ygroup')
+            .categoricalDomainFromData()
+            .categoricalRangeBands('left');
+
+        } else {
+          args.scales.YGROUP = function() {
+            return mg_get_plot_top(args) };
+          args.scalefns.ygroupf = function(d) {
+            return mg_get_plot_top(args) };
+
+        }
+        args.scalefns.youtf = function(d) {
+          return args.scalefns.yf(d) + args.scalefns.ygroupf(d) };
+
+      } else {
+        var baselines = (args.baselines || []).map(function(d) {
+          return d[args.y_accessor] });
+        yMaker = MG.scale_factory(args)
+          .namespace('y')
+          .inflateDomain(true)
+          .zeroBottom(args.x_axis_type === 'categorical')
+          .numericalDomainFromData(baselines)
+          .numericalRange('left');
+
+        args.scalefns.youtf = function(d) {
+          return args.scalefns.yf(d) };
+      }
+
+      /////// COLOR accessor
+      if (args.color_accessor !== null) {
+        var colorScale = MG.scale_factory(args).namespace('color');
+        if (args.color_type === 'number') {
+          // do the color scale.
+          // etiher get color range, or what.
+          colorScale
+            .numericalDomainFromData(mg_get_color_domain(args))
+            .numericalRange(mg_get_color_range(args))
+            .clamp(true);
+        } else {
+          if (args.color_domain) {
+            colorScale
+              .categoricalDomain(args.color_domain)
+              .categoricalRange(args.color_range);
+          } else {
+            colorScale
+              .categoricalDomainFromData()
+              .categoricalColorRange();
+          }
+        }
+      }
+
+      if (args.size_accessor) {
+        new MG.scale_factory(args).namespace('size')
+          .numericalDomainFromData()
+          .numericalRange(mg_get_size_range(args))
+          .clamp(true);
+      }
+
+      new MG.axis_factory(args)
+        .namespace('x')
+        .type(args.x_axis_type)
+        .zeroLine(args.y_axis_type === 'categorical')
+        .position(args.x_axis_position)
+        .rug(x_rug(args))
+        .draw();
+
+      new MG.axis_factory(args)
+        .namespace('y')
+        .type(args.y_axis_type)
+        .zeroLine(args.x_axis_type === 'categorical')
+        .position(args.y_axis_position)
+        .rug(y_rug(args))
+        .draw();
 
       this.mainPlot();
       this.markers();
+
+      //insert a client layers for drawing more wonderful things
+      args.selectLayer = mg_get_svg_child_of(args.target).append("g");
+      args.hoverLayer = mg_get_svg_child_of(args.target).append("g");
+
       this.rollover();
       this.windowListeners();
 
@@ -33,30 +199,35 @@
       var svg = mg_get_svg_child_of(args.target);
       var g;
 
+      var data = mg_filter_out_plot_bounds(args.data[0], args);
       //remove the old points, add new one
       svg.selectAll('.mg-points').remove();
 
-      // plot the points, pretty straight-forward
       g = svg.append('g')
         .classed('mg-points', true);
 
+
       var pts = g.selectAll('circle')
-        .data(args.data[0])
-        .enter().append('svg:circle')
-          .attr('class', function(d, i) { return 'path-' + i; })
-          .attr('cx', args.scalefns.xf)
-          .attr('cy', args.scalefns.yf);
+        .data(data)
+        .enter().append('circle')
+        .attr('class', function(d, i) {
+          return 'path-' + i;
+        })
+        .attr('cx', args.scalefns.xoutf)
+        .attr('cy', function(d) {
+          return args.scalefns.youtf(d);
+        });
 
       //are we coloring our points, or just using the default color?
       if (args.color_accessor !== null) {
-        pts.attr('fill',   args.scalefns.color);
-        pts.attr('stroke', args.scalefns.color);
+        pts.attr('fill', args.scalefns.colorf);
+        pts.attr('stroke', args.scalefns.colorf);
       } else {
         pts.classed('mg-points-mono', true);
       }
 
       if (args.size_accessor !== null) {
-        pts.attr('r', args.scalefns.size);
+        pts.attr('r', args.scalefns.sizef);
       } else {
         pts.attr('r', args.point_size);
       }
@@ -67,39 +238,30 @@
     this.rollover = function() {
       var svg = mg_get_svg_child_of(args.target);
 
+      if (svg.selectAll('.mg-active-datapoint-container').nodes().length === 0) {
+        mg_add_g(svg, 'mg-active-datapoint-container');
+      }
+
       //remove the old rollovers if they already exist
       svg.selectAll('.mg-voronoi').remove();
 
-      //remove the old rollover text and circle if they already exist
-      svg.selectAll('.mg-active-datapoint').remove();
-
-      //add rollover text
-      svg.append('text')
-        .attr('class', 'mg-active-datapoint')
-        .attr('xml:space', 'preserve')
-        .attr('x', args.width - args.right)
-        .attr('y', args.top * 0.75)
-        .attr('text-anchor', 'end');
-
       //add rollover paths
-      var voronoi = d3.geom.voronoi()
-        .x(args.scalefns.xf)
-        .y(args.scalefns.yf)
-        .clipExtent([[args.buffer, args.buffer + args.title_y_position], [args.width - args.buffer, args.height - args.buffer]]);
+      var voronoi = d3.voronoi()
+        .x(args.scalefns.xoutf)
+        .y(args.scalefns.youtf)
+        .extent([
+          [args.buffer, args.buffer + args.title_y_position],
+          [args.width - args.buffer, args.height - args.buffer]
+        ]);
 
       var paths = svg.append('g')
         .attr('class', 'mg-voronoi');
 
       paths.selectAll('path')
-        .data(voronoi(args.data[0]))
+        .data(voronoi.polygons(mg_filter_out_plot_bounds(args.data[0], args)))
         .enter().append('path')
           .attr('d', function(d) {
-            if (d === undefined) {
-              return;
-            }
-
-            return 'M' + d.join(',') + 'Z';
-          })
+          return d == null ? null : 'M' + d.join(',') + 'Z'; })
           .attr('class', function(d,i) {
             return 'path-' + i;
           })
@@ -107,7 +269,11 @@
           .on('mouseover', this.rolloverOn(args))
           .on('mouseout', this.rolloverOff(args))
           .on('mousemove', this.rolloverMove(args))
-          .on('click', function(v){args.click(v.point);});
+          .on('click', function(v){args.click(v.data);});
+
+      if (args.data[0].length === 1) {
+        point_mouseover(args, svg, args.data[0][0]);
+      }
 
       return this;
     };
@@ -125,7 +291,7 @@
 
         if (args.size_accessor) {
           pts.attr('r', function(di) {
-            return args.scalefns.size(di) + args.active_point_size_increase;
+            return args.scalefns.sizef(di) + args.active_point_size_increase;
           });
         } else {
           pts.attr('r', args.point_size + args.active_point_size_increase);
@@ -143,12 +309,11 @@
         }
 
         if (args.show_rollover_text) {
-          var fmt = MG.time_format(args.utc_time, '%b %e, %Y');
-          mg_update_rollover_text(args,svg,fmt, '\u2022', d.point, i);
+          point_mouseover(args, svg, d.data);
         }
 
         if (args.mouseover) {
-          args.mouseover(d, i);
+          args.mouseover(d.data, i);
         }
       };
     };
@@ -157,12 +322,14 @@
       var svg = mg_get_svg_child_of(args.target);
 
       return function(d,i) {
+        args.hoverLayer.html("");
+
         if (args.linked && MG.globals.link) {
           MG.globals.link = false;
 
           d3.selectAll('.mg-voronoi .path-' + i)
-            .each(function() {
-              d3.select(this).on('mouseout')(d,i);
+            .each(function(){
+              d3.select(this).on('mouseout')(d, i);
             });
         }
 
@@ -172,14 +339,13 @@
           .classed('selected', false);
 
         if (args.size_accessor) {
-          pts.attr('r', args.scalefns.size);
+          pts.attr('r', args.scalefns.sizef);
         } else {
           pts.attr('r', args.point_size);
         }
 
         //reset active data point text
-        svg.select('.mg-active-datapoint')
-          .text('');
+        if (args.data[0].length > 1) mg_clear_mouseover_container(svg);
 
         if (args.mouseout) {
           args.mouseout(d, i);
@@ -208,6 +374,16 @@
   }
 
   var defaults = {
+    y_padding_percentage: 0.05, // for categorical scales
+    y_outer_padding_percentage: .2, // for categorical scales
+    ygroup_padding_percentage: 0, // for categorical scales
+    ygroup_outer_padding_percentage: 0, // for categorical scales
+    x_padding_percentage: 0.05, // for categorical scales
+    x_outer_padding_percentage: .2, // for categorical scales
+    xgroup_padding_percentage: 0, // for categorical scales
+    xgroup_outer_padding_percentage: 0, // for categorical scales
+    y_categorical_show_guides: true,
+    x_categorical_show_guides: true,
     buffer: 16,
     ls: false,
     lowess: false,

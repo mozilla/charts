@@ -81,29 +81,6 @@ test('X-axis doesn\'t break when data object is of length 1', function() {
     ok(document.querySelector('.mg-x-axis'), 'X-axis exists');
 });
 
-// test('args.small_text', function() {
-//     var params = {
-//         target: '#qunit-fixture',
-//         data: [{'date': new Date('2014-01-01'), 'value': 12}],
-//         small_text: true,
-//     };
-
-//     MG.data_graphic(params);
-//     ok(document.querySelector('.mg-x-axis-small'), 'Small x-axis is set');
-// });
-
-// test('args.small_text and args.show_secondary_x_label', function() {
-//     var params = {
-//         target: '#qunit-fixture',
-//         data: [{'date': new Date('2014-01-01'), 'value': 12},
-//                {'date': new Date('2014-03-01'), 'value': 18}],
-//         small_text: true
-//     };
-
-//     MG.data_graphic(params);
-//     ok(document.querySelector('.mg-year-marker-small'), 'Small year-marker is set');
-// });
-
 test('args.x_rug', function() {
     var params = {
         target: '#qunit-fixture',
@@ -139,63 +116,61 @@ test('args.x_extended_ticks', function() {
     };
 
     MG.data_graphic(params);
-    ok(document.querySelector('.mg-extended-x-ticks'), 'X-axis extended ticks exist');
+    ok(document.querySelector('.mg-extended-xax-ticks'), 'X-axis extended ticks exist');
 });
 
 test('Correctly calculates min and max values for line, point and histogram charts', function() {
-    var args;
-
     // single series
-    args = {
-        processed: {},
+    var params = {
+        target: '#qunit-fixture',
         x_accessor: 'x',
-        chart_type: 'line',
+        y_accessor: 'y',
         data: [
             [
-                {x: 4},
-                {x: 5},
-                {x: 6},
-                {x: 7}
+                {x: 4, y: 5},
+                {x: 5, y: 5},
+                {x: 6, y: 5},
+                {x: 7, y: 5}
             ]
         ]
     };
-    mg_find_min_max_x(args);
-    equal(args.processed.min_x, 4, 'min is correct for single series');
-    equal(args.processed.max_x, 7, 'max is correct for single series');
+    MG.data_graphic(params);
+    equal(params.processed.min_x, 4, 'min is correct for single series');
+    equal(params.processed.max_x, 7, 'max is correct for single series');
 
     // multiple series
-    args = {
-        processed: {},
+    var params2 = {
+        target: '#qunit-fixture',
         x_accessor: 'x',
-        chart_type: 'line',
+        y_accessor: 'y',
         data: [
             [
-                {x: 1},
-                {x: 2},
-                {x: 3},
-                {x: 4}
+                {x: 1, y: 5},
+                {x: 2, y: 5},
+                {x: 3, y: 5},
+                {x: 4, y: 5}
             ], [
-                {x: 5},
-                {x: 6},
-                {x: 7}
+                {x: 5, y: 5},
+                {x: 6, y: 5},
+                {x: 7, y: 5}
             ]
         ]
     };
-    mg_find_min_max_x(args);
-    equal(args.processed.min_x, 1, 'min is correct for multiple series');
-    equal(args.processed.max_x, 7, 'max is correct for multiple series');
+    MG.data_graphic(params2);
+    equal(params2.processed.min_x, 1, 'min is correct for multiple series');
+    equal(params2.processed.max_x, 7, 'max is correct for multiple series');
 });
 
-test('Correctly calculates min and max values for bar chart', function() {
+/*test('Correctly calculates min and max values for bar chart', function() {
     var args;
 
     // single series
     args = {
-        processed: {},
         x_accessor: 'x',
         baseline_accessor: 'b',
         predictor_accessor: 'p',
         chart_type: 'bar',
+        target: '#qunit-fixture',
         data: [
             [
                 {x: 4, b: 3, p: 2},
@@ -205,10 +180,10 @@ test('Correctly calculates min and max values for bar chart', function() {
             ]
         ]
     };
-    mg_find_min_max_x(args);
+    MG.data_graphic(args);
     equal(args.processed.min_x, 0, 'min is correct');
     equal(args.processed.max_x, 12, 'max is correct');
-});
+});*/
 
 test('Ensure that custom xax_format isn\'t deleted', function() {
     var params = {

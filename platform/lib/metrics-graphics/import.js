@@ -1,8 +1,9 @@
 importScript([
     'dist/metricsgraphics.css',
     '../jquery.js',
-    'https://cdnjs.cloudflare.com/ajax/libs/d3/3.5.0/d3.js',
+    '../d3/d3.js',
 	"src/js/MG.js",
+  "src/js/misc/utility.js",
 	"src/js/common/register.js",
 	"src/js/common/hooks.js",
 	"src/js/common/data_graphic.js",
@@ -13,6 +14,8 @@ importScript([
 	"src/js/common/x_axis.js",
 	"src/js/common/init.js",
 	"src/js/common/markers.js",
+  "src/js/common/rollover.js",
+  "src/js/common/scales.js",
 	"src/js/common/window_listeners.js",
 	"src/js/layout/bootstrap_dropdown.js",
 	"src/js/layout/button.js",
@@ -26,6 +29,5 @@ importScript([
 	"src/js/misc/smoothers.js",
 	"src/js/misc/formatters.js",
 	"src/js/misc/transitions.js",
-	"src/js/misc/utility.js",
 	"src/js/misc/error.js"
 ]);

@@ -29,7 +29,7 @@ a.active {
 }
 
 .mg-area4-color {
-    fill: #f8b128;
+    fill: #28c5f8;
 }
 
 .mg-area5-color {
@@ -80,13 +80,20 @@ h2.chart_title span {
     stroke: #ccc;
 }
 
-.mg-histogram .mg-bar rect,
-.mg-barplot rect.mg-bar {
+.mg-histogram .mg-bar rect {
+    fill: #d8b307;
+}
+
+tspan.hist-symbol {
+    fill: #d8b307;
+}
+
+.mg-barplot rect.mg-bar.default-bar {
     fill: #d8b307;
 }
 
 .mg-histogram .mg-bar rect.active,
-.mg-barplot rect.mg-bar.active {
+.mg-barplot rect.mg-bar.default-active {
     fill: #b3960f;
 }
 
@@ -111,7 +118,7 @@ li {
 }
 
 .mg-hover-line1-color {
-    stroke: #ffd300;
+    fill: #ffd300;
 }
 
 .mg-line2-color {
@@ -119,7 +126,7 @@ li {
 }
 
 .mg-hover-line2-color {
-    stroke: #18ff00;
+    fill: #18ff00;
 }
 
 .mg-line3-color {
@@ -127,15 +134,15 @@ li {
 }
 
 .mg-hover-line3-color {
-    stroke: #f57070;
+    fill: #f57070;
 }
 
 .mg-line4-color {
-    stroke: #f8b128;
+    stroke: #28c5f8;
 }
 
 .mg-hover-line4-color {
-    stroke: #f8b128;
+    fill: #28c5f8;
 }
 
 .mg-line5-color {
@@ -143,7 +150,7 @@ li {
 }
 
 .mg-hover-line5-color {
-    stroke: #f7f7f7;
+    fill: #f7f7f7;
 }
 
 .mg-line1-legend-color {
@@ -162,8 +169,8 @@ li {
 }
 
 .mg-line4-legend-color {
-    color: #f8b128;
-    fill: #f8b128;
+    color: #28c5f8;
+    fill: #28c5f8;
 }
 
 .mg-line5-legend-color {
@@ -177,6 +184,10 @@ li {
 
 .mg-chart-title {
     fill: #cfcfcf;
+}
+
+.mg-category-guides line {
+    stroke: #676767;
 }
 
 .mg-main-area-solid svg .mg-main-area {
@@ -198,6 +209,11 @@ circle.mg-points-mono {
     stroke-opacity: 1;
 }
 
+tspan.mg-points-mono {
+    fill: #a89641;
+    stroke: #a89641;
+}
+
 circle.mg-points-mono.selected {
     fill: #a89641;
     fill-opacity: 1;
@@ -214,7 +230,7 @@ text {
 
 .mg-x-rug-mono,
 .mg-y-rug-mono {
-    stroke: #cfcfcf;
+    stroke: #a89641;
 }
 
 .mg-x-axis line,
@@ -667,3 +683,4 @@ fieldset[disabled] .btn-link:focus {
 .btn-link,.btn-link:hover {
     border-color: transparent;
 }
+

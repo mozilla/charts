@@ -107,7 +107,7 @@
                 </div>
                 <div class='col-lg-5'>
                     <div class='data-column'>
-                        <a href='data/fake_users1.json'>data 1</a>, 
+                        <a href='data/fake_users1.json'>data 1</a>,
                         <a href='data/brief-1.json'>data 2</a>
                     </div>
 
@@ -147,7 +147,7 @@ d3.json('data/brief-1.json', function(data) {
 
                 </div>
             </div>
-            
+
             <div class='row trunk-section'>
                 <div class='col-lg-7 text-center' id='y_rug'></div>
                 <div class='col-lg-5'>
@@ -169,8 +169,95 @@ d3.json('data/brief-1.json', function(data) {
     });
 });</code></pre>
 
-                </div>
-            </div>
+    </div>
+</div>
+
+
+
+
+
+
+
+
+
+
+<div class='row trunk-section'>
+    <div class='col-lg-7 text-center'>
+        <div class='row'>
+            <div class='col-lg-6 text-center' id='axis-pos-1'></div>
+            <div class='col-lg-6 text-center' id='axis-pos-2'></div>
+        </div>
+        <div class='row'>
+            <div class='col-lg-6 text-center' id='axis-pos-3'></div>
+            <div class='col-lg-6 text-center' id='axis-pos-4'></div>
+        </div>
+    </div>
+    <div class='col-lg-5'>
+        <div class='data-column'>
+            <a href='data/fake_users1.json'>data 1</a>,
+            <a href='data/brief-1.json'>data 2</a>
+        </div>
+
+<pre><code class='javascript'>d3.json('data/brief-1.json', function(data) {
+    data = MG.convert.date(data, 'date');
+    var position = [['left', 'top'],['right', 'top'], ['left', 'bottom'], ['right', 'bottom']];
+    position.forEach(function(pos,i) {
+        console.log(pos,i)
+        var i = i+1;
+        
+        MG.data_graphic({
+            title: "Axis Positions: " + pos[0] +', ' + pos[1],
+            description: "Set <i>x_axis_position: " + pos[1] + "</i> and <i>x_axis_position: " + pos[0] +"</i>.",
+            x_axis_position: pos[1],
+            y_axis_position: pos[0],
+            data: data,
+            decimals: 0,
+            left: pos[0] === 'right' ? 20 : 50,
+            right: pos[0] === 'left' ? 20 : 50,
+            top: pos[1] === 'bottom' ? 50 : 50,
+            bottom: pos[1] === 'top' ? 25 : 50,
+            target: '#axis-pos-'+i,
+            area: false
+        });      
+    })
+});</code></pre>
+
+    </div>
+</div>
+
+
+<script>
+d3.json('data/brief-1.json', function(data) {
+    data = MG.convert.date(data, 'date');
+    var position = [['left', 'top'],['right', 'top'], ['left', 'bottom'], ['right', 'bottom']];
+    position.forEach(function(pos,i) {
+        var i = i+1;
+        
+        MG.data_graphic({
+            title: "Axis Positions: " + pos[0] +', ' + pos[1],
+            description: "Set <i>x_axis_position: " + pos[1] + "</i> and <i>x_axis_position: " + pos[0] +"</i>.",
+            x_axis_position: pos[1],
+            y_axis_position: pos[0],
+            data: data,
+            decimals: 0,
+            left: pos[0] === 'right' ? 20 : 50,
+            right: pos[0] === 'left' ? 20 : 50,
+            top: pos[1] === 'bottom' ? 50 : 50,
+            bottom: pos[1] === 'top' ? 25 : 50,
+            target: '#axis-pos-'+i,
+            area: false
+        });      
+    })
+});
+</script>
+
+
+
+
+
+
+
+
 
             <div class='row trunk-section'>
                 <div class='col-lg-7 text-center'>
@@ -180,7 +267,7 @@ d3.json('data/brief-1.json', function(data) {
                 </div>
                 <div class='col-lg-5'>
                     <div class='data-column'>
-                        <a href='data/neg1.json'>data 1</a>, 
+                        <a href='data/neg1.json'>data 1</a>,
                         <a href='data/neg2.json'>data 2</a>
                     </div>
 
@@ -191,7 +278,7 @@ d3.json('data/brief-1.json', function(data) {
         description: "MG defaults to 0 on the y-axis as min if there are no negative numbers. If there are negatives, should provide some buffer below.",
         data: data,
         width: 295,
-        height: 150,
+        height: 220,
         right: 10,
         target: '#neg1'
     });
@@ -205,7 +292,7 @@ d3.json('data/brief-1.json', function(data) {
         title: "Y-Axis Not Zero",
         data: data2,
         width: 295,
-        height: 150,
+        height: 220,
         right: 10,
         min_y_from_data: true,
         yax_units: '$',
@@ -220,12 +307,8 @@ d3.json('data/neg2.json', function(data) {
         title: "Negative Values 2",
         data: data,
         width: 295,
-        height: 150,
+        height: 220,
         right: 10,
-        xax_format: function(f) {
-            var pf = d3.formatPrefix(f);
-            return Math.round(pf.scale(f)) + pf.symbol;
-        },
         target: '#neg2',
         x_accessor: 'subject',
         y_accessor: 'measure'
@@ -364,7 +447,7 @@ d3.json('data/neg1.json', function(data) {
         description: "MG defaults to 0 on the y-axis as min if there are no negative numbers. If there are negatives, should provide some buffer below.",
         data: data,
         width: 295,
-        height: 150,
+        height: 220,
         right: 10,
         target: '#neg1'
     });
@@ -378,7 +461,7 @@ d3.json('data/neg1.json', function(data) {
         title: "Y-Axis Not Zero",
         data: data2,
         width: 295,
-        height: 150,
+        height: 220,
         right: 10,
         min_y_from_data: true,
         yax_units: '$',
@@ -393,12 +476,8 @@ d3.json('data/neg2.json', function(data) {
         title: "Negative Values 2",
         data: data,
         width: 295,
-        height: 150,
+        height: 220,
         right: 10,
-        xax_format: function(f) {
-            var pf = d3.formatPrefix(f);
-            return Math.round(pf.scale(f)) + pf.symbol;
-        },
         target: '#neg2',
         x_accessor: 'subject',
         y_accessor: 'measure'

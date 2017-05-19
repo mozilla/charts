@@ -1,5 +1,5 @@
 importScript("../modevlib/util/convert.js");
-importScript("../modevlib/qb/qb.js");
+importScript("../modevlib/qb/Qb.js");
 importScript("../modevlib/charts/aColor.js");
 importScript("../modevlib/gui/GUI.js");
 

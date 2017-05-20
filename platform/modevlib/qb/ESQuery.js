@@ -12,7 +12,7 @@ importScript("../util/aUtil.js");
 importScript("../util/aParse.js");
 importScript("../debug/aLog.js");
 importScript("MVEL.js");
-importScript("qb.js");
+importScript("Qb.js");
 
 importScript("../rest/ElasticSearch.js");
 importScript("../rest/Rest.js");

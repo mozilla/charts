@@ -165,7 +165,7 @@ if (!Mozilla) var Mozilla = {"name": "Mozilla", "edges": []};
 			{//SOURCE https://wiki.mozilla.org/RapidRelease/Calendar
 				"name": "Firefox49",
 				"version": 49,
-				"releaseDate": "Sep 13, 2016",
+				"releaseDate": "Sep 20, 2016",
 				"esfilter": {"and": [
 					{"not": {"terms": {"cf_status_firefox49": SOLVED}}},
 					{"term": {"cf_tracking_firefox49": "+"}}
@@ -174,7 +174,7 @@ if (!Mozilla) var Mozilla = {"name": "Mozilla", "edges": []};
 			{
 				"name": "Firefox50",
 				"version": 50,
-				"releaseDate": "Nov 8, 2016",
+				"releaseDate": "Nov 15, 2016",
 				"esfilter": {"and": [
 					{"not": {"terms": {"cf_status_firefox50": SOLVED}}},
 					{"term": {"cf_tracking_firefox50": "+"}}
@@ -192,7 +192,7 @@ if (!Mozilla) var Mozilla = {"name": "Mozilla", "edges": []};
 			{
 				"name": "Firefox52",
 				"version": 52,
-				"releaseDate": "Mar 07, 2017",
+				"releaseDate": "Mar 03, 2017",
 				"esfilter": {"and": [
 					{"not": {"terms": {"cf_status_firefox52": SOLVED}}},
 					{"term": {"cf_tracking_firefox52": "+"}}
@@ -201,7 +201,7 @@ if (!Mozilla) var Mozilla = {"name": "Mozilla", "edges": []};
 			{
 				"name": "Firefox53",
 				"version": 53,
-				"releaseDate": "Apr 18, 2017",
+				"releaseDate": "Apr 19, 2017",
 				"esfilter": {"and": [
 					{"not": {"terms": {"cf_status_firefox53": SOLVED}}},
 					{"term": {"cf_tracking_firefox53": "+"}}
@@ -228,7 +228,7 @@ if (!Mozilla) var Mozilla = {"name": "Mozilla", "edges": []};
 			{
 				"name": "Firefox56",
 				"version": 56,
-				"releaseDate": "Oct 3, 2017",
+				"releaseDate": "Sep 26, 2017",
 				"esfilter": {"and": [
 					{"not": {"terms": {"cf_status_firefox56": SOLVED}}},
 					{"term": {"cf_tracking_firefox56": "+"}}
@@ -237,7 +237,7 @@ if (!Mozilla) var Mozilla = {"name": "Mozilla", "edges": []};
 			{
 				"name": "Firefox57",
 				"version": 57,
-				"releaseDate": "Nov 11, 2017",
+				"releaseDate": "Nov 14, 2017",
 				"esfilter": {"and": [
 					{"not": {"terms": {"cf_status_firefox57": SOLVED}}},
 					{"term": {"cf_tracking_firefox57": "+"}}
@@ -246,7 +246,7 @@ if (!Mozilla) var Mozilla = {"name": "Mozilla", "edges": []};
 			{
 				"name": "Firefox58",
 				"version": 58,
-				"releaseDate": "Jan 22, 2018",
+				"releaseDate": "Jan 16, 2018",
 				"esfilter": {"and": [
 					{"not": {"terms": {"cf_status_firefox58": SOLVED}}},
 					{"term": {"cf_tracking_firefox58": "+"}}
@@ -278,10 +278,9 @@ if (!Mozilla) var Mozilla = {"name": "Mozilla", "edges": []};
 	var trains = [
 		{"name": "Release", "columnName": "release", "style": {"color": "#E66000"}},
 		{"name": "Beta", "columnName": "beta", "style": {"color": "#FF9500"}},
-		{"name": "Aurora", "columnName": "aurora", "style": {"color": "#0095DD"}},
-		{"name": "Nightly", "columnName": "nightly", "style": {"color": "#002147"}}
+		{"name": "Nightly", "columnName": "nightly", "style": {"color": "#002147"}},
+		{"name": "Older", "columnName": "older", "style": {"color": "#DDDDDD"}}
 	];
-
 
 	var trainTrackingAbs = {
 		"name": "Release Tracking - Desktop",
@@ -294,7 +293,7 @@ if (!Mozilla) var Mozilla = {"name": "Mozilla", "edges": []};
 	};
 	trainTrackingAbs.edges.append({
 		"name": trains.last().name,
-		"columnName": "nightly",
+		"columnName": "nolder",
 		"version": trains.last().version,
 		"style": trains.last().style,
 		"esfilter": otherFilter

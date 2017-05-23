@@ -278,19 +278,26 @@ if (!Mozilla) var Mozilla = {"name": "Mozilla", "edges": []};
 	var trains = [
 		{"name": "Release", "columnName": "release", "style": {"color": "#E66000"}},
 		{"name": "Beta", "columnName": "beta", "style": {"color": "#FF9500"}},
-		{"name": "Nightly", "columnName": "nightly", "style": {"color": "#002147"}}
+		{"name": "Nightly", "columnName": "nightly", "style": {"color": "#002147"}},
+		{"name": "Older", "columnName": "older", "style": {"color": "#DDDDDD"}}
 	];
-
 
 	var trainTrackingAbs = {
 		"name": "Release Tracking - Desktop",
 		"esFacet": true,
 		"requiredFields": releaseTracking.requiredFields,
-		"edges": trains.map(function(t, track){
+		"edges": trains.leftBut(1).map(function(t, track){
 			var release = releaseTracking.edges[currentRelease.dataIndex + track];
 			return Map.setDefault({}, t, release);
 		})
 	};
+	trainTrackingAbs.edges.append({
+		"name": trains.last().name,
+		"columnName": "nolder",
+		"version": trains.last().version,
+		"style": trains.last().style,
+		"esfilter": otherFilter
+	});
 
 	//SHOW TRAINS AS PARTIITONS SO THERE IS NO DOUBLE COUNTING
 	var trainTrackingRel = {
@@ -298,12 +305,17 @@ if (!Mozilla) var Mozilla = {"name": "Mozilla", "edges": []};
 		"columnName": "train",
 		"isFacet": true,
 		"requiredFields": releaseTracking.requiredFields,
-		"partitions": trains.map(function(t, track){
+		"partitions": trains.leftBut(1).map(function(t, track){
 			var release = releaseTracking.edges[currentRelease.dataIndex + track];
 			var output = Map.setDefault({}, t, release);
 			return output;
 		})
 	};
+	trainTrackingRel.partitions.append({
+		"name": trains.last().name,
+		"style": trains.last().style,
+		"esfilter": otherFilter
+	});
 	trainTrackingRel.partitions.append({
 		"name": "ESR-31",
 		"style": trains.last().style,

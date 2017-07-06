@@ -233,7 +233,7 @@ build = function(){
         })(this);
       } else { //RETURNING A VALUE/OBJECT/FUNCTION TO CALLER
         var expendedGenerator = this.stack.pop();
-        if (expendedGenerator.close !== undefined)
+        if (expendedGenerator && expendedGenerator.close !== undefined)
           expendedGenerator.close(); //ONLY HAPPENS WHEN EXCEPTION IN THREAD IS NOT CAUGHT
 
         if (this.stack.length == 0) {

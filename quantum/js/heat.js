@@ -65,7 +65,9 @@ function showTeam(team, showTYPE){
 function showSummary(type, team, detail, grandTotal, specialBugs, showTYPE) {
 
 	var TEMPLATE = new Template(
-		'<h1 style="text-align:center; padding: 20px 0 0 10px;vertical-align: top; display:inline-block">{{type}}&nbsp;&nbsp;</h1>' +
+		'<h1 style="text-align:center; padding: 20px 0 0 10px;vertical-align: top; display:inline-block">{{type}}&nbsp;&nbsp;' +
+        '<div style="color:#ee0303;font-family: sans-serif, Arial Black,Arial Bold;font-weight:bold;font-size: .5em">Target: focus on P1 Bugs</div>' +
+		'</h1>' +
 		'{{total}}'
 	);
 

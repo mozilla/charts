@@ -114,7 +114,16 @@ if (!Mozilla) var Mozilla = {"name": "Mozilla", "edges": []};
                       {"prefix": {"component": "ipc"}},
                       {"prefix": {"component": "xbl"}},
                       {"prefix": {"component": "xform"}},
-                      {"term": {"component": "html: parser"}}
+                      {"terms": {"component": [
+                          "html: parser",
+                          "html: form submission",
+                          "keyboard: navigation",
+                          "serializers",
+                          "xbl",
+                          "xml",
+                          "xpconnect",
+                          "xslt"
+                      ]}}
                     ]
                   }
                 ]
@@ -167,12 +176,13 @@ if (!Mozilla) var Mozilla = {"name": "Mozilla", "edges": []};
                   {"term": {"product": "core"}},
                   {
                     "or": [
-                      {"prefix": {"component":"dom: css"}},
+                      {"prefix": {"component": "dom: css"}},
                       {"prefix": {"component": "css parsing"}},  // Component: "CSS Parsing and Computation", starts with "HTML", starts with "Image", starts with "Layout", "Selection"
                       {"prefix": {"component": "html"}},
                       {"prefix": {"component": "image"}},
                       {"prefix": {"component": "layout"}},
-                      {"prefix": {"component": "selection"}}
+                      {"prefix": {"component": "selection"}},
+                      {"terms": {"component": ["svg"]}}
                     ]
                   }
                 ]

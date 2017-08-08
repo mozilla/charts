@@ -7,7 +7,7 @@ importScript("qb/ESQuery.js");
 
 if (!Mozilla) var Mozilla = {"name": "Mozilla", "edges": []};
 
-(function(){
+(function () {
 
   Dimension.addEdges(true, Mozilla, [
     {
@@ -74,7 +74,7 @@ if (!Mozilla) var Mozilla = {"name": "Mozilla", "edges": []};
           "esfilter": ESQuery.TrueFilter,
           "index": "bugs",
           "limit": 200,
-          "end": function(p){
+          "end": function (p) {
             return p.name;
           }
         },
@@ -114,42 +114,46 @@ if (!Mozilla) var Mozilla = {"name": "Mozilla", "edges": []};
                       {"prefix": {"component": "ipc"}},
                       {"prefix": {"component": "xbl"}},
                       {"prefix": {"component": "xform"}},
-                      {"terms": {"component": [
-                          "html: parser",
-                          "html: form submission",
-                          "keyboard: navigation",
-                          "serializers",
-                          "xbl",
-                          "xml",
-                          "xpconnect",
-                          "xslt"
-                      ]}}
+                      {
+                        "terms": {
+                          "component": [
+                            "html: parser",
+                            "html: form submission",
+                            "keyboard: navigation",
+                            "serializers",
+                            "xbl",
+                            "xml",
+                            "xpconnect",
+                            "xslt"
+                          ]
+                        }
+                      }
                     ]
                   }
                 ]
               }
             },
-              {
-                "name": "Layout",
-                "manager": "Jet Villegas",
-                "style": {"color": "#B2912F"},
-                "esfilter": {
-                  "and": [
-                    {"term": {"product": "core"}},
-                    {
-                      "or": [
-                        {"prefix": {"component": "dom: css"}},
-                        {"prefix": {"component": "css parsing"}},  // Component: "CSS Parsing and Computation", starts with "HTML", starts with "Image", starts with "Layout", "Selection"
-                        {"prefix": {"component": "html"}},
-                        {"prefix": {"component": "image"}},
-                        {"prefix": {"component": "layout"}},
-                        {"prefix": {"component": "selection"}},
-                        {"terms": {"component": ["svg"]}}
-                      ]
-                    }
-                  ]
-                }
-              },
+            {
+              "name": "Layout",
+              "manager": "Jet Villegas",
+              "style": {"color": "#B2912F"},
+              "esfilter": {
+                "and": [
+                  {"term": {"product": "core"}},
+                  {
+                    "or": [
+                      {"prefix": {"component": "dom: css"}},
+                      {"prefix": {"component": "css parsing"}},  // Component: "CSS Parsing and Computation", starts with "HTML", starts with "Image", starts with "Layout", "Selection"
+                      {"prefix": {"component": "html"}},
+                      {"prefix": {"component": "image"}},
+                      {"prefix": {"component": "layout"}},
+                      {"prefix": {"component": "selection"}},
+                      {"terms": {"component": ["svg"]}}
+                    ]
+                  }
+                ]
+              }
+            },
             {
               "name": "Graphics",
               "manager": "Milan Sreckovic",
@@ -172,7 +176,7 @@ if (!Mozilla) var Mozilla = {"name": "Mozilla", "edges": []};
             },
             {
               "name": "Javascript",
-              "manager":"Shuyu Guo",
+              "manager": "Shuyu Guo",
               "style": {"color": "#F17CB0"},
               "esfilter": {
                 "and": [
@@ -212,7 +216,7 @@ if (!Mozilla) var Mozilla = {"name": "Mozilla", "edges": []};
             },
             {
               "name": "Runtime",
-              "manager":"Selena Deckelmann",
+              "manager": "Selena Deckelmann",
               "style": {"color": "#757EBA"},
               "esfilter": {
                 "and": [
@@ -222,7 +226,7 @@ if (!Mozilla) var Mozilla = {"name": "Mozilla", "edges": []};
             },
             {
               "name": "Front End",
-              "manager":"Justin Dolske",
+              "manager": "Justin Dolske",
               "style": {"color": "#757EBA"},
               "esfilter": {
                 "or": [
@@ -233,7 +237,7 @@ if (!Mozilla) var Mozilla = {"name": "Mozilla", "edges": []};
             },
             {
               "name": "Webtools",
-              "manager":"",
+              "manager": "",
               "style": {"color": "#757EBA"},
               "esfilter": {
                 "and": [

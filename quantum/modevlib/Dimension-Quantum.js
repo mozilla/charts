@@ -176,7 +176,7 @@ if (!Mozilla) var Mozilla = {"name": "Mozilla", "edges": []};
             },
             {
               "name": "Javascript",
-              "manager": "Shuyu Guo",
+              "manager": "Naveed Ihsanullah",
               "style": {"color": "#F17CB0"},
               "esfilter": {
                 "and": [

@@ -41,6 +41,7 @@ if (!Mozilla) var Mozilla = {"name": "Mozilla", "edges": []};
         {"name": "Blockers", "index": "bugs", "esfilter": {"term": {"status_whiteboard.tokenized": "qf:p1"}}},
         {"name": "Regressions", "index": "bugs", "esfilter": {"term": {"keywords": "regression"}}},
         {"name": "Unassigned", "index": "bugs", "esfilter": {"term": {"assigned_to": "nobody@mozilla.org"}}},
+        {"name": "NeedsAnalysis", "index": "bugs", "esfilter": {"term": {"status_whiteboard.tokenized": "qf:needs-analysis"}}},
 
         //AN UNFORTUNATE DISTINCTION BETWEEN DIMENSIONS (ABOVE, THAT OVERLAP), AND PARTITIONS THAT DO NOT OVERLAP
         {

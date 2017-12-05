@@ -97,7 +97,7 @@
 <BODY>
 <div style="overflow:hidden;">
 	<div class="content" style="position:inherit;">
-		<div id="totals", style="width:100%;text-align:center;"><h1>Quantum Flow P1 Bugs</h1></div>
+		<div id="totals", style="width:100%;text-align:center;"><h1>Quantum Flow Needs Analysis</h1></div>
 		<div id="blockers" style="text-align: center;"></div>
 	</div>
 	<div id="description" style="width:100%;text-align: center;font-size: 150%">
@@ -114,10 +114,6 @@
 		<span style="display:inline-block;bottom:0;width: 0;height: 0; border-style: solid; border-width: 0 0 10px 10px; border-color: transparent transparent #000000 transparent;"></span>
 		Nobody Assigned
 	</div>
-	<div style="width:100%;text-align: center">
-		For Quantum Flow P1 indicates bugs should be worked on next.
-	</div>
-
 	<div class="footer">
 		Source at <a href="https://github.com/mozilla/charts/tree/quantum/quantum">https://github.com/mozilla/charts/tree/quantum/quantum</a>
 	</div>
@@ -158,7 +154,7 @@ importScript('js/main_lib.js', function(){
         ],
         "esfilter": {
           "and": [
-            Mozilla.Quantum.Blockers.esfilter,
+            Mozilla.Quantum.NeedsAnalysis.esfilter,
             Mozilla.BugStatus.Open.esfilter,
             Mozilla.CurrentRecords.esfilter,
             GUI.getFilters("bugs")
@@ -246,13 +242,11 @@ importScript('js/main_lib.js', function(){
     };
 
     var blockerHTML = showSummary(
-      "Quantum Flow P1 Bugs",
+      "Quantum Flow Needs Analysis",
 	  grandTotal,
 	  showTotal,
-      new Template(
-        '<h1 style="text-align:center; padding: 20px 0 0 10px;vertical-align: top; display:inline-block">{{type}}&nbsp;&nbsp;' +
-        '<div style="color:#ee0303;font-family: sans-serif, Arial Black,Arial Bold;font-weight:bold;font-size: .5em">Target: focus on P1 Bugs</div>' +
-        '</h1>' +
+	  new Template(
+        '<h1 style="text-align:center; padding: 20px 0 0 10px;vertical-align: top; display:inline-block">{{type}}&nbsp;&nbsp;</h1>' +
         '{{total}}'
       )
 	);

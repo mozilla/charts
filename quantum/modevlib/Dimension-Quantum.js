@@ -136,7 +136,7 @@ if (!Mozilla) var Mozilla = {"name": "Mozilla", "edges": []};
             },
             {
               "name": "Layout",
-              "manager": "Jet Villegas",
+              "manager": "Maire Reavy",
               "style": {"color": "#B2912F"},
               "esfilter": {
                 "and": [
@@ -157,7 +157,7 @@ if (!Mozilla) var Mozilla = {"name": "Mozilla", "edges": []};
             },
             {
               "name": "Graphics",
-              "manager": "Milan Sreckovic",
+              "manager": "David Bolter",
               "style": {"color": "#B276B2"},
               "esfilter": {
                 "and": [
@@ -177,7 +177,7 @@ if (!Mozilla) var Mozilla = {"name": "Mozilla", "edges": []};
             },
             {
               "name": "Javascript",
-              "manager": "Naveed Ihsanullah",
+              "manager": "Steven DeTar",
               "style": {"color": "#F17CB0"},
               "esfilter": {
                 "and": [
@@ -195,7 +195,7 @@ if (!Mozilla) var Mozilla = {"name": "Mozilla", "edges": []};
             },
             {
               "name": "Networking",
-              "manager": "Patrick McManus",
+              "manager": "Jason Duell",
               "style": {"color": "#DECF3F"},
               "description": "Network",
               "esfilter": {
@@ -207,7 +207,7 @@ if (!Mozilla) var Mozilla = {"name": "Mozilla", "edges": []};
             },
             {
               "name": "WebExtensions",
-              "manager": "Andy McKay",
+              "manager": "David Durst",
               "style": {"color": "#757EBA"},
               "esfilter": {
                 "and": [
@@ -217,7 +217,7 @@ if (!Mozilla) var Mozilla = {"name": "Mozilla", "edges": []};
             },
             {
               "name": "Runtime",
-              "manager": "Selena Deckelmann",
+              "manager": "Jim Mathies",
               "style": {"color": "#757EBA"},
               "esfilter": {
                 "and": [

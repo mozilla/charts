@@ -166,7 +166,10 @@ Stats.median=function(values){
 	if (values.length==0) return null;
 	if (values.length==1) return values[0];
 
-	values.sort(function(a, b){return a-b;});
+    values = values.slice();
+    values.sort(function(a, b){
+        return a - b;
+    });
 	let i=Math.floor(values.length/2);
 	if (values.length %2==0){
 		return (values[i-1]+values[i])/2;

@@ -94,7 +94,8 @@ if (!Mozilla) var Mozilla = {"name": "Mozilla", "edges": []};
                   {
                     "or": [
                       {"prefix": {"component": "dev"}}, // Component: Anything starting with "Developer Tools"
-                      {"term": {"component": "gecko profiler"}}
+                      {"term": {"component": "gecko profiler"}},
+                      {"term": {"component": "inspector"}}
                     ]
                   }
                 ]
@@ -118,6 +119,7 @@ if (!Mozilla) var Mozilla = {"name": "Mozilla", "edges": []};
                       {
                         "terms": {
                           "component": [
+                            "event handling",
                             "html: parser",
                             "html: form submission",
                             "keyboard: navigation",
@@ -129,27 +131,6 @@ if (!Mozilla) var Mozilla = {"name": "Mozilla", "edges": []};
                           ]
                         }
                       }
-                    ]
-                  }
-                ]
-              }
-            },
-            {
-              "name": "Layout",
-              "manager": "Maire Reavy",
-              "style": {"color": "#B2912F"},
-              "esfilter": {
-                "and": [
-                  {"term": {"product": "core"}},
-                  {
-                    "or": [
-                      {"prefix": {"component": "dom: css"}},
-                      {"prefix": {"component": "css parsing"}},  // Component: "CSS Parsing and Computation", starts with "HTML", starts with "Image", starts with "Layout", "Selection"
-                      {"prefix": {"component": "html"}},
-                      {"prefix": {"component": "image"}},
-                      {"prefix": {"component": "layout"}},
-                      {"prefix": {"component": "selection"}},
-                      {"terms": {"component": ["svg"]}}
                     ]
                   }
                 ]
@@ -169,7 +150,34 @@ if (!Mozilla) var Mozilla = {"name": "Mozilla", "edges": []};
                       {"prefix": {"component": "panning"}},
                       {"prefix": {"component": "svg"}},
                       {"prefix": {"component": "gfx: color"}},
-                      {"terms": {"component": ["color management", "imagelib", "panning and zooming"]}}
+                      {"terms": {"component": [
+                        "color management",
+                        "imagelib",
+                        "panning and zooming",
+                        "image blocking",
+                        "layout: web painting"
+                      ]}}
+                    ]
+                  }
+                ]
+              }
+            },
+            {
+              "name": "Layout",
+              "manager": "Bobby Holley",
+              "style": {"color": "#B2912F"},
+              "esfilter": {
+                "and": [
+                  {"term": {"product": "core"}},
+                  {
+                    "or": [
+                      {"prefix": {"component": "dom: css"}},
+                      {"prefix": {"component": "css parsing"}},  // Component: "CSS Parsing and Computation", starts with "HTML", starts with "Image", starts with "Layout", "Selection"
+                      {"prefix": {"component": "html"}},
+                      {"prefix": {"component": "image"}},
+                      {"prefix": {"component": "layout"}},
+                      {"prefix": {"component": "selection"}},
+                      {"terms": {"component": ["svg"]}}
                     ]
                   }
                 ]
@@ -211,7 +219,8 @@ if (!Mozilla) var Mozilla = {"name": "Mozilla", "edges": []};
               "style": {"color": "#757EBA"},
               "esfilter": {
                 "and": [
-                  {"prefix": {"component": "webextensions"}}
+                  {"term": {"product": "webextensions"}},
+                  {"not":{"term":{"component":"general"}}}
                 ]
               }
             },
@@ -221,7 +230,28 @@ if (!Mozilla) var Mozilla = {"name": "Mozilla", "edges": []};
               "style": {"color": "#757EBA"},
               "esfilter": {
                 "and": [
-                  {"prefix": {"product": "core"}}
+                  {"prefix": {"component": "audio/video:"}}
+                ]
+              }
+            },
+            {
+              "name": "GeckoView",
+              "manager": "David Bolter",
+              "style": {"color": "#757EBA"},
+              "esfilter": {
+                "and": [
+                  {"prefix": {"product": "firefox for android"}},
+                  {"prefix": {"component": "geckoview"}}
+                ]
+              }
+            },
+            {
+              "name": "Android Front End",
+              "manager": "David Bolter",
+              "style": {"color": "#757EBA"},
+              "esfilter": {
+                "and": [
+                  {"prefix": {"product": "firefox for android"}}
                 ]
               }
             },

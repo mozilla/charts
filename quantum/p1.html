@@ -209,6 +209,7 @@ importScript('js/main_lib.js', function(){
 
     $("#blockers").html("");
     components.list.forall(function(team, i){
+      team.burndown = Mozilla.Quantum.Team[team.team.name].burndown;
       let blockerHTML = showTeam(team, showBlocker);
       $("#blockers").append(blockerHTML);
     });

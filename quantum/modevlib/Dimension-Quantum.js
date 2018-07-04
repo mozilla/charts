@@ -89,6 +89,7 @@ if (!Mozilla) var Mozilla = {"name": "Mozilla", "edges": []};
               "name": "DevTools",
               "manager": "Patrick Brosset",
               "style": {"color": "#FAA43A"},
+              "burndown": "https://cpeterso.github.io/burndown/?whiteboard=%5Bqf:p1:f64%5D&since=2018-01-01&component=developer%20tools:%20debugger,gecko%20profiler,Inspector,netmonitor",
               "esfilter": {
                 "and": [
                   {
@@ -105,6 +106,7 @@ if (!Mozilla) var Mozilla = {"name": "Mozilla", "edges": []};
               "name": "DOM",
               "manager": "Andrew Overholt",
               "style": {"color": "#4D4D4D"},
+              "burndown":"https://cpeterso.github.io/burndown/?whiteboard=%5Bqf:p1:f64%5D&since=2018-01-01&component=Document%20Navigation,DOM,DOM:%20Core%20%26%20HTML,DOM:%20Device%20Interfaces,DOM:%20Events,DOM:%20IndexedDB,DOM:%20Push%20Notifications,DOM:%20Quota%20Manager,DOM:%20Service%20Workers,DOM:%20Workers,Event%20Handling,HTML:%20Form%20Submission,HTML:%20Parser,Keyboard:%20Navigation,Serializers,XBL,XML,XPConnect,XSLT",
               "esfilter": {
                 "and": [
                   {"term": {"product": "core"}},
@@ -140,6 +142,7 @@ if (!Mozilla) var Mozilla = {"name": "Mozilla", "edges": []};
               "name": "Graphics",
               "manager": "David Bolter",
               "style": {"color": "#B276B2"},
+              "burndown":"https://cpeterso.github.io/burndown/?whiteboard=%5Bqf:p1:f64%5D&since=2018-01-01&component=Canvas:%20webGL,Graphics,Graphics:%20Layers,Panning%20and%20Zooming,SVG,Canvas:%202D,GFX:%20Color%20Management,Graphics:%20Text,Image%20Blocking,ImageLib,Layout%20Web%20Painting",
               "esfilter": {
                 "and": [
                   {"term": {"product": "core"}},
@@ -166,6 +169,7 @@ if (!Mozilla) var Mozilla = {"name": "Mozilla", "edges": []};
               "name": "Layout",
               "manager": "Bobby Holley",
               "style": {"color": "#B2912F"},
+              "burndown":"https://cpeterso.github.io/burndown/?whiteboard=%5Bqf:p1:f64%5D&since=2018-01-01&component=Layout:%20Block%20and%20Inline,CSS%20Parsing%20and%20Computation,Layout,Layout:%20Form%20Controls,Layout:%20Web%20Painting,DOM:%20CSS%20Object%20Model",
               "esfilter": {
                 "and": [
                   {"term": {"product": "core"}},
@@ -187,6 +191,7 @@ if (!Mozilla) var Mozilla = {"name": "Mozilla", "edges": []};
               "name": "Javascript",
               "manager": "Steven DeTar",
               "style": {"color": "#F17CB0"},
+              "burndown":"https://cpeterso.github.io/burndown/?whiteboard=%5Bqf:p1:f64%5D&since=2018-01-01&component=JavaScript%20Engine,Javascript%20Engine:%20Jit,JavaScript:%20GE,JavaScript:%20GC",
               "esfilter": {
                 "and": [
                   {"term": {"product": "core"}},
@@ -206,6 +211,7 @@ if (!Mozilla) var Mozilla = {"name": "Mozilla", "edges": []};
               "manager": "Jason Duell",
               "style": {"color": "#DECF3F"},
               "description": "Network",
+              "burndown":"https://cpeterso.github.io/burndown/?whiteboard=%5Bqf:p1:f64%5D&since=2018-01-01&component=Networking,Networking:%20Jar,Networking:%20Cookies",
               "esfilter": {
                 "and": [
                   {"term": {"product": "core"}},
@@ -217,6 +223,7 @@ if (!Mozilla) var Mozilla = {"name": "Mozilla", "edges": []};
               "name": "WebExtensions",
               "manager": "David Durst",
               "style": {"color": "#757EBA"},
+              "burndown":"",
               "esfilter": {
                 "and": [
                   {"term": {"product": "webextensions"}},
@@ -228,6 +235,7 @@ if (!Mozilla) var Mozilla = {"name": "Mozilla", "edges": []};
               "name": "Runtime",
               "manager": "Jim Mathies",
               "style": {"color": "#757EBA"},
+              "burndown":"https://cpeterso.github.io/burndown/?whiteboard=%5Bqf:p1:f64%5D&since=2018-01-01&component=Audio/Video:%20Playback,General",
               "esfilter": {
                 "and": [
                   {"prefix": {"component": "audio/video:"}}
@@ -238,6 +246,7 @@ if (!Mozilla) var Mozilla = {"name": "Mozilla", "edges": []};
               "name": "GeckoView",
               "manager": "David Bolter",
               "style": {"color": "#757EBA"},
+              "burndown":"",
               "esfilter": {
                 "and": [
                   {"prefix": {"product": "firefox for android"}},
@@ -249,6 +258,7 @@ if (!Mozilla) var Mozilla = {"name": "Mozilla", "edges": []};
               "name": "Android Front End",
               "manager": "David Bolter",
               "style": {"color": "#757EBA"},
+              "burndown":"",
               "esfilter": {
                 "and": [
                   {"prefix": {"product": "firefox for android"}}
@@ -259,6 +269,7 @@ if (!Mozilla) var Mozilla = {"name": "Mozilla", "edges": []};
               "name": "Front End",
               "manager": "Justin Dolske",
               "style": {"color": "#757EBA"},
+              "burndown":"",
               "esfilter": {
                 "or": [
                   {"prefix": {"product": "toolkit"}},
@@ -270,6 +281,7 @@ if (!Mozilla) var Mozilla = {"name": "Mozilla", "edges": []};
               "name": "Webtools",
               "manager": "",
               "style": {"color": "#757EBA"},
+              "burndown":"",
               "esfilter": {
                 "and": [
                   {"prefix": {"product": "webtools"}}
@@ -280,6 +292,7 @@ if (!Mozilla) var Mozilla = {"name": "Mozilla", "edges": []};
               "name": "Other",
               "manager": "",
               "style": {"color": "#CCCCCC"},
+              "burndown":"",
               "esfilter": {"match_all": {}} // Any tracked bug not in one of the product/component combinations above.
             }
           ]

@@ -158,7 +158,8 @@ if (!Mozilla) var Mozilla = {"name": "Mozilla", "edges": []};
                         "imagelib",
                         "panning and zooming",
                         "image blocking",
-                        "layout: web painting"
+                        "layout: web painting",
+                        "layout: Web painting components"
                       ]}}
                     ]
                   }

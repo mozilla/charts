@@ -38,7 +38,7 @@ if (!Mozilla) var Mozilla = {"name": "Mozilla", "edges": []};
 
         {"name": "Nominations", "index": "bugs", "esfilter": {"term": {"status_whiteboard.tokenized": "qf"}}},
         {"name": "AllNominations", "index": "bugs", "esfilter": {"terms": {"status_whiteboard.tokenized": ["qf:investigate:p1", "qf", "qf:investigate"]}}},
-        {"name": "Blockers", "index": "bugs", "esfilter": {"term": {"status_whiteboard.tokenized": "qf:p1:f64"}}},
+        {"name": "Blockers", "index": "bugs", "esfilter": {"terms": {"status_whiteboard.tokenized": ["qf:p1:f64", "qf:p1"]}}},
         {"name": "Regressions", "index": "bugs", "esfilter": {"term": {"keywords": "regression"}}},
         {"name": "Unassigned", "index": "bugs", "esfilter": {"term": {"assigned_to": "nobody@mozilla.org"}}},
         {"name": "NeedsAnalysis", "index": "bugs", "esfilter": {"term": {"status_whiteboard.tokenized": "qf:needs-analysis"}}},
@@ -250,8 +250,8 @@ if (!Mozilla) var Mozilla = {"name": "Mozilla", "edges": []};
               "burndown":"",
               "esfilter": {
                 "and": [
-                  {"prefix": {"product": "firefox for android"}},
-                  {"prefix": {"component": "geckoview"}}
+                  {"term": {"product": "firefox for android"}},
+                  {"term": {"component": "geckoview"}}
                 ]
               }
             },
@@ -262,7 +262,7 @@ if (!Mozilla) var Mozilla = {"name": "Mozilla", "edges": []};
               "burndown":"",
               "esfilter": {
                 "and": [
-                  {"prefix": {"product": "firefox for android"}}
+                  {"term": {"product": "firefox for android"}}
                 ]
               }
             },
@@ -273,8 +273,8 @@ if (!Mozilla) var Mozilla = {"name": "Mozilla", "edges": []};
               "burndown":"",
               "esfilter": {
                 "or": [
-                  {"prefix": {"product": "toolkit"}},
-                  {"prefix": {"product": "firefox"}}
+                  {"term": {"product": "toolkit"}},
+                  {"term": {"product": "firefox"}}
                 ]
               }
             },
@@ -285,7 +285,7 @@ if (!Mozilla) var Mozilla = {"name": "Mozilla", "edges": []};
               "burndown":"",
               "esfilter": {
                 "and": [
-                  {"prefix": {"product": "webtools"}}
+                  {"term": {"product": "webtools"}}
                 ]
               }
             },

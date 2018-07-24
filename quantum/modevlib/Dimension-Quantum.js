@@ -168,7 +168,7 @@ if (!Mozilla) var Mozilla = {"name": "Mozilla", "edges": []};
             },
             {
               "name": "Layout",
-              "manager": "Bobby Holley",
+              "manager": "Sean Voisen",
               "style": {"color": "#B2912F"},
               "burndown":"https://cpeterso.github.io/burndown/?whiteboard=%5Bqf:p1:f64%5D&since=2018-01-01&component=Layout:%20Block%20and%20Inline,CSS%20Parsing%20and%20Computation,Layout,Layout:%20Form%20Controls,Layout:%20Web%20Painting,DOM:%20CSS%20Object%20Model",
               "esfilter": {

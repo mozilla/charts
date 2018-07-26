@@ -248,15 +248,15 @@ importScript('js/main_lib.js', function(){
 
     var blockerHTML = showSummary(
       "Quantum Flow Fx64 P1 Bugs",
-	  grandTotal,
-	  showTotal,
+      grandTotal,
+      showTotal,
       new Template(
         '<h1 style="text-align:center; padding: 20px 0 0 10px;vertical-align: top; display:inline-block">{{type}}&nbsp;&nbsp;' +
         '<div style="color:#ee0303;font-family: sans-serif, Arial Black,Arial Bold;font-weight:bold;font-size: .5em">Target: focus on P1 Bugs</div>' +
         '</h1>' +
         '{{total}}'
       )
-	);
+    );
     $("#totals").html(blockerHTML);
 
     addProjectClickers(components);

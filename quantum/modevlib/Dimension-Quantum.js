@@ -38,7 +38,7 @@ if (!Mozilla) var Mozilla = {"name": "Mozilla", "edges": []};
 
         {"name": "Nominations", "index": "bugs", "esfilter": {"term": {"status_whiteboard.tokenized": "qf"}}},
         {"name": "AllNominations", "index": "bugs", "esfilter": {"terms": {"status_whiteboard.tokenized": ["qf:investigate:p1", "qf", "qf:investigate"]}}},
-        {"name": "Blockers", "index": "bugs", "esfilter": {"terms": {"status_whiteboard.tokenized": ["qf:p1:f64", "qf:p1"]}}},
+        {"name": "Blockers", "index": "bugs", "esfilter": {"terms": {"status_whiteboard.tokenized": ["qf:p1:f64", "qf:p1", "qf:investigate:p1"]}}},
         {"name": "Regressions", "index": "bugs", "esfilter": {"term": {"keywords": "regression"}}},
         {"name": "Unassigned", "index": "bugs", "esfilter": {"term": {"assigned_to": "nobody@mozilla.org"}}},
         {"name": "NeedsAnalysis", "index": "bugs", "esfilter": {"term": {"status_whiteboard.tokenized": "qf:needs-analysis"}}},
@@ -85,6 +85,13 @@ if (!Mozilla) var Mozilla = {"name": "Mozilla", "edges": []};
           "isFacet": true,
           "esfilter": {"match_all": {}},
           "partitions": [
+            {
+              "name": "Investigate",
+              "manager": "",
+              "style": {"color": "#CCCCCC"},
+              "burndown":"",
+              "esfilter": {"term": {"status_whiteboard.tokenized": "qf:investigate:p1"}}
+            },
             {
               "name": "DevTools",
               "manager": "Patrick Brosset",

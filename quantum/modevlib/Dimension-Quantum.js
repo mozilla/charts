@@ -275,7 +275,7 @@ if (!Mozilla) var Mozilla = {"name": "Mozilla", "edges": []};
             },
             {
               "name": "Front End",
-              "manager": "Justin Dolske",
+              "manager": "Mike Conley",
               "style": {"color": "#757EBA"},
               "burndown":"",
               "esfilter": {

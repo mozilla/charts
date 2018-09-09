@@ -178,7 +178,7 @@ function showNomChurn(args) {
 						"2.2":"2.2"
 					}[series]);
 
-					var buglist = (yield (Qb.calc2List({
+					var buglist = (yield (qb.calc2List({
 						"from": all,
 						"select": {"value": "bug_id"},
 						"where": logic + " && " + min + "<=modified_ts && modified_ts<" + max

@@ -9,7 +9,7 @@ if (!Mozilla) var Mozilla = {"name": "Mozilla", "edges": []};
 
 (function () {
 
-  Dimension.addEdges(true, Mozilla, [
+  Dimension.addEdges(false, Mozilla, [
     {
       "name": "Quantum",
       "esfilter": {"match_all": {}},
@@ -38,8 +38,15 @@ if (!Mozilla) var Mozilla = {"name": "Mozilla", "edges": []};
 
         {"name": "Nominations", "index": "bugs", "esfilter": {"term": {"status_whiteboard.tokenized": "qf"}}},
         {"name": "AllNominations", "index": "bugs", "esfilter": {"terms": {"status_whiteboard.tokenized": ["qf:investigate:p1", "qf", "qf:investigate"]}}},
-        {"name": "Blockers", "index": "bugs", "esfilter": {"terms": {"status_whiteboard.tokenized": ["qf:p1:f64", "qf:p1", "qf:investigate:p1"]}}},
-        {"name": "Regressions", "index": "bugs", "esfilter": {"term": {"keywords": "regression"}}},
+		  {
+			  "name": "Blockers", "index": "bugs", "esfilter": {
+				  "or": [
+					  {"terms": {"status_whiteboard.tokenized": ["qf:p1:f64", "qf:p1", "qf:investigate:p1"]}},
+					  {"terms": {"status_whiteboard(tokenized)": ["qf:p1:f64", "qf:p1", "qf:investigate:p1"]}}  //REMOVE ME
+				  ]
+			  }
+		  },
+		  {"name": "Regressions", "index": "bugs", "esfilter": {"term": {"keywords": "regression"}}},
         {"name": "Unassigned", "index": "bugs", "esfilter": {"term": {"assigned_to": "nobody@mozilla.org"}}},
         {"name": "NeedsAnalysis", "index": "bugs", "esfilter": {"term": {"status_whiteboard.tokenized": "qf:needs-analysis"}}},
 

@@ -29,7 +29,7 @@ SimplePartitionFilter = function () {
 		var self = new SimplePartitionFilter();
 		Map.copy(param, self);
 
-		self.DIV_ID=CNV.String2HTML(self.id);
+		self.DIV_ID=convert.String2HTML(self.id);
 		self.id2DIV_ID=[]; //MAPPING TO PART IDS IN HTML
 	};
 
@@ -42,7 +42,7 @@ SimplePartitionFilter = function () {
 		var content=[];
 		this.domain.partitions.forall(function(part){
 			var key=self.domain.getKey(part);
-			var partDIV_ID=this.DIV_ID+"_"+CNV.String2HTML(key);
+			var partDIV_ID=this.DIV_ID+"_"+convert.String2HTML(key);
 			self.id2DIV_ID[key]=partDIV_ID;
 
 			var inst = $(self.template.replace(part))
@@ -72,7 +72,7 @@ SimplePartitionFilter = function () {
 		var self = this;
 
 		//CONVERT SELECTED LIST INTO PART OBJECTS
-		return this.selectedIDs.map(function (id) {
+		return this.selectedIDs.mapExists(function (id) {
 			return self.id2node[id];
 		});
 	};//method
@@ -81,7 +81,7 @@ SimplePartitionFilter = function () {
 	SimplePartitionFilter.prototype.getSelectedParts = function () {
 		var self = this;
 
-		return this.selectedIDs.map(function (id) {
+		return this.selectedIDs.mapExists(function (id) {
 			return self.id2part[id];
 		});
 	};//method
@@ -103,7 +103,7 @@ SimplePartitionFilter = function () {
 
 		//SOME VALUES WILL BE IMPOSSIBLE, SO SHOULD BE REMOVED
 		if (this.hierarchy != WAITING_FOR_RESULTS)
-			this.selectedIDs = this.getSelectedNodes().map(function (v, i) {
+			this.selectedIDs = this.getSelectedNodes().mapExists(function (v, i) {
 				return v.id;
 			});
 	};
@@ -111,14 +111,14 @@ SimplePartitionFilter = function () {
 
 	SimplePartitionFilter.prototype.getSummary = function () {
 		if (this.selectedIDs.length == 0) return this.name + ": All";
-		return this.name + ": " + this.getSelectedNodes().map(function (p) {
+		return this.name + ": " + this.getSelectedNodes().mapExists(function (p) {
 			return p.data;
 		}).join(", ");
 	};//method
 
 
 	SimplePartitionFilter.prototype.makeHTML = function () {
-		return '<div id="'+CNV.String2HTML(this.DIV_ID)+'"></div>';
+		return '<div id="'+convert.String2HTML(this.DIV_ID)+'"></div>';
 	};
 
 
@@ -130,7 +130,7 @@ SimplePartitionFilter = function () {
 		if (selected.length == 0) return ESQuery.TrueFilter;
 
 		var self = this;
-		return {"or": selected.map(function (v) {
+		return {"or": selected.mapExists(function (v) {
 			return v.esfilter;
 		})};
 	};//method
@@ -142,12 +142,12 @@ SimplePartitionFilter = function () {
 		this.makeTree();
 		var selected = this.getSelectedNodes();
 
-		var f = $('#' + CNV.String2JQuery(this.DIV_LIST_ID));
+		var f = $('#' + convert.String2JQuery(this.DIV_LIST_ID));
 		f.jstree("deselect_all");
 		f.jstree("uncheck_all");
 		selected.forall(function (p) {
-			f.jstree("select_node", ("#" + CNV.String2JQuery(p.id)));
-			f.jstree("check_node", ("#" + CNV.String2JQuery(p.id)));
+			f.jstree("select_node", ("#" + convert.String2JQuery(p.id)));
+			f.jstree("check_node", ("#" + convert.String2JQuery(p.id)));
 		});
 
 		this.disableUI = false;

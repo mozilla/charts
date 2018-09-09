@@ -3,6 +3,8 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
 
+importScript("../util/aString.js");
+
 PartitionFilter = function(){};
 
 
@@ -31,17 +33,17 @@ PartitionFilter.newInstance=function(param){
 
 	var self=new PartitionFilter();
 	Map.copy(param, self);
-	self.showAll=nvl(self.showAll, true);
+	self.showAll=coalesce(self.showAll, true);
 
 	if (self.dimension.partitions===undefined && self.dimension.edges===undefined) Log.error(self.dimension.name+" does not have a partition defined");
 
-//	self.id=self.dimension.parent.name.replaceAll(" ", "_");
+//  self.id=self.dimension.parent.name.replaceAll(" ", "_");
 	if (self.treeDepth===undefined) self.treeDepth=100;
 	self.isFilter=true;
 	self.treeDone=false;
 	self.DIV_ID=self.id.replaceAll(" ", "_")+"_id";
 	self.DIV_LIST_ID=self.id.replaceAll(" ", "_")+"_list";
-	self.FIND_TREE="#"+CNV.String2JQuery(self.DIV_LIST_ID);
+	self.FIND_TREE="#"+convert.String2JQuery(self.DIV_LIST_ID);
 	self.disableUI=false;
 	self.numLater=0;
 
@@ -59,20 +61,26 @@ PartitionFilter.newInstance=function(param){
 
 function convertToTreeLater(self, treeNode, dimension){
 	self.numLater++;
+	var refreshNow = GUI.pleaseRefreshLater;
 	GUI.pleaseRefreshLater=true;
 	Thread.run(function*(){
 		//DO THIS ONE LATER
-//		treeNode.children = [];
-		if (dimension.partitions instanceof Thread){
-			var threadResult = yield (Thread.join(dimension.partitions));
-			if (threadResult.threadResponse instanceof Exception){
-				Log.error("Can not setup PartitionFilter", threadResult.threadResponse);
-			}//endif
-		}//while
+//    treeNode.children = [];
+		if (dimension.partitions instanceof Thread) {
+			try {
+				yield (Thread.join(dimension.partitions));
+			} catch (e) {
+				Log.error("Can not setup PartitionFilter", e);
+			}finally{
+				GUI.pleaseRefreshLater = refreshNow;
+			}//try
+		}else{
+			GUI.pleaseRefreshLater = refreshNow;
+		}//endif
 		var pleaseUpdate = (treeNode.children==WAITING_FOR_RESULTS);
-		treeNode.children = dimension.partitions.map(function (v, i) {
-			if (i < nvl(dimension.limit, DEFAULT_CHILD_LIMIT)){
-				v.limit = nvl(v.limit, dimension.limit, DEFAULT_CHILD_LIMIT);
+		treeNode.children = dimension.partitions.mapExists(function (v, i) {
+			if (i < coalesce(dimension.limit, DEFAULT_CHILD_LIMIT)){
+				v.limit = coalesce(v.limit, dimension.limit, DEFAULT_CHILD_LIMIT);
 				return convertToTree(self, {}, 1, v);
 			}//endif
 		});
@@ -107,9 +115,9 @@ function convertToTree(self, parent, depth, dimension){
 			convertToTreeLater(self, node, dimension);
 		}else{
 			if (depth < self.treeDepth){
-				node.children=dimension.partitions.map(function(v,i){
-					if (i<nvl(dimension.limit, DEFAULT_CHILD_LIMIT))
-						v.limit = nvl(v.limit, dimension.limit, DEFAULT_CHILD_LIMIT);
+				node.children=dimension.partitions.mapExists(function(v,i){
+					if (i<coalesce(dimension.limit, DEFAULT_CHILD_LIMIT))
+						v.limit = coalesce(v.limit, dimension.limit, DEFAULT_CHILD_LIMIT);
 						return convertToTree(self, depth==0 ? {} : node, depth+1, v);
 				});
 				if (depth==0){
@@ -121,8 +129,8 @@ function convertToTree(self, parent, depth, dimension){
 		}//endif
 	}//endif
 	if (dimension.edges){
-		node.children=dimension.edges.map(function(v,i){
-			v.limit = nvl(v.limit, dimension.limit, DEFAULT_CHILD_LIMIT);
+		node.children=dimension.edges.mapExists(function(v,i){
+			v.limit = coalesce(v.limit, dimension.limit, DEFAULT_CHILD_LIMIT);
 			return convertToTree(self, node, 0, v);
 		});
 	}//endif
@@ -137,7 +145,7 @@ PartitionFilter.prototype.getSelectedNodes=function(){
 	var self=this;
 
 	//CONVERT SELECTED LIST INTO PART OBJECTS
-	return this.selectedIDs.map(function(id){
+	return this.selectedIDs.mapExists(function(id){
 		return self.id2node[id];
 	});
 };//method
@@ -147,8 +155,8 @@ PartitionFilter.prototype.getSelectedNodes=function(){
 PartitionFilter.prototype.getSelectedParts=function(){
 	var self=this;
 
-	return this.selectedIDs.map(function(id){
-		if (id !="__all__")	return self.id2part[id];
+	return this.selectedIDs.mapExists(function(id){
+		if (id !="__all__")  return self.id2part[id];
 	});
 };//method
 
@@ -172,7 +180,7 @@ PartitionFilter.prototype.setSimpleState=function(value){
 
 	//SOME VALUES WILL BE IMPOSSIBLE, SO SHOULD BE REMOVED
 	if (this.hierarchy!=WAITING_FOR_RESULTS){
-		this.selectedIDs=this.getSelectedNodes().map(function(v, i){return v.id;});
+		this.selectedIDs=this.getSelectedNodes().mapExists(function(v, i){return v.id;});
 	}//endif
 	if (this.selectedIDs.length==0){
 		this.selectedIDs=["__all__"];
@@ -182,7 +190,7 @@ PartitionFilter.prototype.setSimpleState=function(value){
 
 PartitionFilter.prototype.getSummary=function(){
 	if (this.selectedIDs.length==0) return this.name+": All";
-	return this.name+": "+this.getSelectedNodes().map(function(p){return p.data;}).join(", ");
+	return this.name+": "+this.getSelectedNodes().mapExists(function(p){return p.data;}).join(", ");
 };//method
 
 
@@ -206,15 +214,15 @@ PartitionFilter.prototype.makeTree=function(){
 
 	$(this.FIND_TREE).jstree({
 		"json_data":{
-			"data":self.hierarchy		 //EXPECTING id, name, children FOR ALL NODES IN TREE
+			"data":self.hierarchy     //EXPECTING id, name, children FOR ALL NODES IN TREE
 		},
 		"themes":{
 			"icons":false,
 			"dots":false
 		},
-//		"checkbox":{
-//			"two_state":true
-//		},
+//    "checkbox":{
+//      "two_state":true
+//    },
 		"plugins":[ "themes", "json_data", "ui", "checkbox" ]
 	}).bind("change_state.jstree", function (e, data){
 		if (self.disableUI) return;
@@ -228,7 +236,7 @@ PartitionFilter.prototype.makeTree=function(){
 		}else{
 			//FIRST MAKE A HASH OF CHECKED ITEMS
 			data.inst.get_checked(null, true).each(function(){
-//			$(".jstree-checked").each(function(){
+//      $(".jstree-checked").each(function(){
 				checked[$(this).attr("id")] = true;
 			});
 			//CLICKING ON SOMETHING OTHER THAN ALL WILL CLEAR ALL
@@ -244,7 +252,7 @@ PartitionFilter.prototype.makeTree=function(){
 		if (checked["__all__"]){  //ULTIMATE PARENT
 			minCover =["__all__"];
 		}else{
-			minCover= mapAllKey(checked, function(id){
+			minCover= Map.map(checked, function(id){
 				if (checked[self.parents[id].id]) return;
 				return id;
 			});
@@ -296,8 +304,8 @@ PartitionFilter.prototype.makeTree=function(){
 
 
 PartitionFilter.prototype.makeHTML=function(){
-	return '<div id="'+CNV.String2HTML(this.DIV_LIST_ID)+'" style="300px">'+
-		'<div id="'+CNV.String2HTML(this.DIV_LIST_ID)+'"></div>'+
+	return '<div id="'+convert.String2HTML(this.DIV_LIST_ID)+'" style="300px">'+
+		'<div id="'+convert.String2HTML(this.DIV_LIST_ID)+'"></div>'+
 		'</div>';
 };
 
@@ -306,7 +314,7 @@ PartitionFilter.prototype.makeHTML=function(){
 PartitionFilter.prototype.makeFilter = function(){
 	var selected = this.getSelectedParts();
 	if (selected.length == 0) return ESQuery.TrueFilter;
-	return {"or":selected.map(function(v){return v.fullFilter;})};
+	return {"or":selected.mapExists(function(v){return v.esfilter;})};
 };//method
 
 
@@ -317,12 +325,12 @@ PartitionFilter.prototype.refresh = function(){
 	this.makeTree();
 	var selected=this.getSelectedNodes();
 
-	var f=$('#'+CNV.String2JQuery(this.DIV_LIST_ID));
+	var f=$('#'+convert.String2JQuery(this.DIV_LIST_ID));
 	f.jstree("deselect_all");
 	f.jstree("uncheck_all");
 	selected.forall(function(p){
-		f.jstree("select_node", ("#"+CNV.String2JQuery(p.id)));
-		f.jstree("check_node", ("#"+CNV.String2JQuery(p.id)));
+		f.jstree("select_node", ("#"+convert.String2JQuery(p.id)));
+		f.jstree("check_node", ("#"+convert.String2JQuery(p.id)));
 	});
 
 	this.disableUI=false;

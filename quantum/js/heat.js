@@ -5,6 +5,7 @@
 
 importScript("../modevlib/util/aUtil.js");
 importScript("../modevlib/util/aString.js");
+importScript("../modevlib/charts/aColor.js");
 importScript("owners.js");
 
 
@@ -12,7 +13,7 @@ var HIGHLIGHT = Color.BLUE.hue(60).multiply(0.6);
 
 
 if (typeof OWNERS != 'undefined'){
-  OWNERS = Map.zip(mapAllKey(OWNERS, function(k, v){
+  OWNERS = Map.zip(Map.map(OWNERS, function(k, v){
     var manager;
     var owner;
     //PARSE THE <manager> "(" listOf(<assign_to>) ")" FORMAT
@@ -33,7 +34,7 @@ if (typeof OWNERS != 'undefined'){
 function getComponentDetails(c){
   let candidates = Mozilla.Quantum.Team.partitions.mapExists(function(team){
     if (!team._fullFilter){
-      team._fullFilter = Qb.where.compile(team.fullFilter);
+      team._fullFilter = qb.where.compile(team.fullFilter);
     }
     if (team._fullFilter(c)) return team.manager;
   });

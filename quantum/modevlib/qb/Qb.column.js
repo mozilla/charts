@@ -2,14 +2,26 @@
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/.
  */
-if (Qb===undefined) var Qb = {};
+if (qb===undefined) var qb = {};
 
 
-Qb.column = {};
+qb.column = {};
 
-Qb.column.compile = function(resultColumn, sourceColumns, edges, useMVEL){  //useMVEL TO INDICATE THIS IS AN ES COLUMN
 
-	if (typeof(resultColumn)=='string'){
+qb.column.normalize=function(column){
+	if (isString(column)) {
+		return {"name": column};
+	}else if (!column.name){
+		column.name = coalesce(column.value, column.aggregate);
+	}else{
+		return column;
+	}//endif
+};//function
+
+
+qb.column.compile = function(resultColumn, sourceColumns, edges, useMVEL){  //useMVEL TO INDICATE THIS IS AN ES COLUMN
+
+	if (isString(resultColumn)){
 		Log.error("expecting a column definition, not a string");
 	}//endif
 	if (resultColumn.name===undefined) resultColumn.name=resultColumn.value;
@@ -17,9 +29,9 @@ Qb.column.compile = function(resultColumn, sourceColumns, edges, useMVEL){  //us
 
 	if (resultColumn.domain){
 		if (resultColumn.domain.compare===undefined)
-			Qb.domain.compile(resultColumn, sourceColumns);
+			qb.domain.compile(resultColumn, sourceColumns);
 	}else{
-		resultColumn.domain=Qb.domain.value;
+		resultColumn.domain=qb.domain.value;
 	}//endif
 
 	resultColumn.sortOrder = 1;
@@ -38,7 +50,7 @@ Qb.column.compile = function(resultColumn, sourceColumns, edges, useMVEL){  //us
 			if (!v.esfilter){
 				all_have_filters=false;
 			}else{
-				calc_val+="if ("+CNV.esFilter2Expression(v.esfilter)+") return "+ CNV.Value2Quote(v[resultColumn.domain.key])+";\nelse ";
+				calc_val+="if ("+convert.esFilter2Expression(v.esfilter)+") return "+ convert.Value2Quote(v[resultColumn.domain.key])+";\nelse ";
 			}//endif
 		});
 		calc_val+="return null;\n";
@@ -58,22 +70,25 @@ Qb.column.compile = function(resultColumn, sourceColumns, edges, useMVEL){  //us
 	//COMPILE THE CALCULATION OF THE DESTINATION COLUMN USING THE SOURCE COLUMNS
 	var f = "resultColumn.calc=function(__source, __result){\n" +
 		"try{\n";
-	for(var s = 0; s < sourceColumns.length; s++){
-		var columnName = sourceColumns[s].name;
-		//ONLY DEFINE VARS THAT ARE USED
-		if (resultColumn.value.indexOf(columnName) != -1){
-			f += "var " + columnName + "=__source." + columnName + ";\n";
-//				"if (" + columnName + "===undefined) Log.error(\"" + columnName + " is undefined\");\n";
-		}//endif
-	}//for
+	if (resultColumn.value==".") {
+		resultColumn.value = "__source";
+	}else if (resultColumn.value instanceof Function){
+		Log.error("Can not accept a function, use a string with Javascript instead")
+	}else{
+		for(var s = 0; s < sourceColumns.length; s++){
+			var columnName = sourceColumns[s].name;
+			//ONLY DEFINE VARS THAT ARE USED
+			if (resultColumn.value.indexOf(columnName) != -1){
+				f += "var " + columnName + "=__source." + columnName + ";\n";
+			}//endif
+		}//for
+	}
 	if (edges !== undefined) for(var i = 0; i < edges.length; i++){
-//		var columnName = edges[i].name;
 		var domainName = edges[i].domain.name;
 		//ONLY DEFINE VARS THAT ARE USED
 		if (domainName!==undefined){
 			if (resultColumn.value.indexOf(domainName + ".") != -1){
 				f += "var " + domainName + "=__result["+i+"];\n";
-//				"if (" + domainName + "===undefined) Log.error(\"" + domainName + " is undefined\");\n";
 			}//endif
 
 			var reg=new RegExp(domainName+"\\s*==", "g");
@@ -86,14 +101,15 @@ Qb.column.compile = function(resultColumn, sourceColumns, edges, useMVEL){  //us
 	f +=
 			"   var output;\n"+
 
-			"	output = " + resultColumn.value + ";\n" +
-			"	if (output===undefined || (output!=null && aMath.isNaN(output))) Log.error(\"" + resultColumn.name + " returns \"+CNV.Value2Quote(output));\n"+
-			"	return output;\n" +
+			"  output = " + resultColumn.value + ";\n" +
+			"  if (output===undefined || (output!=null && aMath.isNaN(output))) Log.error(\"" + resultColumn.name + " returns \"+convert.Value2Quote(output));\n"+
+			"  return output;\n" +
 			"}catch(e){\n" +
-			"	Log.error("+
+			"  Log.error("+
 					"\"Problem with definition of name=\\\"" + resultColumn.name +
-					"\\\" value=" + CNV.String2Quote(CNV.String2Quote(resultColumn.value)).leftBut(1).rightBut(1) +
-					" when operating on __source=\"+CNV.Object2JSON(__source)+\" and __result=\"+CNV.Object2JSON(__result)"+
+					"\\\" value=" + convert.String2Quote(convert.String2Quote(resultColumn.value)).leftBut(1).rightBut(1) +
+					" when operating on __source=\"+convert.value2json(__source)+\" and __result=\"+convert.value2json(__result)"+
+					"+\" caused by (\"+e.message+\")\""+
 					"+\" Are you trying to get an attribute value from a NULL part?\"" +
 				", e)"+
 			"}}";
@@ -108,8 +124,8 @@ Qb.column.compile = function(resultColumn, sourceColumns, edges, useMVEL){  //us
 
 
 //MAKE THE WHERE TEST METHOD
-Qb.where = {};
-Qb.where.compile = function(whereClause, sourceColumns, edges){
+qb.where = {};
+qb.where.compile = function(whereClause, sourceColumns, edges){
 	var whereMethod = null;
 
 
@@ -119,7 +135,7 @@ Qb.where.compile = function(whereClause, sourceColumns, edges){
 	}//endif
 
 	if (!isString(whereClause)){
-		return CNV.esFilter2function(whereClause);
+		return convert.esFilter2function(whereClause);
 	}//endif
 
 	var f = "whereMethod=function(__source, __result){\n";
@@ -144,9 +160,9 @@ Qb.where.compile = function(whereClause, sourceColumns, edges){
 
 	f +=
 		"try{\n" +
-			"	return (" + whereClause + ");\n" +
+			"  return (" + whereClause + ");\n" +
 			"}catch(e){\n" +
-			"	Log.warning(\"Problem with definition of the where clause " + CNV.String2Quote(whereClause).rightBut(1).leftBut(1) + "\", e);\n" +
+			"  Log.warning(\"Problem with definition of the where clause " + convert.String2Quote(whereClause).rightBut(1).leftBut(1) + "\", e);\n" +
 			"}}";
 	try{
 		eval(f);

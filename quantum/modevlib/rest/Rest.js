@@ -30,18 +30,23 @@ Rest.send=function*(ajaxParam){
 	if (ajaxParam.query!==undefined) Log.error("Do not set the query parameter, use 'data'");
 	if (ajaxParam.success!==undefined) Log.error("This function will return data, it does not accept the success function");
 
-	var callback=yield (Thread.Resume);	//RESUME THREAD ON RETURN
+	var callback=yield (Thread.Resume);  //RESUME THREAD ON RETURN
 
 	//FILL IN THE OPTIONAL VALUES
 	if (ajaxParam.type===undefined) ajaxParam.type="POST";
 	ajaxParam.type=ajaxParam.type.toUpperCase();
+	if (ajaxParam.json){
+		ajaxParam.data = convert.value2json(ajaxParam.json);
+		ajaxParam.dataType = "json";
+		ajaxParam.json = undefined;
+	}
 	if (ajaxParam.dataType===undefined) ajaxParam.dataType="json";
 	if (ajaxParam.error===undefined){
 		ajaxParam.error=function(errorData){
 			callback(new Exception("Error while calling "+ajaxParam.url, errorData));
 		};
 	}//endif
-	if (typeof(ajaxParam.data)!="string") ajaxParam.data=CNV.Object2JSON(ajaxParam.data);
+	if (typeof(ajaxParam.data)!="string") ajaxParam.data=convert.value2json(ajaxParam.data);
 	if (!ajaxParam.async) ajaxParam.async=true;
 	ajaxParam.success=callback;
 
@@ -80,7 +85,12 @@ Rest.send=function*(ajaxParam){
 			if ([200, 201].contains(request.status)){
 				var response = request.responseText;
 				if (ajaxParam.dataType == 'json'){
-					response = CNV.JSON2Object(response);
+					try{
+						response = convert.json2value(response);
+					}catch(e){
+						ajaxParam.error(e);
+						return
+					}//try
 				}//endif
 				if (response === undefined){
 					Log.warning("Appears to have no response!!")
@@ -89,26 +99,33 @@ Rest.send=function*(ajaxParam){
 			} else if (request.isTimeout){
 				callback(new Exception("Error while calling " + ajaxParam.url, Exception.TIMEOUT));
 			} else {
-				ajaxParam.error(new Exception("Bad response ("+request.status+")", CNV.String2Quote(request.responseText)));
+				var resp;
+				try {
+					resp = convert.json2value(request.responseText);
+					ajaxParam.error(new Exception("Bad response ("+request.status+")", resp));
+				}catch(e){
+					ajaxParam.error(new Exception("Bad response ("+request.status+"): "+convert.value2quote(request.responseText)));
+				}
+
 			}//endif
 		} else if (request.readyState == 3){
 			//RESPONSE IS ARRIVING, DISABLE TIMEOUT
 			request.timeoutFunction=function(){}
 		} else{
-//			Log.note(CNV.Object2JSON(request));
-//			Log.note(request.getAllResponseHeaders());
+//      Log.note(convert.value2json(request));
+//      Log.note(request.getAllResponseHeaders());
 		}//endif
 	};
 
-//	if (Rest.progressListener){
-//		request.addEventListener("progress",Rest.progress(Rest.progressListener),false);
-//		request.upload.addEventListener("progress",Rest.progress(Rest.progressListener),false);
-//	}//endif
+//  if (Rest.progressListener){
+//    request.addEventListener("progress",Rest.progress(Rest.progressListener),false);
+//    request.upload.addEventListener("progress",Rest.progress(Rest.progressListener),false);
+//  }//endif
 //
-//	if (ajaxParam.progress){
-//		request.addEventListener("progress",Rest.progress(ajaxParam.progress),false);
-//		request.upload.addEventListener("progress",Rest.progress(ajaxParam.progress),false);
-//	}//endif
+//  if (ajaxParam.progress){
+//    request.addEventListener("progress",Rest.progress(ajaxParam.progress),false);
+//    request.upload.addEventListener("progress",Rest.progress(ajaxParam.progress),false);
+//  }//endif
 
 	request.kill=function(){
 		if (request.readyState==4) return;  //TOO LATE
@@ -118,8 +135,6 @@ Rest.send=function*(ajaxParam){
 		}catch(e){
 			//IGNORE
 		}//try
-		//WE DO NOT CALL THE CALLBACK BECAUSE THE THREAD WILL BE CALLING INTERRUPT SHORTLY
-		//callback(new Exception("Aborted"));
 	};
 
 	if (ajaxParam.timeout!==undefined){
@@ -134,7 +149,12 @@ Rest.send=function*(ajaxParam){
 		);
 	}
 
-	request.send(ajaxParam.data);
+	request.name="XMLHttpRequest";  //FOR DEBUGGING
+	try{
+		request.send(ajaxParam.data);
+	}catch(e){
+		Log.error("Can not send request", e)
+	}//try
 	yield (Thread.suspend((ajaxParam.doNotKill) ? undefined : request));
 };//method
 

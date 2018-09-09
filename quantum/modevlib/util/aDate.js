@@ -12,7 +12,7 @@ if (Date.now) {
 }else{
 	Date.currentTimestamp = function currentTimestamp(){
 		new Date().getTime();
-	}//method
+	};//method
 }//endif
 
 Date.now = function(){
@@ -37,8 +37,11 @@ Date.newInstance = function(value){
 	}//endif
 	if (aMath.isNumeric(value)){
 		value=value-0;
-		if (value>9990000000000) return null;
-		return new Date(value)
+		if (value <= 9999999999) {  //TOO SMALL, MUST BE A UNIX TIMESTAMP
+			return new Date(value * 1000);
+		}else{
+			return new Date(value);
+		}//endif
 	}//endif
 
 	return new Date(value);
@@ -66,13 +69,15 @@ Date.max=function(){
 };//method
 
 
-
-
 Date.prototype.getMilli = Date.prototype.getTime;
-
+Date.prototype.milli = Date.prototype.getTime;
+Date.prototype.unix = function(){
+	// RETURN NUMBER OF SECONDS SINCE EPOCH
+	return this.milli()/1000.0;
+};//function
 
 Date.prototype.between=function(min, max){
-	if (min==null) return null;	//NULL MEANS UNKNOWN, SO between() IS UNKNOWN
+	if (min==null) return null;  //NULL MEANS UNKNOWN, SO between() IS UNKNOWN
 	if (max==null) return null;
 
 	//UNDEFINED MEANS DO-NOT-CARE
@@ -97,8 +102,6 @@ Date.prototype.add = function(interval){
 	var addMilli = i.milli - (Duration.MILLI_VALUES.month * i.month);
 	return this.addMonth(i.month).addMilli(addMilli);
 };//method
-
-
 
 Date.prototype.subtract=function(time, interval){
 	if (typeof(time)=="string") Log.error("expecting to subtract a Duration or Date object, not a string");
@@ -160,7 +163,7 @@ Date.diffWeekday=function(endTime, startTime){
 	var output=((startWeek.getMilli()-startTime.getMilli())+((endWeek.getMilli()-startWeek.getMilli())/7)*5+(endTime.getMilli()-endWeek.addDay(2).getMilli()))/Duration.DAY.milli;
 
 
-	if (out!=aMath.ceil(output))
+	if (out!=aMath.sign(output)*aMath.ceil(aMath.abs(output)))
 		Log.error("Weekday calculation failed internal test");
 
 
@@ -194,8 +197,8 @@ Date.diffMonth=function(endTime, startTime){
 	var output=new Duration();
 	output.month=numMonths;
 	output.milli=endTime.getMilli()-startTime.addMonth(numMonths).getMilli()+(numMonths*Duration.MILLI_VALUES.month);
-//	if (output.milli>=Duration.MILLI_VALUES.day*31)
-//		Log.error("problem");
+//  if (output.milli>=Duration.MILLI_VALUES.day*31)
+//    Log.error("problem");
 	return output;
 };//method
 
@@ -271,7 +274,7 @@ Date.prototype.addWeek = function(value){
 };//method
 
 Date.prototype.addMonth = function(value){
-	if (value==0) return this;	//WHOA! SETTING MONTH IS CRAZY EXPENSIVE!!
+	if (value==0) return this;  //WHOA! SETTING MONTH IS CRAZY EXPENSIVE!!
 	var output = new Date(this);
 	output.setUTCMonth(this.getUTCMonth() + value);
 	return output;
@@ -417,6 +420,8 @@ Date.LZ = function(x){
 	return(x < 0 || x > 9 ? "" : "0") + x
 };
 
+Date.KEYS = ["ffffff", "hours", "yyyy", "days", "fff", "MMM", "NNN", "yy", "MM", "dd", "HH", "E", "EE", "hh", "KK", "kk", "mm", "ss", "d", "H", "h", "K","k", "s", "a", "m", "y", "M"];
+
 
 // ------------------------------------------------------------------
 // formatDate (date_object, format)
@@ -441,6 +446,7 @@ Date.prototype.format = function(format){
 	v["MM"] = Date.LZ(M);
 	v["MMM"] = Date.MONTH_NAMES[M - 1];
 	v["NNN"] = Date.MONTH_NAMES[M + 11];
+	v["days"] = (d==1 ? "" : (d==2 ? "1 day" : (d-1)+" days"));
 	v["d"] = d;
 	v["dd"] = Date.LZ(d);
 	v["E"] = Date.DAY_NAMES[E + 7];
@@ -449,6 +455,7 @@ Date.prototype.format = function(format){
 	v["HH"] = Date.LZ(H);
 	v["h"] = ((H + 11) % 12) + 1;
 	v["hh"] = Date.LZ(v["h"]);
+	v["hours"] = ((d-1)*H)+" hours";
 	v["K"] = H % 12;
 	v["KK"] = Date.LZ(v["K"]);
 	v["k"] = H + 1;
@@ -461,22 +468,20 @@ Date.prototype.format = function(format){
 	v["fff"] = f;
 	v["ffffff"] = f*1000;
 
-
 	var output = "";
-	var formatIndex = 0;
-	while(formatIndex < format.length){
-		var c = format.charAt(formatIndex);
-		var token = "";
-		while((format.charAt(formatIndex) == c) && (formatIndex < format.length)){
-			token += format.charAt(formatIndex++);
-		}//while
-
-		if (v[token] != null){
-			output = output + v[token];
-		} else{
-			output = output + token;
+	for (var index = 0; index < format.length; index++) {
+		for (var i = 0; i < Date.KEYS.length; i++) {
+			var k = Date.KEYS[i];
+			if (format.substring(index, index + k.length) == k) {
+				output = output + v[k];
+				index += k.length - 1;
+				break;
+			}//endif
+		}//for
+		if (i == Date.KEYS.length) {
+			output = output + format.charAt(index);
 		}//endif
-	}
+	}//for
 	return output;
 };
 
@@ -848,7 +853,7 @@ Date.getDateFromFormat=function(val, format, isPastDate){
 	var monthFirst = ['M / d / y', 'M - d - y', 'M . d . y', 'MMM - d', 'M / d', 'M - d'];
 	var dateFirst = ['d / M / y', 'd - M - y', 'd . M . y', 'd - MMM', 'd / M', 'd - M'];
 
-	Date.CheckList = [].appendArray(generalFormats).appendArray(dateFirst).appendArray(monthFirst);
+	Date.CheckList = [].extend(generalFormats).extend(dateFirst).extend(monthFirst);
 }
 
 
@@ -858,7 +863,7 @@ Date.tryParse=function(val, isFutureDate){
 
 	var d = null;
 	for(var i = 0; i < Date.CheckList.length; i++){
-		d = Date.getDateFromFormat(val, Date.CheckList[i], !nvl(isFutureDate, false));
+		d = Date.getDateFromFormat(val, Date.CheckList[i], !coalesce(isFutureDate, false));
 		if (d != 0){
 			var temp=Date.CheckList[i];
 			Date.CheckList.splice(i, 1);
@@ -873,4 +878,20 @@ Date.tryParse=function(val, isFutureDate){
 Date.EPOCH=Date.newInstance("1/1/1970");
 
 
+Date.range=function(min, max, interval){
+  if (min instanceof Object){
+    interval=min.interval;
+    max=min.max;
+    min=min.min;
+  }//endif
 
+  var output=[];
+  min=Date.newInstance(min);
+  max=Date.newInstance(max);
+  interval = Duration.newInstance(interval);
+  var acc=min;
+  for(;acc<max;acc=acc.add(interval)){
+    output.append(acc);
+  }//for
+  return output;
+};

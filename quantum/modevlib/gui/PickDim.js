@@ -14,8 +14,8 @@ var PickDim=function(div, dimensions, callback){
 	this.cover=$('<div style="width:100%;height:100%;top:0px;left:0px;position:absolute;z-index: 1;"></div>');  //CATCH MOUSE AND CLICKS
 	this.div.append(this.cover);
 
-	this.focus=undefined;	//CURRENT SHOWN PARTITIONS (REFERENCES THE MAIN DIMENSION HIERARCHY, DO NOT CHANGE)
-	this.filters=[];		//STACK OF FILTERS
+	this.focus=undefined;  //CURRENT SHOWN PARTITIONS (REFERENCES THE MAIN DIMENSION HIERARCHY, DO NOT CHANGE)
+	this.filters=[];    //STACK OF FILTERS
 
 	this.addPart(self.dimensions);
 };
@@ -37,7 +37,7 @@ PickDim.prototype._findPart=function(name){
 	var selected;
 
 	if (!this.focus) Log.error("Must add a dimension before finding a part");
-	var parts = nvl(this.focus.edge.edges, this.focus.edge.partitions);
+	var parts = coalesce(this.focus.edge.edges, this.focus.edge.partitions);
 	if (!parts) Log.error("No part by name of " + name);
 
 	parts.forall(function(v, i){
@@ -76,7 +76,7 @@ PickDim.prototype.select = function(name){
 			if (v){
 				self.unselect(k);
 			}//endif
-//			this.focus.div.find(".dim-part").removeClass("selected");
+//      this.focus.div.find(".dim-part").removeClass("selected");
 		});
 	}//endif
 	this.focus.selected[name] = selected;
@@ -109,12 +109,12 @@ PickDim.prototype.toggle = function(name){
 
 // ADD NEW TOP LEVEL DIMENSION SELECTOR
 //PickDim.prototype.addNew=function(){
-//	this.addPart(Mozilla);
+//  this.addPart(Mozilla);
 //};//method
 
 PickDim.prototype.addPart=function(edge){
 	//NO NEED TO SHOW ANOTHER LEVEL, IF THERE ARE NONE
-	var parts=nvl(edge.edges, edge.partitions);
+	var parts=coalesce(edge.edges, edge.partitions);
 	if (!parts) return;
 
 
@@ -132,8 +132,8 @@ PickDim.prototype.addPart=function(edge){
 	var row=$(
 		'<tr>'+
 			'<td><div class="dim-container"><div class="position">'+
-				parts.map(function(v, i){
-					if (i>=nvl(edge.limit, DEFAULT_CHILD_LIMIT)) return undefined;
+				parts.mapExists(function(v, i){
+					if (i>=coalesce(edge.limit, DEFAULT_CHILD_LIMIT)) return undefined;
 					return '<span class="dim-part" name="'+v.name+'">'+v.name+'</span>';
 				}).join("")+
 			'</div></td>'+
@@ -162,16 +162,16 @@ PickDim.prototype.addPart=function(edge){
 	//DYNAMIC OFFSET
 		if (container.width() < pos.width()){
 //
-//			range({
-//				"domain":{
-//					"min":row.offset().left+left,
-//					"range":oWidth-left-right
-//				},
-//				"codomain":{
-//					"min": oX,
-//					"range":oWidth - iWidth
-//				}
-//			})(dx);
+//      range({
+//        "domain":{
+//          "min":row.offset().left+left,
+//          "range":oWidth-left-right
+//        },
+//        "codomain":{
+//          "min": oX,
+//          "range":oWidth - iWidth
+//        }
+//      })(dx);
 //
 			var left=pos.find(".dim-part").first().width()/2;
 			var right=pos.find(".dim-part").last().width()/2;
@@ -184,9 +184,9 @@ PickDim.prototype.addPart=function(edge){
 			dx=aMath.max(0, aMath.min(dx, oWidth-left-right));
 
 			var offset=aMath.round(oX + (oWidth - iWidth) * (dx) / (oWidth-left-right));
-//			pos.animate({"left":offset}, 400, function(){
+//      pos.animate({"left":offset}, 400, function(){
 				pos.offset({"left":offset});
-//			});
+//      });
 		}//endif
 	});
 
@@ -221,7 +221,7 @@ PickDim.prototype.addPart=function(edge){
 		var o=$(this);
 		var selected=self.toggle(o.attr("name"));
 		if (selected){
-//			self.focus.selected[name]=selected;
+//      self.focus.selected[name]=selected;
 			o.addClass("selected");
 		}else{
 			o.removeClass("selected");
@@ -305,8 +305,8 @@ PickDim.prototype.getQuery=function(){
 					"value":self.focus.edge.field,
 					"domain":{
 						"type":self.focus.edge.type,
-						"partitions":selectedParts.map(function(p,i){
-							if (i>=nvl(self.focus.edge.limit, DEFAULT_CHILD_LIMIT)) return undefined;
+						"partitions":selectedParts.mapExists(function(p,i){
+							if (i>=coalesce(self.focus.edge.limit, DEFAULT_CHILD_LIMIT)) return undefined;
 							return {
 								"name":p.name,
 								"value": p.value,
@@ -332,8 +332,8 @@ PickDim.prototype.getQuery=function(){
 					"name":self.focus.edge.name,
 					"domain":{
 						"type":"set",
-						"partitions":selectedParts.map(function(p,i){
-							if (i>=nvl(self.focus.edge.limit, DEFAULT_CHILD_LIMIT)) return undefined;
+						"partitions":selectedParts.mapExists(function(p,i){
+							if (i>=coalesce(self.focus.edge.limit, DEFAULT_CHILD_LIMIT)) return undefined;
 							return p;
 						}),
 						"getKey":function(p){return p.name;},
@@ -343,7 +343,7 @@ PickDim.prototype.getQuery=function(){
 
 				edges.push(edge);
 			}//endif
-		}else if (numSelected>0 && currentSelection[0].field&& Qb.domain.ALGEBRAIC.contains(currentSelection[0].type)){
+		}else if (numSelected>0 && currentSelection[0].field&& qb.domain.ALGEBRAIC.contains(currentSelection[0].type)){
 			//ONLY ONE DIMENSION CAN EVER BE SELECTED
 			//ADD SOME min/max/interval ATTRIBUTES
 			var s=currentSelection[0];
@@ -357,14 +357,14 @@ PickDim.prototype.getQuery=function(){
 					"interval":s.interval
 				}
 			});
-		}else if (numSelected>0 && currentSelection[0].field && Qb.domain.PARTITION.contains(currentSelection[0].type)){
+		}else if (numSelected>0 && currentSelection[0].field && qb.domain.PARTITION.contains(currentSelection[0].type)){
 			var s=currentSelection[0];
 			edges.push({
 				"name":s.name,
 				"value":s.field,
 				"domain":{
 					"type":s.type,
-					"partitions":s.partitions.map(function(p,i){
+					"partitions":s.partitions.mapExists(function(p,i){
 						return p.value;
 					}),
 					"isFacet":self.focus.edge.isFacet
@@ -378,7 +378,7 @@ PickDim.prototype.getQuery=function(){
 	}//endif
 
 	for(var i=0;i<self.filters.length;i++){
-		var esfilters=mapAllKey(self.filters[i].selected, function(k, v){
+		var esfilters=Map.map(self.filters[i].selected, function(k, v){
 			return v.esfilter;
 		});
 		if (esfilters.length==0){

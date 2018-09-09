@@ -7,7 +7,7 @@ importScript("Rest.js");
 
 ElasticSearch={};
 
-//ElasticSearch.pushURL="http://elasticsearch-private.bugs.scl3.mozilla.com:9200";
+//ElasticSearch.pushURL="http://esfrontline-private-vip.bugs.scl3.mozilla.com:9200";
 //ElasticSearch.pushURL="http://elasticsearch7.metrics.scl3.mozilla.com:9200";
 ElasticSearch.pushURL="http://klahnakoski-es.corp.tor1.mozilla.com:9200";
 
@@ -20,7 +20,7 @@ ElasticSearch.search=function*(index, esquery){
 
 	var output=yield (Rest.post({
 		url: url,
-		data: CNV.Object2JSON(esquery),
+		data: convert.value2json(esquery),
 		dataType: "json"
 	}));
 
@@ -32,22 +32,22 @@ ElasticSearch.setRefreshInterval=function*(destination, rate){
 		"url": joinPath(destination.host, destination.path, "_settings"),
 		"data":{"index":{"refresh_interval":"1s"}}
 	}));
-	Log.note("Refresh Interval to "+rate+": "+CNV.Object2JSON(data));
+	Log.note("Refresh Interval to "+rate+": "+convert.value2json(data));
 	yield (data);
 };//method
 
 
 //EXPECTING THE DATA ARRAY TO ALREADY HAVE ODD ENTRIES STARTING WITH { "create":{ "_id" : ID } }
 ElasticSearch.bulkInsert=function*(destination, dataArray){
-//	try{
+//  try{
 		yield (Rest.post({
 			"url":joinPath(destination.host, destination.path, "_bulk"),
 			"data":dataArray.join("\n")+"\n",
 			dataType: "text"
 		}));
-//	} catch(e){
-//		Log.warning("problem with _bulk", e)
-//	}//try
+//  } catch(e){
+//    Log.warning("problem with _bulk", e)
+//  }//try
 };
 
 //ONLY BECAUSE I AM TOO LAZY TO ENHANCE THE ESQuery WITH MORE FACETS (A BATTERY OF FACETS PER SELECT COLUMN)
@@ -87,10 +87,10 @@ ElasticSearch.getMinMax=function*(esfilter){
 	});
 	u2.cube.forall(function(v, i){
 		u2.cube[i]=Date.newInstance(v);
-		if (u2.cube[i]==null) u2.cube[i]=undefined;		//NULL MEANS UNKNOWN, WHEREAS undefined MEANS NOT DEFINED
+		if (u2.cube[i]==null) u2.cube[i]=undefined;    //NULL MEANS UNKNOWN, WHEREAS undefined MEANS NOT DEFINED
 	});
 
-	var u = Qb.merge([
+	var u = qb.merge([
 		{"from":u1, "edges":["bug_id"]},
 		{"from":u2, "edges":["bug_id"]}
 	]);
@@ -113,9 +113,9 @@ ElasticSearch.getOpenMinMax=function*(esfilter, timeDomain, selects){
 		]}
 	}));
 
-	var allSelects = selects.map(function(s){
+	var allSelects = selects.mapExists(function(s){
 		return {"name":s, "value":'expires_on>Date.now().getMilli() ? '+s+' : null', "aggregate":"minimum"};  //aggregate===minimum due to es corruption
-	}).appendArray([
+	}).extend([
 		{"name":"min", "value":'["new", "assigned", "unconfirmed", "reopened"].contains(bug_status) ? modified_ts : null', "aggregate":"minimum"},
 		{"name":"max", "value":'["new", "assigned", "unconfirmed", "reopened"].contains(bug_status) ? expires_on  : null', "aggregate":"maximum"}
 	]);
@@ -141,8 +141,8 @@ ElasticSearch.makeBasicQuery=function(esfilter){
 	return {
 		"query":{
 			"filtered":{
-			  "query":{"match_all":{}},
-			  "filter":{"and": [esfilter]}
+				"query":{"match_all":{}},
+				"filter":{"and": [esfilter]}
 			}
 		},
 		"from": 0,

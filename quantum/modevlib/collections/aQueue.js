@@ -163,15 +163,15 @@ var aQueue_usingArray;  //SLOW, BUT GOOD FOR WHEN DEALING WITH PURE OBJECTS
 		this.array=[];
 		this.map={};
 
-		if (data!==undefined) this.appendArray(data);
+		if (data!==undefined) this.extend(data);
 	};
 
 	aQueue_simple.newInstance=function(data){
 		return new aQueue_simple(data);
 	};//method
 
-	
-	aQueue_simple.prototype.appendArray=function(data){
+
+	aQueue_simple.prototype.extend=function(data){
 		var self=this;
 		data.forall(function(v, i){self.add(v);});
 		return this;
@@ -223,7 +223,7 @@ var aQueue_usingArray;  //SLOW, BUT GOOD FOR WHEN DEALING WITH PURE OBJECTS
 		this.reserve=[];    //PACK IN REVERSE ORDER FOR SPEED
 
 		var self=this;
-		if (data!==undefined) this.array.appendArray(data);
+		if (data!==undefined) this.array.extend(data);
 	};
 
 	aQueue_usingReserve.prototype.add=function(v){
@@ -265,14 +265,14 @@ var aQueue_usingArray;  //SLOW, BUT GOOD FOR WHEN DEALING WITH PURE OBJECTS
 	};
 
 
-//	Object.defineProperty(aQueue_usingReserve.prototype, 'length', {
-//		writable: false,
-//		enumerable: false,
-//		configurable: false,
-//		get: function(){
-//			return this.array.length;
-//		}
-//	});
+//  Object.defineProperty(aQueue_usingReserve.prototype, 'length', {
+//    writable: false,
+//    enumerable: false,
+//    configurable: false,
+//    get: function(){
+//      return this.array.length;
+//    }
+//  });
 
 	aQueue_usingReserve.prototype.isEmpty=function(){
 		return this.array.length==0 && this.reserve.length==0;
@@ -289,7 +289,7 @@ var aQueue_usingArray;  //SLOW, BUT GOOD FOR WHEN DEALING WITH PURE OBJECTS
 		this.reserve=[];    //PACK IN REVERSE ORDER FOR SPEED
 
 		var self=this;
-		if (data!==undefined) this.array.appendArray(data);
+		if (data!==undefined) this.array.extend(data);
 	};
 
 	aQueue_usingReserve.prototype.add=function(v){
@@ -331,14 +331,14 @@ var aQueue_usingArray;  //SLOW, BUT GOOD FOR WHEN DEALING WITH PURE OBJECTS
 	};
 
 
-//	Object.defineProperty(aQueue_usingReserve.prototype, 'length', {
-//		writable: false,
-//		enumerable: false,
-//		configurable: false,
-//		get: function(){
-//			return this.array.length;
-//		}
-//	});
+//  Object.defineProperty(aQueue_usingReserve.prototype, 'length', {
+//    writable: false,
+//    enumerable: false,
+//    configurable: false,
+//    get: function(){
+//      return this.array.length;
+//    }
+//  });
 
 	aQueue_usingReserve.prototype.isEmpty=function(){
 		return this.array.length==0 && this.reserve.length==0;
@@ -357,10 +357,10 @@ var aQueue_usingArray;  //SLOW, BUT GOOD FOR WHEN DEALING WITH PURE OBJECTS
 		this.array=[];
 
 		var self=this;
-		if (data!==undefined) this.array.appendArray(data);
+		if (data!==undefined) this.array.extend(data);
 	};
 
-	aQueue_usingArray.prototype.appendArray=function(data){
+	aQueue_usingArray.prototype.extend=function(data){
 		var self=this;
 		data.forall(function(v, i){self.add(v);});
 		return this;
@@ -390,14 +390,14 @@ var aQueue_usingArray;  //SLOW, BUT GOOD FOR WHEN DEALING WITH PURE OBJECTS
 	};
 
 
-//	Object.defineProperty(aQueue_usingArray.prototype, 'length', {
-//		writable: false,
-//		enumerable: false,
-//		configurable: false,
-//		get: function(){
-//			return this.array.length;
-//		}
-//	});
+//  Object.defineProperty(aQueue_usingArray.prototype, 'length', {
+//    writable: false,
+//    enumerable: false,
+//    configurable: false,
+//    get: function(){
+//      return this.array.length;
+//    }
+//  });
 
 	aQueue_usingArray.prototype.isEmpty=function(){
 		return this.array.length==0 && this.reserve.length==0;

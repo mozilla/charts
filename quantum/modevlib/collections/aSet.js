@@ -44,17 +44,12 @@ var aSet=function(data){
 		return Map.getValues(this.map);
 	};
 
-	aSet.prototype.toArray=function(){
-		return Map.getValues(this.map);
-	};
-
-
 	aSet.prototype.contains=function(v){
 		return this.map[v]!==undefined;
 	};
 
 	aSet.prototype.map=function(func){
-		return this.getArray().map(func);
+		return this.getArray().mapExists(func);
 	};
 
 

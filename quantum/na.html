@@ -29,7 +29,7 @@
 	<script type="text/javascript" src="modevlib/collections/aRelation.js"></script>
 	<script type="text/javascript" src="modevlib/math/aMath.js"></script>
 
-	<script type="text/javascript" src="modevlib/util/CNV.js"></script>
+	<script type="text/javascript" src="modevlib/util/convert.js"></script>
 	<script type="text/javascript" src="modevlib/charts/aColor.js"></script>
 
 	<script type="text/javascript" src="modevlib/util/aTemplate.js"></script>
@@ -133,7 +133,6 @@ importScript('js/main_lib.js', function(){
   refresher(createChart);
 
   let __createChart = function*(){
-    yield (ESQuery.loadColumns({"from": "bugs"}));
 
 
     a = Log.action("Get Bug Details", true);
@@ -167,26 +166,17 @@ importScript('js/main_lib.js', function(){
 
 
     // DEFINE status_whiteboard.tokenized
-    String.property_tokenized = function(){};
     allDetails.list.forall(function(d){
       let preTokens = d.status_whiteboard.split("[");
       let tokens = preTokens.mapExists(function(t){
         if (t.trim() == "") return;
         return t.split("]")[0].trim();
       });
-      String.property_tokenized[d.status_whiteboard] = tokens;
+	  d['status_whiteboard.tokenized'] = tokens;
     });
-    if (!"".tokenized) {
-      Object.defineProperty(String.prototype, 'tokenized', {
-        get: function(){
-          let output =String.property_tokenized[this];
-          return output ? output : [];
-        }
-      });
-    }//endif
 
 
-    let components = yield(Qb.calc2List({
+    let components = yield(qb.calc2List({
       "from": allDetails,
       "select": [
         {"name": "show", "value": 'bug_id', "aggregate": "exists"},
@@ -201,7 +191,7 @@ importScript('js/main_lib.js', function(){
       ]
     }));
 
-    components.list = Qb.sort(components.list, "team.ordering");
+    components.list = qb.sort(components.list, "team.ordering");
 
     $("#blockers").html("");
     components.list.forall(function(team, i){

@@ -7,39 +7,39 @@ importScript("qb/ESQuery.js");
 
 if (!Mozilla) var Mozilla={"name":"Mozilla", "edges":[]};
 
-Dimension.addEdges(true,  Mozilla, [
+Dimension.addEdges(false,  Mozilla, [
 	{"name":"CurrentRecords", esfilter:{"range":{"expires_on":{"gt" :Date.now().addDay(1).getMilli()}}}},
 
 	{"name":"BugStatus", "index":"bugs", "isFacet":true, "partitions":[
 		{"name":"Open", "partitions":[
-			{"name":"New", "esfilter":{"term":{"bug_status":"new"}}},
-			{"name":"Assigned", "esfilter":{"term":{"bug_status":"assigned"}}},
-			{"name":"Unconfirmed", "esfilter":{"term":{"bug_status":"unconfirmed"}}},
-			{"name":"Reopened", "esfilter":{"term":{"bug_status":"reopened"}}},
-			{"name":"Other", "esfilter":{"not":{"terms":{"bug_status":["resolved", "verified", "closed"]}}}}
+			{"name":"New", "esfilter":{"term":{"bug_status":"NEW"}}},
+			{"name":"Assigned", "esfilter":{"term":{"bug_status":"ASSIGNED"}}},
+			{"name":"Unconfirmed", "esfilter":{"term":{"bug_status":"UNCONFIRMED"}}},
+			{"name":"Reopened", "esfilter":{"term":{"bug_status":"REPOENED"}}},
+			{"name":"Other", "esfilter":{"not":{"terms":{"bug_status":["RESOLVED", "VERIFIED", "CLOSED"]}}}}
 		]},
 		{"name":"Closed", "partitions":[
 			{"name":"Resolved",
-				"esfilter":{"term":{"bug_status":"resolved"}},
+				"esfilter":{"term":{"bug_status":"RESOLVED"}},
 				"field":"resolution", "partitions":[
-					{"name":"Fixed", "value":"fixed", "style":{}, "esfilter":{"term":{"resolution":"fixed"}}},
-					{"name":"Duplicate", "value":"duplicate", "style":{"visibility":"hidden"}, "esfilter":{"term":{"resolution":"duplicate"}}},
-					{"name":"Invalid", "value":"invalid", "style":{"visibility":"hidden"}, "esfilter":{"term":{"resolution":"invalid"}}},
-					{"name":"Won't Fix", "value":"wontfix", "style":{"visibility":"hidden"}, "esfilter":{"term":{"resolution":"wontfix"}}},
-					{"name":"WorksForMe", "value":"worksforme", "style":{"visibility":"hidden"}, "esfilter":{"term":{"resolution":"worksforme"}}}
+					{"name":"Fixed", "value":"fixed", "style":{}, "esfilter":{"term":{"resolution":"FIXED"}}},
+					{"name":"Duplicate", "value":"duplicate", "style":{"visibility":"hidden"}, "esfilter":{"term":{"resolution":"DUPLICATE"}}},
+					{"name":"Invalid", "value":"invalid", "style":{"visibility":"hidden"}, "esfilter":{"term":{"resolution":"INVALID"}}},
+					{"name":"Won't Fix", "value":"wontfix", "style":{"visibility":"hidden"}, "esfilter":{"term":{"resolution":"WONTFIX"}}},
+					{"name":"WorksForMe", "value":"worksforme", "style":{"visibility":"hidden"}, "esfilter":{"term":{"resolution":"WORKSFORME"}}}
 				],
 				"key":"value",
 				"value":"name"
 			},
-			{"name":"Verified", "esfilter":{"term":{"bug_status":"verified"}}},
-			{"name":"Closed", "esfilter":{"term":{"bug_status":"closed"}}}
+			{"name":"Verified", "esfilter":{"term":{"bug_status":"VERIFIED"}}},
+			{"name":"Closed", "esfilter":{"term":{"bug_status":"CLOSED"}}}
 		]}
 	]},
 
 	{"name":"ScrumBugs", "index":"bugs", "edges":[{
 		"name": "Points",
 		"type":"set",
-		"isFacet":true, //MULTIVALUED ATTRIBUTES CAN NOT BE HANDLED BY MVEL.Parts2Term()
+		"isFacet":true, //MULTIVALUED ATTRIBUTES CAN NOT BE HANDLED BY es09.expressions.Parts2Term()
 		"esfilter":ESQuery.TrueFilter,
 		"partitions":[
 			{"name":"P0", "esfilter":{"or":[
@@ -57,6 +57,92 @@ Dimension.addEdges(true,  Mozilla, [
 		{"name":"MoCo", "esfilter":{}},
 		{"name":"MoFo", "esfilter":{"not":{"term":{"<FIELD>":"nobody@mozilla.org"}}}}
 	]},
+
+
+	{"name":"Projects", "edges":[
+		{"name": "B2G 1.2.0 (KOI)", "partitions":[
+			{"name":"nominated", "esfilter":{"term":{"cf_blocking_b2g":"koi?"}}},
+			{"name":"tracking", "esfilter":{"term":{"cf_blocking_b2g":"koi+"}}}
+		]},
+
+
+		{"name": "B2G 1.0.0 (TEF)", "partitions":[
+			{"name":"nominated", "esfilter":{"term":{"cf_blocking_b2g":"tef?"}}},
+			{"name":"tracking", "esfilter":{"term":{"cf_blocking_b2g":"tef+"}}, "edges":[
+				{"name":"tracking 18", "esfilter":{"not":{"terms":{"cf_status_b2g18":["fixed","verified","unaffected","wontfix"]}}}},
+				{"name":"tracking 19", "esfilter":{"not":{"terms":{"cf_status_b2g19":["fixed","verified","unaffected","wontfix"]}}}}
+			]}
+		]},
+
+		{"name": "B2G 1.0.1 (Shira)",
+			"description":"Project was merged with TEF",
+			"expire":Date.newInstance("23FEB2013"),
+			"partitions":[
+				{"name":"nominated", "esfilter":{"term":{"cf_blocking_b2g":"shira?"}}},
+				{"name":"tracking", "esfilter":{"term":{"cf_blocking_b2g":"shira+"}}, "edges":[
+					{"name":"tracking 18", "esfilter":{"not":{"terms":{"cf_status_b2g18":["fixed","verified","unaffected","wontfix"]}}}},
+					{"name":"tracking 19", "esfilter":{"not":{"terms":{"cf_status_b2g19":["fixed","verified","unaffected","wontfix"]}}}}
+				]}
+			]
+		},
+
+		{"name": "B2G 1.0.1 (TEF)",
+			"description": "New name of TEF, once Shira was merged",
+			"partitions":[
+				{"name":"nominated", "esfilter":{"term":{"cf_blocking_b2g":"tef?"}}},
+				{"name":"tracking", "esfilter":{"term":{"cf_blocking_b2g":"tef+"}}, "edges":[
+					{"name":"tracking 18", "esfilter":{"not":{"terms":{"cf_status_b2g18":["fixed","verified","unaffected","wontfix"]}}}},
+					{"name":"tracking 19", "esfilter":{"not":{"terms":{"cf_status_b2g19":["fixed","verified","unaffected","wontfix"]}}}}
+				]},
+				{"name":"rejected", "esfilter":{"and":[
+					{"exists":{"field":"previous_values.cf_blocking_b2g_value"}},
+					{"terms":{"previous_values.cf_blocking_b2g_value":["tef?","tef+"]}}
+				]}}
+			]
+		},
+
+		{"name": "B2G 1.0.1 (TEF -NPOTB -POVB)",  "description": "TEF, excluding partner bugs and excluding build bugs",
+			"esfilter":  {"and":[
+				{"term":{"cf_blocking_b2g":"tef+"}},
+				{"not":{"terms":{"status_whiteboard.tokenized":["npotb","povb"]}}}
+			]}
+		},
+
+
+
+
+		{"name": "B2G 1.1.0 (Leo)", "partitions":[
+			{"name":"nominated", "esfilter":{"term":{"cf_blocking_b2g":"leo?"}}},
+			{"name":"tracking", "esfilter":{"term":{"cf_blocking_b2g":"leo+"}}, "edges":[
+				{"name":"tracking 18", "esfilter":{"not":{"terms":{"cf_status_b2g18":["fixed","verified","unaffected","wontfix"]}}}},
+				{"name":"tracking 19", "esfilter":{"not":{"terms":{"cf_status_b2g19":["fixed","verified","unaffected","wontfix"]}}}}
+			]}
+		]},
+
+		{"name": "Boot2Gecko (B2G)", "partitions":[
+			{"name":"nominated", "esfilter":{"term":{"cf_blocking_basecamp": "?"}}},
+			{"name":"tracking", "esfilter":{"term":{"cf_blocking_basecamp": "+"}}, "edges":[
+				{"name":"tracking 18", "esfilter":{"not":{"terms":{"cf_status_b2g18":["fixed","verified","unaffected","wontfix"]}}}},
+				{"name":"tracking 19", "esfilter":{"not":{"terms":{"cf_status_b2g19":["fixed","verified","unaffected","wontfix"]}}}}
+			]}
+		]},
+
+		{"name": "Metro MVP", "esfilter":{"term":{"status_whiteboard.tokenized": "metro-mvp"}}},
+
+		{"name": "Fennec 1.0", "partitions":[
+			{"name":"nominated", "esfilter":{"term":{"cf_blocking_fennec10": "?"}}},
+			{"name":"tracking", "esfilter":{"term":{"cf_blocking_fennec10": "+"}}}
+		]},
+
+		{"name": "Fennec", "partitions":[
+			{"name":"nominated", "esfilter":{"term":{"cf_blocking_fennec": "?"}}},
+			{"name":"tracking", "esfilter":{"term":{"cf_blocking_fennec": "+"}}}
+		]}
+
+
+	]},
+
+
 
 	{"name": "in-testsuite", "esfilter":
 		{"or":[
@@ -111,28 +197,28 @@ Dimension.addEdges(true,  Mozilla, [
 			{"name": "28", "esfilter":{"term":{"cf_status_firefox28": "+"}}},
 			{"name": "27", "esfilter":{"term":{"cf_status_firefox27": "+"}}},
 			{"name": "26", "esfilter":{"term":{"cf_status_firefox26": "+"}}}
-//			{"name": "25", "esfilter":{"term":{"cf_status_firefox25": "+"}}},
-//			{"name": "24", "esfilter":{"term":{"cf_status_firefox24": "+"}}},
-//			{"name": "23", "esfilter":{"term":{"cf_status_firefox23": "+"}}},
-//			{"name": "22", "esfilter":{"term":{"cf_status_firefox22": "+"}}},
-//			{"name": "21", "esfilter":{"term":{"cf_status_firefox21": "+"}}},
-//			{"name": "20", "esfilter":{"term":{"cf_status_firefox20": "+"}}},
-//			{"name": "19", "esfilter":{"term":{"cf_status_firefox19": "+"}}},
-//			{"name": "18", "esfilter":{"term":{"cf_status_firefox18": "+"}}},
-//			{"name": "17", "esfilter":{"term":{"cf_status_firefox17": "+"}}},
-//			{"name": "16", "esfilter":{"term":{"cf_status_firefox16": "+"}}},
-//			{"name": "15", "esfilter":{"term":{"cf_status_firefox15": "+"}}},
-//			{"name": "14", "esfilter":{"term":{"cf_status_firefox14": "+"}}},
-//			{"name": "13", "esfilter":{"term":{"cf_status_firefox13": "+"}}},
-//			{"name": "12", "esfilter":{"term":{"cf_status_firefox12": "+"}}},
-//			{"name": "11", "esfilter":{"term":{"cf_status_firefox11": "+"}}}
+//      {"name": "25", "esfilter":{"term":{"cf_status_firefox25": "+"}}},
+//      {"name": "24", "esfilter":{"term":{"cf_status_firefox24": "+"}}},
+//      {"name": "23", "esfilter":{"term":{"cf_status_firefox23": "+"}}},
+//      {"name": "22", "esfilter":{"term":{"cf_status_firefox22": "+"}}},
+//      {"name": "21", "esfilter":{"term":{"cf_status_firefox21": "+"}}},
+//      {"name": "20", "esfilter":{"term":{"cf_status_firefox20": "+"}}},
+//      {"name": "19", "esfilter":{"term":{"cf_status_firefox19": "+"}}},
+//      {"name": "18", "esfilter":{"term":{"cf_status_firefox18": "+"}}},
+//      {"name": "17", "esfilter":{"term":{"cf_status_firefox17": "+"}}},
+//      {"name": "16", "esfilter":{"term":{"cf_status_firefox16": "+"}}},
+//      {"name": "15", "esfilter":{"term":{"cf_status_firefox15": "+"}}},
+//      {"name": "14", "esfilter":{"term":{"cf_status_firefox14": "+"}}},
+//      {"name": "13", "esfilter":{"term":{"cf_status_firefox13": "+"}}},
+//      {"name": "12", "esfilter":{"term":{"cf_status_firefox12": "+"}}},
+//      {"name": "11", "esfilter":{"term":{"cf_status_firefox11": "+"}}}
 		]}
 	]},
 
 	{"name":"Security", "edges":[
 		{"name":"Priority",
 			"type":"set",
-			"isFacet":true, //MULTIVALUED ATTRIBUTES CAN NOT BE HANDLED BY MVEL.Parts2Term()
+			"isFacet":true, //MULTIVALUED ATTRIBUTES CAN NOT BE HANDLED BY es09.expressions.Parts2Term()
 			"partitions":[
 				{"name":"Critical", "weight":5, "style":{"color":"red"}, "esfilter":
 					{"or":[
@@ -163,7 +249,7 @@ Dimension.addEdges(true,  Mozilla, [
 		},
 		{"name":"Teams",
 			"type":"set",
-			"isFacet":true, //MULTIVALUED ATTRIBUTES CAN NOT BE HANDLED BY MVEL.Parts2Term()
+			"isFacet":true, //MULTIVALUED ATTRIBUTES CAN NOT BE HANDLED BY es09.expressions.Parts2Term()
 			"esfilter": {"match_all":{}},
 			"partitions":[
 			{"name": "Mobile", "esfilter":
@@ -277,10 +363,6 @@ Dimension.addEdges(true,  Mozilla, [
 					]}
 				]}
 			}
-
-
-//			{"name" : "Other", "esfilter" : {"terms" : {"product" : ["firefox", "thunderbird", "firefox for android", "firefox for metro", "boot2gecko", "core", "nspr", "jss", "nss", "toolkit"]}}
-//				}
 		]}
 	]}
 ]);

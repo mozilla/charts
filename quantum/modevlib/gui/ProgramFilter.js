@@ -4,40 +4,40 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
 
+importScript("../MozillaPrograms.js");
 importScript("../debug/aLog.js");
-importScript("../util/CNV.js");
+importScript("../util/convert.js");
 
 
-ProgramFilter = function(indexName){
-	this.indexName=nvl(indexName, "bugs");
+ProgramFilter = function(indexName, programs){
+	this.indexName=coalesce(indexName, "bugs");
+	this.programs=convert.Table2List(coalesce(programs, MozillaPrograms));
 	this.name="Programs";
 	this.refresh();
 	this.selected=[];
 	this.isFilter=true;
 };
 
-ProgramFilter.allPrograms = [];
-
 ProgramFilter.prototype.makeFilter = function(indexName, selectedPrograms){
-	indexName=nvl(indexName, this.indexName);
-	selectedPrograms=nvl(selectedPrograms, this.selected);
+	indexName=coalesce(indexName, this.indexName);
+	selectedPrograms=coalesce(selectedPrograms, this.selected);
 
 	if (selectedPrograms.length == 0) return ESQuery.TrueFilter;
 
 	var or = [];
 	for(var i=0;i<selectedPrograms.length;i++){
-		for(var j=0;j<ProgramFilter.allPrograms.length;j++){
-			if (ProgramFilter.allPrograms[j].projectName == selectedPrograms[i]){
-				if (ProgramFilter.allPrograms[j].esfilter){
-					or.push(ProgramFilter.allPrograms[j].esfilter);
+		for(var j=0;j<this.programs.length;j++){
+			if (this.programs[j].projectName == selectedPrograms[i]){
+				if (this.programs[j].esfilter){
+					or.push(this.programs[j].esfilter);
 					continue;
 				}//endif
 
-				var name = ProgramFilter.allPrograms[j].attributeName;
-				var value = ProgramFilter.allPrograms[j].attributeValue;
+				var name = this.programs[j].attributeName;
+				var value = this.programs[j].attributeValue;
 
-				if (indexName!="bugs"){//ONLY THE ORIGINAL bugs INDEX HAS BOTH whiteboard AND keyword
-					if (name.startsWith("cf_")) value=name+value;		//FLAGS ARE CONCATENATION OF NAME AND VALUE
+				if (!["bugs", "private_bugs"].contains(indexName)){//ONLY THE ORIGINAL bugs INDEX HAS BOTH whiteboard AND keyword
+					if (name.startsWith("cf_")) value=name+value;    //FLAGS ARE CONCATENATION OF NAME AND VALUE
 					name="keywords";
 				}//endif
 
@@ -50,10 +50,10 @@ ProgramFilter.prototype.makeFilter = function(indexName, selectedPrograms){
 };//method
 
 
-ProgramFilter.makeQuery = function(filters){
+ProgramFilter.prototype.makeQuery = function(filters){
 	var programCompares={};
 
-	ProgramFilter.allPrograms.forall(function(program){
+	this.programs.forall(function(program){
 		var name = program.attributeName;
 		var value = program.attributeValue;
 
@@ -65,7 +65,7 @@ ProgramFilter.makeQuery = function(filters){
 		}//endif
 
 		var project=program.projectName;
-		programCompares[project]=nvl(programCompares[project], []);
+		programCompares[project]=coalesce(programCompares[project], []);
 		programCompares[project].push(esfilter);
 	});
 
@@ -133,7 +133,7 @@ ProgramFilter.prototype.setSimpleState=function(value){
 	if (!value || value==""){
 		this.selected=[];
 	}else{
-		this.selected=value.split(",").map(function(v){return v.trim();});
+		this.selected=value.split(",").mapExists(function(v){return v.trim();});
 	}//endif
 	this.refresh();
 };
@@ -146,7 +146,7 @@ ProgramFilter.prototype.makeHTML=function(){
 //programs IS A LIST OF OBJECTS WITH A term AND count ATTRIBUTES
 ProgramFilter.prototype.injectHTML = function(programs){
 
-	var html ='';
+	var html ='<i><a href="http://people.mozilla.com/~klahnakoski/es/modevlib/MozillaPrograms.js">click here for definitions</a></i><br>';
 	html += '<ul id="programsList" class="menu ui-selectable">';
 	var item = new Template('<li class="{{class}}" id="program_{{name}}">{{name}} ({{count}})</li>');
 
@@ -180,11 +180,9 @@ ProgramFilter.prototype.injectHTML = function(programs){
 
 ProgramFilter.prototype.refresh = function(){
 	var self = this;
-	Thread.run(function*(){
-		self.query = ProgramFilter.makeQuery([]);
-
-
-		var data = yield (ElasticSearch.search("bugs", self.query));
+	Thread.run("find programs", function*(){
+		self.query = self.makeQuery([]);
+		var data = yield (ElasticSearch.search(self.indexName, self.query));
 
 		//CONVERT MULTIPLE EDGES INTO SINGLE LIST OF PROGRAMS
 		var programs=[];
@@ -227,7 +225,7 @@ ProgramFilter.prototype.bugStatusMinimum_fromDoc=function(){
 	if (this.selected.length==0){
 		idTime="doc[\"create_time\"].value";
 	}else{
-		idTime=ProgramFilter.minimum(this.selected.map(function(v, i){return "doc[\""+v+"_time\"].value"}));
+		idTime=ProgramFilter.minimum(this.selected.mapExists(function(v, i){return "doc[\""+v+"_time\"].value"}));
 	}//endif
 
 	return idTime;
@@ -239,7 +237,7 @@ ProgramFilter.prototype.bugStatusMinimum_fromSource=function(){
 	if (this.selected.length==0){
 		idTime="bug_summary.create_time";
 	}else{
-		idTime=ProgramFilter.minimum(this.selected.map(function(v, i){return "bug_summary[\""+v+"_time\"]"}));
+		idTime=ProgramFilter.minimum(this.selected.mapExists(function(v, i){return "bug_summary[\""+v+"_time\"]"}));
 	}//endif
 
 	return idTime;

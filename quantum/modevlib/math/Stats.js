@@ -24,7 +24,7 @@ Stats.df.percentile=function(df, percentile){
 			return part+i+1;
 		}//endif
 	}//for
-	return df.length;		//HAPPENS WHEN df[i]==0
+	return df.length;    //HAPPENS WHEN df[i]==0
 };//method
 
 //NORMALIZE TO A DISTRIBUTION FUNCTION
@@ -48,7 +48,7 @@ epsilon=1/1000000;
 //DATA NEED NOT BE ORDERED
 //RETURNS {"time", "age"} FOR PERCENTILE REQUESTED
 Stats.percentileAgeOverTime=function(data, timeEdge, sampleSize, percentile){
-	var newdata=data.map(function(v, i){
+	var newdata=data.mapExists(function(v, i){
 		var d=[];
 		d[0]=v.birth.getMilli();
 		d[1]=v.death.getMilli();
@@ -84,7 +84,7 @@ Stats.percentileAgeOverTime=function(data, timeEdge, sampleSize, percentile){
 //DATA NEED NOT BE ORDERED
 //RETURNS {"time", "age"} FOR PERCENTILE REQUESTED
 Stats.ageOverTime=function(data, timeEdge, sampleSize, statFunction){
-	var newdata=data.map(function(v, i){
+	var newdata=data.mapExists(function(v, i){
 		var d=[];
 		d[0]=v.birth;
 		d[1]=v.death;
@@ -153,7 +153,7 @@ Stats.percentile=function(values, percentile){
 
 Stats.middle=function(values, percentile){
 	if (values.length==0) return null;
-	if (values.length==1) return values[0];
+	if (values.length==1) return {"min":values[0], "max":values[0]};
 
 	values.sort(function(a, b){return a-b;});
 	var numIgnored=Math.floor(values.length*(1-percentile)/2+0.01);
@@ -166,11 +166,7 @@ Stats.median=function(values){
 	if (values.length==0) return null;
 	if (values.length==1) return values[0];
 
-    values = values.slice();
-    values.sort(function(a, b){
-        return a - b;
-    });
-	let i=Math.floor(values.length/2);
+	var i=Math.floor(values.length/2);
 	if (values.length %2==0){
 		return (values[i-1]+values[i])/2;
 	}else{
@@ -181,12 +177,12 @@ Stats.median=function(values){
 
 //USING ONE
 //Stats.percentile=function(values, percentile){
-//	if (values.length==0) return null;
+//  if (values.length==0) return null;
 //
-//	values.sort(function(a, b){return a-b;});
-//	var smaller=aMath.floor(values.length*percentile+0.5);
-//	if (smaller==0) return 0;
-//	return values[smaller-1];
+//  values.sort(function(a, b){return a-b;});
+//  var smaller=aMath.floor(values.length*percentile+0.5);
+//  if (smaller==0) return 0;
+//  return values[smaller-1];
 //};
 
 
@@ -201,18 +197,18 @@ Stats.query2regression=function(query){
 	}//endif
 
 	//CONVERT ALGEBRAIC DOMAINS TO doubles
-	var domainY=Qb.domain.algebraic2numeric(query.edges[0].domain);
-	var domainX=Qb.domain.algebraic2numeric(query.edges[1].domain);
+	var domainY=qb.domain.algebraic2numeric(query.edges[0].domain);
+	var domainX=qb.domain.algebraic2numeric(query.edges[1].domain);
 
 	//SEND TO REGRESSION CALC
-	var line=Stats.regression(Qb.cube.transpose(query, [query.edges[1], query.edges[0]], select).cube, domainX, domainY);
+	var line=Stats.regression(qb.cube.transpose(query, [query.edges[1], query.edges[0]], select).cube, domainX, domainY);
 
 	//CONVERT BACK TO DOMAIN (result REFERS TO
 	if (["time", "duration"].contains(domainX.type)) Log.error("Can not convert back to original domain, not implemented yet");
 	if (["time", "duration"].contains(domainY.type)) Log.error("Can not convert back to original domain, not implemented yet");
 
 
-	//BUILD NEW QUERY WITH NEW Qb
+	//BUILD NEW QUERY WITH NEW qb
 	var output=Map.copy(query);
 	output.select={"name":query.edges[0].name};
 	output.edges=[query.edges[1]];
@@ -227,10 +223,10 @@ Stats.query2regression=function(query){
 	return output;
 };
 
-//ASSUMES A Qb OF WEIGHT VALUES
-//RETURN THE REGRESSION LINE FOR THE GIVEN Qb
+//ASSUMES A qb OF WEIGHT VALUES
+//RETURN THE REGRESSION LINE FOR THE GIVEN qb
 Stats.regression=function(weights, domainX, domainY){
-	if (DEBUG) Log.note(CNV.Object2JSON([weights, {"min":domainX.min, "max":domainX.max, "interval":domainX.interval}, {"min":domainY.min, "max":domainY.max, "interval":domainY.interval}]));
+	if (DEBUG) Log.note(convert.value2json([weights, {"min":domainX.min, "max":domainX.max, "interval":domainX.interval}, {"min":domainY.min, "max":domainY.max, "interval":domainY.interval}]));
 
 	if (((domainX.max-domainX.min)/domainX.interval)<=1) Log.error("Can not do regression with only one value");
 	if (((domainY.max-domainY.min)/domainY.interval)<=1) Log.error("Can not do regression with only one value");
@@ -278,7 +274,7 @@ Stats.regressionLine=function(terms){
 	o.Syy=o.Y2 - (o.Y1*o.Y1)/o.N;
 	o.Sxy=o.XY - (o.X1*o.Y1)/o.N;
 	o.slope=o.Sxy/o.Sxx;
-//	o.slope=-0.0208;
+//  o.slope=-0.0208;
 	o.offset=(o.Y1-o.slope*o.X1)/o.N;
 	o.r2=(o.Sxy*o.Sxy)/(o.Sxx*o.Syy);
 
@@ -341,7 +337,7 @@ if (DEBUG){
 		if (aMath.round(result.offset, 2)!=-6.39) Log.error();
 		if (aMath.round(result.slope, 4)!=0.5207) Log.error();
 
-//	if (Stats.regression([[1, 1, 1]], {"min":0, "max":3, "interval":1}, {"min":0, "max":1, "interval":1}).offset!=1) Log.error();
+//  if (Stats.regression([[1, 1, 1]], {"min":0, "max":3, "interval":1}, {"min":0, "max":1, "interval":1}).offset!=1) Log.error();
 	}catch(e){
 		Log.error("Test failure", e);
 	}//try

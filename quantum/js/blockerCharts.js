@@ -140,7 +140,7 @@ function showChurn(args) {
 				var date = churn.edges[1].domain.getPartByKey(x);
 
 				Thread.run(function*() {
-					var buglist = (yield (Qb.calc2List({
+					var buglist = (yield (qb.calc2List({
 						"from": allBugs,
 						"select": {"value": "bug_id"},
 						"where": {"and": [

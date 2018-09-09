@@ -12,76 +12,10 @@ var BugzillaClient = function (options) {
 }
 
 BugzillaClient.prototype = {
-	getBug: function (id, params, callback) {
-		if (!callback) {
-			callback = params;
-			params = {};
-		}
-		this.APIRequest('/bug/' + id, 'GET', callback, null, null, params);
-	},
-
 	searchBugs: function (params, callback) {
+		Log.warning("Replace this call with a call to bugzilla rest API: http://bugzilla.readthedocs.io/en/latest/api/core/v1/bug.html#get-bug");
+
 		this.APIRequest('/bug', 'GET', callback, 'bugs', null, params);
-	},
-
-	countBugs: function (params, callback) {
-		this.APIRequest('/count', 'GET', callback, 'data', null, params);
-	},
-
-	updateBug: function (id, bug, callback) {
-		this.APIRequest('/bug/' + id, 'PUT', callback, 'ok', bug);
-	},
-
-	createBug: function (bug, callback) {
-		this.APIRequest('/bug', 'POST', callback, 'ref', bug);
-	},
-
-	bugComments: function (id, callback) {
-		this.APIRequest('/bug/' + id + '/comment', 'GET', callback, 'comments');
-	},
-
-	addComment: function (id, comment, callback) {
-		this.APIRequest('/bug/' + id + '/comment', 'POST', callback, 'ref', comment);
-	},
-
-	bugHistory: function (id, callback) {
-		this.APIRequest('/bug/' + id + '/history', 'GET', callback, 'history');
-	},
-
-	bugFlags: function (id, callback) {
-		this.APIRequest('/bug/' + id + '/flag', 'GET', callback, 'flags');
-	},
-
-	bugAttachments: function (id, callback) {
-		this.APIRequest('/bug/' + id + '/attachment', 'GET', callback, 'attachments');
-	},
-
-	createAttachment: function (id, attachment, callback) {
-		this.APIRequest('/bug/' + id + '/attachment', 'POST', callback, 'ref', attachment);
-	},
-
-	getAttachment: function (id, callback) {
-		this.APIRequest('/attachment/' + id, 'GET', callback);
-	},
-
-	updateAttachment: function (id, attachment, callback) {
-		this.APIRequest('/attachment/' + id, 'PUT', callback, 'ok', attachment);
-	},
-
-	searchUsers: function (match, callback) {
-		this.APIRequest('/user', 'GET', callback, 'users', null, {match: match});
-	},
-
-	getUser: function (id, callback) {
-		this.APIRequest('/user/' + id, 'GET', callback);
-	},
-
-	getConfiguration: function (params, callback) {
-		if (!callback) {
-			callback = params;
-			params = {};
-		}
-		this.APIRequest('/configuration', 'GET', callback, null, null, params);
 	},
 
 	APIRequest: function (path, method, callback, field, body, params) {
@@ -108,7 +42,7 @@ BugzillaClient.prototype = {
 			req.open(method, url, true);
 			req.setRequestHeader("Accept", "application/json");
 			if (method.toUpperCase() !== "GET") {
-				req.setRequestHeader("Content-type", "application/json");
+				req.setRequestHeader("content-type", "application/json");
 			}
 			req.onreadystatechange = function (event) {
 				if (req.readyState == 4 && req.status != 0) {
@@ -131,7 +65,7 @@ BugzillaClient.prototype = {
 				uri: url,
 				method: method,
 				body: body,
-				headers: {'Content-type': 'application/json'}
+				headers: {'content-type': 'application/json'}
 			};
 			if (this.timeout > 0)
 				requestParams.timeout = this.timeout;

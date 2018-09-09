@@ -15,7 +15,7 @@ function addNumberClickers(cube, mainFilter) {
 	}).click(function (e) {
 			var id = $(this).attr("id");
 			var coord = id.rightBut(prefix.length).split("x").map(function (v) {
-				return CNV.String2Integer(v);
+				return convert.String2Integer(v);
 			});
 			var filter = {"and": cube.edges.map(function (edge, i) {
 				var part = edge.domain.partitions[coord[i]];
@@ -44,9 +44,9 @@ function addTeamClickers(cube) {
 		return nvl($(this).attr("id"), "").startsWith("_team");
 	}).click(function (e) {
 			var id = $(this).attr("id");
-			var team = cube.edges[0].domain.partitions[CNV.String2Integer(id.rightBut("_team".length))];
+			var team = cube.edges[0].domain.partitions[convert.String2Integer(id.rightBut("_team".length))];
 
-			window.open("team.html#" + CNV.Object2URL({
+			window.open("team.html#" + convert.Object2URL({
 				"team": team.name.replaceAll(" ", "_")
 			}));
 		});
@@ -121,8 +121,8 @@ function cube2grid(param) {
 					} else {
 						html = stateData
 							.replaceAll("{{VALUE}}", value.count)
-							.replaceAll("{{STYLE}}", CNV.Object2CSS(style))
-							.replaceAll("{{dynamic_style}}", CNV.Object2CSS(dynamic_style))
+							.replaceAll("{{STYLE}}", convert.Object2CSS(style))
+							.replaceAll("{{dynamic_style}}", convert.Object2CSS(dynamic_style))
 							.replaceAll("{{COLOR}}", age2color(value.age).toHTML())
 							.replaceAll("{{LIGHTER}}", age2color(value.age).lighter().toHTML());
 					}//endif

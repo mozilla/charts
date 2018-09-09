@@ -5,268 +5,224 @@
    - file, You can obtain one at http://mozilla.org/MPL/2.0/. -->
 <HTML>
 <HEAD>
-	<title>Quantum Flow Fx64 P1 Bugs</title>
-	<script type="text/javascript">function importScript(dep, func){
-      if (func !== undefined) func();
-    }</script>
-	<script type="text/javascript" src="modevlib/Settings.js"></script>
-	<script type="text/javascript" src="modevlib/rest/BugzillaClient.js"></script>
-	<link type="text/css" rel="stylesheet" href="js/blockers.css"/>
-	<script type="text/javascript" src="modevlib/util/aUtil.js"></script>
-	<script type="text/javascript" src="modevlib/util/aString.js"></script>
-	<script type="text/javascript" src="js/owners.js"></script>
-	<script type="text/javascript" src="modevlib/collections/aMatrix.js"></script>
-	<script type="text/javascript" src="modevlib/qb/qb.aggregate.js"></script>
-	<script type="text/javascript" src="modevlib/qb/qb.column.js"></script>
-	<script type="text/javascript" src="modevlib/qb/qb.cube.js"></script>
-	<script type="text/javascript" src="modevlib/qb/qb.analytic.js"></script>
-	<script type="text/javascript" src="modevlib/gui/Filter.js"></script>
-	<script type="text/javascript" src="modevlib/gui/ComponentFilter.js"></script>
-	<script type="text/javascript" src="modevlib/gui/PartitionFilter.js"></script>
-	<script type="text/javascript" src="modevlib/qb/aCompiler.js"></script>
-	<script type="text/javascript" src="modevlib/collections/aArray.js"></script>
-	<script type="text/javascript" src="modevlib/util/aParse.js"></script>
-	<script type="text/javascript" src="modevlib/collections/aRelation.js"></script>
-	<script type="text/javascript" src="modevlib/math/aMath.js"></script>
+    <title>Quantum Flow Fx64 P1 Bugs</title>
+    <script type="text/javascript" src="modevlib/imports/import.js"></script>
 
-	<script type="text/javascript" src="modevlib/util/CNV.js"></script>
-	<script type="text/javascript" src="modevlib/charts/aColor.js"></script>
+    <!--<script type="text/javascript">function importScript(dep, func){-->
+    <!--if (func !== undefined) func();-->
+    <!--}</script>-->
+    <link rel="icon" href="images/fxos.ico" type="image/x-icon"/>
 
-	<script type="text/javascript" src="modevlib/util/aTemplate.js"></script>
-	<script type="text/javascript" src="lib/jquery.js"></script>
-	<script type="text/javascript" src="modevlib/util/aDate.js"></script>
-	<script type="text/javascript" src="modevlib/collections/aQueue.js"></script>
-	<script type="text/javascript" src="modevlib/collections/aSet.js"></script>
-	<script type="text/javascript" src="modevlib/debug/aException.js"></script>
-	<script type="text/javascript" src="lib/jquery-ui/js/jquery-ui-1.10.2.custom.js"></script>
-	<script type="text/javascript" src="lib/jquery.numberformatter.js"></script>
-	<script type="text/javascript" src="lib/jstree/jquery.jstree.js"></script>
-	<script type="text/javascript" src="modevlib/qb/qb.domain.js"></script>
-	<script type="text/javascript" src="modevlib/util/aDuration.js"></script>
-	<link type="text/css" rel="stylesheet" href="lib/jquery-ui/css/start/jquery-ui-1.10.2.custom.css">
-	<script type="text/javascript" src="modevlib/aFormat.js"></script>
-	<script type="text/javascript" src="modevlib/gui/TeamFilter.js"></script>
-	<script type="text/javascript" src="lib/jquery.ba-bbq/jquery.ba-bbq.js"></script>
-	<script type="text/javascript" src="modevlib/debug/aLog.js"></script>
-	<script type="text/javascript" src="modevlib/threads/thread.js"></script>
-	<script type="text/javascript" src="modevlib/gui/ProgramFilter.js"></script>
-	<script type="text/javascript" src="modevlib/util/aTimer.js"></script>
-
-	<script type="text/javascript" src="modevlib/rest/Rest.js"></script>
-	<script type="text/javascript" src="modevlib/aLibrary.js"></script>
-
-	<script type="text/javascript" src="modevlib/rest/ElasticSearch.js"></script>
-	<script type="text/javascript" src="modevlib/Bugzilla.js"></script>
-	<script type="text/javascript" src="modevlib/math/Stats.js"></script>
-	<script type="text/javascript" src="modevlib/qb/MVEL.js"></script>
-	<link type="text/css" rel="stylesheet" href="lib/jquery-linedtextarea/jquery-linedtextarea.css">
-	<script type="text/javascript" src="modevlib/qb/qb.js"></script>
-	<script type="text/javascript" src="lib/jquery-linedtextarea/jquery-linedtextarea.js"></script>
-	<script type="text/javascript" src="modevlib/qb/ESQuery.js"></script>
-	<script type="text/javascript" src="modevlib/Dimension.js"></script>
-	<script type="text/javascript" src="modevlib/Dimension-Bugzilla.js"></script>
-	<script type="text/javascript" src="modevlib/Dimension-Quantum.js"></script>
-	<script type="text/javascript" src="modevlib/gui/ProductFilter.js"></script>
-	<script type="text/javascript" src="modevlib/gui/GUI.js"></script>
-	<script type="text/javascript" src="modevlib/Hierarchy.js"></script>
-	<link rel="icon" href="images/fxos.ico" type="image/x-icon"/>
-	<script type="text/javascript" src="js/heat.js"></script>
-	<link type="text/css" rel="stylesheet" href="css/menu.css">
-	<script type="text/javascript" src="js/main_lib.js"></script>
-	<style id="vakata-stylesheet" type="text/css"></style>
-	<style id="jstree-stylesheet" type="text/css"></style>
-	<link rel="stylesheet" type="text/css" media="all" href="lib/jstree/themes/default/style.css">
-
-	<script>
-    (function(i, s, o, g, r, a, m){
-      i['GoogleAnalyticsObject'] = r;
-      i[r] = i[r] || function(){
+    <script>
+      (function(i, s, o, g, r, a, m){
+        i['GoogleAnalyticsObject'] = r;
+        i[r] = i[r] || function(){
           (i[r].q = i[r].q || []).push(arguments)
         }, i[r].l = 1 * new Date();
-      a = s.createElement(o),
-        m = s.getElementsByTagName(o)[0];
-      a.async = 1;
-      a.src = g;
-      m.parentNode.insertBefore(a, m)
-    })(window, document, 'script', '//www.google-analytics.com/analytics.js', 'ga');
+        a = s.createElement(o),
+          m = s.getElementsByTagName(o)[0];
+        a.async = 1;
+        a.src = g;
+        m.parentNode.insertBefore(a, m)
+      })(window, document, 'script', '//www.google-analytics.com/analytics.js', 'ga');
 
-    ga('create', 'UA-49796218-5', 'mozilla.org');
-    ga('send', 'pageview');
-	</script>
+      ga('create', 'UA-49796218-5', 'mozilla.org');
+      ga('send', 'pageview');
+    </script>
 </HEAD>
 <BODY>
 <div style="overflow:hidden;">
-	<div class="content" style="position:inherit;">
-		<div id="totals", style="width:100%;text-align:center;"><h1>Quantum Flow Fx64 P1 Bugs</h1></div>
-		<div id="blockers" style="text-align: center;"></div>
-	</div>
-	<div id="description" style="width:100%;text-align: center;font-size: 150%">
-		<span style="font-weight: bold;font-size: 120%">Legend:</span>&nbsp;
-		<span id="day0" style="display:inline-block;height:10px;width:10px;background-color:#008E00;"></span> New&nbsp;&nbsp;
-		<span id="day1" style="display:inline-block;height:10px;width:10px;background-color:#318000;"></span> 1 day old&nbsp;&nbsp;
-		<span id="day2" style="display:inline-block;height:10px;width:10px;background-color:#638700;"></span> 2 days old&nbsp;&nbsp;
-		<span id="day3" style="display:inline-block;height:10px;width:10px;background-color:#857B00;"></span> 3 days old&nbsp;&nbsp;
-		<span id="day4" style="display:inline-block;height:10px;width:10px;background-color:#A05700;"></span> 4 days old&nbsp;&nbsp;
-		<span id="day5" style="display:inline-block;height:10px;width:10px;background-color:#8B3C00;"></span> 5 days old&nbsp;&nbsp;
-		<span id="day6" style="display:inline-block;height:10px;width:10px;background-color:#8A1C00;"></span> 6 days old&nbsp;&nbsp;
-		<span id="day7" style="display:inline-block;height:10px;width:10px;background-color:#980303;"></span> 7+ days old&nbsp;&nbsp;
+    <div class="content" style="position:inherit;">
+        <div id="totals" , style="width:100%;text-align:center;"><h1>Quantum Flow Fx64 P1 Bugs</h1></div>
+        <div id="blockers" style="text-align: center;"></div>
+    </div>
+    <div id="description" style="width:100%;text-align: center;font-size: 150%">
+        <span style="font-weight: bold;font-size: 120%">Legend:</span>&nbsp;
+        <span id="day0" style="display:inline-block;height:10px;width:10px;background-color:#008E00;"></span> New&nbsp;&nbsp;
+        <span id="day1" style="display:inline-block;height:10px;width:10px;background-color:#318000;"></span> 1 day old&nbsp;&nbsp;
+        <span id="day2" style="display:inline-block;height:10px;width:10px;background-color:#638700;"></span> 2 days old&nbsp;&nbsp;
+        <span id="day3" style="display:inline-block;height:10px;width:10px;background-color:#857B00;"></span> 3 days old&nbsp;&nbsp;
+        <span id="day4" style="display:inline-block;height:10px;width:10px;background-color:#A05700;"></span> 4 days old&nbsp;&nbsp;
+        <span id="day5" style="display:inline-block;height:10px;width:10px;background-color:#8B3C00;"></span> 5 days old&nbsp;&nbsp;
+        <span id="day6" style="display:inline-block;height:10px;width:10px;background-color:#8A1C00;"></span> 6 days old&nbsp;&nbsp;
+        <span id="day7" style="display:inline-block;height:10px;width:10px;background-color:#980303;"></span> 7+ days
+        old&nbsp;&nbsp;
 
-		<span style="display:inline-block;bottom:0;width: 0;height: 0; border-style: solid; border-width: 0 0 10px 10px; border-color: transparent transparent #000000 transparent;"></span>
-		Nobody Assigned
-	</div>
-	<div style="width:100%;text-align: center">
-		For Quantum Flow Fx64, P1 indicates bugs should be worked on next.
-	</div>
+        <span style="display:inline-block;bottom:0;width: 0;height: 0; border-style: solid; border-width: 0 0 10px 10px; border-color: transparent transparent #000000 transparent;"></span>
+        Nobody Assigned
+    </div>
+    <div style="width:100%;text-align: center">
+        For Quantum Flow Fx64, P1 indicates bugs should be worked on next.
+    </div>
 
-	<div class="footer">
-		Source at <a href="https://github.com/mozilla/charts/tree/quantum/quantum">https://github.com/mozilla/charts/tree/quantum/quantum</a>
-	</div>
+    <div class="footer">
+        Source at <a href="https://github.com/mozilla/charts/tree/quantum/quantum">https://github.com/mozilla/charts/tree/quantum/quantum</a>
+    </div>
 </div>
 
 <script type="application/javascript">
 
-importScript('js/main_lib.js', function(){
-  var thread;
+  importScript('js/main_lib.js', function(){
+    var thread;
 
-  function createChart(){
-    if (thread !== undefined)
-      thread.kill(true);
-    thread = Thread.run(__createChart());
-  }
+    function createChart(){
+      if (thread !== undefined)
+        thread.kill(true);
+      thread = Thread.run(__createChart());
+    }
 
-  refresher(createChart);
+    refresher(createChart);
 
-  let __createChart = function*(){
-    yield (ESQuery.loadColumns({"from": "bugs"}));
+    let __createChart = function *(){
 
 
-    a = Log.action("Get Bug Details", true);
-    let allDetails = null;
-    try {
-      //PULL THE RAW DATA, AND THEN OPERATE ON IT 112K, 2.17sec time
-      //THE AGGREGATES ARE SPENDING ABOUT 2/3 THE TIME TRANSMITTING THE QUERY
-      allDetails = yield(ESQuery.run({
-        "from": "bugs",
+      a = Log.action("Get Bug Details", true);
+      let allDetails = null;
+      try{
+        //PULL THE RAW DATA, AND THEN OPERATE ON IT 112K, 2.17sec time
+        //THE AGGREGATES ARE SPENDING ABOUT 2/3 THE TIME TRANSMITTING THE QUERY
+        allDetails = yield(ActiveDataQuery.run({
+          "from": "bugs",
+          "select": [
+            "bug_id",
+            "modified_ts",
+            "keywords",
+            "assigned_to",
+            "component",
+            "product",
+            "status_whiteboard"
+          ],
+          "where": {
+            "and": [
+              Mozilla.Quantum.Blockers.esfilter,
+              Mozilla.BugStatus.Open.esfilter,
+              Mozilla.CurrentRecords.esfilter,
+              GUI.getFilters("bugs")
+            ]
+          },
+          "limit":3000,
+          "format":"list"
+        }));
+      }finally{
+        Log.actionDone(a);
+      }//try
+
+
+      // DEFINE String.prototype.tokenized
+      if (!"[test]".tokenized) {
+        Object.defineProperty(String.prototype, 'tokenized', {
+          get: function(){
+            let preTokens = this.split("[");
+            let tokens = preTokens.mapExists(function(t){
+              if (t.trim() == "") return;
+              return t.split("]")[0].trim();
+            });
+            return tokens;
+           }
+        });
+      }//endif
+
+      allDetails.data.forall(function(d){
+        d.keywords = String.toLowerCase(d.keywords);
+        d.assigned_to = String.toLowerCase(d.assigned_to);
+        d.component = String.toLowerCase(d.component);
+        d.product = String.toLowerCase(d.product);
+        d.status_whiteboard = String.toLowerCase(d.status_whiteboard);
+      });
+
+      let components = yield(qb.calc2List({
+        "from": allDetails.data,
         "select": [
-          "bug_id",
-          "modified_ts",
-          "keywords",
-          "assigned_to",
-          "component",
-          "product",
-          "status_whiteboard"
+          {"name": "show", "value": 'bug_id', "aggregate": "exists"},
+          {"name": "count", "value": "bug_id", "aggregate": "count"},
+          {"name": "bugs", "value": "bug_id", "aggregate": "array"},
+          {
+            "name": "age",
+            "value": "Date.now().subtract(Date.newInstance(modified_ts)).divideBy(Duration.DAY)",
+            "aggregate": "median"
+          },
+          {"name": "unassignedCount", "value": '(assigned_to=="nobody@mozilla.org" ? 1 : 0)', "aggregate": "sum"},
+          {
+            "name": "unassignedBugs",
+            "value": '(assigned_to=="nobody@mozilla.org" ? bug_id : null)',
+            "aggregate": "array"
+          }
         ],
-        "esfilter": {
-          "and": [
-            Mozilla.Quantum.Blockers.esfilter,
-            Mozilla.BugStatus.Open.esfilter,
-            Mozilla.CurrentRecords.esfilter,
-            GUI.getFilters("bugs")
-          ]
-        }
+        "edges": [
+          {"name": "team", "domain": Mozilla.Quantum.Team.getDomain()}
+        ]
       }));
-    } finally {
-      Log.actionDone(a);
-    }//try
 
+      components.list = qb.sort(components.list, "team.ordering");
 
-    // DEFINE status_whiteboard.tokenized
-    String.property_tokenized = function(){};
-    allDetails.list.forall(function(d){
-      let preTokens = d.status_whiteboard.split("[");
-      let tokens = preTokens.mapExists(function(t){
-        if (t.trim() == "") return;
-        return t.split("]")[0].trim();
+      $("#blockers").html("");
+      components.list.forall(function(team, i){
+        team.burndown = Mozilla.Quantum.Team[team.team.name].burndown;
+        let blockerHTML = showTeam(team, showBlocker);
+        $("#blockers").append(blockerHTML);
       });
-      String.property_tokenized[d.status_whiteboard] = tokens;
-    });
-    if (!"".tokenized) {
-      Object.defineProperty(String.prototype, 'tokenized', {
-        get: function(){
-          let output =String.property_tokenized[this];
-          return output ? output : [];
-        }
-      });
-    }//endif
+
+      let projectDomain = Mozilla.Quantum.Project.getDomain();
+      projectDomain.name = "project";
+      projectDomain.end = function(p){
+        return p.name;
+      };
+      let totals = yield(Q({
+        "from": allDetails.data,
+        "select": [
+          {"name": "show", "value": "bug_id", "aggregate": "exists"},
+          {"name": "additionalClass", "value": '"project-summary"', "aggregate": "one"},
+          {"name": "count", "value": "bug_id", "aggregate": "count"},
+          {"name": "bugs", "value": "bug_id", "aggregate": "array"},
+          {
+            "name": "age",
+            "value": "Date.now().subtract(Date.newInstance(modified_ts)).divideBy(Duration.DAY)",
+            "aggregate": "median"
+          },
+          {"name": "unassignedCount", "value": '(assigned_to=="nobody@mozilla.org" ? 1 : 0)', "aggregate": "sum"},
+          {
+            "name": "unassignedBugs",
+            "value": '(assigned_to=="nobody@mozilla.org" ? bug_id : null)',
+            "aggregate": "array"
+          }
+        ],
+        "edges": [
+          {"name": "project", "domain": projectDomain}
+        ]
+      }));
 
 
-    let components = yield(Qb.calc2List({
-      "from": allDetails,
-      "select": [
-        {"name": "show", "value": 'bug_id', "aggregate": "exists"},
-        {"name": "count", "value": "bug_id", "aggregate": "count"},
-        {"name": "bugs", "value": "bug_id", "aggregate": "array"},
-        {"name": "age", "value": "Date.now().subtract(Date.newInstance(modified_ts)).divideBy(Duration.DAY)", "aggregate": "median"},
-        {"name": "unassignedCount", "value": '(assigned_to=="nobody@mozilla.org" ? 1 : 0)', "aggregate": "sum"},
-        {"name": "unassignedBugs", "value": '(assigned_to=="nobody@mozilla.org" ? bug_id : null)', "aggregate": "array"}
-      ],
-      "edges": [
-        {"name": "team", "domain": Mozilla.Quantum.Team.getDomain()}
-      ]
-    }));
+      let grandTotal = {
+        "project": "Total",
+        "count": aMath.SUM(totals.cube.select("count")),
+        "unassignedCount": aMath.SUM(totals.cube.select("unassignedCount")),
+        "age": aMath.MAX(totals.cube.select("age")),
+        "bugs": totals.from.list.select("bug_id"),
+        "unassignedBugs": totals.from.list.filter(Mozilla.Quantum.Unassigned.esfilter).select("bug_id"),
+        "additionalClass": "project-summary"
+      };
 
-    components.list = Qb.sort(components.list, "team.ordering");
+      var blockerHTML = showSummary(
+        "Quantum Flow Fx64 P1 Bugs",
+        grandTotal,
+        showTotal,
+        new Template(
+          '<h1 style="text-align:center; padding: 20px 0 0 10px;vertical-align: top; display:inline-block">{{type}}&nbsp;&nbsp;' +
+          '<div style="color:#ee0303;font-family: sans-serif, Arial Black,Arial Bold;font-weight:bold;font-size: .5em">Target: focus on P1 Bugs</div>' +
+          '</h1>' +
+          '{{total}}'
+        )
+      );
+      $("#totals").html(blockerHTML);
 
-    $("#blockers").html("");
-    components.list.forall(function(team, i){
-      team.burndown = Mozilla.Quantum.Team[team.team.name].burndown;
-      let blockerHTML = showTeam(team, showBlocker);
-      $("#blockers").append(blockerHTML);
-    });
-
-    let projectDomain = Mozilla.Quantum.Project.getDomain();
-    projectDomain.name = "project";
-    projectDomain.end = function(p){
-      return p.name;
-    };
-    let totals = yield(Q({
-      "from": allDetails,
-      "select": [
-        {"name": "show", "value": "bug_id", "aggregate": "exists"},
-        {"name": "additionalClass", "value": '"project-summary"', "aggregate": "one"},
-        {"name": "count", "value": "bug_id", "aggregate": "count"},
-        {"name": "bugs", "value": "bug_id", "aggregate": "array"},
-        {"name": "age", "value": "Date.now().subtract(Date.newInstance(modified_ts)).divideBy(Duration.DAY)", "aggregate": "median"},
-        {"name": "unassignedCount", "value": '(assigned_to=="nobody@mozilla.org" ? 1 : 0)', "aggregate": "sum"},
-        {"name": "unassignedBugs", "value": '(assigned_to=="nobody@mozilla.org" ? bug_id : null)', "aggregate": "array"}
-      ],
-      "edges": [
-        {"name": "project", "domain": projectDomain}
-      ]
-    }));
-
-
-    let grandTotal = {
-      "project": "Total",
-      "count": aMath.SUM(totals.cube.select("count")),
-      "unassignedCount": aMath.SUM(totals.cube.select("unassignedCount")),
-      "age": aMath.MAX(totals.cube.select("age")),
-      "bugs": totals.from.list.select("bug_id"),
-      "unassignedBugs": totals.from.list.filter(Mozilla.Quantum.Unassigned.esfilter).select("bug_id"),
-      "additionalClass": "project-summary"
+      addProjectClickers(components);
+      showLastUpdated();
     };
 
-    var blockerHTML = showSummary(
-      "Quantum Flow Fx64 P1 Bugs",
-      grandTotal,
-      showTotal,
-      new Template(
-        '<h1 style="text-align:center; padding: 20px 0 0 10px;vertical-align: top; display:inline-block">{{type}}&nbsp;&nbsp;' +
-        '<div style="color:#ee0303;font-family: sans-serif, Arial Black,Arial Bold;font-weight:bold;font-size: .5em">Target: focus on P1 Bugs</div>' +
-        '</h1>' +
-        '{{total}}'
-      )
-    );
-    $("#totals").html(blockerHTML);
-
-    addProjectClickers(components);
-    showLastUpdated();
-  };
-
-  $(document).ready(function(){
-    GUI.setup(
-      createChart,
-      [
+    $(document).ready(function(){
+      GUI.setup(
+        createChart,
+        [
         {
           "id": "team", "name": "Teams", "type": PartitionFilter.newInstance({
           "id": "Teams",
@@ -286,13 +242,14 @@ importScript('js/main_lib.js', function(){
         })
         }
 
-      ],
-      [],
-      null,
-      false		//SHOW DEFAULT FILTERS?
-    );
+        ],
+        [],
+        null,
+        false,		//SHOW DEFAULT FILTERS?
+        false			//PERFORM CONSISTENCY CHECK?
+      );
+    });
   });
-});
 </script>
 
 

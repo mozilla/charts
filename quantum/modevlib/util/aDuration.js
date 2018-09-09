@@ -4,13 +4,16 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
 importScript("aDate.js");
-importScript("CNV.js");
+importScript("aString.js");
+importScript("convert.js");
+importScript("../math/aMath.js");
 
 
 
 var Duration = function(){
-	this.milli = 0;	//INCLUDES THE MONTH VALUE AS MILLISECONDS
+	this.milli = 0;  //INCLUDES THE MONTH VALUE AS MILLISECONDS
 	this.month = 0;
+	return this;
 };
 
 
@@ -25,9 +28,9 @@ Duration.DOMAIN={
 
 
 Duration.MILLI_VALUES = {
-	"year":52 * 7 * 24 * 60 * 60 * 1000,		//52weeks
-	"quarter":13 * 7 * 24 * 60 * 60 * 1000,	//13weeks
-	"month":28 * 24 * 60 * 60 * 1000,		//4weeks
+	"year":52 * 7 * 24 * 60 * 60 * 1000,    //52weeks
+	"quarter":13 * 7 * 24 * 60 * 60 * 1000,  //13weeks
+	"month":28 * 24 * 60 * 60 * 1000,    //4weeks
 	"week":7 * 24 * 60 * 60 * 1000,
 	"day":24 * 60 * 60 * 1000,
 	"hour":60 * 60 * 1000,
@@ -62,7 +65,7 @@ Duration.String2Duration = function(text){
 
 	var output = new Duration();
 	var interval = text.rightBut(s);
-	var amount = (s == 0 ? 1 : CNV.String2Integer(text.left(s)));
+	var amount = (s == 0 ? 1 : convert.String2Integer(text.left(s)));
 
 	if (Duration.MILLI_VALUES[interval] === undefined)
 		Log.error(interval + " is not a recognized duration type (did you use the pural form by mistake?");
@@ -135,7 +138,7 @@ Duration.newInstance = function(obj){
 	} else if (isNaN(obj)){
 		//return null;
 	} else{
-		Log.error("Do not know type of object (" + CNV.Object2JSON(obj) + ")of to make a Duration");
+		Log.error("Do not know type of object (" + convert.value2json(obj) + ")of to make a Duration");
 	}//endif
 	return output;
 };//method
@@ -159,6 +162,10 @@ Duration.prototype.lt = function(val){
 
 Duration.prototype.lte = function(val){
 	return this.milli <= val.milli;
+};//method
+
+Duration.prototype.seconds = function(){
+  return this.milli/1000.0;
 };//method
 
 Duration.prototype.multiply=function(amount){
@@ -217,15 +224,15 @@ Duration.prototype.floor = function(interval){
 	if (interval.month != 0){
 		if (this.month!=0){
 			output.month = aMath.floor(this.month/interval.month)*interval.month;
-//			var rest=(this.milli - (Duration.MILLI_VALUES.month * output.month));
-//			if (rest>Duration.MILLI_VALUES.day*31){	//WE HOPE THIS BIGGER VALUE WILL STILL CATCH POSSIBLE LOGIC PROBLEMS
-//				Log.error("This duration has more than a month's worth of millis, can not handle this rounding");
-//			}//endif
-//			while (rest<0){
-//				output.month-=interval.month;
-//				rest=(this.milli - (Duration.MILLI_VALUES.month * output.month));
-//			}//while
-////			if (rest>Duration.MILLI_VALUES.month){ //WHEN FLOORING xmonth-1day, THE rest CAN BE 4week+1day, OR MORE.
+//      var rest=(this.milli - (Duration.MILLI_VALUES.month * output.month));
+//      if (rest>Duration.MILLI_VALUES.day*31){  //WE HOPE THIS BIGGER VALUE WILL STILL CATCH POSSIBLE LOGIC PROBLEMS
+//        Log.error("This duration has more than a month's worth of millis, can not handle this rounding");
+//      }//endif
+//      while (rest<0){
+//        output.month-=interval.month;
+//        rest=(this.milli - (Duration.MILLI_VALUES.month * output.month));
+//      }//while
+////      if (rest>Duration.MILLI_VALUES.month){ //WHEN FLOORING xmonth-1day, THE rest CAN BE 4week+1day, OR MORE.
 			output.milli = output.month * Duration.MILLI_VALUES.month;
 			return output;
 		}//endif
@@ -240,47 +247,178 @@ Duration.prototype.floor = function(interval){
 };//method
 
 
-Duration.prototype.toString = function(){
+Duration.prototype.mod = function(interval){
+	return this.subtract(this.floor(interval));
+};//method
+
+
+
+var milliSteps = [1, 2, 5, 10, 20, 50, 100, 200, 500]
+	.extend([1, 2, 5, 6, 10, 15, 30].mapExists(function(v){return v*1000;}))  //SECONDS
+	.extend([1, 2, 5, 6, 10, 15, 30].mapExists(function(v){return v*60*1000;}))  //MINUTES
+	.extend([1, 2, 3, 6, 12].mapExists(function(v){return v*60*60*1000;}))  //HOURS
+	.extend([1].mapExists(function(v){return v*24*60*60*1000;}))  //DAYS
+	.extend([1, 2].mapExists(function(v){return v*7*24*60*60*1000;}))  //WEEKS
+	;
+
+var monthSteps = [1, 2, 6, 12, 24, 60, 120];
+
+
+/**
+ * ROUND desiredInterval (==(max-min)/desiredSteps) TO SOMETHING REASONABLE
+ * @param min -
+ * @param max -
+ * @param desiredSteps - Number of steps you would like to see over [min, max) range
+ * @param desiredInterval - Size of the steps you would like to see over [min, max) range
+ *
+ * @return - Step size closest to the desired amount
+ */
+Duration.niceSteps = function(min, max, desiredSteps, desiredInterval){
+	var startDuration = Duration.newInstance(min);
+	var endDuration = Duration.newInstance(max);
+
+	var interval;
+	if (desiredInterval != null) {
+		interval = Duration.newInstance(desiredInterval);
+	} else if (desiredSteps != null) {
+		interval = Duration.newInstance(endDuration.subtract(startDuration).milli / desiredSteps);
+	} else {
+		interval = Duration.newInstance(endDuration.subtract(startDuration).milli / 7);
+	}//endif
+
+	var milliInterval = 0;
+	var monthInterval = -1;
+	for (var i = 0; i < milliSteps.length; i++) {
+		if (interval.milli >= milliSteps[i]) milliInterval = i;
+	}//for
+	for (var m = 0; i < monthSteps.length; m++) {
+		if (interval.month >= monthSteps[i]) monthInterval = m;
+	}//for
+	var output = new Duration();
+	if (monthInterval >= 0) {
+		output.month = monthSteps[monthInterval];
+		output.milli = output.month * Duration.MILLI_VALUES.month;
+	} else {
+		output.milli = milliSteps[milliInterval];
+	}//endif
+	return output;
+};//function
+
+
+////////////////////////////////////////////////////////////////////////////////
+// WHAT IS THE MOST COMPACT DATE FORMAT TO DISTINGUISH THE RANGE
+////////////////////////////////////////////////////////////////////////////////
+Duration.niceFormat=function(min, max, desiredSteps, desiredInterval){
+	var startDuration=Duration.newInstance(min);
+	var endDuration=Duration.newInstance(max);
+
+	var interval;
+	if (desiredInterval!=null){
+		interval=Duration.newInstance(desiredInterval);
+	}else if (desiredSteps!=null){
+		interval=Duration.newInstance(endDuration.subtract(startDuration).milli/desiredSteps);
+	}else{
+		interval=Duration.newInstance(endDuration.subtract(startDuration).milli/7);
+	}//endif
+
+	var minFormat=0; //SECONDS
+	if (interval.milli>=Duration.MILLI_VALUES.minute) minFormat=1;
+	if (interval.milli>=Duration.MILLI_VALUES.hour) minFormat=2;
+	if (interval.milli>=Duration.MILLI_VALUES.day) minFormat=3;
+	if (interval.milli>=Duration.MILLI_VALUES.month) minFormat=4;
+	if (interval.month>=Duration.MONTH_VALUES.month) minFormat=4;
+	if (interval.month>=Duration.MONTH_VALUES.year) minFormat=5;
+
+	var maxFormat=5; //YEAR
+	var span=endDuration.subtract(startDuration, interval);
+	if (span.month<Duration.MONTH_VALUES.year && span.milli<Duration.MILLI_VALUES.day*365) maxFormat=4; //month
+	if (span.month<Duration.MONTH_VALUES.month && span.milli<Duration.MILLI_VALUES.day*31) maxFormat=3; //day
+	if (span.milli<Duration.MILLI_VALUES.day) maxFormat=2;
+	if (span.milli<Duration.MILLI_VALUES.hour) maxFormat=1;
+	if (span.milli<Duration.MILLI_VALUES.minute) maxFormat=0;
+
+	if (maxFormat<=minFormat) maxFormat=minFormat;
+
+	//INDEX BY [minFormat][maxFormat]
+	return [
+	["ss.000", "mm:ss", "HH:mm:ss", "days, HH:mm:ss", "days, HH:mm:ss", "days, HH:mm:ss"],
+	[      "", "HH:mm", "HH:mm"   , "days, HH:mm"   , "days, HH:mm"   , "days, HH:mm"   ],
+	[      "",      "", "hours"   , "days, HH"      , "days, HH:mm"   , "days, HH:mm"   ],
+	[      "",      "",         "", "days"          , "days"          , "days"          ],
+	[      "",      "",         "", ""              , "days"          , "days"          ],
+	[      "",      "",         "", ""              , ""              , "days"          ]
+	][minFormat][maxFormat];
+};//method
+
+
+
+Duration.prototype.toString = function(round){
 	if (this.milli == 0) return "zero";
 
-
+	if (round == null) round = "milli";
+	var rem;
 	var output = "";
 	var rest = (this.milli - (Duration.MILLI_VALUES.month * this.month)); //DO NOT INCLUDE THE MONTH'S MILLIS
 	var isNegative = (rest < 0);
-	rest=aMath.abs(rest);
+	rest = aMath.abs(rest);
 
-	//MILLI
-	var rem = rest % 1000;
-	if (rem != 0) output = "+" + rem + "milli" + output;
-	rest = aMath.floor(rest / 1000);
+	if (round == "milli") {
+		rem = rest % 1000;
+		if (rem != 0) output = "+" + rem + "milli" + output;
+		rest = aMath.floor(rest / 1000);
+		round="second";
+	} else {
+		rest = rest / 1000;
+	}//endif
 
-	//SECOND
-	rem = rest % 60;
-	if (rem != 0) output = "+" + rem + "second" + output;
-	rest = aMath.floor(rest / 60);
+	if (round == "second") {
+		rem = aMath.round(rest) % 60;
+		if (rem != 0) output = "+" + rem + "second" + output;
+		rest = aMath.floor(rest / 60);
+		round="minute";
+	} else {
+		rest = rest / 60;
+	}//endif
 
-	//MINUTE
-	rem = rest % 60;
-	if (rem != 0) output = "+" + rem + "minute" + output;
-	rest = aMath.floor(rest / 60);
+	if (round == "minute") {
+		rem = aMath.round(rest) % 60;
+		if (rem != 0) output = "+" + rem + "minute" + output;
+		rest = aMath.floor(rest / 60);
+		round="hour";
+	} else {
+		rest = rest / 60;
+	}//endif
 
 	//HOUR
-	rem = rest % 24;
-	if (rem != 0) output = "+" + rem + "hour" + output;
-	rest = aMath.floor(rest / 24);
+	if (round == "hour") {
+		rem = aMath.round(rest) % 24;
+		if (rem != 0) output = "+" + rem + "hour" + output;
+		rest = aMath.floor(rest / 24);
+		round="day";
+	} else {
+		rest = rest / 24;
+	}//endif
 
 	//DAY
-	if (rest<11 && rest!=7){
-		rem = rest;
-		rest = 0;
+	if (round=="day"){
+		if (rest<11 && rest!=7){
+			rem = rest;
+			rest = 0;
+		}else{
+			rem = rest % 7;
+			rest = aMath.floor(rest / 7);
+			round="week";
+		}//endif
+		if (rem != 0) output = "+" + rem + "day" + output;
 	}else{
-		rem = rest % 7;
-		rest = aMath.floor(rest / 7);
+		rest=rest/7;
 	}//endif
-	if (rem != 0) output = "+" + rem + "day" + output;
 
 	//WEEK
-	if (rest != 0) output = "+" + rest + "week" + output;
+	if (round=="week"){
+		rest = aMath.round(rest);
+		if (rest != 0) output = "+" + rest + "week" + output;
+	}//endif
 
 	if (isNegative) output = output.replace("+", "-");
 
@@ -307,9 +445,14 @@ Duration.prototype.toString = function(){
 };//method
 
 
-Duration.prototype.format=function(interval, rounding){
-	return this.round(Duration.newInstance(interval), rounding)+interval;
+
+Duration.prototype.format=function(_format){
+	return new Date(this.milli).format(_format);
 };//method
+
+//Duration.prototype.format=function(interval, rounding){
+//  return this.round(Duration.newInstance(interval), rounding)+interval;
+//};//method
 
 Duration.prototype.round=function(interval, rounding){
 	if (rounding===undefined) rounding=0;

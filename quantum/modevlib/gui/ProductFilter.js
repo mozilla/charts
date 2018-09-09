@@ -6,7 +6,8 @@ importScript("../Dimension-Bugzilla.js");
 
 
 
-ProductFilter = function(){
+ProductFilter = function(indexName){
+	this.indexName=coalesce(indexName, "bugs");
 	this.name="Products";
 	this.isFilter=true;
 	this.selected=[];
@@ -80,7 +81,7 @@ ProductFilter.prototype.setSimpleState=function(value){
 	if (!value || value==""){
 		this.selected=[];
 	}else{
-		this.selected=value.split(",").map(function(v){return v.trim();});
+		this.selected=value.split(",").mapExists(function(v){return v.trim();});
 	}//endif
 	this.refresh();
 
@@ -122,10 +123,10 @@ ProductFilter.prototype.injectHTML = function(products){
 
 ProductFilter.prototype.refresh = function(){
 	var self=this;
-	Thread.run(function*(){
+	Thread.run("get products", function*(){
 
 		self.query = self.makeQuery();
-		var data = yield(ElasticSearch.search("bugs", self.query));
+		var data = yield(ElasticSearch.search(self.indexName, self.query));
 
 		var products = data.facets.Products.terms;
 

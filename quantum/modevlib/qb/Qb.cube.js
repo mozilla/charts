@@ -2,21 +2,19 @@
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
-if (Qb===undefined) var Qb = {};
+if (qb===undefined) var qb = {};
 
 (function(){
-// MAKE A Qb OF DEFAULT VALUES
-Qb.cube = {};
+// MAKE A qb OF DEFAULT VALUES
+qb.cube = {};
 
 
-Qb.cube.newInstance = function(edges, depth, select){
+qb.cube.newInstance = function(edges, depth, select){
 	if (depth == edges.length){
 		var element={};
-//		var element=[]
 		if (select instanceof Array){
 			for(var s = 0; s < select.length; s++){
 				element[select[s].name] = select[s].domain.end(select[s].defaultValue());
-//				element[s] = select[s].defaultValue();
 			}//for
 		} else{
 			element = select.domain.end(select.defaultValue());
@@ -27,16 +25,15 @@ Qb.cube.newInstance = function(edges, depth, select){
 	var data = [];
 	var p = 0;
 	for(; p < edges[depth].domain.partitions.length; p++){
-		data[p] = Qb.cube.newInstance(edges, depth + 1, select);
+		data[p] = qb.cube.newInstance(edges, depth + 1, select);
 	}//for
-//	if (edges[depth].domain.partitions.length==0 || edges[depth].allowNulls){
 	if (edges[depth].allowNulls){
-		data[p]= Qb.cube.newInstance(edges, depth + 1, select);
+		data[p]= qb.cube.newInstance(edges, depth + 1, select);
 	}//endif
 	return data;
 };//method
 
-//MAKE THE MAP ARRAY FROM NEW TO OLD COLUMN INDICIES
+//MAKE THE MAP ARRAY FROM NEW TO OLD COLUMN indices
 //newColumns[i]==oldColumns[smap[i]]
 function remap(oldColumns, newColumns){
 	var smap = [];
@@ -51,13 +48,13 @@ function remap(oldColumns, newColumns){
 
 
 //PROVIDE THE SAME EDGES, BUT IN DIFFERENT ORDER
-Qb.cube.transpose = function(query, edges, select){
+qb.cube.transpose = function(query, edges, select){
 	//MAKE COMBO MATRIX
 	var smap = remap(Array.newInstance(query.select), Array.newInstance(select));
 	var fmap = remap(query.edges, edges);
 
-	//ENSURE THE Qb HAS ALL DIMENSIONS
-	var cube = Qb.cube.newInstance(edges, 0, []);
+	//ENSURE THE qb HAS ALL DIMENSIONS
+	var cube = qb.cube.newInstance(edges, 0, []);
 
 	var pre = "";
 	var loops = "";
@@ -76,7 +73,7 @@ Qb.cube.transpose = function(query, edges, select){
 		pre+
 		loops +
 		dest + "="+source+";\n" +
-//		"for(var i=0;i<select.length;i++) d[i]=s[smap[i]];\n" +
+//    "for(var i=0;i<select.length;i++) d[i]=s[smap[i]];\n" +
 		ends;
 	eval(f);
 
@@ -91,7 +88,7 @@ Qb.cube.transpose = function(query, edges, select){
 
 
 
-Qb.cube.toList=function(query){
+qb.cube.toList=function(query){
 
 	var output=[];
 	if (query.edges.length==1){
@@ -102,9 +99,9 @@ Qb.cube.toList=function(query){
 
 			if (query.select instanceof Array){
 				for(var s=query.select.length;s--;){
-					//I FORGET IF ELEMENTS IN Qb ARE OBJECTS, OR ARRAYS
+					//I FORGET IF ELEMENTS IN qb ARE OBJECTS, OR ARRAYS
 					obj[query.select[s].name]=query.cube[p][s];
-//					obj[cube.select[s].name]=cube.cube[cube.select[s].name];
+//          obj[cube.select[s].name]=cube.cube[cube.select[s].name];
 				}//for
 			}else{
 				obj[query.select.name]=query.cube[p];
@@ -121,14 +118,14 @@ Qb.cube.toList=function(query){
 
 
 // UNION THE CUBES, AND ADD PARTITIONS AS NEEDED
-Qb.cube.union=function(cubeA, cubeB){
+qb.cube.union=function(cubeA, cubeB){
 	//ENSURE NAMES MATCH SO MERGE IS POSSIBLE
 	if (cubeA.edges.length!=cubeB.edges.length) Log.error("Expecting cubes to have smae number of edges, with matching names");
 	for(var i=cubeA.edges.length;i--;){
 		if (cubeA.edges[i].name!=cubeB.edges[i].name) Log.error("Expecting both cubes to have edges in the same order");
 	}//for
 
-		
+
 
 
 

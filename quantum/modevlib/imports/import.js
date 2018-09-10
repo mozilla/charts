@@ -290,7 +290,12 @@ var importScript;
 		}//for
 		head.appendChild(frag);
 		if (numLoaded.length == 0) doneCallback();
-		if (DEBUG) Log.note("Added " + numLoaded.length + " scripts");
+		if (DEBUG){
+			Log.note("Added " + numLoaded.length + " scripts");
+			let div = document.createElement("div");
+			div.appendChild(frag);
+			Log.note(div.innerHTML);
+		}//endif
 	}//function
 
 

@@ -7,7 +7,7 @@ importScript("qb/ESQuery.js");
 
 if (!Mozilla) var Mozilla = {"name": "Mozilla", "edges": []};
 
-(function () {
+(function(){
 
   Dimension.addEdges(false, Mozilla, [
     {
@@ -37,18 +37,26 @@ if (!Mozilla) var Mozilla = {"name": "Mozilla", "edges": []};
         },
 
         {"name": "Nominations", "index": "bugs", "esfilter": {"term": {"status_whiteboard.tokenized": "qf"}}},
-        {"name": "AllNominations", "index": "bugs", "esfilter": {"terms": {"status_whiteboard.tokenized": ["qf:investigate:p1", "qf", "qf:investigate"]}}},
-		  {
-			  "name": "Blockers", "index": "bugs", "esfilter": {
-				  "or": [
-					  {"terms": {"status_whiteboard.tokenized": ["qf:p1:f64", "qf:p1", "qf:investigate:p1"]}},
-					  {"terms": {"status_whiteboard(tokenized)": ["qf:p1:f64", "qf:p1", "qf:investigate:p1"]}}  //REMOVE ME
-				  ]
-			  }
-		  },
-		  {"name": "Regressions", "index": "bugs", "esfilter": {"term": {"keywords": "regression"}}},
+        {
+          "name": "AllNominations",
+          "index": "bugs",
+          "esfilter": {"terms": {"status_whiteboard.tokenized": ["qf:investigate:p1", "qf", "qf:investigate"]}}
+        },
+        {
+          "name": "Blockers", "index": "bugs", "esfilter": {
+            "or": [
+              {"terms": {"status_whiteboard.tokenized": ["qf:p1:f65", "qf:p1", "qf:investigate:p1"]}},
+              {"terms": {"status_whiteboard(tokenized)": ["qf:p1:f65", "qf:p1", "qf:investigate:p1"]}}  //REMOVE ME
+            ]
+          }
+        },
+        {"name": "Regressions", "index": "bugs", "esfilter": {"term": {"keywords": "regression"}}},
         {"name": "Unassigned", "index": "bugs", "esfilter": {"term": {"assigned_to": "nobody@mozilla.org"}}},
-        {"name": "NeedsAnalysis", "index": "bugs", "esfilter": {"term": {"status_whiteboard.tokenized": "qf:needs-analysis"}}},
+        {
+          "name": "NeedsAnalysis",
+          "index": "bugs",
+          "esfilter": {"term": {"status_whiteboard.tokenized": "qf:needs-analysis"}}
+        },
 
         //AN UNFORTUNATE DISTINCTION BETWEEN DIMENSIONS (ABOVE, THAT OVERLAP), AND PARTITIONS THAT DO NOT OVERLAP
         {
@@ -56,19 +64,19 @@ if (!Mozilla) var Mozilla = {"name": "Mozilla", "edges": []};
           "partitions": [
             {
               "name": "Nominated", "esfilter": {
-              "and": [
-                {"term": {"status_whiteboard.tokenized": "qf"}},
-                {"not": {"term": {"keywords": "regression"}}}
-              ]
-            }
+                "and": [
+                  {"term": {"status_whiteboard.tokenized": "qf"}},
+                  {"not": {"term": {"keywords": "regression"}}}
+                ]
+              }
             },
             {
               "name": "Blocker", "esfilter": {
-              "and": [
-                {"term": {"status_whiteboard.tokenized": "qf:p1"}},
-                {"not": {"term": {"keywords": "regression"}}}
-              ]
-            }
+                "and": [
+                  {"term": {"status_whiteboard.tokenized": "qf:p1"}},
+                  {"not": {"term": {"keywords": "regression"}}}
+                ]
+              }
             },
             {"name": "Regression", "esfilter": {"term": {"keywords": "regression"}}}
           ]
@@ -82,7 +90,7 @@ if (!Mozilla) var Mozilla = {"name": "Mozilla", "edges": []};
           "esfilter": ESQuery.TrueFilter,
           "index": "bugs",
           "limit": 200,
-          "end": function (p) {
+          "end": function(p){
             return p.name;
           }
         },
@@ -96,153 +104,240 @@ if (!Mozilla) var Mozilla = {"name": "Mozilla", "edges": []};
               "name": "Investigate",
               "manager": "",
               "style": {"color": "#CCCCCC"},
-              "burndown":"",
+              "burndown": "",
               "esfilter": {"term": {"status_whiteboard.tokenized": "qf:investigate:p1"}}
             },
             {
               "name": "DevTools",
               "manager": "Patrick Brosset",
               "style": {"color": "#FAA43A"},
-              "burndown": "https://cpeterso.github.io/burndown/?whiteboard=%5Bqf:p1:f64%5D&since=2018-01-01&component=developer%20tools:%20debugger,gecko%20profiler,Inspector,netmonitor",
-              "esfilter": {
-                "and": [
-                  {
-                    "or": [
-                      {"prefix": {"component": "dev"}}, // Component: Anything starting with "Developer Tools"
-                      {"term": {"component": "gecko profiler"}},
-                      {"term": {"component": "inspector"}}
+              "burndown": "https://cpeterso.github.io/burndown/?whiteboard=%5Bqf:p1:f65%5D&since=2018-01-01&component=developer%20tools:%20debugger,gecko%20profiler,Inspector,netmonitor",
+              "esfilter":
+                {
+                  "terms": {
+                    "component": [
+                      "developer tools: debugger",
+                      "gecko profiler",
+                      "inspector",
+                      "netmonitor"
+
                     ]
                   }
-                ]
-              }
+                }
+              // "esfilter": {
+              //   "and": [
+              //     {
+              //       "or": [
+              //         {"prefix": {"component": "dev"}}, // Component: Anything starting with "Developer Tools"
+              //         {"term": {"component": "gecko profiler"}},
+              //         {"term": {"component": "inspector"}}
+              //       ]
+              //     }
+              //   ]
+              // }
             },
             {
               "name": "DOM",
               "manager": "Andrew Overholt",
               "style": {"color": "#4D4D4D"},
-              "burndown":"https://cpeterso.github.io/burndown/?whiteboard=%5Bqf:p1:f64%5D&since=2018-01-01&component=Document%20Navigation,DOM,DOM:%20Core%20%26%20HTML,DOM:%20Device%20Interfaces,DOM:%20Events,DOM:%20IndexedDB,DOM:%20Push%20Notifications,DOM:%20Quota%20Manager,DOM:%20Service%20Workers,DOM:%20Workers,Event%20Handling,HTML:%20Form%20Submission,HTML:%20Parser,Keyboard:%20Navigation,Serializers,XBL,XML,XPConnect,XSLT",
+              "burndown": "https://cpeterso.github.io/burndown/?whiteboard=%5Bqf:p1:f65%5D&since=2018-01-01&component=Document%20Navigation,DOM,DOM:%20Core%20%26%20HTML,DOM:%20Device%20Interfaces,DOM:%20Events,DOM:%20IndexedDB,DOM:%20Push%20Notifications,DOM:%20Quota%20Manager,DOM:%20Service%20Workers,DOM:%20Workers,Event%20Handling,HTML:%20Form%20Submission,HTML:%20Parser,Keyboard:%20Navigation,Serializers,XBL,XML,XPConnect,XSLT,IPC",
               "esfilter": {
-                "and": [
-                  {"term": {"product": "core"}},
-                  {"not": {"prefix": {"component": "dom: css"}}},
-                  {
-                    "or": [
-                      {"prefix": {"component": "dom"}},  // Lawrence, Nov 11, 2014: Anything starting with "DOM", "Document Navigation", "IPC", "XBL", "XForms"
-                      {"prefix": {"component": "document"}},
-                      {"prefix": {"component": "ipc"}},
-                      {"prefix": {"component": "xbl"}},
-                      {"prefix": {"component": "xform"}},
-                      {
-                        "terms": {
-                          "component": [
-                            "event handling",
-                            "html: parser",
-                            "html: form submission",
-                            "keyboard: navigation",
-                            "serializers",
-                            "xbl",
-                            "xml",
-                            "xpconnect",
-                            "xslt"
-                          ]
-                        }
-                      }
-                    ]
-                  }
-                ]
+                "terms": {
+                  "component": [
+                    "document navigation",
+                    "dom",
+                    "dom: core & html",
+                    "dom: device interfaces",
+                    "dom: events", "dom: indexeddb",
+                    "dom: push notifications",
+                    "dom: quota manager",
+                    "dom: service workers",
+                    "dom: workers",
+                    "event handling",
+                    "html: form submission",
+                    "html: parser",
+                    "keyboard: navigation",
+                    "serializers",
+                    "xbl",
+                    "xml",
+                    "xpconnect",
+                    "xslt",
+                    "ipc"
+                  ]
+                }
               }
+              // "esfilter": {
+              //   "and": [
+              //     {"term": {"product": "core"}},
+              //     {"not": {"prefix": {"component": "dom: css"}}},
+              //     {
+              //       "or": [
+              //         {"prefix": {"component": "dom"}},  // Lawrence, Nov 11, 2014: Anything starting with "DOM", "Document Navigation", "IPC", "XBL", "XForms"
+              //         {"prefix": {"component": "document"}},
+              //         {"prefix": {"component": "ipc"}},
+              //         {"prefix": {"component": "xbl"}},
+              //         {"prefix": {"component": "xform"}},
+              //         {
+              //           "terms": {
+              //             "component": [
+              //               "event handling",
+              //               "html: parser",
+              //               "html: form submission",
+              //               "keyboard: navigation",
+              //               "serializers",
+              //               "xbl",
+              //               "xml",
+              //               "xpconnect",
+              //               "xslt"
+              //             ]
+              //           }
+              //         }
+              //       ]
+              //     }
+              //   ]
+              // }
             },
             {
               "name": "Graphics",
               "manager": "David Bolter",
               "style": {"color": "#B276B2"},
-              "burndown":"https://cpeterso.github.io/burndown/?whiteboard=%5Bqf:p1:f64%5D&since=2018-01-01&component=Canvas:%20webGL,Graphics,Graphics:%20Layers,Panning%20and%20Zooming,SVG,Canvas:%202D,GFX:%20Color%20Management,Graphics:%20Text,Image%20Blocking,ImageLib,Layout%20Web%20Painting",
+              "burndown": "https://cpeterso.github.io/burndown/?whiteboard=%5Bqf:p1:f65%5D&since=2018-01-01&component=Canvas:%20webGL,Graphics,Graphics:%20Layers,Panning%20and%20Zooming,SVG,Canvas:%202D,GFX:%20Color%20Management,Graphics:%20Text,Image%20Blocking,ImageLib,Layout%20Web%20Painting",
               "esfilter": {
-                "and": [
-                  {"term": {"product": "core"}},
-                  {
-                    "or": [
-                      {"prefix": {"component": "canvas"}},  // Anything starting with "Canvas", "Graphics", "Panning and Zooming", "SVG"
-                      {"prefix": {"component": "graphics"}},
-                      {"prefix": {"component": "panning"}},
-                      {"prefix": {"component": "svg"}},
-                      {"prefix": {"component": "gfx: color"}},
-                      {"terms": {"component": [
-                        "color management",
-                        "imagelib",
-                        "panning and zooming",
-                        "image blocking",
-                        "layout: web painting",
-                        "layout: web painting components"
-                      ]}}
-                    ]
-                  }
-                ]
+                "terms": {
+                  "component": [
+                    "canvas: webgl",
+                    "graphics",
+                    "graphics: layers",
+                    "panning and Zooming",
+                    "svg",
+                    "canvas: 2d",
+                    "gfx: color management",
+                    "graphics: Text",
+                    "image blocking",
+                    "imagelib",
+                    "layout web painting"
+                  ]
+                }
               }
+              // "esfilter": {
+              //   "and": [
+              //     {"term": {"product": "core"}},
+              //     {
+              //       "or": [
+              //         {"prefix": {"component": "canvas"}},  // Anything starting with "Canvas", "Graphics", "Panning and Zooming", "SVG"
+              //         {"prefix": {"component": "graphics"}},
+              //         {"prefix": {"component": "panning"}},
+              //         {"prefix": {"component": "svg"}},
+              //         {"prefix": {"component": "gfx: color"}},
+              //         {"terms": {"component": [
+              //           "color management",
+              //           "imagelib",
+              //           "panning and zooming",
+              //           "image blocking",
+              //           "layout: web painting",
+              //           "layout: web painting components"
+              //         ]}}
+              //       ]
+              //     }
+              //   ]
+              // }
             },
             {
               "name": "Layout",
               "manager": "Sean Voisen",
               "style": {"color": "#B2912F"},
-              "burndown":"https://cpeterso.github.io/burndown/?whiteboard=%5Bqf:p1:f64%5D&since=2018-01-01&component=Layout:%20Block%20and%20Inline,CSS%20Parsing%20and%20Computation,Layout,Layout:%20Form%20Controls,Layout:%20Web%20Painting,DOM:%20CSS%20Object%20Model",
+              "burndown": "https://cpeterso.github.io/burndown/?whiteboard=%5Bqf:p1:f65%5D&since=2018-01-01&component=Layout:%20Block%20and%20Inline,CSS%20Parsing%20and%20Computation,Layout,Layout:%20Form%20Controls,Layout:%20Web%20Painting,DOM:%20CSS%20Object%20Model",
               "esfilter": {
-                "and": [
-                  {"term": {"product": "core"}},
-                  {
-                    "or": [
-                      {"prefix": {"component": "dom: css"}},
-                      {"prefix": {"component": "css parsing"}},  // Component: "CSS Parsing and Computation", starts with "HTML", starts with "Image", starts with "Layout", "Selection"
-                      {"prefix": {"component": "html"}},
-                      {"prefix": {"component": "image"}},
-                      {"prefix": {"component": "layout"}},
-                      {"prefix": {"component": "selection"}},
-                      {"terms": {"component": ["svg"]}}
-                    ]
-                  }
-                ]
+                "terms": {
+                  "component": [
+                    "layout: block and inline",
+                    "css parsing and computation",
+                    "layout",
+                    "layout: form controls",
+                    "layout: web painting",
+                    "dom: css object model"
+
+                  ]
+                }
               }
+              // "esfilter": {
+              //   "and": [
+              //     {"term": {"product": "core"}},
+              //     {
+              //       "or": [
+              //         {"prefix": {"component": "dom: css"}},
+              //         {"prefix": {"component": "css parsing"}},  // Component: "CSS Parsing and Computation", starts with "HTML", starts with "Image", starts with "Layout", "Selection"
+              //         {"prefix": {"component": "html"}},
+              //         {"prefix": {"component": "image"}},
+              //         {"prefix": {"component": "layout"}},
+              //         {"prefix": {"component": "selection"}},
+              //         {"terms": {"component": ["svg"]}}
+              //       ]
+              //     }
+              //   ]
+              // }
             },
             {
               "name": "Javascript",
               "manager": "Steven DeTar",
               "style": {"color": "#F17CB0"},
-              "burndown":"https://cpeterso.github.io/burndown/?whiteboard=%5Bqf:p1:f64%5D&since=2018-01-01&component=JavaScript%20Engine,Javascript%20Engine:%20Jit,JavaScript:%20GE,JavaScript:%20GC",
+              "burndown": "https://cpeterso.github.io/burndown/?whiteboard=%5Bqf:p1:f65%5D&since=2018-01-01&component=JavaScript%20Engine,Javascript%20Engine:%20Jit,JavaScript:%20GE,JavaScript:%20GC",
               "esfilter": {
-                "and": [
-                  {"term": {"product": "core"}},
-                  {
-                    "or": [
-                      {"prefix": {"component": "javascript"}},  //starts with "JavaScript" or "js", "MFBT", "Nanojit"
-                      {"prefix": {"component": "js"}},
-                      {"prefix": {"component": "mfbt"}},
-                      {"prefix": {"component": "nanojit"}}
-                    ]
-                  }
-                ]
+                "terms": {
+                  "component": [
+                    "javascript engine",
+                    "javascript engine: Jit",
+                    "javascript: ge",
+                    "javascript: gc"]
+                }
               }
+              // "esfilter": {
+              //   "and": [
+              //     {"term": {"product": "core"}},
+              //     {
+              //       "or": [
+              //         {"prefix": {"component": "javascript"}},  //starts with "JavaScript" or "js", "MFBT", "Nanojit"
+              //         {"prefix": {"component": "js"}},
+              //         {"prefix": {"component": "mfbt"}},
+              //         {"prefix": {"component": "nanojit"}}
+              //       ]
+              //     }
+              //   ]
+              // }
             },
             {
               "name": "Networking",
               "manager": "Jason Duell",
               "style": {"color": "#DECF3F"},
               "description": "Network",
-              "burndown":"https://cpeterso.github.io/burndown/?whiteboard=%5Bqf:p1:f64%5D&since=2018-01-01&component=Networking,Networking:%20Jar,Networking:%20Cookies",
+              "burndown": "https://cpeterso.github.io/burndown/?whiteboard=%5Bqf:p1:f65%5D&since=2018-01-01&component=Networking,Networking:%20Jar,Networking:%20Cookies",
               "esfilter": {
-                "and": [
-                  {"term": {"product": "core"}},
-                  {"prefix": {"component": "network"}}  // Product: Core, Component: starts with "Networking"
-                ]
+                "terms": {
+                  "component": [
+                    "networking",
+                    "networking: jar",
+                    "networking: cookies"
+                  ]
+                }
               }
+
+
+              // "esfilter": {
+              //   "and": [
+              //     {"term": {"product": "core"}},
+              //     {"prefix": {"component": "network"}}  // Product: Core, Component: starts with "Networking"
+              //   ]
+              // }
             },
             {
               "name": "WebExtensions",
               "manager": "David Durst",
               "style": {"color": "#757EBA"},
-              "burndown":"",
+              "burndown": "",
               "esfilter": {
                 "and": [
                   {"term": {"product": "webextensions"}},
-                  {"not":{"term":{"component":"general"}}}
+                  {"not": {"term": {"component": "general"}}}
                 ]
               }
             },
@@ -250,18 +345,26 @@ if (!Mozilla) var Mozilla = {"name": "Mozilla", "edges": []};
               "name": "Runtime",
               "manager": "Jim Mathies",
               "style": {"color": "#757EBA"},
-              "burndown":"https://cpeterso.github.io/burndown/?whiteboard=%5Bqf:p1:f64%5D&since=2018-01-01&component=Audio/Video:%20Playback,General",
+              "burndown": "https://cpeterso.github.io/burndown/?whiteboard=%5Bqf:p1:f65%5D&since=2018-01-01&component=Audio/Video:%20Playback,General",
               "esfilter": {
-                "and": [
-                  {"prefix": {"component": "audio/video:"}}
-                ]
+                "terms": {
+                  "component": [
+                    "audio/video: playback",
+                    "general"
+                  ]
+                }
               }
+              // "esfilter": {
+              //   "and": [
+              //     {"prefix": {"component": "audio/video:"}}
+              //   ]
+              // }
             },
             {
               "name": "GeckoView",
               "manager": "David Bolter",
               "style": {"color": "#757EBA"},
-              "burndown":"",
+              "burndown": "",
               "esfilter": {
                 "and": [
                   {"term": {"product": "firefox for android"}},
@@ -273,7 +376,7 @@ if (!Mozilla) var Mozilla = {"name": "Mozilla", "edges": []};
               "name": "Android Front End",
               "manager": "David Bolter",
               "style": {"color": "#757EBA"},
-              "burndown":"",
+              "burndown": "",
               "esfilter": {
                 "and": [
                   {"term": {"product": "firefox for android"}}
@@ -284,7 +387,7 @@ if (!Mozilla) var Mozilla = {"name": "Mozilla", "edges": []};
               "name": "Front End",
               "manager": "Mike Conley",
               "style": {"color": "#757EBA"},
-              "burndown":"",
+              "burndown": "",
               "esfilter": {
                 "or": [
                   {"term": {"product": "toolkit"}},
@@ -296,7 +399,7 @@ if (!Mozilla) var Mozilla = {"name": "Mozilla", "edges": []};
               "name": "Webtools",
               "manager": "",
               "style": {"color": "#757EBA"},
-              "burndown":"",
+              "burndown": "",
               "esfilter": {
                 "and": [
                   {"term": {"product": "webtools"}}
@@ -307,7 +410,7 @@ if (!Mozilla) var Mozilla = {"name": "Mozilla", "edges": []};
               "name": "Other",
               "manager": "",
               "style": {"color": "#CCCCCC"},
-              "burndown":"",
+              "burndown": "",
               "esfilter": {"match_all": {}} // Any tracked bug not in one of the product/component combinations above.
             }
           ]

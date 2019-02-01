@@ -50,15 +50,17 @@ function getComponentDetails(c){
 // SHOW COUNT FOR ONE TEAM
 function showTeam(team, showTYPE){
   var TEMPLATE = new Template('<div class="blocker">' +
-    '<div class="component"><a href="{{bugsURL}}">{{team_name}}</a></div>' +
+    '<div class="component">{{team_name}}</div>' +
     '<div class="componentmanager">{{team_manager}}</div>' +
     '{{projectDetail}}' +
+    '<div class="componentburndown"><a href="{{burndown}}">{{burndown_text}}</a></div>' +
     '</div>');
 
   team.team_name = team.team.name;
   team.team_manager = team.team.manager;
   team.bugsURL = Bugzilla.searchBugsURL(team.team.bugs);
   team.projectDetail = showTYPE(team);
+  team.burndown_text = team.burndown ? 'burndown' : '&nbsp;';
   return TEMPLATE.replace(team);
 }//function
 
@@ -80,7 +82,7 @@ function showBlocker(detail){
   detail.unassignedURL = Bugzilla.searchBugsURL(detail.unassignedBugs);
   detail.color = age2color(detail.age).toHTML();
 
-  let TEMPLATE = new Template('<div class="project {{additionalClass}}"  style="background-color:{{color}}" href="{{burndown}}" bugsList="{{bugsList}}" project="{{project}}">' +
+  let TEMPLATE = new Template('<div class="project {{additionalClass}}"  style="background-color:{{color}}" href="{{bugsURL}}" bugsList="{{bugsList}}" project="{{project}}">' +
     '<div class="count">{{count}}</div>' +
     (detail.unassignedCount > 0 ? '<div class="unassigned"><a class="count_unassigned" href="{{unassignedURL}}">{{unassignedCount}}</a></div>' : '') +
     '</div>');

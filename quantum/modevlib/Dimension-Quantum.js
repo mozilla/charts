@@ -181,7 +181,7 @@ if (!Mozilla) var Mozilla = {"name": "Mozilla", "edges": []};
                     "dom: indexeddb",
                     "dom: push notifications",
                     "dom: quota manager",
-                    "dom: Service workers",
+                    "dom: service workers",
                     "dom: web payments",
                     "dom: web storage",
                     "dom: workers",

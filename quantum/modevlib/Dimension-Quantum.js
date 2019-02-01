@@ -36,12 +36,6 @@ if (!Mozilla) var Mozilla = {"name": "Mozilla", "edges": []};
           ]
         },
 
-        {"name": "Nominations", "index": "bugs", "esfilter": {"term": {"status_whiteboard.tokenized": "qf"}}},
-        {
-          "name": "AllNominations",
-          "index": "bugs",
-          "esfilter": {"terms": {"status_whiteboard.tokenized": ["qf:investigate:p1", "qf", "qf:investigate"]}}
-        },
         {
           "name": "P1", "index": "bugs", "esfilter": {
             "or": [
@@ -166,16 +160,16 @@ if (!Mozilla) var Mozilla = {"name": "Mozilla", "edges": []};
               // }
             },
 
-            {
-              "name":"DOM: Fission",
-              "manager": "Neha Kochar",
-              "esfilter": false
-            },
-            {
-              "name":"DOM: Core",
-              "manager": "Hsin-Yi Tsai\n",
-              "esfilter": false
-            },
+            // {
+            //   "name":"DOM: Fission",
+            //   "manager": "Neha Kochar",
+            //   "esfilter": false
+            // },
+            // {
+            //   "name":"DOM: Core",
+            //   "manager": "Hsin-Yi Tsai\n",
+            //   "esfilter": false
+            // },
             {
               "name": "DOM: Workers & Storage",
               "manager": "Andrew Overholt",

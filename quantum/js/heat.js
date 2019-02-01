@@ -190,13 +190,13 @@ function refresher(func){
 
 function showLastUpdated(){
   Thread.run(function *(){
-    var result = yield (ESQuery.run({
+    var result = yield (ActiveDataQuery.run({
       "from": "bugs",
       "select": {"name": "max_date", "value": "modified_ts", "aggregate": "maximum"},
       "esfilter": {"range": {"modified_ts": {"gte": Date.eod().addDay(-1).getMilli()}}}
     }));
 
-    time = new Date(result.cube.max_date);
+    time = new Date(result.data.max_date);
 
     var lu = $("#last-updated");
     lu.html(new Template("<div style='{{style|css}}'>{{name}}</div>").expand(result.index));

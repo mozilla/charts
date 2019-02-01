@@ -47,7 +47,7 @@ qb.column.compile = function(resultColumn, sourceColumns, edges, useMVEL){  //us
 		var all_have_filters=true;
 		var calc_val="(function(){";
 		resultColumn.domain.partitions.forall(function(v){
-			if (!v.esfilter){
+			if (v.esfilter==null){
 				all_have_filters=false;
 			}else{
 				calc_val+="if ("+convert.esFilter2Expression(v.esfilter)+") return "+ convert.Value2Quote(v[resultColumn.domain.key])+";\nelse ";
@@ -58,6 +58,7 @@ qb.column.compile = function(resultColumn, sourceColumns, edges, useMVEL){  //us
 		if (all_have_filters){
 			resultColumn.value=calc_val;
 		}else{
+		  Log.warning("Not all parts have an esfilter, returning null");
 			resultColumn.calc = Util.returnNull;
 			return;
 		}//endif

@@ -43,10 +43,18 @@ if (!Mozilla) var Mozilla = {"name": "Mozilla", "edges": []};
           "esfilter": {"terms": {"status_whiteboard.tokenized": ["qf:investigate:p1", "qf", "qf:investigate"]}}
         },
         {
-          "name": "Blockers", "index": "bugs", "esfilter": {
+          "name": "P1", "index": "bugs", "esfilter": {
             "or": [
               {"terms": {"status_whiteboard.tokenized": ["qf:p1:f65", "qf:p1", "qf:investigate:p1"]}},
               {"terms": {"status_whiteboard(tokenized)": ["qf:p1:f65", "qf:p1", "qf:investigate:p1"]}}  //REMOVE ME
+            ]
+          }
+        },
+        {
+          "name": "Pageload", "index": "bugs", "esfilter": {
+            "or": [
+              {"terms": {"status_whiteboard.tokenized": ["qf:p1:pageload"]}},
+              {"terms": {"status_whiteboard(tokenized)": ["qf:p1:pageload"]}}  //REMOVE ME
             ]
           }
         },
@@ -109,20 +117,41 @@ if (!Mozilla) var Mozilla = {"name": "Mozilla", "edges": []};
             },
             {
               "name": "DevTools",
-              "manager": "Patrick Brosset",
+              "manager": "Panos",
               "style": {"color": "#FAA43A"},
-              "burndown": "https://cpeterso.github.io/burndown/?whiteboard=%5Bqf:p1:f65%5D&since=2018-01-01&component=developer%20tools:%20debugger,gecko%20profiler,Inspector,netmonitor",
+              "burndown": "https://cpeterso.github.io/burndown/?whiteboard=%5Bqf:p1:pageload%5D&since=2018-01-01&component=developer%20tools:%20debugger,gecko%20profiler,Inspector,netmonitor",
               "esfilter":
                 {
-                  "terms": {
-                    "component": [
-                      "developer tools: debugger",
-                      "gecko profiler",
-                      "inspector",
-                      "netmonitor"
+                  "or": [
+                    {
+                      "and": [
+                        {
+                          "term":
+                            {
+                              "component": "tech evangelism"
+                            }
+                        },
+                        {
+                          "terms": {
+                            "component": ["desktop", "mobile"]
+                          }
+                        }
+                      ]
+                    },
+                    {
+                      "terms": {
+                        "component": [
+                          "developer tools: debugger",
+                          "gecko profiler",
+                          "inspector",
+                          "netmonitor"
 
-                    ]
-                  }
+                        ]
+                      }
+                    }
+
+
+                  ]
                 }
               // "esfilter": {
               //   "and": [
@@ -136,23 +165,38 @@ if (!Mozilla) var Mozilla = {"name": "Mozilla", "edges": []};
               //   ]
               // }
             },
+
             {
-              "name": "DOM",
+              "name":"DOM: Fission",
+              "manager": "Neha Kochar",
+              "esfilter": false
+            },
+            {
+              "name":"DOM: Core",
+              "manager": "Hsin-Yi Tsai\n",
+              "esfilter": false
+            },
+            {
+              "name": "DOM: Workers & Storage",
               "manager": "Andrew Overholt",
               "style": {"color": "#4D4D4D"},
               "burndown": "https://cpeterso.github.io/burndown/?whiteboard=%5Bqf:p1:f65%5D&since=2018-01-01&component=Document%20Navigation,DOM,DOM:%20Core%20%26%20HTML,DOM:%20Device%20Interfaces,DOM:%20Events,DOM:%20IndexedDB,DOM:%20Push%20Notifications,DOM:%20Quota%20Manager,DOM:%20Service%20Workers,DOM:%20Workers,Event%20Handling,HTML:%20Form%20Submission,HTML:%20Parser,Keyboard:%20Navigation,Serializers,XBL,XML,XPConnect,XSLT,IPC",
               "esfilter": {
                 "terms": {
                   "component": [
+                    "dom: indexeddb",
+                    "dom: push notifications",
+                    "dom: quota manager",
+                    "dom: Service workers",
+                    "dom: web payments",
+                    "dom: web storage",
+                    "dom: workers",
+
                     "document navigation",
                     "dom",
                     "dom: core & html",
                     "dom: device interfaces",
-                    "dom: events", "dom: indexeddb",
-                    "dom: push notifications",
-                    "dom: quota manager",
-                    "dom: service workers",
-                    "dom: workers",
+                    "dom: events",
                     "event handling",
                     "html: form submission",
                     "html: parser",
@@ -212,7 +256,7 @@ if (!Mozilla) var Mozilla = {"name": "Mozilla", "edges": []};
                     "svg",
                     "canvas: 2d",
                     "gfx: color management",
-                    "graphics: Text",
+                    "graphics: text",
                     "image blocking",
                     "imagelib",
                     "layout web painting"
@@ -244,7 +288,7 @@ if (!Mozilla) var Mozilla = {"name": "Mozilla", "edges": []};
             },
             {
               "name": "Layout",
-              "manager": "Sean Voisen",
+              "manager": "Bobby Holley",
               "style": {"color": "#B2912F"},
               "burndown": "https://cpeterso.github.io/burndown/?whiteboard=%5Bqf:p1:f65%5D&since=2018-01-01&component=Layout:%20Block%20and%20Inline,CSS%20Parsing%20and%20Computation,Layout,Layout:%20Form%20Controls,Layout:%20Web%20Painting,DOM:%20CSS%20Object%20Model",
               "esfilter": {
@@ -286,8 +330,7 @@ if (!Mozilla) var Mozilla = {"name": "Mozilla", "edges": []};
                 "terms": {
                   "component": [
                     "javascript engine",
-                    "javascript engine: Jit",
-                    "javascript: ge",
+                    "javascript engine: jit",
                     "javascript: gc"]
                 }
               }

@@ -160,16 +160,42 @@ if (!Mozilla) var Mozilla = {"name": "Mozilla", "edges": []};
               // }
             },
 
-            // {
-            //   "name":"DOM: Fission",
-            //   "manager": "Neha Kochar",
-            //   "esfilter": false
-            // },
-            // {
-            //   "name":"DOM: Core",
-            //   "manager": "Hsin-Yi Tsai\n",
-            //   "esfilter": false
-            // },
+            {
+              "name": "DOM: Fission",
+              "manager": "Neha Kochar",
+              "esfilter": {
+                "terms": {
+                  "component": [
+
+                    "document navigation",
+                    "xbl",
+                    "xml",
+                    "xpconnect",
+                    "xslt"
+                  ]
+                }
+              }
+            },
+            {
+              "name": "DOM: Core",
+              "manager": "Hsin-Yi Tsai\n",
+              "esfilter": {
+                "terms": {
+                  "component": [
+                    "dom",
+                    "dom: core & html",
+                    "dom: events",
+                    "drag and drop",
+                    "event handling",
+                    "html: form submission",
+                    "html: parser",
+                    "keyboard: navigation",
+                    "serializers",
+                    "ipc"
+                  ]
+                }
+              }
+            },
             {
               "name": "DOM: Workers & Storage",
               "manager": "Andrew Overholt",
@@ -184,23 +210,8 @@ if (!Mozilla) var Mozilla = {"name": "Mozilla", "edges": []};
                     "dom: service workers",
                     "dom: web payments",
                     "dom: web storage",
-                    "dom: workers",
+                    "dom: workers"
 
-                    "document navigation",
-                    "dom",
-                    "dom: core & html",
-                    "dom: device interfaces",
-                    "dom: events",
-                    "event handling",
-                    "html: form submission",
-                    "html: parser",
-                    "keyboard: navigation",
-                    "serializers",
-                    "xbl",
-                    "xml",
-                    "xpconnect",
-                    "xslt",
-                    "ipc"
                   ]
                 }
               }
@@ -281,41 +292,6 @@ if (!Mozilla) var Mozilla = {"name": "Mozilla", "edges": []};
               // }
             },
             {
-              "name": "Layout",
-              "manager": "Bobby Holley",
-              "style": {"color": "#B2912F"},
-              "burndown": "https://cpeterso.github.io/burndown/?whiteboard=%5Bqf:p1:f65%5D&since=2018-01-01&component=Layout:%20Block%20and%20Inline,CSS%20Parsing%20and%20Computation,Layout,Layout:%20Form%20Controls,Layout:%20Web%20Painting,DOM:%20CSS%20Object%20Model",
-              "esfilter": {
-                "terms": {
-                  "component": [
-                    "layout: block and inline",
-                    "css parsing and computation",
-                    "layout",
-                    "layout: form controls",
-                    "layout: web painting",
-                    "dom: css object model"
-
-                  ]
-                }
-              }
-              // "esfilter": {
-              //   "and": [
-              //     {"term": {"product": "core"}},
-              //     {
-              //       "or": [
-              //         {"prefix": {"component": "dom: css"}},
-              //         {"prefix": {"component": "css parsing"}},  // Component: "CSS Parsing and Computation", starts with "HTML", starts with "Image", starts with "Layout", "Selection"
-              //         {"prefix": {"component": "html"}},
-              //         {"prefix": {"component": "image"}},
-              //         {"prefix": {"component": "layout"}},
-              //         {"prefix": {"component": "selection"}},
-              //         {"terms": {"component": ["svg"]}}
-              //       ]
-              //     }
-              //   ]
-              // }
-            },
-            {
               "name": "Javascript",
               "manager": "Steven DeTar",
               "style": {"color": "#F17CB0"},
@@ -343,6 +319,56 @@ if (!Mozilla) var Mozilla = {"name": "Mozilla", "edges": []};
               // }
             },
             {
+              "name": "Layout",
+              "manager": "Bobby Holley",
+              "style": {"color": "#B2912F"},
+              "burndown": "https://cpeterso.github.io/burndown/?whiteboard=%5Bqf:p1:f65%5D&since=2018-01-01&component=Layout:%20Block%20and%20Inline,CSS%20Parsing%20and%20Computation,Layout,Layout:%20Form%20Controls,Layout:%20Web%20Painting,DOM:%20CSS%20Object%20Model",
+              "esfilter": {
+                "terms": {
+                  "component": [
+                    "layout: block and inline",
+                    "css parsing and computation",
+                    "css transitions and animations",
+                    "dom: css object model",
+                    "layout",
+                    "layout: block and Inline",
+                    "layout: columns",
+                    "layout: flexbox",
+                    "layout: floats",
+                    "layout: form controls",
+                    "layout: generated content, lists, and counters",
+                    "layout: grid",
+                    "layout: images, video, and html frames",
+                    "layout: positioned",
+                    "layout: ruby",
+                    "layout: scrolling and overflow",
+                    "layout: tables",
+                    "layout: text and fonts",
+                    "print preview",
+                    "printing: output",
+                    "printing: setup, svg"
+
+                  ]
+                }
+              }
+              // "esfilter": {
+              //   "and": [
+              //     {"term": {"product": "core"}},
+              //     {
+              //       "or": [
+              //         {"prefix": {"component": "dom: css"}},
+              //         {"prefix": {"component": "css parsing"}},  // Component: "CSS Parsing and Computation", starts with "HTML", starts with "Image", starts with "Layout", "Selection"
+              //         {"prefix": {"component": "html"}},
+              //         {"prefix": {"component": "image"}},
+              //         {"prefix": {"component": "layout"}},
+              //         {"prefix": {"component": "selection"}},
+              //         {"terms": {"component": ["svg"]}}
+              //       ]
+              //     }
+              //   ]
+              // }
+            },
+            {
               "name": "Networking",
               "manager": "Jason Duell",
               "style": {"color": "#DECF3F"},
@@ -352,7 +378,6 @@ if (!Mozilla) var Mozilla = {"name": "Mozilla", "edges": []};
                 "terms": {
                   "component": [
                     "networking",
-                    "networking: jar",
                     "networking: cookies"
                   ]
                 }
@@ -374,72 +399,43 @@ if (!Mozilla) var Mozilla = {"name": "Mozilla", "edges": []};
               "esfilter": {
                 "and": [
                   {"term": {"product": "webextensions"}},
-                  {"not": {"term": {"component": "general"}}}
+                  {"term": {"component": "frontend"}}
                 ]
               }
             },
+
             {
-              "name": "Runtime",
-              "manager": "Jim Mathies",
-              "style": {"color": "#757EBA"},
-              "burndown": "https://cpeterso.github.io/burndown/?whiteboard=%5Bqf:p1:f65%5D&since=2018-01-01&component=Audio/Video:%20Playback,General",
-              "esfilter": {
-                "terms": {
-                  "component": [
-                    "audio/video: playback",
-                    "general"
-                  ]
-                }
-              }
-              // "esfilter": {
-              //   "and": [
-              //     {"prefix": {"component": "audio/video:"}}
-              //   ]
-              // }
-            },
-            {
-              "name": "GeckoView",
-              "manager": "David Bolter",
+              "name": "Performance",
+              "manager": "Vicky Chin",
               "style": {"color": "#757EBA"},
               "burndown": "",
               "esfilter": {
                 "and": [
-                  {"term": {"product": "firefox for android"}},
-                  {"term": {"component": "geckoview"}}
+                  {"term": {"product": "core"}},
+                  {"term": {"component": "performance"}}
                 ]
               }
             },
             {
-              "name": "Android Front End",
-              "manager": "David Bolter",
+              "name": "GeckoView",
+              "manager": "Chris Peterson",
+              "style": {"color": "#757EBA"},
+              "burndown": "",
+              "esfilter": {
+                "and": [
+                  {"term": {"product": "geckoview"}},
+                  {"term": {"component": "general"}}
+                ]
+              }
+            },
+            {
+              "name": "Firefox for Android",
+              "manager": "Susheel Daswani",
               "style": {"color": "#757EBA"},
               "burndown": "",
               "esfilter": {
                 "and": [
                   {"term": {"product": "firefox for android"}}
-                ]
-              }
-            },
-            {
-              "name": "Front End",
-              "manager": "Mike Conley",
-              "style": {"color": "#757EBA"},
-              "burndown": "",
-              "esfilter": {
-                "or": [
-                  {"term": {"product": "toolkit"}},
-                  {"term": {"product": "firefox"}}
-                ]
-              }
-            },
-            {
-              "name": "Webtools",
-              "manager": "",
-              "style": {"color": "#757EBA"},
-              "burndown": "",
-              "esfilter": {
-                "and": [
-                  {"term": {"product": "webtools"}}
                 ]
               }
             },

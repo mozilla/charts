@@ -27,7 +27,7 @@ if (!Mozilla) var Mozilla = {"name": "Mozilla", "edges": []};
             },
             {
               "name": "P3", "index": "bugs", "esfilter":
-                {"terms": {"status_whiteboard(tokenized)": ["qf:p3::responsiveness", "qf:p3:resource bugs"]}}
+                {"terms": {"status_whiteboard(tokenized)": ["qf:p3:responsiveness", "qf:p3:resource bugs"]}}
             },
             {
               "name": "Investigate", "index": "bugs", "esfilter":

@@ -114,11 +114,11 @@
     Nobody Assigned
   </div>
   <div style="width:100%;text-align: center">
-    For Quantum Flow Fx64, P1 indicates bugs should be worked on next.
+    For Quantum Flow, P1 indicates bugs should be worked on next.
   </div>
 
   <div class="footer">
-    Source at <a href="https://github.com/mozilla/charts/tree/quantum/quantum">https://github.com/mozilla/charts/tree/quantum/quantum</a>
+    Source at <a href="https://github.com/mozilla/charts/tree/quantum/quantum">https://github.com/mozilla/charts/tree/quantum-investigate/quantum</a>
   </div>
 </div>
 
@@ -156,7 +156,7 @@
           ],
           "where": {
             "and": [
-              Mozilla.Quantum.Pageload.esfilter,
+              Mozilla.Quantum.CategoryES.esfilter,
               Mozilla.BugStatus.Open.esfilter,
               Mozilla.CurrentRecords.esfilter,
               GUI.getFilters("bugs")
@@ -212,7 +212,8 @@
         ],
         "edges": [
           {"name": "team", "domain": Mozilla.Quantum.Team.getDomain()}
-        ]
+        ],
+        "where": Mozilla.Quantum.Category.Pageload.esfilter
       }));
 
       components.list = qb.sort(components.list, "team.ordering");
@@ -224,7 +225,7 @@
         $("#blockers").append(blockerHTML);
       });
 
-      let projectDomain = Mozilla.Quantum.Project.getDomain();
+      let projectDomain = Mozilla.Quantum.Category.getDomain();
       projectDomain.name = "project";
       projectDomain.end = function(p){
         return p.name;
@@ -253,8 +254,11 @@
         ]
       }));
 
+      totals.cube.map(function(v, i){
+        v.project = totals.edges[0].domain.partitions[i].name;
+      });
 
-      let grandTotal = {
+      let grandTotal = [{
         "project": "Total",
         "count": aMath.SUM(totals.cube.select("count")),
         "unassignedCount": aMath.SUM(totals.cube.select("unassignedCount")),
@@ -262,15 +266,15 @@
         "bugs": totals.from.list.select("bug_id"),
         "unassignedBugs": totals.from.list.filter(Mozilla.Quantum.Unassigned.esfilter).select("bug_id"),
         "additionalClass": "project-summary"
-      };
+      }].extend(totals.cube);
 
-      var blockerHTML = showSummary(
+      let blockerHTML = showSummary(
         "Quantum Performance Bugs",
-        grandTotal,
+        totals.cube,
         showTotal,
         new Template(
           '<h1 style="text-align:center; padding: 20px 0 0 10px;vertical-align: top; display:inline-block">{{type}}&nbsp;&nbsp;' +
-          '<div style="color:#ee0303;font-family: sans-serif, Arial Black,Arial Bold;font-weight:bold;font-size: .5em">Target: focus on pageload bugs</div>' +
+          '<div style="color:#ee0303;font-family: sans-serif, Arial Black,Arial Bold;font-weight:bold;font-size: .5em">Target: focus on p1 pageload bugs</div>' +
           '</h1>' +
           '{{total}}'
         )

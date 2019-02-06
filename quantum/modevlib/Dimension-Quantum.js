@@ -15,76 +15,48 @@ if (!Mozilla) var Mozilla = {"name": "Mozilla", "edges": []};
       "esfilter": {"match_all": {}},
       "edges": [
         {
-          "name": "Project", "index": "bugs", "isFacet": true,
+          "name": "CategoryES", "index": "bugs", //REMOVE ME
           "partitions": [
-            // {
-            //   "name": "Photon",
-            //   "start_date": "Jan 1, 2017",
-            //   "targetDate": "Nov 28, 2017",
-            //   "dateMarks": [],
-            //   "style": {"color": "#ff7f0e"},
-            //   "esfilter": {"prefix": {"status_whiteboard.tokenized": "photon"}}
-            // },
             {
-              "name": "QF",
-              "start_date": "Jan 1, 2017",
-              "targetDate": "Nov 28, 2017",
-              "dateMarks": [],
-              "style": {"color": "#ff7f0e"},
-              "esfilter": {"prefix": {"status_whiteboard.tokenized": "qf"}}
+              "name": "Pageload", "index": "bugs", "esfilter":
+                {"term": {"status_whiteboard(tokenized)": "qf:p1:pageload"}}
+            },
+            {
+              "name": "P2", "index": "bugs", "esfilter":
+                {"terms": {"status_whiteboard(tokenized)": ["qf:p2:responsiveness", "qf:p2:resource bugs"]}}
+            },
+            {
+              "name": "P3", "index": "bugs", "esfilter":
+                {"terms": {"status_whiteboard(tokenized)": ["qf:p3::responsiveness", "qf:p3:resource bugs"]}}
+            },
+            {
+              "name": "Investigate", "index": "bugs", "esfilter":
+                {"term": {"status_whiteboard(tokenized)": "qf:investigate"}}
             }
           ]
         },
-
         {
-          "name": "P1", "index": "bugs", "esfilter": {
-            "or": [
-              {"terms": {"status_whiteboard.tokenized": ["qf:p1:f65", "qf:p1", "qf:investigate:p1"]}},
-              {"terms": {"status_whiteboard(tokenized)": ["qf:p1:f65", "qf:p1", "qf:investigate:p1"]}}  //REMOVE ME
-            ]
-          }
-        },
-        {
-          "name": "Pageload", "index": "bugs", "esfilter": {
-            "or": [
-              {"terms": {"status_whiteboard.tokenized": ["qf:p1:pageload"]}},
-              {"terms": {"status_whiteboard(tokenized)": ["qf:p1:pageload"]}}  //REMOVE ME
-            ]
-          }
-        },
-        {"name": "Regressions", "index": "bugs", "esfilter": {"term": {"keywords": "regression"}}},
-        {"name": "Unassigned", "index": "bugs", "esfilter": {"term": {"assigned_to": "nobody@mozilla.org"}}},
-        {
-          "name": "NeedsAnalysis",
-          "index": "bugs",
-          "esfilter": {"term": {"status_whiteboard.tokenized": "qf:needs-analysis"}}
-        },
-
-        //AN UNFORTUNATE DISTINCTION BETWEEN DIMENSIONS (ABOVE, THAT OVERLAP), AND PARTITIONS THAT DO NOT OVERLAP
-        {
-          "name": "State", "index": "bugs", "isFacet": true,
+          "name": "Category", "index": "bugs", "isFacet": true,
           "partitions": [
             {
-              "name": "Nominated", "esfilter": {
-                "and": [
-                  {"term": {"status_whiteboard.tokenized": "qf"}},
-                  {"not": {"term": {"keywords": "regression"}}}
-                ]
-              }
+              "name": "Pageload", "index": "bugs", "esfilter":
+                {"term": {"status_whiteboard.tokenized": "qf:p1:pageload"}}
             },
             {
-              "name": "Blocker", "esfilter": {
-                "and": [
-                  {"term": {"status_whiteboard.tokenized": "qf:p1"}},
-                  {"not": {"term": {"keywords": "regression"}}}
-                ]
-              }
+              "name": "P2", "index": "bugs", "esfilter":
+                {"terms": {"status_whiteboard.tokenized": ["qf:p2:responsiveness", "qf:p2:resource bugs"]}}
             },
-            {"name": "Regression", "esfilter": {"term": {"keywords": "regression"}}}
+            {
+              "name": "P3", "index": "bugs", "esfilter":
+                {"terms": {"status_whiteboard.tokenized": ["qf:p3:responsiveness", "qf:p3:resource bugs"]}}
+            },
+            {
+              "name": "Investigate", "index": "bugs", "esfilter":
+                {"term": {"status_whiteboard.tokenized": "qf:investigate"}}
+            }
           ]
         },
-
-
+        {"name": "Unassigned", "index": "bugs", "esfilter": {"term": {"assigned_to": "nobody@mozilla.org"}}},
         {
           "name": "Component",
           "field": "component",
@@ -147,17 +119,6 @@ if (!Mozilla) var Mozilla = {"name": "Mozilla", "edges": []};
 
                   ]
                 }
-              // "esfilter": {
-              //   "and": [
-              //     {
-              //       "or": [
-              //         {"prefix": {"component": "dev"}}, // Component: Anything starting with "Developer Tools"
-              //         {"term": {"component": "gecko profiler"}},
-              //         {"term": {"component": "inspector"}}
-              //       ]
-              //     }
-              //   ]
-              // }
             },
 
             {
@@ -215,40 +176,10 @@ if (!Mozilla) var Mozilla = {"name": "Mozilla", "edges": []};
                   ]
                 }
               }
-              // "esfilter": {
-              //   "and": [
-              //     {"term": {"product": "core"}},
-              //     {"not": {"prefix": {"component": "dom: css"}}},
-              //     {
-              //       "or": [
-              //         {"prefix": {"component": "dom"}},  // Lawrence, Nov 11, 2014: Anything starting with "DOM", "Document Navigation", "IPC", "XBL", "XForms"
-              //         {"prefix": {"component": "document"}},
-              //         {"prefix": {"component": "ipc"}},
-              //         {"prefix": {"component": "xbl"}},
-              //         {"prefix": {"component": "xform"}},
-              //         {
-              //           "terms": {
-              //             "component": [
-              //               "event handling",
-              //               "html: parser",
-              //               "html: form submission",
-              //               "keyboard: navigation",
-              //               "serializers",
-              //               "xbl",
-              //               "xml",
-              //               "xpconnect",
-              //               "xslt"
-              //             ]
-              //           }
-              //         }
-              //       ]
-              //     }
-              //   ]
-              // }
             },
             {
               "name": "Graphics",
-              "manager": "David Bolter",
+              "manager": "Jessie Bonisteel",
               "style": {"color": "#B276B2"},
               "burndown": "https://cpeterso.github.io/burndown/?whiteboard=%5Bqf:p1:f65%5D&since=2018-01-01&component=Canvas:%20webGL,Graphics,Graphics:%20Layers,Panning%20and%20Zooming,SVG,Canvas:%202D,GFX:%20Color%20Management,Graphics:%20Text,Image%20Blocking,ImageLib,Layout%20Web%20Painting",
               "esfilter": {
@@ -268,28 +199,6 @@ if (!Mozilla) var Mozilla = {"name": "Mozilla", "edges": []};
                   ]
                 }
               }
-              // "esfilter": {
-              //   "and": [
-              //     {"term": {"product": "core"}},
-              //     {
-              //       "or": [
-              //         {"prefix": {"component": "canvas"}},  // Anything starting with "Canvas", "Graphics", "Panning and Zooming", "SVG"
-              //         {"prefix": {"component": "graphics"}},
-              //         {"prefix": {"component": "panning"}},
-              //         {"prefix": {"component": "svg"}},
-              //         {"prefix": {"component": "gfx: color"}},
-              //         {"terms": {"component": [
-              //           "color management",
-              //           "imagelib",
-              //           "panning and zooming",
-              //           "image blocking",
-              //           "layout: web painting",
-              //           "layout: web painting components"
-              //         ]}}
-              //       ]
-              //     }
-              //   ]
-              // }
             },
             {
               "name": "Javascript",
@@ -304,23 +213,10 @@ if (!Mozilla) var Mozilla = {"name": "Mozilla", "edges": []};
                     "javascript: gc"]
                 }
               }
-              // "esfilter": {
-              //   "and": [
-              //     {"term": {"product": "core"}},
-              //     {
-              //       "or": [
-              //         {"prefix": {"component": "javascript"}},  //starts with "JavaScript" or "js", "MFBT", "Nanojit"
-              //         {"prefix": {"component": "js"}},
-              //         {"prefix": {"component": "mfbt"}},
-              //         {"prefix": {"component": "nanojit"}}
-              //       ]
-              //     }
-              //   ]
-              // }
             },
             {
               "name": "Layout",
-              "manager": "Bobby Holley",
+              "manager": "Sean Voisen",
               "style": {"color": "#B2912F"},
               "burndown": "https://cpeterso.github.io/burndown/?whiteboard=%5Bqf:p1:f65%5D&since=2018-01-01&component=Layout:%20Block%20and%20Inline,CSS%20Parsing%20and%20Computation,Layout,Layout:%20Form%20Controls,Layout:%20Web%20Painting,DOM:%20CSS%20Object%20Model",
               "esfilter": {
@@ -351,26 +247,10 @@ if (!Mozilla) var Mozilla = {"name": "Mozilla", "edges": []};
                   ]
                 }
               }
-              // "esfilter": {
-              //   "and": [
-              //     {"term": {"product": "core"}},
-              //     {
-              //       "or": [
-              //         {"prefix": {"component": "dom: css"}},
-              //         {"prefix": {"component": "css parsing"}},  // Component: "CSS Parsing and Computation", starts with "HTML", starts with "Image", starts with "Layout", "Selection"
-              //         {"prefix": {"component": "html"}},
-              //         {"prefix": {"component": "image"}},
-              //         {"prefix": {"component": "layout"}},
-              //         {"prefix": {"component": "selection"}},
-              //         {"terms": {"component": ["svg"]}}
-              //       ]
-              //     }
-              //   ]
-              // }
             },
             {
               "name": "Networking",
-              "manager": "Jason Duell",
+              "manager": "Selena Deckelmann",
               "style": {"color": "#DECF3F"},
               "description": "Network",
               "burndown": "https://cpeterso.github.io/burndown/?whiteboard=%5Bqf:p1:f65%5D&since=2018-01-01&component=Networking,Networking:%20Jar,Networking:%20Cookies",
@@ -382,14 +262,6 @@ if (!Mozilla) var Mozilla = {"name": "Mozilla", "edges": []};
                   ]
                 }
               }
-
-
-              // "esfilter": {
-              //   "and": [
-              //     {"term": {"product": "core"}},
-              //     {"prefix": {"component": "network"}}  // Product: Core, Component: starts with "Networking"
-              //   ]
-              // }
             },
             {
               "name": "WebExtensions",

@@ -69,7 +69,7 @@ function showTeam(team, showTYPE){
 function showSummary(type, grandTotal, showTYPE, template){
   var component = {};
   component.type = type;
-  component.total = showTYPE(grandTotal);
+  component.total = Array.newInstance(grandTotal).map(showTYPE).join("");
 
   return template.replace(component)
 }//function
@@ -97,8 +97,9 @@ function showTotal(detail){
   detail.unassignedURL = Bugzilla.searchBugsURL(detail.unassignedBugs);
   detail.color = age2color(detail.age).toHTML();
 
-  let TEMPLATE = new Template('<div class="total {{additionalClass}}"  style="background-color:{{color}}" href="{{bugsURL}}" bugsList="{{bugsList}}" project="{{project}}">' +
-    '<div style="font-weight: bold;">Total</div>' +
+  let TEMPLATE = new Template(
+    '<div class="total {{additionalClass}}"  style="background-color:{{color}}" href="{{bugsURL}}" bugsList="{{bugsList}}" project="{{project}}">' +
+    '<div style="font-weight: bold;">{{project}}</div>' +
     '<div class="total_count">{{count}}</div>' +
     (detail.unassignedCount > 0 ? '<div class="total_unassigned"><a class="total_count_unassigned" href="{{unassignedURL}}">{{unassignedCount}}</a></div>' : '') +
     '</div>'

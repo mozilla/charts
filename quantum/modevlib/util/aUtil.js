@@ -245,6 +245,9 @@ var Map = {};
 		return output;
 	};//function
 
+  Map.toPairs = function(map){
+    return Object.entries(map);
+  };
 
 	Map.getValues = function getValues(map){
 		var output = [];

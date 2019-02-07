@@ -220,7 +220,7 @@
 
       $("#blockers").html("");
       components.list.forall(function(team, i){
-        team.burndown = Mozilla.Quantum.Team[team.team.name].burndown;
+        team.burndown = composeBurndown(team.team.esfilter);
         let blockerHTML = showTeam(team, showBlocker);
         $("#blockers").append(blockerHTML);
       });
@@ -284,6 +284,17 @@
       addProjectClickers(components);
       showLastUpdated();
     };
+
+    function composeBurndown(filter){
+      const baseURL = "https://cpeterso.github.io/burndown/";
+      const params = convert.Object2URL(Bugzilla.jx2rest({
+        and: [
+          {eq: {since: "2018-01-01"}},
+          filter
+        ]
+      }));
+      return baseURL + "?" + params;
+    }
 
     $(document).ready(function(){
       GUI.setup(

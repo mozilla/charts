@@ -169,11 +169,29 @@ Bugzilla = {};
     Log.error("Can not find operator for " + convert.value2json(expr))
   }
 
+  const tokenizedMap={
+    "equals":"substring",
+    "anyexact": "anywordssubstr"
+  };
+
   Bugzilla.jx2rest = function(expr){
-    const output = {};
+    const output = {query_format: "advanced"};
     try{
       const params = jx2rest(expr);
       params.map(function(e, i){
+        // SPECIAL CONVERT *.tokenized TO [] TAGS
+        if (e.f.endsWith(".tokenized")){
+          e.f = e.f.substring(0, e.f.length-10);
+          if (!(e.o in tokenizedMap)) Log.error("can not tokenize operator "+e.o);
+          e.o = tokenizedMap[e.o];
+          if (Array.isArray(e.v)){
+            e.v = e.v.map(function(v){return "["+v+"]"});
+          }else{
+            e.v = "["+e.v+"]";
+          }//endif
+        }//endif
+
+
         Map.map(e, function(k, v){
           output[k + (i + 1)] = v;
         });

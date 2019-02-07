@@ -287,12 +287,16 @@
 
     function composeBurndown(filter){
       const baseURL = "https://cpeterso.github.io/burndown/";
-      const params = convert.Object2URL(Bugzilla.jx2rest({
-        and: [
-          {eq: {since: "2018-01-01"}},
-          filter
-        ]
-      }));
+      const params = convert.Object2URL(Map.setDefault(
+        {since: "2018-01-01"},
+        Bugzilla.jx2rest({
+          and: [
+            Mozilla.BugStatus.Open.esfilter,
+            Mozilla.Quantum.Category.Pageload.esfilter,
+            filter
+          ]
+        })
+      ));
       return baseURL + "?" + params;
     }
 

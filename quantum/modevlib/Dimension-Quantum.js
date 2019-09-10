@@ -244,7 +244,7 @@ if (!Mozilla) var Mozilla = {"name": "Mozilla", "edges": []};
             },
             {
               "name": "Networking",
-              "manager": "Selena Deckelmann",
+              "manager": "Nhi Nguyen",
               "style": {"color": "#DECF3F"},
               "description": "Network",
               "esfilter": {
